@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        ((request.auth.token.email == "workzy59@gmail.com" && request.auth.token.email_verified == true) ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['admin', 'client'];
+    }
+
+    function isValidProject(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'businessName', 'businessType', 'description', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted']) &&
+             data.userId is string && data.businessName is string && data.businessName.size() > 0 &&
+             data.status in ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed"];
+    }
+
+    function isValidMessage(data) {
+      return hasOnlyAllowedFields(['id', 'projectId', 'senderId', 'senderName', 'text', 'attachmentUrl', 'createdAt', 'seen']) &&
+             data.projectId is string && 
+             data.senderId is string && 
+             data.text is string &&
+             data.createdAt is timestamp &&
+             data.seen is bool;
+    }
+
+    function isValidDirectMessage(data) {
+      return hasOnlyAllowedFields(['id', 'senderId', 'senderName', 'text', 'attachmentUrl', 'createdAt', 'seen']) &&
+             data.senderId is string && 
+             data.text is string &&
+             data.createdAt is timestamp &&
+             data.seen is bool;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'client' || isAdmin());
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /projects/{projectId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidProject(request.resource.data);
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) && isValidProject(request.resource.data);
+      allow delete: if isAdmin(); // Only admin can delete (or soft delete)
+      
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/projects/$(projectId)) && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid));
+        allow create: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/projects/$(projectId)) && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid)) && isValidMessage(request.resource.data) && request.resource.data.projectId == projectId;
+        allow update: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/projects/$(projectId)) && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid)) && isValidMessage(request.resource.data);
+      }
+    }
+
+    match /direct_messages/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create, update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+        allow create: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidDirectMessage(request.resource.data);
+        allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidDirectMessage(request.resource.data);
+      }
+    }
+  }
+}

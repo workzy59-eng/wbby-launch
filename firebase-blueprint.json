@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "client"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Website project details and status.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "businessName": { "type": "string" },
+        "businessType": { "type": "string" },
+        "description": { "type": "string" },
+        "templateId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed"] },
+        "progress": { "type": "number" },
+        "estimatedCompletion": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "rejectionReason": { "type": "string" },
+        "isDeleted": { "type": "boolean" }
+      },
+      "required": ["userId", "businessName", "status"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Chat message for a project.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "attachmentUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "seen": { "type": "boolean" }
+      },
+      "required": ["projectId", "senderId", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles."
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Project details."
+    },
+    "/projects/{projectId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Project chat messages."
+    }
+  }
+}
