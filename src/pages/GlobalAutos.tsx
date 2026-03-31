@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, ArrowRight, Gauge, Zap, Shield, Play, ChevronRight, Key, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { APP_NAME, HYPHENATED_NAME } from '../constants';
 
 export default function GlobalAutos() {
   const [isReady, setIsReady] = useState(false);
@@ -33,7 +34,7 @@ export default function GlobalAutos() {
               <div className="w-3 h-3 bg-red-600 rounded-full" />
             </div>
           </div>
-          <span className="text-2xl font-black tracking-tighter uppercase italic">Automobile</span>
+          <span className="text-2xl font-black tracking-tighter uppercase italic">Automobiles</span>
         </div>
         
         <div className="hidden md:flex items-center gap-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
@@ -66,7 +67,7 @@ export default function GlobalAutos() {
             transition={{ delay: 0.1 }}
             className="text-7xl md:text-[11rem] font-black tracking-tighter leading-[0.8] uppercase italic"
           >
-            Automobile
+            Automobiles
           </motion.h1>
           <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">Key Automobile. Portfolio.</div>
         </div>

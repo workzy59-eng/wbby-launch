@@ -99,36 +99,28 @@ export default function LandingPage({ user }: LandingPageProps) {
           <div className="flex overflow-x-auto gap-6 pb-12 no-scrollbar snap-x snap-mandatory scroll-smooth">
             {[
               { 
-                title: "Gym and some paid portfolio", 
-                category: "Paid Portfolio", 
-                image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200",
-                desc: "Premium fitness tracking and workout management.",
-                link: "/portfolio/fitpulse",
-                alt: "microchips"
+                title: "Food Court", 
+                category: "Food & Dining", 
+                image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200",
+                desc: "Premium food specialties and dining experience.",
+                link: "/portfolio/food-court",
+                alt: "food court"
               },
               { 
-                title: "Automobile", 
-                category: "Individual Banner", 
-                image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1200",
-                desc: "Automobile. Key Automobile. Portfolio.",
+                title: "Automobiles", 
+                category: "Automotive", 
+                image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200",
+                desc: "Luxury electric vehicles and automotive excellence.",
                 link: "/portfolio/autos",
-                alt: "automobile engine"
+                alt: "automobile"
               },
               { 
-                title: "Second paid portfolio Mercedes Star marketing", 
-                category: "Paid Portfolio", 
-                image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200",
-                desc: "High-end digital marketing for luxury automotive brands.",
-                link: "/portfolio/mercedes",
-                alt: "microchips"
-              },
-              { 
-                title: "Microchips", 
-                category: "Tech Portfolio", 
-                image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200",
-                desc: "Advanced semiconductor design and manufacturing visualization.",
-                link: "/portfolio/microchips",
-                alt: "microchips"
+                title: "Clothing", 
+                category: "Fashion", 
+                image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200",
+                desc: "Modern fashion and apparel retail experience.",
+                link: "/portfolio/clothing",
+                alt: "clothing store"
               },
             ].map((item, i) => (
               <motion.div 

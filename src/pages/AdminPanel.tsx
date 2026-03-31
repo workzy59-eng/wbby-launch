@@ -5,7 +5,7 @@ import { UserProfile, Project } from '../types';
 import { Link } from 'react-router-dom';
 import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject } from '../services/database';
+import { updateProject, deleteAllProjects } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 
 interface AdminPanelProps {
@@ -16,11 +16,13 @@ interface AdminPanelProps {
 export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'analytics' | 'messages' | 'recycle'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'analytics' | 'messages' | 'recycle' | 'system'>('dashboard');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [newProgress, setNewProgress] = useState(0);
   const [showChat, setShowChat] = useState(false);
@@ -376,6 +378,45 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     </div>
   );
 
+  const handleResetDatabase = async () => {
+    setIsResetting(true);
+    try {
+      await deleteAllProjects();
+      setShowResetModal(false);
+      setActiveTab('dashboard');
+    } catch (error) {
+      console.error("Reset failed:", error);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const renderSystem = () => (
+    <div className="space-y-12">
+      <div className="flex flex-col gap-2">
+        <span className="text-[10px] font-bold text-red-500 uppercase tracking-[0.3em]">Danger Zone</span>
+        <h2 className="text-6xl font-bold tracking-tighter text-white">SYSTEM SETTINGS</h2>
+      </div>
+
+      <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div>
+            <h3 className="text-2xl font-bold text-white tracking-tight">Reset Database</h3>
+            <p className="text-sm text-white/40 mt-2 max-w-md">
+              This action will permanently delete all projects and their associated messages. This cannot be undone.
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowResetModal(true)}
+            className="px-10 py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+          >
+            Wipe All Projects
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#4A5D4E] font-sans flex flex-col md:flex-row text-white selection:bg-[#E6FF00] selection:text-black">
       {/* Sidebar */}
@@ -397,6 +438,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
             { id: 'messages', label: 'Messages', icon: MessageCircle },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
+            { id: 'system', label: 'System', icon: TrendingUp },
           ].map((item) => (
             <button
               key={item.id}
@@ -443,9 +485,61 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'recycle' && renderRecycleBin()}
+            {activeTab === 'system' && renderSystem()}
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Reset Modal */}
+      <AnimatePresence>
+        {showResetModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-xl" 
+              onClick={() => !isResetting && setShowResetModal(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-[#2A2A2A] rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-red-500/20"
+            >
+              <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                <Trash2 size={40} className="text-red-500" />
+              </div>
+              <h3 className="text-4xl font-bold tracking-tighter text-white mb-4">Are you sure?</h3>
+              <p className="text-white/60 text-sm leading-relaxed mb-10">
+                This will permanently delete <span className="text-white font-bold">ALL project data</span> and messages. This action is irreversible.
+              </p>
+              
+              <div className="flex flex-col gap-4">
+                <button 
+                  onClick={handleResetDatabase}
+                  disabled={isResetting}
+                  className="w-full bg-red-600 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
+                >
+                  {isResetting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      Wiping Data...
+                    </>
+                  ) : 'Yes, Delete Everything'}
+                </button>
+                <button 
+                  onClick={() => setShowResetModal(false)}
+                  disabled={isResetting}
+                  className="w-full bg-white/5 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Reject Modal */}
       <AnimatePresence>

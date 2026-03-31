@@ -102,9 +102,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   const templates = [
-    { id: 'vanguard', name: 'Vanguard Realty', type: 'Real Estate', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800' },
-    { id: 'autos', name: 'Global Autos', type: 'Automobiles', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800' },
-    { id: 'fitpulse', name: 'FitPulse Gym', type: 'Gym', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800' },
+    { id: 'food-court', name: 'Food Court', type: 'Food', img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800' },
+    { id: 'autos', name: 'Global Autos', type: 'Automobiles', img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800' },
+    { id: 'clothing', name: 'Wearism Fashion', type: 'Clothing', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800' },
   ];
 
   const renderStep = () => {
@@ -120,7 +120,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <h2 className="text-5xl font-bold tracking-tighter text-[#E6FF00] uppercase italic">What do you want to build?</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {['Gym', 'Automobiles', 'Food', 'Real Estate', 'Other'].map((type) => (
+              {['Food Court', 'Automobiles', 'Clothing', 'Other'].map((type) => (
                 <button
                   key={type}
                   onClick={() => setFormData({ ...formData, businessType: type })}

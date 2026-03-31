@@ -242,3 +242,26 @@ export const getDirectMessages = (userId: string, callback: (messages: any[]) =>
     handleFirestoreError(error, OperationType.LIST, path);
   });
 };
+
+export const deleteAllProjects = async () => {
+  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
+    throw new Error("Unauthorized: Only the main admin can reset the database.");
+  }
+  
+  const path = 'projects';
+  try {
+    const querySnapshot = await getDocs(collection(db, 'projects'));
+    const deletePromises = querySnapshot.docs.map(async (projectDoc) => {
+      // Delete messages subcollection
+      const messagesSnapshot = await getDocs(collection(db, 'projects', projectDoc.id, 'messages'));
+      const messageDeletePromises = messagesSnapshot.docs.map(mDoc => deleteDoc(mDoc.ref));
+      await Promise.all(messageDeletePromises);
+      
+      // Delete the project document itself
+      await deleteDoc(projectDoc.ref);
+    });
+    await Promise.all(deletePromises);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+};

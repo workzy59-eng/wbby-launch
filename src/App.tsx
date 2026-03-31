@@ -7,11 +7,9 @@ import AuthPage from './pages/AuthPage';
 import OnboardingFlow from './pages/OnboardingFlow';
 import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/AdminPanel';
-import VanguardRealty from './pages/VanguardRealty';
 import GlobalAutos from './pages/GlobalAutos';
-import FitPulse from './pages/FitPulse';
-import MercedesStarMarketing from './pages/MercedesStarMarketing';
-import Microchips from './pages/Microchips';
+import FoodCourt from './pages/FoodCourt';
+import Clothing from './pages/Clothing';
 import { AnimatePresence } from 'motion/react';
 import { createUserProfile, getUserProfile } from './services/database';
 
@@ -70,11 +68,9 @@ export default function App() {
             path="/admin" 
             element={user && profile?.role === 'admin' ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
           />
-          <Route path="/portfolio/vanguard" element={<VanguardRealty />} />
+          <Route path="/portfolio/food-court" element={<FoodCourt />} />
           <Route path="/portfolio/autos" element={<GlobalAutos />} />
-          <Route path="/portfolio/fitpulse" element={<FitPulse />} />
-          <Route path="/portfolio/mercedes" element={<MercedesStarMarketing />} />
-          <Route path="/portfolio/microchips" element={<Microchips />} />
+          <Route path="/portfolio/clothing" element={<Clothing />} />
         </Routes>
       </AnimatePresence>
     </Router>
