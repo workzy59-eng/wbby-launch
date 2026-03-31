@@ -67,6 +67,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           >
             <Settings size={24} />
           </button>
+          {profile?.role === 'admin' && (
+            <Link 
+              to="/admin"
+              className="p-4 rounded-2xl text-white/50 hover:text-[#E6FF00] transition-all"
+            >
+              <LayoutDashboard size={24} />
+            </Link>
+          )}
         </nav>
         <button onClick={() => logOut()} className="p-4 rounded-2xl text-white/50 hover:text-red-400 transition-all">
           <LogOut size={24} />
@@ -335,7 +343,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#E6FF00]/10"
             >
               <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#E6FF00]">Cancel Project?</h3>
-              <p className="text-white/60 mb-10 text-lg font-bold">₹100 will be deducted from your account.</p>
+              <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>
               <div className="flex flex-col gap-4">
                 <button onClick={handleCancelProject} className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all">
                   Yes, Cancel

@@ -95,10 +95,10 @@ export default function LandingPage({ user }: LandingPageProps) {
             </div>
           </div>
           
-          <div className="flex overflow-x-auto gap-8 pb-12 no-scrollbar snap-x snap-mandatory scroll-smooth">
+          <div className="flex overflow-x-auto gap-6 pb-12 no-scrollbar snap-x snap-mandatory scroll-smooth">
             {[
               { 
-                title: "FitPulse Gym", 
+                title: "Gym and some paid portfolio", 
                 category: "Paid Portfolio", 
                 image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200",
                 desc: "Premium fitness tracking and workout management.",
@@ -114,7 +114,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                 alt: "automobile engine"
               },
               { 
-                title: "Mercedes Star Marketing", 
+                title: "Second paid portfolio Mercedes Star marketing", 
                 category: "Paid Portfolio", 
                 image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200",
                 desc: "High-end digital marketing for luxury automotive brands.",
@@ -136,10 +136,10 @@ export default function LandingPage({ user }: LandingPageProps) {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="flex-shrink-0 w-[85vw] md:w-[450px] snap-center group cursor-pointer bg-[#5E7162] p-4 rounded-[2.5rem] border border-white/10 hover:border-[#E6FF00]/30 transition-all"
+                className="flex-shrink-0 w-[80vw] md:w-[320px] snap-center group cursor-pointer bg-[#5E7162] p-4 rounded-[2rem] border border-white/10 hover:border-[#E6FF00]/30 transition-all"
                 onClick={() => item.link !== "#" && (window.location.href = item.link)}
               >
-                <div className="aspect-[4/3] rounded-[2rem] overflow-hidden mb-6 bg-[#4A5D4E]">
+                <div className="aspect-square rounded-[1.5rem] overflow-hidden mb-4 bg-[#4A5D4E]">
                   <motion.img 
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.6 }}
@@ -149,15 +149,12 @@ export default function LandingPage({ user }: LandingPageProps) {
                     referrerPolicy="no-referrer" 
                   />
                 </div>
-                <div className="px-4 pb-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#E6FF00]">{item.category}</span>
-                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
-                      <ArrowRight size={14} />
-                    </div>
+                <div className="px-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-1.5 h-1.5 bg-[#E6FF00] rounded-full" />
+                    <span className="text-[8px] font-black uppercase tracking-widest text-[#E6FF00]">{item.category}</span>
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight">{item.title}</h3>
-                  <p className="text-white/40 text-sm font-medium leading-relaxed">{item.desc}</p>
+                  <h3 className="text-lg font-bold text-white tracking-tight uppercase italic leading-tight">{item.title}</h3>
                 </div>
               </motion.div>
             ))}

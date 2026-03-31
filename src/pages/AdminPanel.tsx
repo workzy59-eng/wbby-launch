@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, collection, onSnapshot, FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import { updateProject } from '../services/database';
 
@@ -409,6 +410,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
               {item.label}
             </button>
           ))}
+          <Link
+            to="/dashboard"
+            className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-white/40 hover:bg-white/5 hover:text-white transition-all"
+          >
+            <Layout size={18} />
+            User Dashboard
+          </Link>
         </nav>
         <div className="p-6 border-t border-white/5">
           <button onClick={() => logOut()} className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-red-400 hover:bg-red-400/10 transition-all">

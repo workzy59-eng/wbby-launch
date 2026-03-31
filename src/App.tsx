@@ -64,7 +64,7 @@ export default function App() {
           />
           <Route 
             path="/dashboard" 
-            element={user ? (profile?.role === 'admin' ? <Navigate to="/admin" /> : <Dashboard user={user} profile={profile} />) : <Navigate to="/auth" />} 
+            element={user ? <Dashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
           />
           <Route 
             path="/admin" 
