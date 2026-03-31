@@ -21,7 +21,7 @@ export default function LandingPage({ user }: LandingPageProps) {
             <div className="text-2xl font-bold tracking-tighter">WebbyLaunch</div>
           </div>
         <div className="hidden md:flex items-center gap-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
-          {['Home', 'Portfolio', 'About', 'Pricing', 'Contact'].map((item) => (
+          {['Home', 'Portfolio', 'About', 'Resources', 'FAQ', 'Pricing', 'Contact'].map((item) => (
             <a key={item} href={item === 'Home' ? '#' : `#${item.toLowerCase()}`} className="hover:text-[#E6FF00] transition-colors">{item}</a>
           ))}
         </div>
@@ -50,7 +50,7 @@ export default function LandingPage({ user }: LandingPageProps) {
           animate={{ opacity: 1, y: 0 }}
           className="text-7xl md:text-[10rem] font-bold tracking-tighter mb-8 leading-[0.85]"
         >
-          We build.<br />You focus.
+          Premium Web<br />Development.
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
@@ -58,7 +58,7 @@ export default function LandingPage({ user }: LandingPageProps) {
           transition={{ delay: 0.2 }}
           className="text-xl text-white/60 mb-12 max-w-2xl mx-auto font-medium"
         >
-          Premium websites crafted by expert developers.<br />Fast delivery. Zero hassle.
+          WebbyLaunch provides expert custom web design services and premium website development for small businesses in India and beyond. Fast delivery. Zero hassle.
         </motion.p>
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -208,6 +208,85 @@ export default function LandingPage({ user }: LandingPageProps) {
               </Link>
               <p className="text-white/40 font-bold text-sm uppercase tracking-widest">No hidden charges.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Resources Section */}
+      <section id="resources" className="px-6 py-32 max-w-7xl mx-auto border-t border-white/5">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+          <div className="max-w-xl">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 bg-[#E6FF00] rounded-full" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E6FF00]">Resources</span>
+            </div>
+            <h2 className="text-6xl font-bold tracking-tighter mb-6">Latest Insights</h2>
+            <p className="text-white/40 text-lg font-medium">Expert advice on website development, SEO, and digital growth strategies.</p>
+          </div>
+          <Link to="/resources" className="text-sm font-bold uppercase tracking-widest text-[#E6FF00] hover:underline">View All Articles</Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              title: "How to scale your business with a premium website in 2026",
+              date: "March 28, 2026",
+              category: "Growth"
+            },
+            {
+              title: "5 essential SEO tips for small business websites in India",
+              date: "March 25, 2026",
+              category: "SEO"
+            },
+            {
+              title: "Why website maintenance is critical for your online success",
+              date: "March 20, 2026",
+              category: "Maintenance"
+            }
+          ].map((post, i) => (
+            <div key={i} className="group cursor-pointer p-8 rounded-[2rem] bg-white/5 border border-white/10 hover:border-[#E6FF00]/30 transition-all">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E6FF00] mb-4 block">{post.category}</span>
+              <h3 className="text-2xl font-bold tracking-tight mb-6 group-hover:text-[#E6FF00] transition-colors">{post.title}</h3>
+              <div className="text-white/20 text-xs font-bold uppercase tracking-widest">{post.date}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="px-6 py-32 max-w-7xl mx-auto border-t border-white/5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 bg-[#E6FF00] rounded-full" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E6FF00]">FAQ</span>
+            </div>
+            <h2 className="text-6xl font-bold tracking-tighter mb-8">Common Questions</h2>
+            <p className="text-white/40 text-lg font-medium">Everything you need to know about our premium website development services.</p>
+          </div>
+          <div className="space-y-6">
+            {[
+              {
+                q: "How long does it take to build a custom website?",
+                a: "Typically, a premium custom build takes 2-4 weeks depending on complexity. We prioritize quality and performance."
+              },
+              {
+                q: "Do you provide SEO optimization with the build?",
+                a: "Yes, every website we build is SEO-optimized from the ground up to ensure maximum visibility on Google."
+              },
+              {
+                q: "What is included in the maintenance package?",
+                a: "Our maintenance includes high-speed hosting, SSL security, regular backups, and 24/7 technical support."
+              },
+              {
+                q: "Can I update the content myself?",
+                a: "Absolutely. We provide a user-friendly dashboard for you to manage your content without any technical knowledge."
+              }
+            ].map((faq, i) => (
+              <div key={i} className="p-8 rounded-[2rem] bg-white/5 border border-white/10">
+                <h4 className="text-xl font-bold mb-4">{faq.q}</h4>
+                <p className="text-white/40 font-medium leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
