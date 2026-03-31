@@ -5,7 +5,7 @@ import { UserProfile, Project } from '../types';
 import { Link } from 'react-router-dom';
 import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 
 interface AdminPanelProps {
@@ -27,6 +27,20 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [newProgress, setNewProgress] = useState(0);
   const [showChat, setShowChat] = useState(false);
   const [showDirectChat, setShowDirectChat] = useState(false);
+
+  if (profile?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-[#4A5D4E] flex items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full bg-[#5E7162] rounded-[3rem] p-12 border border-red-500/20 shadow-2xl">
+          <h2 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-red-500">Access Denied</h2>
+          <p className="text-white/60 mb-10 text-lg font-bold">You do not have administrative privileges to access this panel.</p>
+          <Link to="/dashboard" className="inline-block bg-[#E6FF00] text-[#4A5D4E] px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all">
+            Return to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const unsubscribeProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
@@ -382,6 +396,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     setIsResetting(true);
     try {
       await deleteAllProjects();
+      await deleteAllUsers();
       setShowResetModal(false);
       setActiveTab('dashboard');
     } catch (error) {
@@ -398,19 +413,30 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         <h2 className="text-6xl font-bold tracking-tighter text-white">SYSTEM SETTINGS</h2>
       </div>
 
-      <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-          <div>
-            <h3 className="text-2xl font-bold text-white tracking-tight">Reset Database</h3>
-            <p className="text-sm text-white/40 mt-2 max-w-md">
-              This action will permanently delete all projects and their associated messages. This cannot be undone.
-            </p>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
+          <h3 className="text-2xl font-bold text-white tracking-tight mb-4">Reset Database</h3>
+          <p className="text-sm text-white/40 mb-8">
+            This action will permanently delete all projects and their associated messages. This cannot be undone.
+          </p>
           <button 
             onClick={() => setShowResetModal(true)}
-            className="px-10 py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+            className="w-full py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
           >
             Wipe All Projects
+          </button>
+        </div>
+
+        <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
+          <h3 className="text-2xl font-bold text-white tracking-tight mb-4">Reset Users</h3>
+          <p className="text-sm text-white/40 mb-8">
+            This action will permanently delete all client profiles. The main administrator will be preserved.
+          </p>
+          <button 
+            onClick={() => setShowResetModal(true)}
+            className="w-full py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+          >
+            Wipe All Users
           </button>
         </div>
       </div>

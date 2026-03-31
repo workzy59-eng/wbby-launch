@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight } from 'lucide-react';
+import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2 } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import { getProjects, updateProject } from '../services/database';
 import { formatDate } from '../lib/utils';
@@ -97,53 +97,106 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       </header>
 
       <main className="lg:ml-24 max-w-7xl mx-auto px-6 lg:px-12 py-12">
-        {activeTab === 'messages' ? (
-          <div className="h-[calc(100vh-8rem)] bg-[#5E7162] rounded-[3rem] border border-[#E6FF00]/10 shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-10 py-10 border-b border-white/5 flex justify-between items-center">
-              <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#E6FF00]">Admin Support</h2>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#E6FF00] flex items-center justify-center text-[#4A5D4E] font-black italic">W</div>
-                <div>
-                  <div className="text-sm font-black uppercase italic">WebbyLaunch Admin</div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#E6FF00]">Online</div>
-                </div>
+        <div className="max-w-6xl mx-auto space-y-10">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 mb-4"
+              >
+                <div className="w-2 h-2 bg-[#E6FF00] rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E6FF00]">Client Dashboard</span>
+              </motion.div>
+              <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
+                Welcome back,<br />
+                <span className="text-[#E6FF00]">{profile?.displayName?.split(' ')[0] || 'User'}</span>
+              </h1>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/30">System Status</div>
+              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">All Systems Operational</span>
               </div>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <ChatSystem isDirect user={user} profile={profile} currentUser={user} />
-            </div>
           </div>
-        ) : activeTab === 'settings' ? (
-          <div className="bg-[#5E7162] rounded-[3rem] p-16 border border-[#E6FF00]/10 shadow-2xl">
-            <h2 className="text-5xl font-black tracking-tighter mb-12 uppercase italic text-[#E6FF00]">Settings</h2>
-            <div className="space-y-8 max-w-xl">
-              <div className="p-8 bg-[#4A5D4E] rounded-[2rem] border border-white/5">
-                <div className="flex items-center gap-6 mb-8">
-                  <div className="w-20 h-20 rounded-full bg-[#E6FF00] flex items-center justify-center text-[#4A5D4E] text-3xl font-black italic">
-                    {profile?.displayName?.[0] || 'U'}
-                  </div>
+
+          {activeTab === 'messages' ? (
+            <div className="h-[calc(100vh-15rem)] bg-[#5E7162] rounded-[3rem] border border-[#E6FF00]/10 shadow-2xl overflow-hidden flex flex-col">
+              <div className="px-10 py-10 border-b border-white/5 flex justify-between items-center">
+                <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#E6FF00]">Admin Support</h2>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#E6FF00] flex items-center justify-center text-[#4A5D4E] font-black italic">W</div>
                   <div>
-                    <h3 className="text-2xl font-black uppercase italic">{profile?.displayName}</h3>
-                    <p className="text-white/50 font-bold">{profile?.email}</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-4 border-b border-white/5">
-                    <span className="text-white/50 font-bold uppercase tracking-widest text-xs">Role</span>
-                    <span className="font-black uppercase italic text-[#E6FF00]">{profile?.role}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-4 border-b border-white/5">
-                    <span className="text-white/50 font-bold uppercase tracking-widest text-xs">Member Since</span>
-                    <span className="font-black uppercase italic">{formatDate(profile?.createdAt)}</span>
+                    <div className="text-sm font-black uppercase italic">WebbyLaunch Admin</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#E6FF00]">Online</div>
                   </div>
                 </div>
               </div>
-              <button onClick={() => logOut()} className="w-full bg-red-500/10 text-red-500 py-5 rounded-2xl font-black text-xl uppercase italic hover:bg-red-500 hover:text-white transition-all">
-                Log Out
-              </button>
+              <div className="flex-1 overflow-hidden">
+                <ChatSystem isDirect user={user} profile={profile} currentUser={user} />
+              </div>
             </div>
-          </div>
-        ) : projects.length === 0 ? (
+          ) : activeTab === 'settings' ? (
+            <div className="bg-[#5E7162] rounded-[3rem] p-16 border border-[#E6FF00]/10 shadow-2xl">
+              <h2 className="text-5xl font-black tracking-tighter mb-12 uppercase italic text-[#E6FF00]">Settings</h2>
+              <div className="space-y-8 max-w-xl">
+                <div className="p-8 bg-[#4A5D4E] rounded-[2rem] border border-white/5">
+                  <div className="flex items-center gap-6 mb-8">
+                    <div className="w-20 h-20 rounded-full bg-[#E6FF00] flex items-center justify-center text-[#4A5D4E] text-3xl font-black italic">
+                      {profile?.displayName?.[0] || 'U'}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black uppercase italic">{profile?.displayName}</h3>
+                      <p className="text-white/50 font-bold">{profile?.email}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-4 border-b border-white/5">
+                      <span className="text-white/50 font-bold uppercase tracking-widest text-xs">Role</span>
+                      <span className="font-black uppercase italic text-[#E6FF00]">{profile?.role}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-4 border-b border-white/5">
+                      <span className="text-white/50 font-bold uppercase tracking-widest text-xs">Member Since</span>
+                      <span className="font-black uppercase italic">{formatDate(profile?.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => logOut()} className="w-full bg-red-500/10 text-red-500 py-5 rounded-2xl font-black text-xl uppercase italic hover:bg-red-500 hover:text-white transition-all">
+                  Log Out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { label: 'Active Projects', value: projects.filter(p => p.status === 'active').length, icon: Layout },
+                  { label: 'Pending Requests', value: projects.filter(p => p.status === 'pending').length, icon: Clock },
+                  { label: 'Completed', value: projects.filter(p => p.status === 'completed').length, icon: CheckCircle2 },
+                ].map((stat, i) => (
+                  <motion.div 
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-[#5E7162] p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#E6FF00]/30 transition-all"
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-[#E6FF00] group-hover:scale-110 transition-transform">
+                        <stat.icon size={24} />
+                      </div>
+                      <div className="text-4xl font-black italic tracking-tighter">{stat.value}</div>
+                    </div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {projects.length === 0 ? (
           <div className="bg-[#5E7162] rounded-[3rem] p-16 text-center border border-[#E6FF00]/10 shadow-2xl">
             <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#E6FF00]">No projects yet</h2>
             <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
@@ -155,7 +208,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Project List */}
             <div className="lg:col-span-1 space-y-6">
-              <h2 className="text-xs font-black text-white/50 uppercase tracking-widest px-4">Your Projects</h2>
+              <div className="flex items-center justify-between px-4">
+                <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">Your Projects</h2>
+                <Link to="/onboarding" className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:underline">New +</Link>
+              </div>
               <div className="space-y-4">
                 {projects.map((p) => (
                   <button
@@ -167,12 +223,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         : 'bg-[#5E7162] border-white/5 text-white hover:border-[#E6FF00]/50'
                     }`}
                   >
-                    <h3 className="font-black text-2xl mb-2 uppercase italic">{p.businessName}</h3>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-black text-2xl uppercase italic">{p.businessName}</h3>
+                      <div className={`w-2 h-2 rounded-full ${
+                        p.status === 'active' ? 'bg-blue-500' :
+                        p.status === 'completed' ? 'bg-green-500' :
+                        p.status === 'rejected' ? 'bg-red-500' :
+                        'bg-yellow-500'
+                      }`} />
+                    </div>
                     <p className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? 'text-[#4A5D4E]/70' : 'text-white/50'}`}>{p.businessType}</p>
-                    <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      selectedProject?.id === p.id ? 'bg-[#4A5D4E] text-[#E6FF00]' : 'bg-[#4A5D4E] text-white'
-                    }`}>
-                      {p.status}
+                    <div className="flex items-center justify-between">
+                      <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        selectedProject?.id === p.id ? 'bg-[#4A5D4E] text-[#E6FF00]' : 'bg-[#4A5D4E] text-white'
+                      }`}>
+                        {p.status}
+                      </div>
+                      <span className={`text-xs font-black italic ${selectedProject?.id === p.id ? 'text-[#4A5D4E]' : 'text-white'}`}>{p.progress}%</span>
                     </div>
                   </button>
                 ))}
@@ -290,9 +357,45 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 </motion.div>
               )}
             </div>
+
+            {/* Planning / Resources Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+              <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10">
+                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-6">Development Phase</h3>
+                <div className="space-y-6">
+                  {[
+                    { step: '01', title: 'Consultation', desc: 'Initial project planning and scope definition.', done: true },
+                    { step: '02', title: 'Design Mockup', desc: 'Visual layout and user experience planning.', done: true },
+                    { step: '03', title: 'Development', desc: 'Core functionality and template integration.', done: false },
+                    { step: '04', title: 'Launch', desc: 'Final testing and production deployment.', done: false },
+                  ].map((phase, i) => (
+                    <div key={i} className="flex gap-6 items-start">
+                      <div className={`text-xl font-black italic ${phase.done ? 'text-[#E6FF00]' : 'text-white/20'}`}>{phase.step}</div>
+                      <div>
+                        <h4 className={`font-black uppercase italic tracking-tighter ${phase.done ? 'text-white' : 'text-white/40'}`}>{phase.title}</h4>
+                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{phase.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="bg-[#E6FF00] p-10 rounded-[3rem] text-black flex flex-col justify-between">
+                <div>
+                  <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none">Need help with<br />your plan?</h3>
+                  <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 mb-8">Our experts are ready to assist you in building the perfect web presence.</p>
+                </div>
+                <button className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all">
+                  Contact Support
+                </button>
+              </div>
+            </div>
           </div>
         )}
-      </main>
+      </>
+    )}
+  </div>
+</main>
 
       {/* Chat Sidebar */}
       <AnimatePresence>

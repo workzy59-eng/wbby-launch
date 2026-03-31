@@ -265,3 +265,24 @@ export const deleteAllProjects = async () => {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
 };
+
+export const deleteAllUsers = async () => {
+  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
+    throw new Error("Unauthorized: Only the main admin can reset users.");
+  }
+  
+  const path = 'users';
+  try {
+    const querySnapshot = await getDocs(collection(db, 'users'));
+    const deletePromises = querySnapshot.docs.map(async (userDoc) => {
+      const userData = userDoc.data();
+      // DO NOT delete the main admin
+      if (userData.email !== ADMIN_EMAIL) {
+        await deleteDoc(userDoc.ref);
+      }
+    });
+    await Promise.all(deletePromises);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+};
