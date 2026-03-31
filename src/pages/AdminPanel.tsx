@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import { updateProject } from '../services/database';
+import { APP_NAME, HYPHENATED_NAME } from '../constants';
 
 interface AdminPanelProps {
   user: FirebaseUser;
@@ -382,9 +383,9 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         <div className="p-10 border-b border-white/5">
           <div className="flex items-center gap-2">
             <div className="px-2 py-0.5 bg-[#E6FF00] rounded flex items-center justify-center">
-              <span className="text-black font-black text-[8px] tracking-tighter">W-E-B-i-L-A-U-N-C-H</span>
+              <span className="text-black font-black text-[8px] tracking-tighter">{HYPHENATED_NAME}</span>
             </div>
-            <div className="text-2xl font-bold tracking-tighter text-white">WebbyLaunch</div>
+            <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
           </div>
           <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
         </div>

@@ -2,6 +2,7 @@ import {
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp 
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
+import { ADMIN_EMAIL } from '../constants';
 
 export enum OperationType {
   CREATE = 'create',
@@ -65,7 +66,7 @@ export const createUserProfile = async (user: FirebaseUser) => {
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
-        role: user.email === 'workzy59@gmail.com' ? 'admin' : 'client',
+        role: user.email === ADMIN_EMAIL ? 'admin' : 'client',
         createdAt: serverTimestamp(),
       });
     }

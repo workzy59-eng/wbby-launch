@@ -7,6 +7,7 @@ import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings
 import ChatSystem from '../components/ChatSystem';
 import { getProjects, updateProject } from '../services/database';
 import { formatDate } from '../lib/utils';
+import { APP_NAME, HYPHENATED_NAME } from '../constants';
 
 interface DashboardProps {
   user: FirebaseUser;
@@ -85,9 +86,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="px-2 py-0.5 bg-[#E6FF00] rounded flex items-center justify-center">
-              <span className="text-black font-black text-[8px] tracking-tighter">W-E-B-i-L-A-U-N-C-H</span>
+              <span className="text-black font-black text-[8px] tracking-tighter">{HYPHENATED_NAME}</span>
             </div>
-            <div className="text-xl font-bold tracking-tighter">WebbyLaunch</div>
+            <div className="text-xl font-bold tracking-tighter">{APP_NAME}</div>
           </div>
           <button onClick={() => logOut()} className="text-white/50 hover:text-red-400 transition-all">
             <LogOut size={24} />

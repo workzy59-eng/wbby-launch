@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { sendMessage, updateMessage, getMessages, getDirectMessages, sendDirectMessage, updateDirectMessage, deleteMessage, deleteDirectMessage } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { APP_NAME, HYPHENATED_NAME } from '../constants';
 
 interface ChatSystemProps {
   projectId?: string;
@@ -134,7 +135,7 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
                   </div>
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#E6FF00] flex items-center justify-center border border-white/10 overflow-hidden">
-                    <span className="text-black font-black text-[6px] tracking-tighter leading-none text-center">W-E-B-i-L-A-U-N-C-H</span>
+                    <span className="text-black font-black text-[6px] tracking-tighter leading-none text-center">{HYPHENATED_NAME}</span>
                   </div>
                 )}
               </div>

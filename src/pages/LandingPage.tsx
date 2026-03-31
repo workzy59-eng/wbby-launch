@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { PROFESSIONAL_EMAIL, APP_NAME, HYPHENATED_NAME } from '../constants';
 
 interface LandingPageProps {
   user: FirebaseUser | null;
@@ -16,9 +17,9 @@ export default function LandingPage({ user }: LandingPageProps) {
       <header className="flex items-center justify-between px-6 py-8 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="px-3 py-1 bg-[#E6FF00] rounded-lg flex items-center justify-center">
-              <span className="text-black font-black text-xs tracking-widest">W-E-B-i-L-A-U-N-C-H</span>
+              <span className="text-black font-black text-xs tracking-widest">{HYPHENATED_NAME}</span>
             </div>
-            <div className="text-2xl font-bold tracking-tighter">WebbyLaunch</div>
+            <div className="text-2xl font-bold tracking-tighter">{APP_NAME}</div>
           </div>
         <div className="hidden md:flex items-center gap-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
           {['Home', 'Portfolio', 'Contact'].map((item) => (
@@ -174,7 +175,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                   <div className="w-12 h-12 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
                     <CheckCircle2 size={24} />
                   </div>
-                  contact@webbylaunch.com
+                  {PROFESSIONAL_EMAIL}
                 </div>
                 <div className="flex items-center gap-4 text-xl font-bold">
                   <div className="w-12 h-12 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
@@ -201,9 +202,9 @@ export default function LandingPage({ user }: LandingPageProps) {
         <div className="flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex items-center gap-3">
             <div className="px-2 py-0.5 bg-[#E6FF00] rounded flex items-center justify-center">
-              <span className="text-black font-black text-[8px] tracking-tighter">W-E-B-i-L-A-U-N-C-H</span>
+              <span className="text-black font-black text-[8px] tracking-tighter">{HYPHENATED_NAME}</span>
             </div>
-            <div className="text-xl font-bold tracking-tighter">WebbyLaunch</div>
+            <div className="text-xl font-bold tracking-tighter">{APP_NAME}</div>
           </div>
           <div className="flex gap-10 text-[10px] font-bold uppercase tracking-widest text-white/30">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
@@ -211,7 +212,7 @@ export default function LandingPage({ user }: LandingPageProps) {
             <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
           </div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-white/10">
-            © 2026 WebbyLaunch. All rights reserved.
+            © 2026 {APP_NAME}. All rights reserved.
           </div>
         </div>
       </footer>
