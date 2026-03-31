@@ -65,7 +65,7 @@ export const createUserProfile = async (user: FirebaseUser) => {
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
-        role: 'client',
+        role: user.email === 'workzy59@gmail.com' ? 'admin' : 'client',
         createdAt: serverTimestamp(),
       });
     }

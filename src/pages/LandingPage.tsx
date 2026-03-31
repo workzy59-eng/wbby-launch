@@ -174,13 +174,13 @@ export default function LandingPage({ user }: LandingPageProps) {
                   <div className="w-12 h-12 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
                     <CheckCircle2 size={24} />
                   </div>
-                  hello@webbylaunch.com
+                  contact@webbylaunch.com
                 </div>
                 <div className="flex items-center gap-4 text-xl font-bold">
                   <div className="w-12 h-12 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
                     <CheckCircle2 size={24} />
                   </div>
-                  +91 98765 43210
+                  +1 (555) 000-0000
                 </div>
               </div>
             </div>
