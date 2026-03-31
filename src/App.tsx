@@ -10,6 +10,8 @@ import AdminPanel from './pages/AdminPanel';
 import VanguardRealty from './pages/VanguardRealty';
 import GlobalAutos from './pages/GlobalAutos';
 import FitPulse from './pages/FitPulse';
+import MercedesStarMarketing from './pages/MercedesStarMarketing';
+import Microchips from './pages/Microchips';
 import { AnimatePresence } from 'motion/react';
 import { createUserProfile, getUserProfile } from './services/database';
 
@@ -71,6 +73,8 @@ export default function App() {
           <Route path="/portfolio/vanguard" element={<VanguardRealty />} />
           <Route path="/portfolio/autos" element={<GlobalAutos />} />
           <Route path="/portfolio/fitpulse" element={<FitPulse />} />
+          <Route path="/portfolio/mercedes" element={<MercedesStarMarketing />} />
+          <Route path="/portfolio/microchips" element={<Microchips />} />
         </Routes>
       </AnimatePresence>
     </Router>

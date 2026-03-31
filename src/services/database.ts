@@ -172,6 +172,52 @@ export const updateDirectMessage = async (userId: string, messageId: string, upd
   }
 };
 
+export const deleteMessage = async (projectId: string, messageId: string, forEveryone: boolean, userId: string) => {
+  const path = `projects/${projectId}/messages/${messageId}`;
+  try {
+    if (forEveryone) {
+      await updateDoc(doc(db, 'projects', projectId, 'messages', messageId), {
+        text: 'This message was deleted',
+        isDeleted: true,
+      });
+    } else {
+      const docRef = doc(db, 'projects', projectId, 'messages', messageId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const hiddenFor = docSnap.data().hiddenFor || [];
+        await updateDoc(docRef, {
+          hiddenFor: [...hiddenFor, userId]
+        });
+      }
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+};
+
+export const deleteDirectMessage = async (userId: string, messageId: string, forEveryone: boolean, currentUserId: string) => {
+  const path = `direct_messages/${userId}/messages/${messageId}`;
+  try {
+    if (forEveryone) {
+      await updateDoc(doc(db, 'direct_messages', userId, 'messages', messageId), {
+        text: 'This message was deleted',
+        isDeleted: true,
+      });
+    } else {
+      const docRef = doc(db, 'direct_messages', userId, 'messages', messageId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const hiddenFor = docSnap.data().hiddenFor || [];
+        await updateDoc(docRef, {
+          hiddenFor: [...hiddenFor, currentUserId]
+        });
+      }
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+};
+
 export const getMessages = (projectId: string, callback: (messages: any[]) => void) => {
   const path = `projects/${projectId}/messages`;
   const q = query(collection(db, 'projects', projectId, 'messages'), orderBy('createdAt', 'asc'));

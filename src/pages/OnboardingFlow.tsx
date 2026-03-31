@@ -186,12 +186,23 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/50 uppercase tracking-widest ml-4">Business Name</label>
-                <input
-                  type="text"
-                  className="w-full p-6 rounded-2xl bg-[#5E7162] border border-[#E6FF00]/20 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-bold"
-                  value={formData.businessName}
-                  onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    className={`w-full p-6 rounded-2xl bg-[#5E7162] border transition-all uppercase font-bold ${
+                      formData.businessName.length > 0 && formData.businessName.length < 3
+                        ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
+                        : 'border-[#E6FF00]/20 focus:border-[#E6FF00]'
+                    } text-white focus:outline-none`}
+                    value={formData.businessName}
+                    onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                  />
+                  {formData.businessName.length > 0 && formData.businessName.length < 3 && (
+                    <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-4">
+                      it should continue, move forward, it should continue move on
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/50 uppercase tracking-widest ml-4">Describe your website</label>
@@ -307,35 +318,35 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
-            <h2 className="text-5xl font-bold tracking-tighter text-[#E6FF00] uppercase italic">Review & Pay</h2>
+            <h2 className="text-5xl font-bold tracking-tighter text-[#E6FF00] uppercase italic">Finalize Project</h2>
             <div className="bg-[#5E7162] rounded-[2rem] p-10 space-y-8 border border-[#E6FF00]/20">
-              <div className="flex justify-between items-center border-b border-white/10 pb-6">
-                <span className="text-xl text-white/70 uppercase font-bold">Website Development</span>
-                <span className="text-3xl font-black text-[#E6FF00] italic">₹9999</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-white/10 pb-6">
-                <span className="text-xl text-white/70 uppercase font-bold">Monthly Maintenance</span>
-                <span className="text-3xl font-black text-[#E6FF00] italic">₹499</span>
-              </div>
-              <div className="pt-4">
-                <p className="text-white/50 italic text-lg">Delivery within 3–5 working days.</p>
+              <div className="space-y-4">
+                <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Ready to Launch</h3>
+                <p className="text-white/50 italic text-lg leading-relaxed">
+                  Your project details have been captured. Click continue to finalize your request and move to your dashboard.
+                </p>
               </div>
             </div>
             <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
+              <button 
+                onClick={() => navigate('/')} 
+                className="flex-1 border border-red-500 text-red-500 py-6 rounded-full font-black text-xl uppercase italic hover:bg-red-500 hover:text-white transition-all"
+              >
+                Discontinue
+              </button>
               {user ? (
                 <button 
                   onClick={handleSubmit} 
                   className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  Proceed to Payment
+                  Continue
                 </button>
               ) : (
                 <button 
                   onClick={() => navigate('/auth', { state: { from: '/onboarding' } })}
                   className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  Sign in to Pay
+                  Sign in to Continue
                 </button>
               )}
             </div>

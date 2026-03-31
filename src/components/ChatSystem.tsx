@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db, collection, query, orderBy, onSnapshot, FirebaseUser } from '../firebase';
 import { UserProfile, Message } from '../types';
-import { Send, Paperclip, Check, CheckCheck, MessageCircle } from 'lucide-react';
+import { Send, Paperclip, Check, CheckCheck, MessageCircle, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { sendMessage, updateMessage, getMessages, getDirectMessages, sendDirectMessage, updateDirectMessage } from '../services/database';
+import { sendMessage, updateMessage, getMessages, getDirectMessages, sendDirectMessage, updateDirectMessage, deleteMessage, deleteDirectMessage } from '../services/database';
 import { formatDate } from '../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ChatSystemProps {
   projectId?: string;
@@ -18,6 +19,7 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const effectiveCurrentUser = currentUser || user;
@@ -27,7 +29,9 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
 
     if (isDirect) {
       unsubscribe = getDirectMessages(user.uid, (messagesData) => {
-        setMessages(messagesData as Message[]);
+        // Filter out messages hidden for current user
+        const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(effectiveCurrentUser.uid));
+        setMessages(filtered as Message[]);
         
         // Mark as seen
         messagesData.forEach(async (m) => {
@@ -38,7 +42,9 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
       });
     } else if (projectId) {
       unsubscribe = getMessages(projectId, (messagesData) => {
-        setMessages(messagesData as Message[]);
+        // Filter out messages hidden for current user
+        const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(effectiveCurrentUser.uid));
+        setMessages(filtered as Message[]);
         
         // Mark as seen
         messagesData.forEach(async (m) => {
@@ -85,8 +91,23 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
     }
   };
 
+  const handleDelete = async (forEveryone: boolean) => {
+    if (!selectedMessage) return;
+
+    try {
+      if (isDirect) {
+        await deleteDirectMessage(user.uid, selectedMessage.id, forEveryone, effectiveCurrentUser.uid);
+      } else if (projectId) {
+        await deleteMessage(projectId, selectedMessage.id, forEveryone, effectiveCurrentUser.uid);
+      }
+      setSelectedMessage(null);
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-[#4A5D4E] font-sans">
+    <div className="flex flex-col h-full bg-[#4A5D4E] font-sans relative">
       {/* Messages Area */}
       <div 
         ref={scrollRef}
@@ -119,15 +140,17 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
               </div>
 
               <div className={`flex flex-col ${m.senderId === effectiveCurrentUser.uid ? 'items-end' : 'items-start'}`}>
-                <div 
-                  className={`max-w-[85%] p-5 rounded-[2rem] text-sm font-medium shadow-2xl backdrop-blur-md border ${
+                <motion.div 
+                  layout
+                  onClick={() => !m.isDeleted && setSelectedMessage(m)}
+                  className={`max-w-[85%] p-5 rounded-[2rem] text-sm font-medium shadow-2xl backdrop-blur-md border cursor-pointer transition-all ${
                     m.senderId === effectiveCurrentUser.uid 
                       ? 'bg-[#E6FF00] text-black border-[#E6FF00]/20 rounded-tr-none' 
                       : 'bg-white/5 text-white border-white/10 rounded-tl-none'
-                  }`}
+                  } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                 >
                   {m.text}
-                </div>
+                </motion.div>
                 <div className="flex items-center gap-3 mt-3 px-2">
                   <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
                     {m.createdAt ? formatDate(m.createdAt, 'h:mm a') : 'Sending...'}
@@ -143,6 +166,43 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
           ))
         )}
       </div>
+
+      {/* Delete Options Modal */}
+      <AnimatePresence>
+        {selectedMessage && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-[#5E7162] p-8 rounded-[2rem] border border-white/10 w-full max-w-xs shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-white tracking-tight">Delete Message?</h3>
+                <button onClick={() => setSelectedMessage(null)} className="text-white/40 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="space-y-3">
+                {selectedMessage.senderId === effectiveCurrentUser.uid && (
+                  <button 
+                    onClick={() => handleDelete(true)}
+                    className="w-full py-4 bg-red-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={16} /> Delete for everyone
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleDelete(false)}
+                  className="w-full py-4 bg-white/5 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} /> Delete for me
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Input Area */}
       <form 

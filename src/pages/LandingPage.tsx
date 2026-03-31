@@ -21,7 +21,7 @@ export default function LandingPage({ user }: LandingPageProps) {
             <div className="text-2xl font-bold tracking-tighter">WebbyLaunch</div>
           </div>
         <div className="hidden md:flex items-center gap-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
-          {['Home', 'Portfolio', 'About', 'Resources', 'FAQ', 'Pricing', 'Contact'].map((item) => (
+          {['Home', 'Portfolio', 'Contact'].map((item) => (
             <a key={item} href={item === 'Home' ? '#' : `#${item.toLowerCase()}`} className="hover:text-[#E6FF00] transition-colors">{item}</a>
           ))}
         </div>
@@ -84,8 +84,6 @@ export default function LandingPage({ user }: LandingPageProps) {
                 <div className="w-2 h-2 bg-[#E6FF00] rounded-full animate-pulse" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E6FF00]">Portfolio</span>
               </div>
-              <h2 className="text-6xl font-bold tracking-tighter mb-6">Our Work</h2>
-              <p className="text-white/40 text-lg font-medium">We don't just build websites; we build digital experiences that convert visitors into customers.</p>
             </div>
             <div className="flex gap-3">
               <div className="w-14 h-14 rounded-2xl bg-[#5E7162] border border-white/10 flex items-center justify-center cursor-pointer hover:bg-[#E6FF00] hover:text-black transition-all group">
@@ -97,38 +95,56 @@ export default function LandingPage({ user }: LandingPageProps) {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex overflow-x-auto gap-8 pb-12 no-scrollbar snap-x snap-mandatory scroll-smooth">
             {[
               { 
-                title: "Vanguard Realty", 
-                category: "Luxury Real Estate", 
-                image: "https://images.unsplash.com/photo-1600585154340-be6199f74009?auto=format&fit=crop&q=80&w=1200",
-                desc: "High-end property listings with immersive virtual tours.",
-                link: "/portfolio/vanguard"
+                title: "FitPulse Gym", 
+                category: "Paid Portfolio", 
+                image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200",
+                desc: "Premium fitness tracking and workout management.",
+                link: "/portfolio/fitpulse",
+                alt: "microchips"
               },
               { 
-                title: "Global Autos", 
-                category: "Automobiles", 
-                image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=1200",
-                desc: "Next-generation automotive performance and design.",
-                link: "/portfolio/autos"
+                title: "Automobile", 
+                category: "Individual Banner", 
+                image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1200",
+                desc: "Automobile. Key Automobile. Portfolio.",
+                link: "/portfolio/autos",
+                alt: "automobile engine"
+              },
+              { 
+                title: "Mercedes Star Marketing", 
+                category: "Paid Portfolio", 
+                image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200",
+                desc: "High-end digital marketing for luxury automotive brands.",
+                link: "/portfolio/mercedes",
+                alt: "microchips"
+              },
+              { 
+                title: "Microchips", 
+                category: "Tech Portfolio", 
+                image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200",
+                desc: "Advanced semiconductor design and manufacturing visualization.",
+                link: "/portfolio/microchips",
+                alt: "microchips"
               },
             ].map((item, i) => (
               <motion.div 
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group cursor-pointer bg-[#5E7162] p-4 rounded-[2.5rem] border border-white/10 hover:border-[#E6FF00]/30 transition-all"
+                className="flex-shrink-0 w-[85vw] md:w-[450px] snap-center group cursor-pointer bg-[#5E7162] p-4 rounded-[2.5rem] border border-white/10 hover:border-[#E6FF00]/30 transition-all"
                 onClick={() => item.link !== "#" && (window.location.href = item.link)}
               >
-                <div className="aspect-[3/4] rounded-[2rem] overflow-hidden mb-6 bg-[#4A5D4E]">
+                <div className="aspect-[4/3] rounded-[2rem] overflow-hidden mb-6 bg-[#4A5D4E]">
                   <motion.img 
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.6 }}
                     src={item.image} 
-                    alt={item.title} 
+                    alt={item.alt} 
                     className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
                     referrerPolicy="no-referrer" 
                   />
@@ -144,148 +160,6 @@ export default function LandingPage({ user }: LandingPageProps) {
                   <p className="text-white/40 text-sm font-medium leading-relaxed">{item.desc}</p>
                 </div>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="px-6 py-32 max-w-7xl mx-auto border-t border-white/5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-          <div className="space-y-8">
-            <div className="text-[#E6FF00] text-xs font-bold uppercase tracking-[0.3em]">About WebbyLaunch</div>
-            <h2 className="text-6xl font-bold tracking-tighter leading-tight">We build the future of the web, one pixel at a time.</h2>
-            <p className="text-white/40 text-lg font-medium leading-relaxed">WebbyLaunch is a premium design and development agency dedicated to creating high-performance digital experiences. We combine minimalist aesthetics with cutting-edge technology to help businesses thrive in the digital age.</p>
-            <div className="grid grid-cols-2 gap-8 pt-8">
-              <div>
-                <div className="text-4xl font-bold text-[#E6FF00]">50+</div>
-                <div className="text-xs font-bold uppercase tracking-widest text-white/20">Projects Done</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-[#E6FF00]">12k+</div>
-                <div className="text-xs font-bold uppercase tracking-widest text-white/20">Happy Clients</div>
-              </div>
-            </div>
-          </div>
-          <div className="relative">
-            <div className="aspect-square bg-[#5E7162] rounded-[3rem] overflow-hidden border border-white/10">
-              <img 
-                src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=1200" 
-                alt="Office" 
-                className="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="px-6 py-32 max-w-7xl mx-auto">
-        <div className="bg-[#5E7162] rounded-[3rem] p-12 md:p-20 border border-white/10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#E6FF00]/5 rounded-full blur-[80px] -z-10" />
-          <div className="max-w-2xl">
-            <h2 className="text-5xl font-bold tracking-tighter mb-12">Transparent Pricing</h2>
-            <div className="space-y-8 mb-12">
-              <div className="flex justify-between items-center border-b border-white/10 pb-6">
-                <div className="space-y-1">
-                  <span className="text-xl font-bold">Website Development</span>
-                  <p className="text-sm text-white/40">Full custom build with expert design.</p>
-                </div>
-                <span className="text-4xl font-bold text-[#E6FF00]">₹9999</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-white/10 pb-6">
-                <div className="space-y-1">
-                  <span className="text-xl font-bold">Maintenance</span>
-                  <p className="text-sm text-white/40">Hosting, security, and 24/7 support.</p>
-                </div>
-                <span className="text-4xl font-bold text-[#E6FF00]">₹499/mo</span>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <Link to="/onboarding" className="w-full sm:w-auto bg-[#E6FF00] text-black px-12 py-5 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-[0_0_30px_rgba(230,255,0,0.15)]">
-                Get Started
-              </Link>
-              <p className="text-white/40 font-bold text-sm uppercase tracking-widest">No hidden charges.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Resources Section */}
-      <section id="resources" className="px-6 py-32 max-w-7xl mx-auto border-t border-white/5">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-          <div className="max-w-xl">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 bg-[#E6FF00] rounded-full" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E6FF00]">Resources</span>
-            </div>
-            <h2 className="text-6xl font-bold tracking-tighter mb-6">Latest Insights</h2>
-            <p className="text-white/40 text-lg font-medium">Expert advice on website development, SEO, and digital growth strategies.</p>
-          </div>
-          <Link to="/resources" className="text-sm font-bold uppercase tracking-widest text-[#E6FF00] hover:underline">View All Articles</Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              title: "How to scale your business with a premium website in 2026",
-              date: "March 28, 2026",
-              category: "Growth"
-            },
-            {
-              title: "5 essential SEO tips for small business websites in India",
-              date: "March 25, 2026",
-              category: "SEO"
-            },
-            {
-              title: "Why website maintenance is critical for your online success",
-              date: "March 20, 2026",
-              category: "Maintenance"
-            }
-          ].map((post, i) => (
-            <div key={i} className="group cursor-pointer p-8 rounded-[2rem] bg-white/5 border border-white/10 hover:border-[#E6FF00]/30 transition-all">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E6FF00] mb-4 block">{post.category}</span>
-              <h3 className="text-2xl font-bold tracking-tight mb-6 group-hover:text-[#E6FF00] transition-colors">{post.title}</h3>
-              <div className="text-white/20 text-xs font-bold uppercase tracking-widest">{post.date}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section id="faq" className="px-6 py-32 max-w-7xl mx-auto border-t border-white/5">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 bg-[#E6FF00] rounded-full" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E6FF00]">FAQ</span>
-            </div>
-            <h2 className="text-6xl font-bold tracking-tighter mb-8">Common Questions</h2>
-            <p className="text-white/40 text-lg font-medium">Everything you need to know about our premium website development services.</p>
-          </div>
-          <div className="space-y-6">
-            {[
-              {
-                q: "How long does it take to build a custom website?",
-                a: "Typically, a premium custom build takes 2-4 weeks depending on complexity. We prioritize quality and performance."
-              },
-              {
-                q: "Do you provide SEO optimization with the build?",
-                a: "Yes, every website we build is SEO-optimized from the ground up to ensure maximum visibility on Google."
-              },
-              {
-                q: "What is included in the maintenance package?",
-                a: "Our maintenance includes high-speed hosting, SSL security, regular backups, and 24/7 technical support."
-              },
-              {
-                q: "Can I update the content myself?",
-                a: "Absolutely. We provide a user-friendly dashboard for you to manage your content without any technical knowledge."
-              }
-            ].map((faq, i) => (
-              <div key={i} className="p-8 rounded-[2rem] bg-white/5 border border-white/10">
-                <h4 className="text-xl font-bold mb-4">{faq.q}</h4>
-                <p className="text-white/40 font-medium leading-relaxed">{faq.a}</p>
-              </div>
             ))}
           </div>
         </div>

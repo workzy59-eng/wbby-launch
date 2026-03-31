@@ -1,9 +1,28 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, ArrowRight, Gauge, Zap, Shield, Play, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowLeft, ArrowRight, Gauge, Zap, Shield, Play, ChevronRight, Key, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function GlobalAutos() {
+  const [isReady, setIsReady] = useState(false);
+  const [showLights, setShowLights] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (isReady) {
+      const lightsTimer = setTimeout(() => {
+        setShowLights(true);
+      }, 2000);
+      return () => clearTimeout(lightsTimer);
+    }
+  }, [isReady]);
+
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-red-600 selection:text-white overflow-x-hidden">
       {/* Navigation */}
@@ -14,7 +33,7 @@ export default function GlobalAutos() {
               <div className="w-3 h-3 bg-red-600 rounded-full" />
             </div>
           </div>
-          <span className="text-2xl font-black tracking-tighter uppercase italic">GlobalAutos</span>
+          <span className="text-2xl font-black tracking-tighter uppercase italic">Automobile</span>
         </div>
         
         <div className="hidden md:flex items-center gap-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
@@ -47,32 +66,103 @@ export default function GlobalAutos() {
             transition={{ delay: 0.1 }}
             className="text-7xl md:text-[11rem] font-black tracking-tighter leading-[0.8] uppercase italic"
           >
-            Automobiles
+            Automobile
           </motion.h1>
+          <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">Key Automobile. Portfolio.</div>
         </div>
 
-        {/* Central Image */}
-        <div className="relative mt-12 w-full max-w-6xl aspect-video">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <img 
-              src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=1600" 
-              alt="Automotive Interior" 
-              className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(220,38,38,0.2)]"
-              referrerPolicy="no-referrer"
-            />
-          </motion.div>
+        {/* Central Animation Container */}
+        <div className="relative mt-24 w-full max-w-6xl h-[400px] flex items-center justify-center">
+          {!isReady ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-white/20 text-sm font-bold uppercase tracking-[0.5em] animate-pulse"
+            >
+              Initializing Systems...
+            </motion.div>
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Car Parts Opening Horizontally */}
+              <motion.div 
+                initial={{ x: -200, opacity: 0 }}
+                animate={{ x: -300, opacity: 1 }}
+                transition={{ duration: 1 }}
+                className="absolute w-48 h-48 bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center"
+              >
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Front Chassis</div>
+              </motion.div>
 
-          {/* Floating Stats */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-12 md:gap-24">
-            <StatItem label="0-100 KM/H" value="2.1s" />
-            <StatItem label="TOP SPEED" value="350 KM/H" />
-            <StatItem label="POWER" value="1200 HP" />
-          </div>
+              <motion.div 
+                initial={{ x: 200, opacity: 0 }}
+                animate={{ x: 300, opacity: 1 }}
+                transition={{ duration: 1 }}
+                className="absolute w-48 h-48 bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center"
+              >
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Rear Chassis</div>
+              </motion.div>
+
+              {/* Central Engine / Body */}
+              <motion.div 
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+                className="relative z-20 w-80 h-56 bg-red-600/10 rounded-[3rem] border-2 border-red-600/30 flex items-center justify-center overflow-hidden"
+              >
+                <img 
+                  src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800" 
+                  alt="automobile engine" 
+                  className="w-full h-full object-cover opacity-60"
+                  referrerPolicy="no-referrer"
+                />
+                
+                {/* Lights Effect */}
+                <AnimatePresence>
+                  {showLights && (
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="absolute inset-0 bg-white/10 pointer-events-none"
+                    >
+                      <div className="absolute top-1/4 left-4 w-4 h-4 bg-white rounded-full blur-md shadow-[0_0_40px_white]" />
+                      <div className="absolute top-1/4 right-4 w-4 h-4 bg-white rounded-full blur-md shadow-[0_0_40px_white]" />
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Key Attaching */}
+              <motion.div 
+                initial={{ y: -200, opacity: 0, rotate: -45 }}
+                animate={{ y: 0, opacity: 1, rotate: 0 }}
+                transition={{ duration: 0.8, delay: 1.2, type: 'spring' }}
+                className="absolute top-0 z-30 text-[#E6FF00]"
+              >
+                <Key size={48} strokeWidth={2.5} />
+                <motion.div 
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="absolute inset-0 bg-[#E6FF00]/20 blur-xl rounded-full"
+                />
+              </motion.div>
+
+              {/* Lights On Indicator */}
+              {showLights && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute bottom-[-60px] flex items-center gap-2 text-red-600 font-black uppercase italic tracking-widest"
+                >
+                  <Sun size={20} className="animate-spin-slow" /> Systems Online
+                </motion.div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Bottom CTA */}

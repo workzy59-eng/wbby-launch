@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, collection, onSnapshot, FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
@@ -368,24 +368,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {users.filter(u => u.uid !== user.uid).map((u) => (
-          <div key={u.uid} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 group hover:border-[#E6FF00]/30 transition-all flex flex-col">
-            <div className="flex items-center gap-6 mb-8">
-              <div className="w-16 h-16 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00] text-2xl font-black italic border border-[#E6FF00]/20">
-                {u.displayName?.[0] || 'U'}
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white tracking-tight">{u.displayName}</h3>
-                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{u.email}</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => { setSelectedUser(u); setShowDirectChat(true); }}
-              className="w-full bg-[#E6FF00] text-black py-4 rounded-full font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <MessageCircle size={16} />
-              Open Chat
-            </button>
-          </div>
+          <UserCard key={u.uid} u={u} onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} />
         ))}
       </div>
     </div>
@@ -610,6 +593,55 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
           </div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+interface UserCardProps {
+  u: UserProfile;
+  onOpenChat: () => void;
+}
+
+const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat }) => {
+  const [msgCount, setMsgCount] = useState(0);
+
+  useEffect(() => {
+    const q = collection(db, 'direct_messages', u.uid, 'messages');
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setMsgCount(snapshot.size);
+    });
+    return () => unsubscribe();
+  }, [u.uid]);
+
+  const isSideOcean = u.displayName?.toLowerCase().includes('side ocean');
+  let displayName = u.displayName || 'User';
+  
+  if (isSideOcean) {
+    if (msgCount > 1) {
+      displayName = `side ocean (${msgCount - 1})`;
+    } else {
+      displayName = `side ocean`;
+    }
+  }
+
+  return (
+    <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 group hover:border-[#E6FF00]/30 transition-all flex flex-col">
+      <div className="flex items-center gap-6 mb-8">
+        <div className="w-16 h-16 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00] text-2xl font-black italic border border-[#E6FF00]/20">
+          {u.displayName?.[0] || 'U'}
+        </div>
+        <div>
+          <h3 className="text-xl font-bold text-white tracking-tight">{displayName}</h3>
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{u.email}</p>
+        </div>
+      </div>
+      <button 
+        onClick={onOpenChat}
+        className="w-full bg-[#E6FF00] text-black py-4 rounded-full font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+      >
+        <MessageCircle size={16} />
+        Open Chat
+      </button>
     </div>
   );
 }
