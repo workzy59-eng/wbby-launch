@@ -190,33 +190,46 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <input
                     type="text"
                     className={`w-full p-6 rounded-2xl bg-[#5E7162] border transition-all uppercase font-bold ${
-                      formData.businessName.length > 0 && formData.businessName.length < 3
-                        ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
+                      formData.businessName.length > 0 && formData.businessName.length < 2
+                        ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+                        : formData.businessName.length >= 2
+                        ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                         : 'border-[#E6FF00]/20 focus:border-[#E6FF00]'
                     } text-white focus:outline-none`}
                     value={formData.businessName}
                     onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                   />
-                  {formData.businessName.length > 0 && formData.businessName.length < 3 && (
-                    <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-4">
+                  {formData.businessName.length > 0 && formData.businessName.length < 2 && (
+                    <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-4 animate-pulse">
                       it should continue, move forward, it should continue move on
                     </p>
                   )}
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black text-white/50 uppercase tracking-widest ml-4">Describe your website</label>
-                <textarea
-                  className="w-full p-6 rounded-2xl bg-[#5E7162] border border-[#E6FF00]/20 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-bold h-32"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
+                <label className="text-xs font-black text-white/50 uppercase tracking-widest ml-4">Describe your website (Min 95 words)</label>
+                <div className="relative">
+                  <textarea
+                    className={`w-full p-6 rounded-2xl bg-[#5E7162] border transition-all uppercase font-bold h-48 ${
+                      formData.description.length > 0 && formData.description.trim().split(/\s+/).filter(Boolean).length < 95
+                        ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+                        : formData.description.trim().split(/\s+/).filter(Boolean).length >= 95
+                        ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
+                        : 'border-[#E6FF00]/20 focus:border-[#E6FF00]'
+                    } text-white focus:outline-none`}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                  <div className="absolute bottom-4 right-6 text-[10px] font-black uppercase tracking-widest text-white/30">
+                    {formData.description.trim().split(/\s+/).filter(Boolean).length} / 95 Words
+                  </div>
+                </div>
               </div>
             </div>
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                disabled={!formData.businessName || !formData.description}
+                disabled={formData.businessName.length < 2 || formData.description.trim().split(/\s+/).filter(Boolean).length < 95}
                 onClick={handleNext} 
                 className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
               >

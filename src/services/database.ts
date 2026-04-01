@@ -85,6 +85,97 @@ export const getUserProfile = async (uid: string) => {
   }
 };
 
+export const updateProfile = async (uid: string, data: any) => {
+  const path = `users/${uid}`;
+  try {
+    await updateDoc(doc(db, 'users', uid), data);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+export const getProfiles = async () => {
+  const path = 'users';
+  try {
+    const snapshot = await getDocs(collection(db, 'users'));
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
+// Leave Operations
+export const requestLeave = async (leaveData: any) => {
+  const path = 'leave_requests';
+  try {
+    await addDoc(collection(db, 'leave_requests'), {
+      ...leaveData,
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
+};
+
+export const getLeaveRequests = async (userId: string) => {
+  const path = 'leave_requests';
+  try {
+    const q = query(collection(db, 'leave_requests'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
+export const getAllLeaveRequests = async () => {
+  const path = 'leave_requests';
+  try {
+    const q = query(collection(db, 'leave_requests'), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
+export const updateLeaveRequest = async (requestId: string, status: string) => {
+  const path = `leave_requests/${requestId}`;
+  try {
+    await updateDoc(doc(db, 'leave_requests', requestId), { status });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+// Attendance Operations
+export const getAttendance = async (userId: string) => {
+  const path = 'attendance';
+  try {
+    const q = query(collection(db, 'attendance'), where('userId', '==', userId), orderBy('date', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
+export const getAllAttendance = async () => {
+  const path = 'attendance';
+  try {
+    const q = query(collection(db, 'attendance'), orderBy('date', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 // Project Operations
 export const createProject = async (projectData: any) => {
   const path = 'projects';
@@ -108,6 +199,21 @@ export const updateProject = async (projectId: string, updateData: any) => {
     await updateDoc(doc(db, 'projects', projectId), updateData);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+export const getProjectsAsync = async (userId?: string) => {
+  const path = 'projects';
+  try {
+    let q = query(collection(db, 'projects'), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+    if (userId) {
+      q = query(collection(db, 'projects'), where('userId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+    }
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
   }
 };
 

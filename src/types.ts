@@ -5,8 +5,35 @@ export interface UserProfile {
   email: string;
   displayName: string;
   photoURL: string;
-  role: 'admin' | 'client';
+  role: 'admin' | 'client' | 'developer';
+  phone?: string;
   createdAt: string | Timestamp;
+  // Developer specific fields
+  experience?: number;
+  devRole?: string;
+  status?: 'pending' | 'accepted' | 'declined';
+  joiningDate?: string | Timestamp;
+  absences?: number;
+}
+
+export interface LeaveRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  startDate: string | Timestamp;
+  endDate: string | Timestamp;
+  reason: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt: string | Timestamp;
+}
+
+export interface Attendance {
+  id: string;
+  userId: string;
+  date: string; // YYYY-MM-DD
+  status: 'present' | 'absent' | 'leave';
+  inTime?: string;
+  outTime?: string;
 }
 
 export type ProjectStatus = 

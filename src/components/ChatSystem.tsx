@@ -1,63 +1,93 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, collection, query, orderBy, onSnapshot, FirebaseUser } from '../firebase';
-import { UserProfile, Message } from '../types';
-import { Send, Paperclip, Check, CheckCheck, MessageCircle, Trash2, X } from 'lucide-react';
-import { format } from 'date-fns';
-import { sendMessage, updateMessage, getMessages, getDirectMessages, sendDirectMessage, updateDirectMessage, deleteMessage, deleteDirectMessage } from '../services/database';
-import { formatDate } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import { APP_NAME, HYPHENATED_NAME } from '../constants';
+import { 
+  Send, 
+  X, 
+  Check, 
+  CheckCheck, 
+  Image as ImageIcon, 
+  Paperclip, 
+  MoreVertical,
+  Search,
+  Phone,
+  Video,
+  MessageCircle,
+  Trash2,
+  Sparkles,
+  Loader2
+} from 'lucide-react';
+import { FirebaseUser } from '../firebase';
+import { UserProfile, Message } from '../types';
+import { 
+  sendMessage, 
+  updateMessage, 
+  getMessages, 
+  getDirectMessages, 
+  sendDirectMessage, 
+  updateDirectMessage, 
+  deleteMessage, 
+  deleteDirectMessage 
+} from '../services/database';
+import { formatDate } from '../lib/utils';
+import { HYPHENATED_NAME } from '../constants';
+import { generateAIImageFromMessage } from '../services/geminiService';
 
 interface ChatSystemProps {
   projectId?: string;
   isDirect?: boolean;
-  user: FirebaseUser; // For direct chat, this is the user the admin is chatting with, or the current user if client
+  recipientUser?: FirebaseUser | { uid: string; displayName: string };
   profile: UserProfile | null;
-  currentUser?: FirebaseUser; // The actual logged in user
+  currentUser: FirebaseUser;
+  onClose?: () => void;
+  user?: FirebaseUser | null;
 }
 
-export default function ChatSystem({ projectId, isDirect, user, profile, currentUser }: ChatSystemProps) {
+export default function ChatSystem({ projectId, isDirect, recipientUser, profile, currentUser, onClose, user }: ChatSystemProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
 
-  const effectiveCurrentUser = currentUser || user;
+  useEffect(() => {
+    notificationSound.current = new Audio('/notification.mp3');
+  }, []);
 
   useEffect(() => {
     let unsubscribe: () => void;
 
-    if (isDirect) {
-      unsubscribe = getDirectMessages(user.uid, (messagesData) => {
-        // Filter out messages hidden for current user
-        const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(effectiveCurrentUser.uid));
+    if (isDirect && recipientUser) {
+      unsubscribe = getDirectMessages(recipientUser.uid, (messagesData) => {
+        const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
         setMessages(filtered as Message[]);
         
         // Mark as seen
         messagesData.forEach(async (m) => {
-          if (m.senderId !== effectiveCurrentUser.uid && !m.seen) {
-            await updateDirectMessage(user.uid, m.id, { seen: true });
+          if (m.senderId !== currentUser.uid && !m.seen) {
+            await updateDirectMessage(recipientUser.uid, m.id, { seen: true });
+            notificationSound.current?.play().catch(() => {});
           }
         });
       });
     } else if (projectId) {
       unsubscribe = getMessages(projectId, (messagesData) => {
-        // Filter out messages hidden for current user
-        const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(effectiveCurrentUser.uid));
+        const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
         setMessages(filtered as Message[]);
         
         // Mark as seen
         messagesData.forEach(async (m) => {
-          if (m.senderId !== effectiveCurrentUser.uid && !m.seen) {
+          if (m.senderId !== currentUser.uid && !m.seen) {
             await updateMessage(projectId, m.id, { seen: true });
+            notificationSound.current?.play().catch(() => {});
           }
         });
       });
     }
 
     return () => unsubscribe?.();
-  }, [projectId, isDirect, user.uid, effectiveCurrentUser.uid]);
+  }, [projectId, isDirect, recipientUser.uid, currentUser.uid]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -71,16 +101,16 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
 
     setIsSending(true);
     try {
-      if (isDirect) {
-        await sendDirectMessage(user.uid, {
-          senderId: effectiveCurrentUser.uid,
-          senderName: effectiveCurrentUser.displayName || 'Admin',
+      if (isDirect && recipientUser) {
+        await sendDirectMessage(recipientUser.uid, {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
           text: inputText,
         });
       } else if (projectId) {
         await sendMessage(projectId, {
-          senderId: effectiveCurrentUser.uid,
-          senderName: effectiveCurrentUser.displayName || 'Admin',
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
           text: inputText,
         });
       }
@@ -97,9 +127,9 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
 
     try {
       if (isDirect) {
-        await deleteDirectMessage(user.uid, selectedMessage.id, forEveryone, effectiveCurrentUser.uid);
+        await deleteDirectMessage(recipientUser.uid, selectedMessage.id, forEveryone, currentUser.uid);
       } else if (projectId) {
-        await deleteMessage(projectId, selectedMessage.id, forEveryone, effectiveCurrentUser.uid);
+        await deleteMessage(projectId, selectedMessage.id, forEveryone, currentUser.uid);
       }
       setSelectedMessage(null);
     } catch (error) {
@@ -107,97 +137,188 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
     }
   };
 
+  const handleGenerateAI = async (message: Message) => {
+    if (isGenerating) return;
+    setIsGenerating(message.id);
+    try {
+      const imageUrl = await generateAIImageFromMessage(message.text);
+      if (imageUrl) {
+        if (isDirect && recipientUser) {
+          await sendDirectMessage(recipientUser.uid, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: `AI Visualization for: "${message.text}"`,
+            imageUrl
+          });
+        } else if (projectId) {
+          await sendMessage(projectId, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: `AI Visualization for: "${message.text}"`,
+            imageUrl
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate AI image:', error);
+    } finally {
+      setIsGenerating(null);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-[#4A5D4E] font-sans relative">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex flex-col font-sans"
+    >
+      {/* Header */}
+      <header className="px-10 py-8 border-b border-white/10 flex items-center justify-between bg-white/5">
+        <div className="flex items-center gap-6">
+          <div className="w-16 h-16 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+            {recipientUser?.displayName?.[0] || 'U'}
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">{recipientUser?.displayName || 'Project Chat'}</h2>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+              <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Active Now</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
+            <Phone size={24} />
+          </button>
+          <button className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
+            <Video size={24} />
+          </button>
+          <div className="w-[1px] h-12 bg-white/10 mx-4"></div>
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 hover:bg-red-500 hover:text-white transition-all"
+            >
+              <X size={24} />
+            </button>
+          )}
+        </div>
+      </header>
+
       {/* Messages Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar"
+        className="flex-1 overflow-y-auto px-10 py-12 space-y-10 scrollbar-hide"
       >
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-white/20 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
-              <MessageCircle size={40} strokeWidth={1.5} className="text-[#E6FF00]" />
+          <div className="flex flex-col items-center justify-center h-full text-white/20 space-y-8">
+            <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
+              <MessageCircle size={48} strokeWidth={1.5} className="text-[#E6FF00]" />
             </div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em]">Secure Channel Established</p>
+            <div className="text-center space-y-2">
+              <p className="text-sm font-black uppercase tracking-[0.4em]">Secure Channel Established</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 italic">Messages are end-to-end encrypted</p>
+            </div>
           </div>
         ) : (
-          messages.map((m) => (
-            <div 
-              key={m.id} 
-              className={`flex gap-4 ${m.senderId === effectiveCurrentUser.uid ? 'flex-row-reverse' : 'flex-row'}`}
-            >
-              {/* Profile Photo / Logo */}
-              <div className="flex-shrink-0 mt-1">
-                {m.senderId === effectiveCurrentUser.uid ? (
-                  <div className="w-10 h-10 rounded-full bg-[#E6FF00] flex items-center justify-center text-[#4A5D4E] font-black italic text-xs">
+          messages.map((m) => {
+            const isMe = m.senderId === currentUser.uid;
+            return (
+              <div 
+                key={m.id} 
+                className={`flex gap-6 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
+              >
+                <div className="flex-shrink-0 mt-1">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black italic text-sm ${
+                    isMe ? 'bg-[#E6FF00] text-black' : 'bg-white/10 text-white border border-white/10'
+                  }`}>
                     {m.senderName?.[0] || 'U'}
                   </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-[#E6FF00] flex items-center justify-center border border-white/10 overflow-hidden">
-                    <span className="text-black font-black text-[6px] tracking-tighter leading-none text-center">{HYPHENATED_NAME}</span>
-                  </div>
-                )}
-              </div>
+                </div>
 
-              <div className={`flex flex-col ${m.senderId === effectiveCurrentUser.uid ? 'items-end' : 'items-start'}`}>
-                <motion.div 
-                  layout
-                  onClick={() => !m.isDeleted && setSelectedMessage(m)}
-                  className={`max-w-[85%] p-5 rounded-[2rem] text-sm font-medium shadow-2xl backdrop-blur-md border cursor-pointer transition-all ${
-                    m.senderId === effectiveCurrentUser.uid 
-                      ? 'bg-[#E6FF00] text-black border-[#E6FF00]/20 rounded-tr-none' 
-                      : 'bg-white/5 text-white border-white/10 rounded-tl-none'
-                  } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
-                >
-                  {m.text}
-                </motion.div>
-                <div className="flex items-center gap-3 mt-3 px-2">
-                  <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
-                    {m.createdAt ? formatDate(m.createdAt, 'h:mm a') : 'Sending...'}
-                  </span>
-                  {m.senderId === effectiveCurrentUser.uid && (
-                    <span className="text-white/30">
-                      {m.seen ? <CheckCheck size={12} className="text-[#E6FF00]" /> : <Check size={12} />}
+                <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[70%]`}>
+                  <motion.div 
+                    layout
+                    onClick={() => !m.isDeleted && setSelectedMessage(m)}
+                    className={`p-6 rounded-[2.5rem] text-sm font-bold leading-relaxed shadow-2xl backdrop-blur-md border cursor-pointer transition-all ${
+                      isMe 
+                        ? 'bg-[#E6FF00] text-black border-[#E6FF00]/20 rounded-tr-none' 
+                        : 'bg-white/5 text-white border-white/10 rounded-tl-none'
+                    } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
+                  >
+                    {m.imageUrl && (
+                      <div className="mb-4 rounded-2xl overflow-hidden border border-white/10">
+                        <img src={m.imageUrl} alt="AI Visualization" className="w-full h-auto max-h-64 object-cover" />
+                      </div>
+                    )}
+                    {m.text}
+                    {!m.imageUrl && !isMe && !m.isDeleted && (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGenerateAI(m);
+                        }}
+                        disabled={isGenerating === m.id}
+                        className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:opacity-80 transition-all"
+                      >
+                        {isGenerating === m.id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <Sparkles size={12} />
+                        )}
+                        {isGenerating === m.id ? 'Generating...' : 'Visualize with AI'}
+                      </button>
+                    )}
+                  </motion.div>
+                  <div className="flex items-center gap-3 mt-3 px-4">
+                    <span className="text-[9px] text-white/30 font-black uppercase tracking-widest italic">
+                      {m.createdAt ? formatDate(m.createdAt, 'h:mm a') : 'Sending...'}
                     </span>
-                  )}
+                    {isMe && (
+                      <span className="text-white/30">
+                        {m.seen ? <CheckCheck size={14} className="text-blue-400" /> : <Check size={14} />}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
       {/* Delete Options Modal */}
       <AnimatePresence>
         {selectedMessage && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-[#5E7162] p-8 rounded-[2rem] border border-white/10 w-full max-w-xs shadow-2xl"
+              className="bg-[#4A5D4E] p-10 rounded-[3rem] border border-white/10 w-full max-w-sm shadow-2xl space-y-8"
             >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white tracking-tight">Delete Message?</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Delete Message?</h3>
                 <button onClick={() => setSelectedMessage(null)} className="text-white/40 hover:text-white">
-                  <X size={20} />
+                  <X size={24} />
                 </button>
               </div>
-              <div className="space-y-3">
-                {selectedMessage.senderId === effectiveCurrentUser.uid && (
+              <div className="space-y-4">
+                {selectedMessage.senderId === currentUser.uid && (
                   <button 
                     onClick={() => handleDelete(true)}
-                    className="w-full py-4 bg-red-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-5 bg-red-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-3"
                   >
-                    <Trash2 size={16} /> Delete for everyone
+                    <Trash2 size={18} /> Delete for everyone
                   </button>
                 )}
                 <button 
                   onClick={() => handleDelete(false)}
-                  className="w-full py-4 bg-white/5 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-5 bg-white/5 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3"
                 >
-                  <Trash2 size={16} /> Delete for me
+                  <Trash2 size={18} /> Delete for me
                 </button>
               </div>
             </motion.div>
@@ -206,33 +327,39 @@ export default function ChatSystem({ projectId, isDirect, user, profile, current
       </AnimatePresence>
 
       {/* Input Area */}
-      <form 
-        onSubmit={handleSendMessage}
-        className="p-8 border-t border-white/5 bg-[#4A5D4E]"
-      >
-        <div className="flex items-center gap-4 bg-black/20 p-2 rounded-full border border-white/10 focus-within:border-[#E6FF00]/50 transition-all">
-          <button 
-            type="button"
-            className="p-4 text-white/40 hover:text-[#E6FF00] transition-all"
-          >
-            <Paperclip size={20} />
-          </button>
-          <input 
-            type="text" 
-            placeholder="Type your message..."
-            className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium py-3 text-white placeholder:text-white/20"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-          />
+      <footer className="px-10 py-10 border-t border-white/10 bg-white/5">
+        <form 
+          onSubmit={handleSendMessage}
+          className="max-w-5xl mx-auto flex items-center gap-6"
+        >
+          <div className="flex gap-3">
+            <button type="button" className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
+              <Paperclip size={24} />
+            </button>
+            <button type="button" className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
+              <ImageIcon size={24} />
+            </button>
+          </div>
+          
+          <div className="flex-1 relative">
+            <input 
+              type="text" 
+              placeholder="Type your message here..."
+              className="w-full bg-white/5 border border-white/10 rounded-[2rem] px-10 py-6 text-white font-bold outline-none focus:border-[#E6FF00] transition-all"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+            />
+          </div>
+
           <button 
             type="submit"
             disabled={!inputText.trim() || isSending}
-            className="p-4 bg-[#E6FF00] text-black rounded-full hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]"
+            className="p-6 bg-[#E6FF00] text-black rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)]"
           >
-            <Send size={20} />
+            <Send size={28} />
           </button>
-        </div>
-      </form>
-    </div>
+        </form>
+      </footer>
+    </motion.div>
   );
 }
