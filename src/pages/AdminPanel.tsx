@@ -213,10 +213,15 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
-                <div className="flex items-center gap-2">
-                  <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-widest">{p.businessType}</div>
-                  <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
-                    Template: {p.templateId}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-widest">{p.businessType}</div>
+                    <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
+                      Template: {p.templateId}
+                    </div>
+                  </div>
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                    {p.userName} • {p.userEmail} • {p.businessNumber}
                   </div>
                 </div>
               </div>
@@ -266,7 +271,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName} • {p.userEmail}</div>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName} • {p.userEmail} • {p.businessNumber}</div>
                 <div className="mt-2 inline-block px-3 py-1 bg-[#E6FF00]/10 rounded-full text-[8px] font-black text-[#E6FF00] uppercase tracking-widest border border-[#E6FF00]/20">
                   Template: {p.templateId}
                 </div>
@@ -716,7 +721,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
               <div className="flex-1 overflow-hidden">
                 {/* For admin, the "user" prop to ChatSystem should be the user they are chatting with if we want to use the same collection path */}
                 {/* Wait, ChatSystem uses user.uid to determine the path. So if admin is chatting with User A, the path should be direct_messages/UserA/messages */}
-                <ChatSystem isDirect user={selectedUser as any} profile={profile} currentUser={user} />
+                <ChatSystem isDirect recipientUser={selectedUser as any} profile={profile} currentUser={user} />
               </div>
             </motion.div>
           </div>

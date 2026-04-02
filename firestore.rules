@@ -44,7 +44,7 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'businessName', 'businessType', 'description', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl']) &&
+      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'businessName', 'businessType', 'businessNumber', 'description', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl']) &&
              data.userId is string && 
              data.businessName is string && data.businessName.size() > 0 &&
              data.status in ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed", "completed", "active", "in-progress", "pending", "rejected"];
@@ -97,7 +97,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow list: if isAdmin();
+      allow list: if isAuthenticated() && (isAdmin() || resource.data.role == 'admin');
       allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role in ['client', 'developer'] || isAdmin());
       allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
     }

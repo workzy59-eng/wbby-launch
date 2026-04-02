@@ -220,9 +220,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
                       <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#E6FF00]">No projects yet</h2>
                       <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
-                      <a href="/onboarding" className="inline-block bg-[#E6FF00] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+                      <Link to="/onboarding" className="inline-block bg-[#E6FF00] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]">
                         Start Your Project
-                      </a>
+                      </Link>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">

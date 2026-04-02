@@ -59,6 +59,7 @@ export interface Project {
   userEmail: string;
   businessName: string;
   businessType: string;
+  businessNumber: string;
   description: string;
   templateId: string;
   status: ProjectStatus;

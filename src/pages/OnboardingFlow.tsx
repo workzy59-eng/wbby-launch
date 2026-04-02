@@ -29,6 +29,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       name: profile?.displayName || '',
       email: profile?.email || '',
       businessName: '',
+      businessNumber: '',
       description: '',
     };
   });
@@ -86,6 +87,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         userName: formData.name,
         userEmail: formData.email,
         businessName: formData.businessName,
+        businessNumber: formData.businessNumber,
         businessType: finalBusinessType,
         description: formData.description,
         templateId: 'custom-dev', // Default to custom development since template selection is removed
@@ -205,6 +207,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
               <div className="space-y-2">
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="E.G. +1 (555) 000-0000"
+                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  value={formData.businessNumber}
+                  onChange={(e) => setFormData({ ...formData, businessNumber: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Describe your website</label>
                 <div className="relative">
                   <textarea
@@ -227,7 +239,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                disabled={formData.businessName.length < 2 || formData.description.trim().split(/\s+/).filter(Boolean).length < 2}
+                disabled={formData.businessName.length < 2 || formData.description.trim().split(/\s+/).filter(Boolean).length < 2 || !formData.businessNumber}
                 onClick={handleNext} 
                 className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
               >

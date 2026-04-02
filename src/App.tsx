@@ -6,7 +6,8 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import OnboardingFlow from './pages/OnboardingFlow';
 import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminPanel from './pages/AdminPanel';
+import DeveloperDashboard from './pages/DeveloperDashboard';
 import GlobalAutos from './pages/GlobalAutos';
 import Gym from './pages/Gym';
 import Cargo from './pages/Cargo';
@@ -227,7 +228,9 @@ Startups often operate on tight budgets. However, skimping on your website can c
                 element={
                   user ? (
                     profile?.role === 'admin' ? (
-                      <AdminDashboard user={user} profile={profile} />
+                      <AdminPanel user={user} profile={profile} />
+                    ) : profile?.role === 'developer' ? (
+                      <DeveloperDashboard user={user} profile={profile} />
                     ) : (
                       <Dashboard user={user} profile={profile} />
                     )
@@ -238,7 +241,7 @@ Startups often operate on tight budgets. However, skimping on your website can c
               />
               <Route 
                 path="/admin" 
-                element={user && profile?.role === 'admin' ? <AdminDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                element={user && profile?.role === 'admin' ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
               />
               <Route 
                 path="/portfolio/autos" 
