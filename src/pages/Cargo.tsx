@@ -11,7 +11,7 @@ export default function Cargo() {
           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#0a1a2f]">
             <Globe size={24} />
           </div>
-          <span className="text-xl font-black tracking-tighter uppercase">NX <span className="font-light">Group</span></span>
+          <span className="text-xl font-black tracking-tighter uppercase">WEBB <span className="font-light">Logistics</span></span>
         </div>
         
         <div className="hidden lg:flex gap-10 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">
@@ -110,7 +110,7 @@ export default function Cargo() {
               className="max-w-md space-y-6"
             >
               <p className="text-lg font-bold italic leading-relaxed text-white/80">
-                NX Group develops integrated logistics solutions for industrial projects in the countries of the worldwide.
+                WEBB Logistics develops integrated logistics solutions for industrial projects in the countries of the worldwide.
               </p>
               <button className="flex items-center gap-4 text-xs font-black uppercase tracking-widest group">
                 <span className="w-12 h-[1px] bg-[#0066FF] group-hover:w-20 transition-all" />
@@ -171,7 +171,7 @@ export default function Cargo() {
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#0a1a2f]">
                 <Globe size={18} />
               </div>
-              <span className="text-lg font-black tracking-tighter uppercase">NX <span className="font-light">Group</span></span>
+              <span className="text-lg font-black tracking-tighter uppercase">WEBB <span className="font-light">Logistics</span></span>
             </div>
             <p className="text-white/40 text-sm italic leading-relaxed">
               Integrated logistics solutions for industrial projects worldwide.

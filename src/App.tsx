@@ -124,8 +124,6 @@ export default function App() {
                 user ? (
                   profile?.role === 'admin' ? (
                     <AdminDashboard user={user} profile={profile} />
-                  ) : profile?.role === 'developer' ? (
-                    <Navigate to="/developer" />
                   ) : (
                     <Dashboard user={user} profile={profile} />
                   )
@@ -135,16 +133,16 @@ export default function App() {
               } 
             />
             <Route 
-              path="/developer" 
-              element={user && profile?.role === 'developer' ? <DeveloperDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
-            />
-            <Route 
               path="/admin" 
               element={user && profile?.role === 'admin' ? <AdminDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
             />
             <Route 
               path="/portfolio/autos" 
               element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Autos />} 
+            />
+            <Route 
+              path="/portfolio/global-autos" 
+              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <GlobalAutos />} 
             />
             <Route 
               path="/portfolio/gym" 

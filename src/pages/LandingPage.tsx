@@ -46,19 +46,12 @@ export default function LandingPage({ user }: LandingPageProps) {
           </div>
 
           <div className="hidden md:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-            {['Home', 'About Us', 'Cars'].map((item) => (
-              <a key={item} href={item === 'Home' ? '#home' : item === 'Cars' ? '/portfolio/autos' : `#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-[#E6FF00] transition-colors">{item}</a>
+            {['Home', 'About Us', 'Portfolio'].map((item) => (
+              <a key={item} href={item === 'Home' ? '#home' : item === 'Portfolio' ? '#portfolio' : `#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-[#E6FF00] transition-colors">{item}</a>
             ))}
           </div>
 
           <div className="flex items-center gap-6">
-            <Link 
-              to="/auth" 
-              state={{ role: 'developer' }}
-              className="hidden md:block text-[10px] font-black uppercase tracking-widest text-[#E6FF00] border border-[#E6FF00]/20 px-4 py-2 rounded-full hover:bg-[#E6FF00] hover:text-black transition-all"
-            >
-              Join as Developer
-            </Link>
             {user ? (
               <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#E6FF00] transition-all">Dashboard</Link>
             ) : (
@@ -171,7 +164,7 @@ export default function LandingPage({ user }: LandingPageProps) {
  
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-20">
             {[
-              { title: 'Automobiles', category: 'Luxury Car UI', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200', link: '/portfolio/autos', span: 'md:col-span-1' },
+              { title: 'Automobiles', category: 'Auto Speed UI', image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200', link: '/portfolio/autos', span: 'md:col-span-1' },
               { title: 'Gym', category: 'Fitness Dashboard', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200', link: '/portfolio/gym', span: 'md:col-span-1' },
               { title: 'Logistics', category: 'Cargo Tracking', image: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=1200', link: '/portfolio/cargo', span: 'md:col-span-1' },
             ].map((p, i) => (

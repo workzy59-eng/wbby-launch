@@ -93,7 +93,7 @@ export default function Autos() {
               <span className="text-xs font-bold uppercase tracking-[0.4em] text-[#E6FF00]">AMG Performance</span>
             </div>
             <h1 className="text-8xl md:text-[10rem] font-black tracking-tighter leading-[0.8] uppercase italic mb-8">
-              THE ART OF <span className="text-[#E6FF00]">SPEED</span>
+              AUTO <span className="text-[#E6FF00]">SPEED</span>
             </h1>
             <p className="text-xl text-white/60 max-w-xl mb-12 font-medium leading-relaxed italic">
               Experience the pinnacle of automotive engineering. Handcrafted performance that pushes the boundaries of what's possible on four wheels.

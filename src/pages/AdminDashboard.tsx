@@ -505,7 +505,6 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
           {[
             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
             { id: 'clients', label: 'Clients', icon: User },
-            { id: 'developers', label: 'Developers', icon: Users },
             { id: 'projects', label: 'Projects', icon: Briefcase },
             { id: 'leaves', label: 'Leaves', icon: Clock },
             { id: 'attendance', label: 'Attendance', icon: CalendarIcon },
@@ -540,7 +539,6 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
         {[
           { id: 'overview', icon: LayoutDashboard },
           { id: 'clients', icon: User },
-          { id: 'developers', icon: Users },
           { id: 'projects', icon: Briefcase },
           { id: 'messages', icon: MessageSquare },
         ].map((tab) => (

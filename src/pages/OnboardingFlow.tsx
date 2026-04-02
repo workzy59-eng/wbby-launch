@@ -160,24 +160,28 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <h2 className="text-5xl font-bold tracking-tighter text-[#E6FF00] uppercase italic">Project Details</h2>
             <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Your Name</label>
-                <input
-                  type="text"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Your Email</label>
-                <input
-                  type="email"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
+              {!profile && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Your Name</label>
+                    <input
+                      type="text"
+                      className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Your Email</label>
+                    <input
+                      type="email"
+                      className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Name</label>
                 <div className="relative group">
@@ -201,13 +205,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Describe your website (Min 95 words)</label>
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Describe your website</label>
                 <div className="relative">
                   <textarea
                     className={`w-full p-6 rounded-2xl bg-white/5 border transition-all uppercase font-black italic tracking-tighter h-48 resize-none ${
-                      formData.description.length > 0 && formData.description.trim().split(/\s+/).filter(Boolean).length < 95
+                      formData.description.length > 0 && formData.description.trim().split(/\s+/).filter(Boolean).length < 2
                         ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                        : formData.description.trim().split(/\s+/).filter(Boolean).length >= 95
+                        : formData.description.trim().split(/\s+/).filter(Boolean).length >= 2
                         ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                         : 'border-white/10 focus:border-[#E6FF00]'
                     } text-white focus:outline-none`}
@@ -215,7 +219,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   />
                   <div className="absolute bottom-4 right-6 text-[10px] font-black uppercase tracking-widest text-white/30">
-                    {formData.description.trim().split(/\s+/).filter(Boolean).length} / 95 Words
+                    {formData.description.trim().split(/\s+/).filter(Boolean).length} Words
                   </div>
                 </div>
               </div>
@@ -223,7 +227,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                disabled={formData.businessName.length < 2 || formData.description.trim().split(/\s+/).filter(Boolean).length < 95}
+                disabled={formData.businessName.length < 2 || formData.description.trim().split(/\s+/).filter(Boolean).length < 2}
                 onClick={handleNext} 
                 className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
               >
