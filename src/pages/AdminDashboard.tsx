@@ -482,21 +482,11 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
         );
       case 'messages':
         return (
-          <div className="flex flex-col items-center justify-center h-[60vh] space-y-8 bg-slate-900/40 border border-white/5 rounded-[2.5rem] backdrop-blur-xl">
-            <div className="w-24 h-24 rounded-full bg-[#00F2FF]/10 flex items-center justify-center text-[#00F2FF] shadow-[0_0_30px_rgba(0,242,255,0.2)]">
-              <MessageSquare size={48} />
-            </div>
-            <div className="text-center space-y-2">
-              <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Secure Messaging Center</h3>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Manage all communications from a single interface</p>
-            </div>
-            <button 
-              onClick={() => setIsMessagesOpen(true)}
-              className="px-10 py-4 bg-[#00F2FF] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(0,242,255,0.3)]"
-            >
-              Open Full Screen Messages
-            </button>
-          </div>
+          <MessagesModule 
+            currentUser={user!}
+            profile={profile}
+            onClose={() => setActiveTab('overview')}
+          />
         );
     }
   };
@@ -587,16 +577,6 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
           )}
         </div>
       </main>
-
-      <AnimatePresence>
-        {isMessagesOpen && user && (
-          <MessagesModule 
-            currentUser={user}
-            profile={profile}
-            onClose={() => setIsMessagesOpen(false)}
-          />
-        )}
-      </AnimatePresence>
 
       <AnimatePresence>
         {selectedChatUser && user && (

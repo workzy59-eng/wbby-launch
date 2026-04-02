@@ -186,7 +186,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
           <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Messages</h2>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all md:hidden"
+            className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all"
           >
             <X size={24} />
           </button>
@@ -236,18 +236,18 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <div className="flex justify-between items-start mb-1">
-                    <span className="font-black text-white truncate uppercase tracking-tight">{conv.recipientProfile?.displayName}</span>
-                    <span className="text-[10px] text-white/30 font-bold">
+                    <span className="font-black text-white truncate uppercase tracking-tight text-sm">{conv.recipientProfile?.displayName}</span>
+                    <span className="text-[10px] text-white/30 font-bold shrink-0">
                       {conv.lastMessageAt ? formatDate(conv.lastMessageAt, 'h:mm a') : ''}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-white/40 truncate font-medium">
+                    <p className="text-xs text-white/40 truncate font-medium pr-2">
                       {conv.lastSenderId === currentUser.uid ? 'You: ' : ''}
                       {conv.lastMessage}
                     </p>
                     {conv.unreadCount && conv.unreadCount > 0 && (
-                      <div className="bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]">
+                      <div className="bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] shrink-0">
                         {conv.unreadCount}
                       </div>
                     )}

@@ -23,9 +23,11 @@ export default function AuthPage() {
     checkMobile();
   }, []);
 
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState(location.state?.role === 'developer' ? '' : 'client');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+
+  const isDeveloperJoin = location.state?.role === 'developer';
 
   const handleGoogleSignIn = async () => {
     if (loading) return;
@@ -48,8 +50,8 @@ export default function AuthPage() {
           displayName: name,
           email: email,
           phoneNumber: phoneNumber,
-          role: role.toLowerCase() === 'admin' ? 'admin' : 'client', // Default to client if not admin, but user asked for specific roles
-          devRole: role, // Store the specific role (Designer, Frontend, etc.)
+          role: isDeveloperJoin ? 'developer' : 'client',
+          devRole: isDeveloperJoin ? role : null,
           status: 'active'
         });
       }
@@ -146,19 +148,21 @@ export default function AuthPage() {
               />
             </div>
           </div>
-          <div className="space-y-2 text-left">
-            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Select Role</label>
-            <select 
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-4 focus:border-[#E6FF00] outline-none transition-all text-white font-black italic tracking-tighter appearance-none"
-            >
-              <option value="" className="bg-[#064E3B]">Choose Role</option>
-              <option value="Designer" className="bg-[#064E3B]">Designer</option>
-              <option value="Frontend Engineer" className="bg-[#064E3B]">Frontend Engineer</option>
-              <option value="Backend" className="bg-[#064E3B]">Backend</option>
-            </select>
-          </div>
+          {isDeveloperJoin && (
+            <div className="space-y-2 text-left">
+              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Select Role</label>
+              <select 
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-4 focus:border-[#E6FF00] outline-none transition-all text-white font-black italic tracking-tighter appearance-none"
+              >
+                <option value="" className="bg-[#064E3B]">Choose Role</option>
+                <option value="Designer" className="bg-[#064E3B]">Designer</option>
+                <option value="Frontend Engineer" className="bg-[#064E3B]">Frontend Engineer</option>
+                <option value="Backend" className="bg-[#064E3B]">Backend</option>
+              </select>
+            </div>
+          )}
         </div>
         
         {!isMobile ? (
