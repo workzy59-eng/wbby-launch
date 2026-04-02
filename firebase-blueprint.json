@@ -48,9 +48,55 @@
         "text": { "type": "string" },
         "attachmentUrl": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
-        "seen": { "type": "boolean" }
+        "seen": { "type": "boolean" },
+        "isDeleted": { "type": "boolean" },
+        "hiddenFor": { "type": "array", "items": { "type": "string" } }
       },
       "required": ["projectId", "senderId", "text", "createdAt"]
+    },
+    "LeaveRequest": {
+      "title": "Leave Request",
+      "description": "Developer leave request.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "declined"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "startDate", "endDate", "status"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Developer attendance record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string", "enum": ["present", "absent", "leave"] },
+        "inTime": { "type": "string" },
+        "outTime": { "type": "string" }
+      },
+      "required": ["userId", "date", "status"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Direct message conversation metadata.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "lastMessageAt": { "type": "string", "format": "date-time" },
+        "lastSenderId": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["participants", "updatedAt"]
     }
   },
   "firestore": {
@@ -65,6 +111,22 @@
     "/projects/{projectId}/messages/{messageId}": {
       "schema": "Message",
       "description": "Project chat messages."
+    },
+    "/leave_requests/{requestId}": {
+      "schema": "LeaveRequest",
+      "description": "Leave requests."
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "Attendance",
+      "description": "Attendance records."
+    },
+    "/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "Conversation metadata."
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Direct chat messages."
     }
   }
 }

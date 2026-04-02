@@ -15,8 +15,8 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-             request.auth.token.email == "workzy59@gmail.com" && 
-             request.auth.token.email_verified == true;
+             (request.auth.token.email == "workzy59@gmail.com" && 
+              request.auth.token.email_verified == true);
     }
 
     function hasOnlyAllowedFields(fields) {
@@ -27,38 +27,59 @@ service cloud.firestore {
       return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
     }
 
+    function isRecent(time) {
+      return time is timestamp && 
+             time > request.time - duration.value(5, 'm') && 
+             time < request.time + duration.value(5, 'm');
+    }
+
     // ===============================================================
     // Domain Validators
     // ===============================================================
 
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'phone', 'experience', 'devRole', 'status', 'joiningDate', 'absences']) &&
              data.uid is string && data.uid.size() > 0 &&
              data.email is string && isValidEmail(data.email) &&
-             data.role in ['admin', 'client'];
+             data.role in ['admin', 'client', 'developer'];
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'businessName', 'businessType', 'description', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted']) &&
-             data.userId is string && data.businessName is string && data.businessName.size() > 0 &&
+      return data.userId is string && data.businessName is string && data.businessName.size() > 0 &&
              data.status in ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed"];
     }
 
     function isValidMessage(data) {
-      return hasOnlyAllowedFields(['id', 'projectId', 'senderId', 'senderName', 'text', 'attachmentUrl', 'createdAt', 'seen']) &&
+      return hasOnlyAllowedFields(['id', 'projectId', 'senderId', 'senderName', 'text', 'attachmentUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
              data.projectId is string && 
              data.senderId is string && 
              data.text is string &&
-             data.createdAt is timestamp &&
              data.seen is bool;
     }
 
     function isValidDirectMessage(data) {
-      return hasOnlyAllowedFields(['id', 'senderId', 'senderName', 'text', 'attachmentUrl', 'createdAt', 'seen']) &&
+      return hasOnlyAllowedFields(['id', 'conversationId', 'senderId', 'senderName', 'text', 'attachmentUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
              data.senderId is string && 
              data.text is string &&
-             data.createdAt is timestamp &&
              data.seen is bool;
+    }
+
+    function isValidLeaveRequest(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'startDate', 'endDate', 'reason', 'status', 'createdAt']) &&
+             data.userId is string &&
+             data.status in ['pending', 'accepted', 'declined'];
+    }
+
+    function isValidAttendance(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'date', 'status', 'inTime', 'outTime']) &&
+             data.userId is string &&
+             data.status in ['present', 'absent', 'leave'];
+    }
+
+    function isValidConversation(data) {
+      return hasOnlyAllowedFields(['id', 'lastMessage', 'lastMessageAt', 'lastSenderId', 'participants', 'updatedAt']) &&
+             data.participants is list &&
+             data.participants.size() == 2;
     }
 
     // ===============================================================
@@ -67,20 +88,44 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'client' || isAdmin());
-      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role in ['client', 'developer'] || isAdmin());
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
     }
 
     match /projects/{projectId} {
       allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidProject(request.resource.data);
+      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin()) && isValidProject(request.resource.data);
       allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) && isValidProject(request.resource.data);
-      allow delete: if isAdmin(); // Only admin can delete (or soft delete)
+      allow delete: if isAdmin();
       
       match /messages/{messageId} {
         allow read: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/projects/$(projectId)) && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid));
-        allow create: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/projects/$(projectId)) && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid)) && isValidMessage(request.resource.data) && request.resource.data.projectId == projectId;
+        allow create: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/projects/$(projectId)) && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid)) && isValidMessage(request.resource.data);
         allow update: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/projects/$(projectId)) && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid)) && isValidMessage(request.resource.data);
+      }
+    }
+
+    match /leave_requests/{requestId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidLeaveRequest(request.resource.data);
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) && isValidLeaveRequest(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && (request.auth.uid in resource.data.participants || isAdmin());
+      allow create: if isAuthenticated() && (request.auth.uid in request.resource.data.participants || isAdmin()) && isValidConversation(request.resource.data);
+      allow update: if isAuthenticated() && (request.auth.uid in resource.data.participants || isAdmin()) && isValidConversation(request.resource.data);
+      
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin());
+        allow create: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin()) && isValidDirectMessage(request.resource.data);
+        allow update: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin()) && isValidDirectMessage(request.resource.data);
       }
     }
 
