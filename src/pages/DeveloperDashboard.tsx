@@ -230,58 +230,44 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         return (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400">
-                    <Briefcase size={24} />
+              {[
+                { label: 'My Projects', value: projects.length, icon: Briefcase, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                { label: 'Attendance', value: attendance.length > 0 ? `${Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100)}%` : '0%', icon: Clock, color: 'text-[#818CF8]', bg: 'bg-[#818CF8]/10' },
+                { label: 'Messages', value: '0', icon: MessageSquare, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+              ].map((stat, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#818CF8]/30 transition-all group"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className={`p-3 ${stat.bg} rounded-2xl ${stat.color} group-hover:scale-110 transition-transform`}>
+                      <stat.icon size={24} />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live</span>
                   </div>
-                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Active</span>
-                </div>
-                <div>
-                  <div className="text-4xl font-black text-white tracking-tighter">{projects.length}</div>
-                  <div className="text-xs font-bold text-white/40 uppercase tracking-widest">My Projects</div>
-                </div>
-              </div>
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="p-3 bg-[#E6FF00]/10 rounded-2xl text-[#E6FF00]">
-                    <Clock size={24} />
+                  <div>
+                    <div className="text-4xl font-black text-white tracking-tighter">{stat.value}</div>
+                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</div>
                   </div>
-                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Monthly</span>
-                </div>
-                <div>
-                  <div className="text-4xl font-black text-white tracking-tighter">
-                    {attendance.length > 0 ? Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100) : 0}%
-                  </div>
-                  <div className="text-xs font-bold text-white/40 uppercase tracking-widest">Attendance</div>
-                </div>
-              </div>
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-400">
-                    <MessageSquare size={24} />
-                  </div>
-                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">New</span>
-                </div>
-                <div>
-                  <div className="text-4xl font-black text-white tracking-tighter">0</div>
-                  <div className="text-xs font-bold text-white/40 uppercase tracking-widest">Messages</div>
-                </div>
-              </div>
+                </motion.div>
+              ))}
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10">
+            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10">
               <h3 className="text-2xl font-black text-white uppercase italic mb-8">Recent Activity</h3>
               <div className="space-y-6">
-                <div className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-xl flex items-center justify-center text-[#E6FF00]">
+                <div className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
+                  <div className="w-12 h-12 bg-[#818CF8]/10 rounded-xl flex items-center justify-center text-[#818CF8]">
                     <CheckCircle2 size={24} />
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-bold text-white uppercase italic">Profile Approved</div>
-                    <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">Your developer profile is now active</div>
+                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Your developer profile is now active</div>
                   </div>
-                  <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">Just now</div>
+                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Just now</div>
                 </div>
               </div>
             </div>
@@ -514,11 +500,12 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   };
 
   return (
-    <div className="min-h-screen bg-[#4A5D4E] font-sans selection:bg-[#E6FF00] selection:text-black">
+    <div className="min-h-screen bg-[#0F172A] font-sans selection:bg-[#818CF8] selection:text-white text-slate-200">
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-full w-80 bg-white/5 backdrop-blur-2xl border-r border-white/10 z-40 p-10 flex flex-col">
-        <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12">
-          Webby<span className="text-[#E6FF00]">Launch</span>
+      <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col">
+        <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
+          <div className="w-8 h-8 bg-[#818CF8] rounded-lg -rotate-6 shadow-[0_0_20px_rgba(129,140,248,0.3)]" />
+          Webby<span className="text-[#818CF8]">Dev</span>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -533,10 +520,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as Tab)}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all ${
+              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.1)]' 
-                  : 'text-white/40 hover:bg-white/5 hover:text-white'
+                  ? 'bg-[#818CF8] text-white shadow-[0_0_30px_rgba(129,140,248,0.2)] scale-[1.02]' 
+                  : 'text-slate-500 hover:bg-white/5 hover:text-white'
               }`}
             >
               <tab.icon size={18} />
@@ -549,7 +536,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           onClick={() => setActiveTab('resign')}
           className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all mt-auto ${
             activeTab === 'resign' 
-              ? 'bg-red-500 text-white' 
+              ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.2)]' 
               : 'text-red-500/60 hover:bg-red-500/10 hover:text-red-500'
           }`}
         >
@@ -560,12 +547,12 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
       {/* Main Content */}
       <main className="pl-80 min-h-screen">
-        <header className="px-12 py-10 flex justify-between items-center border-b border-white/5">
+        <header className="px-12 py-10 flex justify-between items-center border-b border-white/5 bg-slate-900/20 backdrop-blur-md sticky top-0 z-30">
           <div className="space-y-1">
             <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">
               {activeTab.replace('-', ' ')}
             </h2>
-            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
               Developer Portal / {profile?.devRole || 'New Developer'}
             </p>
           </div>
@@ -573,9 +560,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           <div className="flex items-center gap-6">
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">{profile?.displayName}</div>
-              <div className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">{profile?.status || 'Active'}</div>
+              <div className="text-[10px] font-black text-[#818CF8] uppercase tracking-widest">{profile?.status || 'Active'}</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-[#E6FF00] flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_20px_rgba(230,255,0,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#818CF8] to-indigo-600 flex items-center justify-center text-white font-black text-xl italic shadow-[0_0_30px_rgba(129,140,248,0.2)]">
               {profile?.displayName?.[0] || 'D'}
             </div>
           </div>
@@ -585,10 +572,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "circOut" }}
             >
               {renderTabContent()}
             </motion.div>

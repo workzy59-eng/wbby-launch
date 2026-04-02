@@ -37,6 +37,9 @@ export default function LandingPage({ user }: LandingPageProps) {
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50">
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl">
           <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#E6FF00] rounded-lg flex items-center justify-center">
+              <span className="text-black font-black text-xl italic tracking-tighter">W</span>
+            </div>
             <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
               Webby<span className="text-[#E6FF00]">Launch</span>
             </div>
@@ -108,9 +111,6 @@ export default function LandingPage({ user }: LandingPageProps) {
               <Link to="/onboarding" className="bg-[#E6FF00] text-black px-16 py-6 rounded-3xl text-2xl font-black flex items-center gap-4 hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)]">
                 Start Your Project <ArrowRight size={32} />
               </Link>
-              <Link to="/portfolio/autos" className="px-16 py-6 rounded-3xl text-2xl font-black border-2 border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all">
-                View Portfolio
-              </Link>
             </div>
           </motion.div>
         </div>
@@ -153,40 +153,93 @@ export default function LandingPage({ user }: LandingPageProps) {
         </div>
       </section>
 
-      {/* About Us Section */}
-      <section id="about-us" className="py-32 px-10 bg-[#f5f5f5] text-black">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-          <div className="relative">
-            <div className="aspect-[4/5] rounded-[4rem] overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200" alt="Team" className="w-full h-full object-cover" />
+      {/* Portfolio Section */}
+      <section id="portfolio" className="py-32 px-10 bg-black text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-10">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-[1px] bg-[#E6FF00]" />
+                <span className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Portfolio</span>
+              </div>
+              <h2 className="text-7xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.85]">
+                Featured <span className="text-black bg-[#E6FF00] px-4">Projects</span>
+              </h2>
             </div>
-            <div className="absolute -bottom-10 -right-10 bg-[#E6FF00] p-12 rounded-[3rem] shadow-2xl hidden md:block">
-              <div className="text-7xl font-black tracking-tighter italic">10+</div>
-              <div className="text-xs font-bold uppercase tracking-widest opacity-60">Years of Excellence</div>
+            <div className="text-[10rem] font-black text-white/5 tabular-nums leading-none hidden lg:block">01-04</div>
+          </div>
+ 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-20">
+            {[
+              { title: 'Automobiles', category: 'Luxury Car UI', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200', link: '/portfolio/autos', span: 'md:col-span-1' },
+              { title: 'Gym', category: 'Fitness Dashboard', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200', link: '/portfolio/gym', span: 'md:col-span-1' },
+              { title: 'Logistics', category: 'Cargo Tracking', image: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=1200', link: '/portfolio/cargo', span: 'md:col-span-1' },
+              { title: 'School', category: 'Education Portal', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200', link: '/portfolio/school', span: 'md:col-span-1' }
+            ].map((p, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={p.span}
+              >
+                <Link to={p.link} className="group block relative aspect-[16/10] rounded-[3rem] overflow-hidden bg-[#1a1a1a] shadow-2xl border border-white/5">
+                  <img src={p.image} alt={p.title} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
+                  <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E6FF00] mb-2">{p.category}</div>
+                      <h3 className="text-4xl font-black uppercase italic tracking-tighter">{p.title}</h3>
+                    </div>
+                    <div className="w-16 h-16 rounded-full bg-[#E6FF00] text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 shadow-[0_0_30px_rgba(230,255,0,0.4)]">
+                      <ArrowRight size={28} />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section id="about-us" className="py-32 px-10 bg-[#064E3B] text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#E6FF00]/10 rounded-full blur-[150px] -z-0" />
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center relative z-10">
+          <div className="relative">
+            <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl border border-white/10 relative group">
+              <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200" alt="Team" className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" referrerPolicy="no-referrer" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#064E3B] via-transparent to-transparent opacity-60" />
+            </div>
+            <div className="absolute -bottom-10 -right-10 bg-[#E6FF00] p-12 rounded-[3rem] shadow-[0_30px_60px_rgba(0,0,0,0.3)] hidden md:block">
+              <div className="text-7xl font-black tracking-tighter italic text-black leading-none">10+</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-black/40 mt-2">Years Excellence</div>
             </div>
           </div>
           <div className="space-y-10">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-[1px] bg-black" />
-              <span className="text-xs font-bold uppercase tracking-[0.4em]">Who We Are</span>
+              <div className="w-16 h-[1px] bg-[#E6FF00]" />
+              <span className="text-xs font-black uppercase tracking-[0.5em] text-[#E6FF00]">Who We Are</span>
             </div>
-            <h2 className="text-7xl font-black tracking-tighter uppercase italic leading-[0.9]">
-              Crafting Digital <span className="text-[#E6FF00] bg-black px-4">Masterpieces</span>
+            <h2 className="text-7xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.85]">
+              Crafting Digital <br />
+              <span className="text-black bg-[#E6FF00] px-6">Masterpieces</span>
             </h2>
-            <p className="text-xl font-medium opacity-60 leading-relaxed">
+            <p className="text-xl font-medium text-white/70 leading-relaxed italic">
               At WebbyLaunch, we don't just build websites; we create digital identities. Our mission is to empower businesses with the tools they need to thrive in an ever-evolving digital landscape.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              <div>
-                <h4 className="text-xl font-black uppercase italic mb-2">Our Mission</h4>
-                <p className="text-sm opacity-50">To deliver premium web solutions that exceed expectations and drive real business results.</p>
+              <div className="space-y-4 p-8 bg-white/5 rounded-[2.5rem] border border-white/5 backdrop-blur-xl">
+                <h4 className="text-xl font-black uppercase italic text-[#E6FF00]">Our Mission</h4>
+                <p className="text-sm opacity-60 leading-relaxed font-medium">To deliver premium web solutions that exceed expectations and drive real business results.</p>
               </div>
-              <div>
-                <h4 className="text-xl font-black uppercase italic mb-2">Our Vision</h4>
-                <p className="text-sm opacity-50">To be the global leader in custom web development for small and medium enterprises.</p>
+              <div className="space-y-4 p-8 bg-white/5 rounded-[2.5rem] border border-white/5 backdrop-blur-xl">
+                <h4 className="text-xl font-black uppercase italic text-[#E6FF00]">Our Vision</h4>
+                <p className="text-sm opacity-60 leading-relaxed font-medium">To be the global leader in custom web development for small and medium enterprises.</p>
               </div>
             </div>
-            <button className="bg-black text-white px-12 py-5 rounded-2xl text-lg font-black uppercase italic hover:scale-105 transition-all">
+            <button className="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase italic text-lg hover:scale-[1.05] active:scale-[0.95] transition-all shadow-2xl">
               Learn More About Us
             </button>
           </div>
@@ -194,7 +247,7 @@ export default function LandingPage({ user }: LandingPageProps) {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-32 px-10 bg-[#f5f5f5] text-black">
+      <section id="pricing" className="py-32 px-10 bg-white text-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-20 space-y-6">
             <div className="flex items-center justify-center gap-3">
@@ -210,19 +263,25 @@ export default function LandingPage({ user }: LandingPageProps) {
             </p>
           </div>
 
-          <div className="max-w-xl mx-auto">
-            <div className="bg-white p-16 rounded-[4rem] border border-black/5 shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-all duration-500">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-[#f5f5f5] p-12 md:p-16 rounded-[4rem] border border-black/5 shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-all duration-500">
               <div className="absolute top-0 right-0 bg-[#E6FF00] px-10 py-3 rounded-bl-[2rem] text-[10px] font-black uppercase tracking-widest">Most Popular</div>
               
               <div className="mb-12">
-                <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4">The Launch Plan</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-7xl font-black tracking-tighter">$899</span>
-                  <span className="text-xl font-bold opacity-30 uppercase tracking-widest">/month</span>
+                <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-8">The Launch Plan</h3>
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-baseline gap-4">
+                    <span className="text-8xl md:text-9xl font-black tracking-tighter leading-none">₹899</span>
+                    <span className="text-2xl font-bold opacity-30 uppercase tracking-widest">/ month</span>
+                  </div>
+                  <div className="inline-flex items-center gap-4 bg-black text-[#E6FF00] px-8 py-4 rounded-full shadow-xl">
+                    <span className="text-2xl font-black italic tracking-tighter">+ ₹9,999</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Setup Fee</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-6 mb-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 mb-12 border-t border-black/5 pt-12">
                 {[
                   'Custom React Website',
                   'Dedicated Developer',
@@ -230,7 +289,8 @@ export default function LandingPage({ user }: LandingPageProps) {
                   'Real-time Messaging',
                   'SEO Optimization',
                   '24/7 Premium Support',
-                  'Unlimited Updates'
+                  'Unlimited Updates',
+                  'Cloud Hosting Included'
                 ].map((feature, i) => (
                   <div key={i} className="flex items-center gap-4">
                     <div className="w-6 h-6 rounded-full bg-[#E6FF00] flex items-center justify-center">
@@ -241,7 +301,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                 ))}
               </div>
 
-              <Link to="/auth" className="block w-full bg-black text-white py-6 rounded-2xl text-center font-black uppercase italic text-xl hover:bg-[#E6FF00] hover:text-black transition-all shadow-2xl">
+              <Link to="/auth" className="block w-full bg-black text-white py-8 rounded-3xl text-center font-black uppercase italic text-2xl hover:bg-[#E6FF00] hover:text-black transition-all shadow-2xl">
                 Get Started Now
               </Link>
             </div>
