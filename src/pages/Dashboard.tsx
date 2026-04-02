@@ -22,6 +22,19 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [showChat, setShowChat] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+  const [showDirectChat, setShowDirectChat] = useState(false);
+  const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      const { getProfiles } = await import('../services/database');
+      const profiles = await getProfiles();
+      const admin = profiles.find(p => p.role === 'admin');
+      if (admin) setAdminProfile(admin);
+    };
+    fetchAdmin();
+  }, []);
+
   useEffect(() => {
     const unsubscribe = getProjects((projectsData) => {
       setProjects(projectsData as Project[]);
@@ -135,11 +148,24 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 <span className="text-[#E6FF00]">{profile?.displayName?.split(' ')[0] || 'User'}</span>
               </h1>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <div className="text-[10px] font-black uppercase tracking-widest text-white/30">System Status</div>
-              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">All Systems Operational</span>
+            <div className="flex flex-col items-end gap-4">
+              <div className="flex items-center gap-4">
+                {adminProfile && (
+                  <button 
+                    onClick={() => setShowDirectChat(true)}
+                    className="flex items-center gap-3 bg-[#E6FF00]/10 border border-[#E6FF00]/20 px-6 py-3 rounded-2xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all group"
+                  >
+                    <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Chat with Admin</span>
+                  </button>
+                )}
+                <div className="flex flex-col items-end gap-1">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-white/30">System Status</div>
+                  <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">All Systems Operational</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -158,6 +184,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   profile={profile}
                   onClose={() => setActiveTab('dashboard')}
                   fullScreen={false}
+                  projects={projects}
                 />
               ) : activeTab === 'settings' ? (
                 <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl">
@@ -448,6 +475,18 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showDirectChat && adminProfile && (
+          <ChatSystem 
+            isDirect={true}
+            recipientUser={{ uid: adminProfile.uid, displayName: adminProfile.displayName || 'System Admin' }}
+            profile={profile}
+            currentUser={user}
+            onClose={() => setShowDirectChat(false)}
+          />
         )}
       </AnimatePresence>
 

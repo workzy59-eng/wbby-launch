@@ -214,7 +214,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   />
                   {formData.businessName.length > 0 && formData.businessName.length < 2 && (
                     <p className="text-red-400 text-[10px] font-black uppercase tracking-widest mt-2 ml-4 animate-pulse">
-                      it should continue, move forward, it should continue move on
+                      Business name must be at least 2 characters
                     </p>
                   )}
                 </div>
@@ -226,7 +226,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   placeholder="E.G. +1 (555) 000-0000"
                   className={`w-full p-6 rounded-2xl bg-white/5 border transition-all uppercase font-black italic tracking-tighter ${
                     !formData.businessNumber && formData.businessName.length >= 2
-                      ? 'border-yellow-500/50'
+                      ? 'border-red-500/50'
                       : formData.businessNumber
                       ? 'border-green-500/50'
                       : 'border-white/10'
@@ -235,35 +235,41 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   onChange={(e) => setFormData({ ...formData, businessNumber: e.target.value })}
                 />
                 {!formData.businessNumber && formData.businessName.length >= 2 && (
-                  <p className="text-yellow-500/70 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">
+                  <p className="text-red-400 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">
                     Phone number is required to continue
                   </p>
                 )}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Describe your website</label>
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Describe your website <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <textarea
                     className={`w-full p-6 rounded-2xl bg-white/5 border transition-all uppercase font-black italic tracking-tighter h-48 resize-none ${
-                      formData.description.length > 0 && formData.description.trim().split(/\s+/).filter(Boolean).length < 2
+                      formData.description.length > 0 && formData.description.trim().split(/\s+/).filter(Boolean).length < 5
                         ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                        : formData.description.trim().split(/\s+/).filter(Boolean).length >= 2
+                        : formData.description.trim().split(/\s+/).filter(Boolean).length >= 5
                         ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                         : 'border-white/10 focus:border-[#E6FF00]'
                     } text-white focus:outline-none`}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Tell us about your business and what you want on your website..."
                   />
                   <div className="absolute bottom-4 right-6 text-[10px] font-black uppercase tracking-widest text-white/30">
-                    {formData.description.trim().split(/\s+/).filter(Boolean).length} Words
+                    {formData.description.trim().split(/\s+/).filter(Boolean).length} Words (Min 5)
                   </div>
                 </div>
+                {formData.description.length > 0 && formData.description.trim().split(/\s+/).filter(Boolean).length < 5 && (
+                  <p className="text-red-400 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">
+                    Please provide a more detailed description (at least 5 words)
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                disabled={formData.businessName.length < 2 || formData.description.trim().split(/\s+/).filter(Boolean).length < 2 || !formData.businessNumber}
+                disabled={formData.businessName.length < 2 || formData.description.trim().split(/\s+/).filter(Boolean).length < 5 || !formData.businessNumber}
                 onClick={handleNext} 
                 className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
               >

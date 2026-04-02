@@ -56,6 +56,8 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [isGeneratingWarning, setIsGeneratingWarning] = useState<string | null>(null);
 
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -78,6 +80,17 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
     };
     fetchData();
   }, []);
+
+  const handleUpdateProject = async (projectId: string, updates: Partial<Project>) => {
+    try {
+      const { updateProject } = await import('../services/database');
+      await updateProject(projectId, updates);
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
+      setEditingProject(null);
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
+  };
 
   const handleApproveDeveloper = async (userId: string) => {
     await updateProfile(userId, { status: 'approved' });
@@ -414,7 +427,10 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
                     </div>
                     <div className="pt-6 border-t border-white/5 flex justify-between items-center">
                       <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress: {project.progress || 0}%</div>
-                      <button className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                      <button 
+                        onClick={() => setEditingProject(project)}
+                        className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all"
+                      >
                         Manage <ChevronRight size={14} />
                       </button>
                     </div>
@@ -427,6 +443,89 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
                 )}
               </div>
             </div>
+
+            {/* Project Edit Modal */}
+            <AnimatePresence>
+              {editingProject && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-lg p-10 space-y-8 shadow-2xl"
+                  >
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Update Project</h3>
+                      <button onClick={() => setEditingProject(null)} className="text-white/40 hover:text-white">
+                        <XCircle size={24} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Status</label>
+                        <select 
+                          value={editingProject.status}
+                          onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value as any })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#00F2FF]"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="Under Review">Under Review</option>
+                          <option value="Accepted">Accepted</option>
+                          <option value="Development Started">Development Started</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                          <option value="rejected">Rejected</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Progress ({editingProject.progress}%)</label>
+                        <input 
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={editingProject.progress}
+                          onChange={(e) => setEditingProject({ ...editingProject, progress: parseInt(e.target.value) })}
+                          className="w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer accent-[#00F2FF]"
+                        />
+                      </div>
+
+                      {editingProject.status === 'rejected' && (
+                        <div>
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Rejection Reason</label>
+                          <textarea 
+                            value={editingProject.rejectionReason || ''}
+                            onChange={(e) => setEditingProject({ ...editingProject, rejectionReason: e.target.value })}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-red-500 h-24 resize-none"
+                            placeholder="Why was this project rejected?"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-4 pt-4">
+                      <button 
+                        onClick={() => setEditingProject(null)}
+                        className="flex-1 py-4 rounded-xl border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={() => handleUpdateProject(editingProject.id, { 
+                          status: editingProject.status, 
+                          progress: editingProject.progress,
+                          rejectionReason: editingProject.rejectionReason
+                        })}
+                        className="flex-1 py-4 rounded-xl bg-[#00F2FF] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(0,242,255,0.2)]"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         );
       case 'attendance':

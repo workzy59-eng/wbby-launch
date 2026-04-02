@@ -15,10 +15,11 @@ import {
   Smile,
   FileText,
   ChevronLeft,
-  Loader2
+  Loader2,
+  Briefcase
 } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
-import { UserProfile, Message } from '../types';
+import { UserProfile, Message, Project } from '../types';
 import { 
   sendDirectMessage, 
   getDirectMessages, 
@@ -29,12 +30,14 @@ import {
   getUserProfile
 } from '../services/database';
 import { formatDate } from '../lib/utils';
+import ChatSystem from './ChatSystem';
 
 interface MessagesModuleProps {
   currentUser: FirebaseUser;
   profile: UserProfile | null;
   onClose: () => void;
   fullScreen?: boolean;
+  projects?: Project[];
 }
 
 interface Conversation {
@@ -45,9 +48,11 @@ interface Conversation {
   participants: string[];
   unreadCount?: number;
   recipientProfile?: UserProfile;
+  isProject?: boolean;
+  project?: Project;
 }
 
-export default function MessagesModule({ currentUser, profile, onClose, fullScreen = true }: MessagesModuleProps) {
+export default function MessagesModule({ currentUser, profile, onClose, fullScreen = true, projects = [] }: MessagesModuleProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -84,39 +89,54 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       return filteredProfiles;
     };
 
-    const unsubConversations = getConversations(async (convs) => {
-      const enrichedConvs = await Promise.all(convs.map(async (conv) => {
-        const recipientId = conv.participants.find((id: string) => id !== currentUser.uid);
-        const recipientProfile = await getUserProfile(recipientId);
-        return { ...conv, recipientProfile };
-      }));
-      
-      // Filter conversations as well for non-admins
-      let finalConvs = enrichedConvs;
-      if (profile?.role !== 'admin') {
-        finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin');
-      }
-      
-      setConversations(finalConvs as Conversation[]);
-      setIsLoading(false);
+    fetchProfiles();
 
-      // For clients, if no conversations exist, automatically show the admin list or select admin
-      if (profile?.role === 'client' && finalConvs.length === 0) {
-        const adminProfiles = await fetchProfiles();
-        if (adminProfiles.length > 0) {
-          // We don't automatically start a chat, but we could show the user list
-          // Or just let the "No conversations" view handle it with a prominent button
+    const unsubConversations = getConversations(async (convs) => {
+      try {
+        const enrichedConvs = await Promise.all(convs.map(async (conv) => {
+          const recipientId = conv.participants.find((id: string) => id !== currentUser.uid);
+          const recipientProfile = await getUserProfile(recipientId);
+          return { ...conv, recipientProfile };
+        }));
+        
+        // Filter conversations as well for non-admins
+        let finalConvs = enrichedConvs;
+        if (profile?.role !== 'admin') {
+          finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin');
         }
-      } else {
-        fetchProfiles();
+        
+        // Add project conversations
+        const projectConvs: Conversation[] = projects.map(p => ({
+          id: p.id,
+          lastMessage: 'Project Chat',
+          lastMessageAt: p.createdAt,
+          lastSenderId: '',
+          participants: [],
+          isProject: true,
+          project: p
+        }));
+
+        setConversations([...projectConvs, ...finalConvs] as Conversation[]);
+        setIsLoading(false);
+
+        // For clients, if no conversations exist, automatically show the admin list or select admin
+        if (profile?.role === 'client' && finalConvs.length === 0 && projectConvs.length === 0) {
+          const adminProfiles = await fetchProfiles();
+          if (adminProfiles.length > 0) {
+            // We don't automatically start a chat, but we could show the user list
+          }
+        }
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+        setIsLoading(false);
       }
     });
 
     return () => unsubConversations?.();
-  }, [currentUser.uid, profile?.role]);
+  }, [currentUser.uid, profile?.role, projects]);
 
   useEffect(() => {
-    if (!activeConversation) return;
+    if (!activeConversation || activeConversation.isProject) return;
 
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
@@ -153,7 +173,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !activeConversation || isSending) return;
+    if (!inputText.trim() || !activeConversation || isSending || activeConversation.isProject) return;
 
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
@@ -174,7 +194,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   };
 
   const startNewChat = (user: UserProfile) => {
-    const existingConv = conversations.find(c => c.participants.includes(user.uid));
+    const existingConv = conversations.find(c => !c.isProject && c.participants.includes(user.uid));
     if (existingConv) {
       setActiveConversation(existingConv);
     } else {
@@ -190,9 +210,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     setShowUserList(false);
   };
 
-  const filteredConversations = conversations.filter(c => 
-    c.recipientProfile?.displayName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConversations = conversations.filter(c => {
+    if (c.isProject) {
+      return c.project?.businessName.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+    return c.recipientProfile?.displayName.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   const containerClasses = fullScreen 
     ? "fixed inset-0 z-[200] bg-[#020617] flex flex-col md:flex-row overflow-hidden font-sans"
@@ -263,22 +286,27 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 className={`w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all border-b border-white/5 ${activeConversation?.id === conv.id ? 'bg-white/10' : ''}`}
               >
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-xl shadow-lg">
-                    {conv.recipientProfile?.displayName?.[0] || 'U'}
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg ${
+                    conv.isProject 
+                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                      : 'bg-gradient-to-br from-[#E6FF00] to-yellow-600'
+                  }`}>
+                    {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
-                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#020617] rounded-full"></div>
+                  {!conv.isProject && <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#020617] rounded-full"></div>}
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <div className="flex justify-between items-start mb-1">
-                    <span className="font-black text-white truncate uppercase tracking-tight text-sm">{conv.recipientProfile?.displayName}</span>
+                    <span className="font-black text-white truncate uppercase tracking-tight text-sm">
+                      {conv.isProject ? conv.project?.businessName : conv.recipientProfile?.displayName}
+                    </span>
                     <span className="text-[10px] text-white/30 font-bold shrink-0">
                       {conv.lastMessageAt ? formatDate(conv.lastMessageAt, 'h:mm a') : ''}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-white/40 truncate font-medium pr-2">
-                      {conv.lastSenderId === currentUser.uid ? 'You: ' : ''}
-                      {conv.lastMessage}
+                      {conv.isProject ? 'Project Discussion' : (conv.lastSenderId === currentUser.uid ? 'You: ' : '') + conv.lastMessage}
                     </p>
                     {conv.unreadCount && conv.unreadCount > 0 && (
                       <div className="bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] shrink-0">
@@ -305,8 +333,45 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       {/* Main Chat View */}
       <div className={`flex-1 flex flex-col bg-slate-900/20 backdrop-blur-xl relative ${!activeConversation ? 'hidden md:flex' : 'flex'}`}>
         {activeConversation ? (
-          <>
-            {/* Chat Header */}
+          activeConversation.isProject ? (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <header className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => setActiveConversation(null)}
+                    className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white md:hidden"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-black font-black text-lg">
+                    <Briefcase size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-white uppercase tracking-tight">{activeConversation.project?.businessName}</h3>
+                    <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest flex items-center gap-1.5">
+                      Project Chat
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={onClose}
+                  className="p-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all hidden md:block"
+                >
+                  <X size={20} />
+                </button>
+              </header>
+              <div className="flex-1 overflow-hidden">
+                <ChatSystem 
+                  projectId={activeConversation.project?.id || ''} 
+                  user={currentUser} 
+                  profile={profile} 
+                  currentUser={currentUser} 
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Chat Header */}
             <header className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md">
               <div className="flex items-center gap-4">
                 <button 
@@ -421,7 +486,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </form>
             </footer>
           </>
-        ) : (
+        )
+      ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
             <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
               <MessageCircle size={48} strokeWidth={1.5} className="text-[#E6FF00]" />
