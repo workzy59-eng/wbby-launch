@@ -20,7 +20,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showChat, setShowChat] = useState(false);
-  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
@@ -97,7 +96,28 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
       </header>
 
-      <main className="lg:ml-24 min-h-screen">
+      {/* Mobile Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-2xl border-t border-white/5 px-6 py-4 flex justify-around items-center z-40">
+        {[
+          { id: 'dashboard', icon: LayoutDashboard },
+          { id: 'messages', icon: MessageCircle },
+          { id: 'settings', icon: Settings },
+        ].map((tab) => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`p-3 rounded-xl transition-all ${
+              activeTab === tab.id 
+                ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.2)]' 
+                : 'text-white/30'
+            }`}
+          >
+            <tab.icon size={20} />
+          </button>
+        ))}
+      </nav>
+
+      <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 space-y-10">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -133,21 +153,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               transition={{ duration: 0.3, ease: "circOut" }}
             >
               {activeTab === 'messages' ? (
-                <div className="h-[calc(100vh-20rem)] flex flex-col items-center justify-center space-y-8 bg-black/20 backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl">
-                  <div className="w-24 h-24 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00] shadow-[0_0_30px_rgba(230,255,0,0.2)]">
-                    <MessageCircle size={48} />
-                  </div>
-                  <div className="text-center space-y-2">
-                    <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Secure Messaging Hub</h3>
-                    <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Chat with our team and manage your project communications</p>
-                  </div>
-                  <button 
-                    onClick={() => setIsMessagesOpen(true)}
-                    className="px-12 py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)]"
-                  >
-                    Open Full Screen Messages
-                  </button>
-                </div>
+                <MessagesModule 
+                  currentUser={user}
+                  profile={profile}
+                  onClose={() => setActiveTab('dashboard')}
+                />
               ) : activeTab === 'settings' ? (
                 <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl">
                   <h2 className="text-5xl font-black tracking-tighter mb-12 uppercase italic text-[#E6FF00]">Settings</h2>
@@ -407,16 +417,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           </AnimatePresence>
         </div>
       </main>
-
-      <AnimatePresence>
-        {isMessagesOpen && user && (
-          <MessagesModule 
-            currentUser={user}
-            profile={profile}
-            onClose={() => setIsMessagesOpen(false)}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Chat Sidebar */}
       <AnimatePresence>

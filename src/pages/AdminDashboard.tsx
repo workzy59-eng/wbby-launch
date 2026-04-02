@@ -494,7 +494,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   return (
     <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#E6FF00] selection:text-black text-slate-200">
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col">
+      <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
           <div className="w-8 h-8 bg-[#E6FF00] rounded-lg rotate-12 shadow-[0_0_20px_rgba(230,255,0,0.3)]" />
           Webby<span className="text-[#E6FF00]">Admin</span>
@@ -534,8 +534,31 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
         </div>
       </aside>
 
+      {/* Mobile Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-2xl border-t border-white/5 px-6 py-4 flex justify-around items-center z-40">
+        {[
+          { id: 'overview', icon: LayoutDashboard },
+          { id: 'clients', icon: User },
+          { id: 'developers', icon: Users },
+          { id: 'projects', icon: Briefcase },
+          { id: 'messages', icon: MessageSquare },
+        ].map((tab) => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as Tab)}
+            className={`p-3 rounded-xl transition-all ${
+              activeTab === tab.id 
+                ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.2)]' 
+                : 'text-slate-500'
+            }`}
+          >
+            <tab.icon size={20} />
+          </button>
+        ))}
+      </nav>
+
       {/* Main Content */}
-      <main className="pl-80 min-h-screen">
+      <main className="pl-0 lg:pl-80 min-h-screen pb-24 lg:pb-0">
         <header className="px-12 py-10 flex justify-between items-center border-b border-white/5 bg-slate-900/20 backdrop-blur-md sticky top-0 z-30">
           <div className="space-y-1">
             <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">
