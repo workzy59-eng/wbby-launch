@@ -32,6 +32,7 @@ interface MessagesModuleProps {
   currentUser: FirebaseUser;
   profile: UserProfile | null;
   onClose: () => void;
+  fullScreen?: boolean;
 }
 
 interface Conversation {
@@ -44,7 +45,7 @@ interface Conversation {
   recipientProfile?: UserProfile;
 }
 
-export default function MessagesModule({ currentUser, profile, onClose }: MessagesModuleProps) {
+export default function MessagesModule({ currentUser, profile, onClose, fullScreen = true }: MessagesModuleProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -71,8 +72,8 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
       }
       
       setAllProfiles(filteredProfiles);
+      return filteredProfiles;
     };
-    fetchProfiles();
 
     const unsubConversations = getConversations(async (convs) => {
       const enrichedConvs = await Promise.all(convs.map(async (conv) => {
@@ -89,6 +90,17 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
       
       setConversations(finalConvs as Conversation[]);
       setIsLoading(false);
+
+      // For clients, if no conversations exist, automatically show the admin list or select admin
+      if (profile?.role === 'client' && finalConvs.length === 0) {
+        const adminProfiles = await fetchProfiles();
+        if (adminProfiles.length > 0) {
+          // We don't automatically start a chat, but we could show the user list
+          // Or just let the "No conversations" view handle it with a prominent button
+        }
+      } else {
+        fetchProfiles();
+      }
     });
 
     return () => unsubConversations?.();
@@ -173,12 +185,16 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
     c.recipientProfile?.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const containerClasses = fullScreen 
+    ? "fixed inset-0 z-[200] bg-[#020617] flex flex-col md:flex-row overflow-hidden font-sans"
+    : "relative w-full h-[calc(100vh-180px)] bg-[#020617]/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
+
   return (
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-[#020617] flex flex-col md:flex-row overflow-hidden font-sans"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className={containerClasses}
     >
       {/* Sidebar / List View */}
       <div className={`w-full md:w-96 border-r border-white/5 flex flex-col bg-slate-900/40 backdrop-blur-3xl ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
@@ -186,7 +202,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
           <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Messages</h2>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all"
+            className={`p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all ${!fullScreen ? 'lg:hidden' : ''}`}
           >
             <X size={24} />
           </button>
@@ -211,14 +227,23 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
               <Loader2 className="text-[#E6FF00] animate-spin" size={32} />
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-10 text-center space-y-4">
-              <MessageCircle className="mx-auto text-white/10" size={48} />
-              <p className="text-white/40 text-sm font-bold">No conversations yet</p>
+            <div className="p-10 text-center space-y-6">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                <MessageCircle className="text-white/10" size={40} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-white/60 text-sm font-black uppercase italic tracking-tight">No conversations yet</p>
+                <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                  {profile?.role === 'admin' 
+                    ? 'Start a conversation with one of your clients or developers.' 
+                    : 'Need help? Start a conversation with our support team.'}
+                </p>
+              </div>
               <button 
                 onClick={() => setShowUserList(true)}
-                className="text-[#E6FF00] text-xs font-black uppercase tracking-widest hover:underline"
+                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[#E6FF00] text-[10px] font-black uppercase tracking-widest hover:bg-[#E6FF00] hover:text-black hover:border-transparent transition-all"
               >
-                Start a new chat
+                {profile?.role === 'admin' ? 'Start a new chat' : 'Message Admin'}
               </button>
             </div>
           ) : (

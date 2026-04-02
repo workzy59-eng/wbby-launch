@@ -486,6 +486,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
             currentUser={user!}
             profile={profile}
             onClose={() => setActiveTab('overview')}
+            fullScreen={false}
           />
         );
     }

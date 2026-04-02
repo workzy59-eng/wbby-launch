@@ -480,6 +480,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             currentUser={user!}
             profile={profile}
             onClose={() => setActiveTab('dashboard')}
+            fullScreen={false}
           />
         );
       case 'update':

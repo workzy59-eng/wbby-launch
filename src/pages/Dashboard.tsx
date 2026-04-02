@@ -157,6 +157,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   currentUser={user}
                   profile={profile}
                   onClose={() => setActiveTab('dashboard')}
+                  fullScreen={false}
                 />
               ) : activeTab === 'settings' ? (
                 <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl">
