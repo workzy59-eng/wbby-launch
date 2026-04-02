@@ -1,27 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import { 
   ArrowRight, 
-  ArrowLeft, 
   CheckCircle2, 
-  Play, 
   Star, 
   Users, 
-  Globe, 
-  Layout, 
-  MessageSquare, 
+  Shield, 
+  Zap, 
+  Smartphone, 
   Search, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  ChevronRight,
-  Menu,
-  X
+  Layout as LayoutIcon 
 } from 'lucide-react';
-import { PROFESSIONAL_EMAIL, APP_NAME, HYPHENATED_NAME } from '../constants';
+import SEO from '../components/SEO';
 
 interface LandingPageProps {
   user: FirebaseUser | null;
@@ -29,402 +22,378 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ user }: LandingPageProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const portfolios = [
+    { 
+      title: 'Automobiles', 
+      category: 'Auto Speed UI', 
+      image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200', 
+      link: '/portfolio/autos',
+      description: 'Premium showroom experience for car dealerships.'
+    },
+    { 
+      title: 'Gym & Fitness', 
+      category: 'Iron Pulse UI', 
+      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200', 
+      link: '/portfolio/gym',
+      description: 'High-energy landing page for fitness centers.'
+    },
+    { 
+      title: 'Logistics', 
+      category: 'Cargo Flow UI', 
+      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200', 
+      link: '/portfolio/cargo',
+      description: 'Efficient tracking and management for logistics.'
+    }
+  ];
+
+  const testimonials = [
+    { name: 'Rahul Sharma', role: 'Gym Owner', text: 'Got my gym website in 2 days. Super smooth! The design is top-notch and my clients love it.', rating: 5 },
+    { name: 'Priya Patel', role: 'Logistics Manager', text: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer.', rating: 5 },
+    { name: 'Amit Verma', role: 'Car Dealer', text: 'The Auto Speed UI is exactly what I needed for my showroom. Fast, clean, and mobile responsive.', rating: 5 }
+  ];
+
+  const steps = [
+    { title: 'Submit Request', description: 'Tell us about your business and requirements.' },
+    { title: 'We Build', description: 'Our experts craft your custom website in 24-48 hours.' },
+    { title: 'You Review', description: 'Check the preview and request any final tweaks.' },
+    { title: 'Get Access', description: 'Launch your professional website to the world.' }
+  ];
 
   return (
-    <div className="min-h-screen bg-[#4A5D4E] text-white font-sans selection:bg-[#E6FF00] selection:text-black">
-      {/* Glassmorphism Navbar */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#E6FF00] rounded-lg flex items-center justify-center">
-              <span className="text-black font-black text-xl italic tracking-tighter">W</span>
-            </div>
-            <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
-              Webby<span className="text-[#E6FF00]">Launch</span>
-            </div>
-          </div>
-
-          <div className="hidden md:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-            {['Home', 'About Us', 'Portfolio'].map((item) => (
-              <a key={item} href={item === 'Home' ? '#home' : item === 'Portfolio' ? '#portfolio' : `#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-[#E6FF00] transition-colors">{item}</a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-6">
-            {user ? (
-              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#E6FF00] transition-all">Dashboard</Link>
-            ) : (
-              <Link to="/auth" className="bg-[#E6FF00] text-black px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]">Get Started</Link>
-            )}
-            <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X /> : <Menu />}
-            </button>
-          </div>
+    <div className="bg-[#4A5D4E]">
+      <SEO />
+      
+      {/* Hero Section */}
+      <section id="home" className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#E6FF00]/10 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#E6FF00]/5 rounded-full blur-[120px] animate-pulse delay-1000" />
         </div>
-      </nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-black/95 backdrop-blur-2xl md:hidden pt-32 px-10"
-          >
-            <div className="flex flex-col gap-8 text-2xl font-bold tracking-tighter">
-              {['About Us', 'Services', 'Pricing', 'Contact'].map((item) => (
-                <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={() => setIsMenuOpen(false)} className="hover:text-[#E6FF00] transition-colors">{item}</a>
-              ))}
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)} className="text-[#E6FF00]">Login</Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Static Hero Section - Matched to Image */}
-      <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-[#4A5D4E]">
         <div className="relative z-10 max-w-7xl mx-auto px-10 w-full text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-5xl mx-auto"
           >
-            <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter mb-8 leading-[0.85] text-white">
-              Premium Web<br />Development.
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full mb-8">
+              <span className="w-2 h-2 bg-[#E6FF00] rounded-full animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Limited slots available today</span>
+            </div>
+
+            <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter mb-8 leading-[0.85] text-white uppercase italic">
+              Get Your Business<br />
+              <span className="text-[#E6FF00]">Built in 24 Hours.</span>
             </h1>
 
-            <p className="text-2xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/70 leading-relaxed">
-              WebbyLaunch provides expert custom web design services and premium website development for small businesses in India and beyond. Fast delivery. Zero hassle.
+            <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-medium text-white/60 leading-relaxed">
+              WebbyLaunch – Professional Website Development. No coding. No stress. We build it for you while you focus on your business.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-8">
-              <Link to="/onboarding" className="bg-[#E6FF00] text-black px-16 py-6 rounded-3xl text-2xl font-black flex items-center gap-4 hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)]">
-                Start Your Project <ArrowRight size={32} />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link 
+                to="/auth" 
+                className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
+              >
+                Start My Website
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
+              <a 
+                href="#portfolio" 
+                className="px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest border border-white/10 hover:bg-white/5 transition-all flex items-center gap-3"
+              >
+                View Demo
+              </a>
+            </div>
+
+            <div className="mt-20 flex flex-wrap justify-center items-center gap-12 opacity-40 grayscale">
+              <div className="flex items-center gap-2">
+                <Users size={20} />
+                <span className="text-xs font-black uppercase tracking-widest">Trusted by 50+ Businesses</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star size={20} />
+                <span className="text-xs font-black uppercase tracking-widest">4.9/5 Rating</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield size={20} />
+                <span className="text-xs font-black uppercase tracking-widest">Secure & Fast</span>
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-32 px-10 bg-white text-black relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-10">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-[1px] bg-black" />
-                <span className="text-xs font-bold uppercase tracking-[0.4em]">Our Services</span>
-              </div>
-              <h2 className="text-7xl font-black tracking-tighter uppercase italic leading-[0.9]">
-                Solutions for the <span className="text-white bg-black px-4">Modern Web</span>
-              </h2>
+      {/* Trust Section */}
+      <section className="py-20 bg-black/10 border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-10">
+          <div className="flex flex-wrap justify-center md:justify-between items-center gap-12 opacity-30 grayscale contrast-125">
+            <span className="text-2xl font-black italic tracking-tighter uppercase">Trusted by 50+ businesses</span>
+            <div className="flex items-center gap-8">
+              <span className="text-xl font-bold tracking-tighter">FITNESS FIRST</span>
+              <span className="text-xl font-bold tracking-tighter">AUTO HUB</span>
+              <span className="text-xl font-bold tracking-tighter">GLOBAL CARGO</span>
+              <span className="text-xl font-bold tracking-tighter">TECH FLOW</span>
             </div>
-            <p className="text-xl font-medium opacity-50 max-w-md">
-              We combine cutting-edge technology with premium design to build digital experiences that drive growth.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Globe, title: 'Web Development', desc: 'Custom high-performance websites built with React and Tailwind.' },
-              { icon: Layout, title: 'Admin Dashboards', desc: 'Powerful management systems to track your business metrics.' },
-              { icon: MessageSquare, title: 'Messaging System', desc: 'Real-time communication tools for seamless client interaction.' },
-              { icon: Search, title: 'SEO Optimization', desc: 'Strategic search engine optimization to boost your online visibility.' }
-            ].map((f, i) => (
-              <div key={i} className="p-10 rounded-[3rem] bg-[#f5f5f5] border border-black/5 hover:bg-[#E6FF00] transition-all group">
-                <div className="w-16 h-16 rounded-2xl bg-black/5 flex items-center justify-center mb-8 group-hover:bg-black group-hover:text-white transition-all">
-                  <f.icon size={32} />
-                </div>
-                <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-4">{f.title}</h3>
-                <p className="font-medium opacity-50 leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* Portfolio Section */}
-      <section id="portfolio" className="py-32 px-10 bg-black text-white overflow-hidden">
+      <section id="portfolio" className="py-32 px-10 bg-black/20">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-10">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-[1px] bg-[#E6FF00]" />
-                <span className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Portfolio</span>
-              </div>
-              <h2 className="text-7xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.85]">
-                Featured <span className="text-black bg-[#E6FF00] px-4">Projects</span>
-              </h2>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+            <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Our Portfolio</h2>
+              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+                Choose Your <span className="text-[#E6FF00]">Industry.</span>
+              </h3>
             </div>
-            <div className="text-[10rem] font-black text-white/5 tabular-nums leading-none hidden lg:block">01-04</div>
+            <p className="max-w-md text-white/40 text-sm font-medium leading-relaxed">
+              We specialize in high-conversion websites for specific niches. Select a template that fits your business.
+            </p>
           </div>
- 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-20">
-            {[
-              { title: 'Automobiles', category: 'Auto Speed UI', image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200', link: '/portfolio/autos', span: 'md:col-span-1' },
-              { title: 'Gym', category: 'Fitness Dashboard', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200', link: '/portfolio/gym', span: 'md:col-span-1' },
-              { title: 'Logistics', category: 'Cargo Tracking', image: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=1200', link: '/portfolio/cargo', span: 'md:col-span-1' },
-            ].map((p, i) => (
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {portfolios.map((item, idx) => (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={p.span}
+                className="group relative bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden hover:border-[#E6FF00]/30 transition-all"
               >
-                <Link to={p.link} className="group block relative aspect-[16/10] rounded-[3rem] overflow-hidden bg-[#1a1a1a] shadow-2xl border border-white/5">
-                  <img src={p.image} alt={p.title} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
-                  <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E6FF00] mb-2">{p.category}</div>
-                      <h3 className="text-4xl font-black uppercase italic tracking-tighter">{p.title}</h3>
-                    </div>
-                    <div className="w-16 h-16 rounded-full bg-[#E6FF00] text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 shadow-[0_0_30px_rgba(230,255,0,0.4)]">
-                      <ArrowRight size={28} />
-                    </div>
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img 
+                    src={item.image} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="p-10 space-y-6">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00] mb-2 block">{item.category}</span>
+                    <h4 className="text-3xl font-black uppercase italic tracking-tighter">{item.title}</h4>
+                    <p className="text-white/40 text-xs font-medium mt-2">{item.description}</p>
                   </div>
-                </Link>
+                  <div className="flex flex-col gap-3">
+                    <Link 
+                      to={item.link} 
+                      className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                    >
+                      View Demo
+                    </Link>
+                    <Link 
+                      to="/auth" 
+                      className="w-full py-4 bg-[#E6FF00] text-black rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
+                    >
+                      Get This Website
+                    </Link>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About Us Section */}
-      <section id="about-us" className="py-32 px-10 bg-[#064E3B] text-white overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#E6FF00]/10 rounded-full blur-[150px] -z-0" />
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center relative z-10">
+      {/* How It Works */}
+      <section className="py-32 px-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-24">
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">The Process</h2>
+            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+              How It <span className="text-[#E6FF00]">Works.</span>
+            </h3>
+          </div>
+
           <div className="relative">
-            <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl border border-white/10 relative group">
-              <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200" alt="Team" className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#064E3B] via-transparent to-transparent opacity-60" />
-            </div>
-            <div className="absolute -bottom-10 -right-10 bg-[#E6FF00] p-12 rounded-[3rem] shadow-[0_30px_60px_rgba(0,0,0,0.3)] hidden md:block">
-              <div className="text-7xl font-black tracking-tighter italic text-black leading-none">10+</div>
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-black/40 mt-2">Years Excellence</div>
+            <div className="hidden lg:block absolute top-1/2 left-0 w-full h-[1px] bg-white/10 -translate-y-1/2 z-0" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10">
+              {steps.map((step, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-xl space-y-6 text-center lg:text-left"
+                >
+                  <div className="w-16 h-16 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-2xl mx-auto lg:mx-0 shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+                    {idx + 1}
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="text-xl font-black uppercase italic tracking-tighter">{step.title}</h4>
+                    <p className="text-white/40 text-xs font-medium leading-relaxed">{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
-          <div className="space-y-10">
-            <div className="flex items-center gap-3">
-              <div className="w-16 h-[1px] bg-[#E6FF00]" />
-              <span className="text-xs font-black uppercase tracking-[0.5em] text-[#E6FF00]">Who We Are</span>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-32 px-10 bg-white/5">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <div className="space-y-12">
+            <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Why Choose Us</h2>
+              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-tight">
+                Built for <span className="text-[#E6FF00]">Speed</span> & Performance.
+              </h3>
             </div>
-            <h2 className="text-7xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.85]">
-              Crafting Digital <br />
-              <span className="text-black bg-[#E6FF00] px-6">Masterpieces</span>
-            </h2>
-            <p className="text-xl font-medium text-white/70 leading-relaxed italic">
-              At WebbyLaunch, we don't just build websites; we create digital identities. Our mission is to empower businesses with the tools they need to thrive in an ever-evolving digital landscape.
-            </p>
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              <div className="space-y-4 p-8 bg-white/5 rounded-[2.5rem] border border-white/5 backdrop-blur-xl">
-                <h4 className="text-xl font-black uppercase italic text-[#E6FF00]">Our Mission</h4>
-                <p className="text-sm opacity-60 leading-relaxed font-medium">To deliver premium web solutions that exceed expectations and drive real business results.</p>
-              </div>
-              <div className="space-y-4 p-8 bg-white/5 rounded-[2.5rem] border border-white/5 backdrop-blur-xl">
-                <h4 className="text-xl font-black uppercase italic text-[#E6FF00]">Our Vision</h4>
-                <p className="text-sm opacity-60 leading-relaxed font-medium">To be the global leader in custom web development for small and medium enterprises.</p>
+              {[
+                { icon: Zap, title: 'Fast Delivery', desc: 'Get your site in 24-48 hours.' },
+                { icon: Smartphone, title: 'Responsive', desc: 'Perfect on every device.' },
+                { icon: Search, title: 'SEO Ready', desc: 'Rank higher on Google.' },
+                { icon: LayoutIcon, title: 'Custom UI', desc: 'Unique design for your brand.' }
+              ].map((feature, idx) => (
+                <div key={idx} className="flex gap-4">
+                  <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-xl flex items-center justify-center text-[#E6FF00] shrink-0">
+                    <feature.icon size={24} />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-black uppercase italic tracking-tighter text-sm">{feature.title}</h4>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="aspect-square bg-gradient-to-br from-[#E6FF00]/20 to-transparent rounded-[3rem] border border-white/10 p-8">
+              <div className="w-full h-full bg-slate-900 rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426" 
+                  alt="Dashboard Preview" 
+                  className="w-full h-full object-cover opacity-50"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-black/60 backdrop-blur-xl p-8 rounded-3xl border border-white/10 text-center space-y-4 max-w-xs">
+                    <div className="w-12 h-12 bg-[#E6FF00] rounded-full flex items-center justify-center text-black mx-auto">
+                      <CheckCircle2 size={24} />
+                    </div>
+                    <h5 className="font-black uppercase italic tracking-tighter">Project Completed</h5>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Your website is ready for launch.</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <button className="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase italic text-lg hover:scale-[1.05] active:scale-[0.95] transition-all shadow-2xl">
-              Learn More About Us
-            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-32 px-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-24">
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Success Stories</h2>
+            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+              Trusted by <span className="text-[#E6FF00]">50+ Businesses.</span>
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((t, idx) => (
+              <div key={idx} className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] space-y-8">
+                <div className="flex gap-1">
+                  {[...Array(t.rating)].map((_, i) => (
+                    <Star key={i} size={16} className="fill-[#E6FF00] text-[#E6FF00]" />
+                  ))}
+                </div>
+                <p className="text-lg font-medium leading-relaxed italic text-white/80">"{t.text}"</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-[#E6FF00] font-black">
+                    {t.name[0]}
+                  </div>
+                  <div>
+                    <h4 className="font-black uppercase italic tracking-tighter text-sm">{t.name}</h4>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-32 px-10 bg-white text-black">
+      <section id="pricing" className="py-32 px-10 bg-black/20">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-20 space-y-6">
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-12 h-[1px] bg-black" />
-              <span className="text-xs font-bold uppercase tracking-[0.4em]">Pricing</span>
-              <div className="w-12 h-[1px] bg-black" />
-            </div>
-            <h2 className="text-7xl font-black tracking-tighter uppercase italic leading-[0.9]">
-              Simple <span className="text-[#E6FF00] bg-black px-4">Premium</span> Pricing
-            </h2>
-            <p className="text-xl font-medium opacity-50">
-              One simple plan for everything you need to launch and grow your digital presence.
-            </p>
+          <div className="text-center space-y-4 mb-24">
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Pricing</h2>
+            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+              Simple <span className="text-[#E6FF00]">Affordable</span> Plans.
+            </h3>
           </div>
 
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-[#f5f5f5] p-12 md:p-16 rounded-[4rem] border border-black/5 shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-all duration-500">
-              <div className="absolute top-0 right-0 bg-[#E6FF00] px-10 py-3 rounded-bl-[2rem] text-[10px] font-black uppercase tracking-widest">Most Popular</div>
-              
-              <div className="mb-12">
-                <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-8">The Launch Plan</h3>
-                <div className="flex flex-col gap-6">
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-8xl md:text-9xl font-black tracking-tighter leading-none">₹899</span>
-                    <span className="text-2xl font-bold opacity-30 uppercase tracking-widest">/ month</span>
-                  </div>
-                  <div className="inline-flex items-center gap-4 bg-black text-[#E6FF00] px-8 py-4 rounded-full shadow-xl">
-                    <span className="text-2xl font-black italic tracking-tighter">+ ₹9,999</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Setup Fee</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 mb-12 border-t border-black/5 pt-12">
-                {[
-                  'Custom React Website',
-                  'Dedicated Developer',
-                  'Admin Dashboard Access',
-                  'Real-time Messaging',
-                  'SEO Optimization',
-                  '24/7 Premium Support',
-                  'Unlimited Updates',
-                  'Cloud Hosting Included'
-                ].map((feature, i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <div className="w-6 h-6 rounded-full bg-[#E6FF00] flex items-center justify-center">
-                      <CheckCircle2 size={14} />
-                    </div>
-                    <span className="font-bold uppercase italic text-sm tracking-tight">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <Link to="/auth" className="block w-full bg-black text-white py-8 rounded-3xl text-center font-black uppercase italic text-2xl hover:bg-[#E6FF00] hover:text-black transition-all shadow-2xl">
-                Get Started Now
-              </Link>
+          <div className="max-w-lg mx-auto bg-white/5 border-2 border-[#E6FF00]/30 p-16 rounded-[3rem] text-center space-y-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-[#E6FF00] text-black px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest">
+              Most Popular
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-32 px-10 bg-white text-black">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20">
-          <div className="space-y-12">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-[1px] bg-black" />
-              <span className="text-xs font-bold uppercase tracking-[0.4em]">Contact Us</span>
-            </div>
-            <h2 className="text-8xl font-black tracking-tighter uppercase italic leading-[0.85]">
-              Let's Start Your <span className="text-white bg-black px-4">Journey</span>
-            </h2>
-            <div className="space-y-8">
-              <div className="flex items-center gap-6 group cursor-pointer">
-                <div className="w-16 h-16 rounded-2xl bg-[#f5f5f5] flex items-center justify-center group-hover:bg-[#E6FF00] transition-all">
-                  <Mail size={24} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">Email Us</div>
-                  <div className="text-xl font-black italic">{PROFESSIONAL_EMAIL}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-6 group cursor-pointer">
-                <div className="w-16 h-16 rounded-2xl bg-[#f5f5f5] flex items-center justify-center group-hover:bg-[#E6FF00] transition-all">
-                  <Phone size={24} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">Call Us</div>
-                  <div className="text-xl font-black italic">+1 (555) 755-7689</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-6 group cursor-pointer">
-                <div className="w-16 h-16 rounded-2xl bg-[#f5f5f5] flex items-center justify-center group-hover:bg-[#E6FF00] transition-all">
-                  <MapPin size={24} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">Visit Us</div>
-                  <div className="text-xl font-black italic">Silicon Valley, CA, USA</div>
-                </div>
+            <div className="space-y-4">
+              <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Launch</h4>
+              <div className="flex items-end justify-center gap-2">
+                <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹899</span>
+                <span className="text-white/40 font-bold uppercase tracking-widest text-xs mb-2">/ month</span>
               </div>
             </div>
-          </div>
-
-          <div className="bg-[#f5f5f5] p-12 md:p-20 rounded-[4rem] border border-black/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#E6FF00]/20 rounded-full blur-[100px] -z-0" />
-            <form className="relative z-10 space-y-6" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 ml-4">Full Name</label>
-                  <input type="text" placeholder="John Doe" className="w-full bg-white border border-black/5 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all font-bold" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 ml-4">Email Address</label>
-                  <input type="email" placeholder="john@example.com" className="w-full bg-white border border-black/5 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all font-bold" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 ml-4">Phone Number</label>
-                <input type="tel" placeholder="+1 (555) 000-0000" className="w-full bg-white border border-black/5 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all font-bold" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 ml-4">Your Message</label>
-                <textarea placeholder="Tell us about your project..." rows={4} className="w-full bg-white border border-black/5 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all resize-none font-bold"></textarea>
-              </div>
-              <button className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase italic text-lg hover:scale-[1.02] transition-all shadow-2xl">
-                Send Message
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-20 px-10 bg-black text-white border-t border-white/5">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
-            <div className="space-y-8">
-              <div className="flex items-center gap-3">
-                <div className="px-2 py-0.5 bg-[#E6FF00] rounded flex items-center justify-center">
-                  <span className="text-black font-black text-[8px] tracking-tighter">{HYPHENATED_NAME}</span>
-                </div>
-                <div className="text-2xl font-bold tracking-tighter">{APP_NAME}</div>
-              </div>
-              <p className="text-sm opacity-40 leading-relaxed">
-                Premium web development solutions for businesses that demand excellence. Fast, secure, and stunning.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-[0.3em] text-[#E6FF00] mb-8">Navigation</h4>
-              <ul className="space-y-4 text-sm font-bold opacity-40">
-                {['About Us', 'Services', 'Portfolio', 'Pricing', 'Contact'].map(item => (
-                  <li key={item}><a href={`#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-[#E6FF00] transition-colors">{item}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-[0.3em] text-[#E6FF00] mb-8">Legal</h4>
-              <ul className="space-y-4 text-sm font-bold opacity-40">
-                {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(item => (
-                  <li key={item}><a href="#" className="hover:text-[#E6FF00] transition-colors">{item}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-[0.3em] text-[#E6FF00] mb-8">Newsletter</h4>
-              <div className="relative">
-                <input type="email" placeholder="Email Address" className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:border-[#E6FF00] outline-none transition-all text-sm" />
-                <button className="absolute right-2 top-2 bottom-2 bg-[#E6FF00] text-black px-4 rounded-lg">
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row justify-between items-center pt-10 border-t border-white/5 gap-6">
-            <div className="text-[10px] font-bold uppercase tracking-widest opacity-20">
-              © 2026 {APP_NAME}. All rights reserved.
-            </div>
-            <div className="flex gap-6">
-              {['Twitter', 'Instagram', 'LinkedIn'].map(s => (
-                <a key={s} href="#" className="text-[10px] font-bold uppercase tracking-widest opacity-20 hover:opacity-100 hover:text-[#E6FF00] transition-all">{s}</a>
+            <ul className="space-y-6 text-left">
+              {[
+                'Custom Domain Setup',
+                'Fast 24-48h Delivery',
+                'Mobile Responsive Design',
+                'SEO Optimization',
+                'Real-time Chat Support',
+                'Project Dashboard Access'
+              ].map((feature, i) => (
+                <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
+                  <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                  {feature}
+                </li>
               ))}
-            </div>
+            </ul>
+            <Link 
+              to="/auth" 
+              className="block w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+            >
+              Contact to Get Started
+            </Link>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-40 px-10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[#E6FF00] z-0" />
+        <div className="relative z-10 max-w-5xl mx-auto text-center space-y-12">
+          <h2 className="text-6xl md:text-9xl font-black tracking-tighter text-black uppercase italic leading-[0.85]">
+            Ready to launch<br />your website?
+          </h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Link 
+              to="/auth" 
+              className="bg-black text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl"
+            >
+              Start Now
+            </Link>
+            <Link 
+              to="/contact" 
+              className="bg-white/20 backdrop-blur-md text-black border border-black/10 px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/30 transition-all"
+            >
+              Contact Us
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

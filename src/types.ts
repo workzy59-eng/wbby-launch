@@ -8,10 +8,11 @@ export interface UserProfile {
   role: 'admin' | 'client' | 'developer';
   phone?: string;
   createdAt: string | Timestamp;
+  isApproved?: boolean; // For manual approval
   // Developer specific fields
   experience?: number;
   devRole?: string;
-  status?: 'pending' | 'accepted' | 'declined';
+  status?: RequestStatus;
   joiningDate?: string | Timestamp;
   absences?: number;
 }
@@ -23,7 +24,7 @@ export interface LeaveRequest {
   startDate: string | Timestamp;
   endDate: string | Timestamp;
   reason: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: RequestStatus;
   createdAt: string | Timestamp;
 }
 
@@ -42,7 +43,14 @@ export type ProjectStatus =
   | "Accepted" 
   | "Rejected" 
   | "Development Started" 
-  | "Completed";
+  | "Completed"
+  | "completed"
+  | "active"
+  | "in-progress"
+  | "pending"
+  | "rejected";
+
+export type RequestStatus = 'pending' | 'accepted' | 'declined' | 'approved';
 
 export interface Project {
   id: string;
@@ -59,15 +67,34 @@ export interface Project {
   createdAt: string | Timestamp;
   rejectionReason?: string;
   isDeleted?: boolean;
+  isLocked: boolean; // For the lock system
+  previewUrl?: string;
 }
 
 export interface Message {
   id: string;
-  projectId: string;
+  projectId?: string;
+  conversationId?: string;
   senderId: string;
   senderName: string;
   text: string;
   attachmentUrl?: string;
+  imageUrl?: string;
   createdAt: string | Timestamp;
   seen: boolean;
+  isDeleted?: boolean;
+  hiddenFor?: string[];
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  author: string;
+  date: string | Timestamp;
+  image: string;
+  tags: string[];
+  category: string;
 }

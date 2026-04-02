@@ -19,6 +19,7 @@ import {
   X,
   Loader2
 } from 'lucide-react';
+import { formatDate } from '../lib/utils';
 import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
@@ -350,7 +351,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
                     <div className="space-y-1">
                       <div className="text-sm font-bold text-white uppercase italic">{req.reason}</div>
-                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">{req.startDate} to {req.endDate}</div>
+                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">{formatDate(req.startDate)} to {formatDate(req.endDate)}</div>
                     </div>
                     <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                       req.status === 'approved' ? 'bg-green-500/20 text-green-400' :

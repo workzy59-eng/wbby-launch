@@ -1,23 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { auth, onAuthStateChanged, FirebaseUser } from './firebase';
+import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp } from './firebase';
 import { UserProfile } from './types';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import OnboardingFlow from './pages/OnboardingFlow';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import DeveloperDashboard from './pages/DeveloperDashboard';
 import GlobalAutos from './pages/GlobalAutos';
-import FoodCourt from './pages/FoodCourt';
-import Clothing from './pages/Clothing';
 import Gym from './pages/Gym';
 import Cargo from './pages/Cargo';
-import School from './pages/School';
 import Autos from './pages/Autos';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Services from './pages/Services';
+import Pricing from './pages/Pricing';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Layout from './components/Layout';
+import WhatsAppButton from './components/WhatsAppButton';
 import { AnimatePresence, motion } from 'motion/react';
 import { createUserProfile, getUserProfile } from './services/database';
-import { Smartphone, Download, X } from 'lucide-react';
+import { Smartphone, Download } from 'lucide-react';
 
 function MobileRestriction({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -32,8 +38,9 @@ function MobileRestriction({ children }: { children: React.ReactNode }) {
     checkMobile();
   }, []);
 
-  // Allow Landing Page and Auth Page (with restrictions inside AuthPage)
-  const isPublicPage = location.pathname === '/' || location.pathname === '/auth' || location.pathname.startsWith('/portfolio');
+  // Allow Public Pages
+  const publicPaths = ['/', '/auth', '/about', '/contact', '/services', '/pricing', '/blog', '/privacy-policy', '/terms'];
+  const isPublicPage = publicPaths.includes(location.pathname) || location.pathname.startsWith('/portfolio') || location.pathname.startsWith('/blog/');
 
   if (isMobile && !isPublicPage) {
     return (
@@ -48,7 +55,7 @@ function MobileRestriction({ children }: { children: React.ReactNode }) {
           </div>
           <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic mb-4">Mobile Browser Restricted</h1>
           <p className="text-white/60 font-medium mb-10 leading-relaxed">
-            Sorry, you can't use the webapp on your device's browser. Please download our official app for the best experience.
+            Sorry, the dashboard is optimized for desktop. Please use a computer or download our official app.
           </p>
           <button className="w-full bg-[#E6FF00] text-black py-5 rounded-2xl font-black uppercase italic text-lg flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl">
             <Download size={24} /> Download App
@@ -67,6 +74,93 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const seedBlogPosts = async () => {
+      const snapshot = await getDocs(collection(db, 'blog_posts'));
+      if (snapshot.empty) {
+        const posts = [
+          {
+            title: "How to create a business website in India",
+            slug: "how-to-create-business-website-india",
+            excerpt: "Learn the step-by-step process of launching a professional business website in India, from domain registration to SEO optimization.",
+            content: `
+# How to create a business website in India
+
+In 2026, having a digital presence is no longer optional for businesses in India. Whether you're a local gym owner, a car dealer, or a logistics provider, your customers are searching for you online.
+
+## 1. Define Your Goals
+Before you start, decide what your website needs to do. Is it for lead generation, showcasing a portfolio, or direct sales?
+
+## 2. Choose the Right Platform
+While DIY builders exist, professional services like **WebbyLaunch** offer custom designs that are optimized for the Indian market.
+
+## 3. Focus on Mobile
+Over 80% of Indian users access the web via smartphones. Your site must be mobile-responsive.
+
+## 4. SEO is Key
+Use local keywords like "best gym in Mumbai" or "car showroom in Delhi" to attract local traffic.
+
+## 5. Fast Loading
+With varying internet speeds across the country, a fast-loading site is crucial for retaining visitors.
+            `,
+            author: "WebbyLaunch Team",
+            date: serverTimestamp(),
+            image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426",
+            category: "Business",
+            tags: ["India", "Business", "Web Design"]
+          },
+          {
+            title: "Best website for small business 2026",
+            slug: "best-website-small-business-2026",
+            excerpt: "Discover the top website features and designs that are driving growth for small businesses this year.",
+            content: `
+# Best website for small business 2026
+
+What makes a website "the best" for a small business in 2026? It's not just about looking pretty; it's about performance and trust.
+
+## Essential Features:
+- **Trust Signals:** Testimonials, certifications, and clear contact info.
+- **Fast Delivery:** Customers expect results quickly.
+- **Real-time Chat:** Instant communication builds trust.
+- **Clean UI:** Avoid clutter. Focus on the CTA (Call to Action).
+
+At **WebbyLaunch**, we incorporate all these features into our standard business launch plans.
+            `,
+            author: "WebbyLaunch Team",
+            date: serverTimestamp(),
+            image: "https://images.unsplash.com/photo-1454165833767-0274b0596d33?q=80&w=2340",
+            category: "Design",
+            tags: ["Small Business", "2026", "Trends"]
+          },
+          {
+            title: "Affordable website design for startups",
+            slug: "affordable-website-design-startups",
+            excerpt: "Startups need high-quality design without the high-quality price tag. Here is how to get it.",
+            content: `
+# Affordable website design for startups
+
+Startups often operate on tight budgets. However, skimping on your website can cost you more in the long run through lost customers.
+
+## How to Save Costs:
+1. **Use Templates:** Don't reinvent the wheel. Use high-quality industry templates.
+2. **Focus on MVP:** Start with the essential pages (Home, About, Services, Contact).
+3. **Subscription Models:** Instead of a huge upfront cost, look for affordable monthly plans.
+
+**WebbyLaunch** offers plans starting from just ₹899/month, making it the perfect choice for Indian startups.
+            `,
+            author: "WebbyLaunch Team",
+            date: serverTimestamp(),
+            image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2340",
+            category: "Startups",
+            tags: ["Affordable", "Startups", "Web Design"]
+          }
+        ];
+
+        for (const post of posts) {
+          await addDoc(collection(db, 'blog_posts'), post);
+        }
+      }
+    };
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
@@ -85,6 +179,7 @@ export default function App() {
         setProfile(null);
       }
       setLoading(false);
+      seedBlogPosts();
     });
 
     return () => unsubscribe();
@@ -101,60 +196,71 @@ export default function App() {
   return (
     <Router>
       <MobileRestriction>
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route 
-              path="/" 
-              element={
-                user && profile?.role === 'client' ? (
-                  <Navigate to="/dashboard" />
-                ) : (
-                  <LandingPage user={user} profile={profile} />
-                )
-              } 
-            />
-            <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
-            <Route 
-              path="/onboarding" 
-              element={<OnboardingFlow user={user} profile={profile} />} 
-            />
-            <Route 
-              path="/dashboard" 
-              element={
-                user ? (
-                  profile?.role === 'admin' ? (
-                    <AdminDashboard user={user} profile={profile} />
+        <Layout user={user} profile={profile}>
+          <AnimatePresence mode="wait">
+            <Routes>
+              <Route 
+                path="/" 
+                element={
+                  user && profile?.role === 'client' ? (
+                    <Navigate to="/dashboard" />
                   ) : (
-                    <Dashboard user={user} profile={profile} />
+                    <LandingPage user={user} profile={profile} />
                   )
-                ) : (
-                  <Navigate to="/auth" />
-                )
-              } 
-            />
-            <Route 
-              path="/admin" 
-              element={user && profile?.role === 'admin' ? <AdminDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
-            />
-            <Route 
-              path="/portfolio/autos" 
-              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Autos />} 
-            />
-            <Route 
-              path="/portfolio/global-autos" 
-              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <GlobalAutos />} 
-            />
-            <Route 
-              path="/portfolio/gym" 
-              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Gym />} 
-            />
-            <Route 
-              path="/portfolio/cargo" 
-              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Cargo />} 
-            />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </AnimatePresence>
+                } 
+              />
+              <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/privacy-policy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route 
+                path="/onboarding" 
+                element={<OnboardingFlow user={user} profile={profile} />} 
+              />
+              <Route 
+                path="/dashboard" 
+                element={
+                  user ? (
+                    profile?.role === 'admin' ? (
+                      <AdminDashboard user={user} profile={profile} />
+                    ) : (
+                      <Dashboard user={user} profile={profile} />
+                    )
+                  ) : (
+                    <Navigate to="/auth" />
+                  )
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={user && profile?.role === 'admin' ? <AdminDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
+              />
+              <Route 
+                path="/portfolio/autos" 
+                element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Autos />} 
+              />
+              <Route 
+                path="/portfolio/global-autos" 
+                element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <GlobalAutos />} 
+              />
+              <Route 
+                path="/portfolio/gym" 
+                element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Gym />} 
+              />
+              <Route 
+                path="/portfolio/cargo" 
+                element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Cargo />} 
+              />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </AnimatePresence>
+        </Layout>
+        <WhatsAppButton />
       </MobileRestriction>
     </Router>
   );

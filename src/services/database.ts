@@ -2,6 +2,7 @@ import {
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp 
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
+import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost } from '../types';
 import { ADMIN_EMAIL } from '../constants';
 
 export enum OperationType {
@@ -98,7 +99,7 @@ export const getProfiles = async () => {
   const path = 'users';
   try {
     const snapshot = await getDocs(collection(db, 'users'));
-    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
@@ -123,7 +124,7 @@ export const getLeaveRequests = async (userId: string) => {
   try {
     const q = query(collection(db, 'leave_requests'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LeaveRequest));
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
@@ -135,7 +136,7 @@ export const getAllLeaveRequests = async () => {
   try {
     const q = query(collection(db, 'leave_requests'), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LeaveRequest));
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
@@ -157,7 +158,7 @@ export const getAttendance = async (userId: string) => {
   try {
     const q = query(collection(db, 'attendance'), where('userId', '==', userId), orderBy('date', 'desc'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Attendance));
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
@@ -169,7 +170,7 @@ export const getAllAttendance = async () => {
   try {
     const q = query(collection(db, 'attendance'), orderBy('date', 'desc'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Attendance));
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
@@ -186,6 +187,7 @@ export const createProject = async (projectData: any) => {
       status: 'Waiting for Review',
       progress: 0,
       isDeleted: false,
+      isLocked: true, // Default to locked
     });
     return docRef.id;
   } catch (error) {
@@ -210,7 +212,7 @@ export const getProjectsAsync = async (userId?: string) => {
       q = query(collection(db, 'projects'), where('userId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
     }
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
@@ -226,11 +228,35 @@ export const getProjects = (callback: (projects: any[]) => void, userId?: string
   }
 
   return onSnapshot(q, (snapshot) => {
-    const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
     callback(projects);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, path);
   });
+};
+
+// Blog Operations
+export const getBlogPosts = async () => {
+  const path = 'blog_posts';
+  try {
+    const q = query(collection(db, 'blog_posts'), orderBy('date', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
+export const getBlogPostBySlug = async (slug: string) => {
+  const path = 'blog_posts';
+  try {
+    const q = query(collection(db, 'blog_posts'), where('slug', '==', slug));
+    const snapshot = await getDocs(q);
+    return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, path);
+  }
 };
 
 // Message Operations

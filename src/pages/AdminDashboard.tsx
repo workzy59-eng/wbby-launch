@@ -23,6 +23,7 @@ import {
   RefreshCcw,
   MapPin
 } from 'lucide-react';
+import { formatDate } from '../lib/utils';
 import { 
   getProfiles, 
   updateProfile, 
@@ -199,7 +200,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
                     <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
                       <div>
                         <div className="text-sm font-bold text-white uppercase italic">{req.userName}</div>
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{req.startDate} to {req.endDate}</div>
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{formatDate(req.startDate)} to {formatDate(req.endDate)}</div>
                       </div>
                       <div className="flex gap-2">
                         <button 
@@ -277,7 +278,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
                       </div>
                       <div>
                         <div className="text-lg font-black text-white uppercase italic">{req.userName}</div>
-                        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{req.startDate} to {req.endDate}</div>
+                        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{formatDate(req.startDate)} to {formatDate(req.endDate)}</div>
                         <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-1">Reason: {req.reason}</div>
                       </div>
                     </div>
