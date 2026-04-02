@@ -234,6 +234,10 @@ export const getProjects = (callback: (projects: any[]) => void, userId?: string
 };
 
 // Message Operations
+const getConversationId = (uid1: string, uid2: string) => {
+  return [uid1, uid2].sort().join('_');
+};
+
 export const sendMessage = async (projectId: string, messageData: any) => {
   const path = `projects/${projectId}/messages`;
   try {
@@ -248,14 +252,26 @@ export const sendMessage = async (projectId: string, messageData: any) => {
   }
 };
 
-export const sendDirectMessage = async (userId: string, messageData: any) => {
-  const path = `direct_messages/${userId}/messages`;
+export const sendDirectMessage = async (recipientId: string, messageData: any) => {
+  if (!auth.currentUser) return;
+  const conversationId = getConversationId(auth.currentUser.uid, recipientId);
+  const path = `conversations/${conversationId}/messages`;
   try {
-    await addDoc(collection(db, 'direct_messages', userId, 'messages'), {
+    await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
       ...messageData,
+      conversationId,
       createdAt: serverTimestamp(),
       seen: false,
     });
+    
+    // Update conversation metadata for list view
+    await setDoc(doc(db, 'conversations', conversationId), {
+      lastMessage: messageData.text,
+      lastMessageAt: serverTimestamp(),
+      lastSenderId: auth.currentUser.uid,
+      participants: [auth.currentUser.uid, recipientId],
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
   }
@@ -270,10 +286,12 @@ export const updateMessage = async (projectId: string, messageId: string, update
   }
 };
 
-export const updateDirectMessage = async (userId: string, messageId: string, updateData: any) => {
-  const path = `direct_messages/${userId}/messages/${messageId}`;
+export const updateDirectMessage = async (recipientId: string, messageId: string, updateData: any) => {
+  if (!auth.currentUser) return;
+  const conversationId = getConversationId(auth.currentUser.uid, recipientId);
+  const path = `conversations/${conversationId}/messages/${messageId}`;
   try {
-    await updateDoc(doc(db, 'direct_messages', userId, 'messages', messageId), updateData);
+    await updateDoc(doc(db, 'conversations', conversationId, 'messages', messageId), updateData);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -302,16 +320,17 @@ export const deleteMessage = async (projectId: string, messageId: string, forEve
   }
 };
 
-export const deleteDirectMessage = async (userId: string, messageId: string, forEveryone: boolean, currentUserId: string) => {
-  const path = `direct_messages/${userId}/messages/${messageId}`;
+export const deleteDirectMessage = async (recipientId: string, messageId: string, forEveryone: boolean, currentUserId: string) => {
+  const conversationId = getConversationId(currentUserId, recipientId);
+  const path = `conversations/${conversationId}/messages/${messageId}`;
   try {
     if (forEveryone) {
-      await updateDoc(doc(db, 'direct_messages', userId, 'messages', messageId), {
+      await updateDoc(doc(db, 'conversations', conversationId, 'messages', messageId), {
         text: 'This message was deleted',
         isDeleted: true,
       });
     } else {
-      const docRef = doc(db, 'direct_messages', userId, 'messages', messageId);
+      const docRef = doc(db, 'conversations', conversationId, 'messages', messageId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const hiddenFor = docSnap.data().hiddenFor || [];
@@ -337,13 +356,32 @@ export const getMessages = (projectId: string, callback: (messages: any[]) => vo
   });
 };
 
-export const getDirectMessages = (userId: string, callback: (messages: any[]) => void) => {
-  const path = `direct_messages/${userId}/messages`;
-  const q = query(collection(db, 'direct_messages', userId, 'messages'), orderBy('createdAt', 'asc'));
+export const getDirectMessages = (recipientId: string, callback: (messages: any[]) => void) => {
+  if (!auth.currentUser) return () => {};
+  const conversationId = getConversationId(auth.currentUser.uid, recipientId);
+  const path = `conversations/${conversationId}/messages`;
+  const q = query(collection(db, 'conversations', conversationId, 'messages'), orderBy('createdAt', 'asc'));
 
   return onSnapshot(q, (snapshot) => {
     const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     callback(messages);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
+  });
+};
+
+export const getConversations = (callback: (conversations: any[]) => void) => {
+  if (!auth.currentUser) return () => {};
+  const path = 'conversations';
+  const q = query(
+    collection(db, 'conversations'), 
+    where('participants', 'array-contains', auth.currentUser.uid),
+    orderBy('updatedAt', 'desc')
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const conversations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(conversations);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, path);
   });

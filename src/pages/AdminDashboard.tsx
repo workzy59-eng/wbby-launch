@@ -34,6 +34,7 @@ import {
 } from '../services/database';
 import { generateDeveloperWarning } from '../services/geminiService';
 import ChatSystem from '../components/ChatSystem';
+import MessagesModule from '../components/MessagesModule';
 
 interface AdminDashboardProps {
   user: FirebaseUser | null;
@@ -51,6 +52,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedChatUser, setSelectedChatUser] = useState<UserProfile | null>(null);
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [isGeneratingWarning, setIsGeneratingWarning] = useState<string | null>(null);
 
   useEffect(() => {
@@ -480,58 +482,20 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
         );
       case 'messages':
         return (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
-                <h3 className="text-2xl font-black text-white uppercase italic mb-8">Clients</h3>
-                <div className="space-y-4">
-                  {profiles.filter(p => p.role === 'client').map((client, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 font-black italic">
-                          {client.displayName?.[0]}
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-white uppercase italic">{client.displayName}</div>
-                          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{client.email}</div>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => setSelectedChatUser(client)}
-                        className="p-3 bg-[#00F2FF]/10 text-[#00F2FF] rounded-xl hover:bg-[#00F2FF] hover:text-black transition-all"
-                      >
-                        <MessageSquare size={18} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
-                <h3 className="text-2xl font-black text-white uppercase italic mb-8">Developers</h3>
-                <div className="space-y-4">
-                  {profiles.filter(p => p.role === 'developer' && p.status === 'approved').map((dev, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#00F2FF]/20 rounded-xl flex items-center justify-center text-[#00F2FF] font-black italic">
-                          {dev.displayName?.[0]}
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-white uppercase italic">{dev.displayName}</div>
-                          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{dev.devRole}</div>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => setSelectedChatUser(dev)}
-                        className="p-3 bg-[#00F2FF]/10 text-[#00F2FF] rounded-xl hover:bg-[#00F2FF] hover:text-black transition-all"
-                      >
-                        <MessageSquare size={18} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div className="flex flex-col items-center justify-center h-[60vh] space-y-8 bg-slate-900/40 border border-white/5 rounded-[2.5rem] backdrop-blur-xl">
+            <div className="w-24 h-24 rounded-full bg-[#00F2FF]/10 flex items-center justify-center text-[#00F2FF] shadow-[0_0_30px_rgba(0,242,255,0.2)]">
+              <MessageSquare size={48} />
             </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Secure Messaging Center</h3>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Manage all communications from a single interface</p>
+            </div>
+            <button 
+              onClick={() => setIsMessagesOpen(true)}
+              className="px-10 py-4 bg-[#00F2FF] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(0,242,255,0.3)]"
+            >
+              Open Full Screen Messages
+            </button>
           </div>
         );
     }
@@ -623,6 +587,16 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
           )}
         </div>
       </main>
+
+      <AnimatePresence>
+        {isMessagesOpen && user && (
+          <MessagesModule 
+            currentUser={user}
+            profile={profile}
+            onClose={() => setIsMessagesOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {selectedChatUser && user && (

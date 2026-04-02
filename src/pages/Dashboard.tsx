@@ -5,6 +5,7 @@ import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
 import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2 } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
+import MessagesModule from '../components/MessagesModule';
 import { getProjects, updateProject } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
@@ -19,6 +20,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
@@ -131,20 +133,20 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               transition={{ duration: 0.3, ease: "circOut" }}
             >
               {activeTab === 'messages' ? (
-                <div className="h-[calc(100vh-15rem)] bg-black/20 backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl overflow-hidden flex flex-col">
-                  <div className="px-10 py-10 border-b border-white/5 flex justify-between items-center bg-white/5">
-                    <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#E6FF00]">Admin Support</h2>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-[#E6FF00] flex items-center justify-center text-[#064E3B] font-black italic">W</div>
-                      <div>
-                        <div className="text-sm font-black uppercase italic">WebbyLaunch Admin</div>
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-[#E6FF00]">Online</div>
-                      </div>
-                    </div>
+                <div className="h-[calc(100vh-20rem)] flex flex-col items-center justify-center space-y-8 bg-black/20 backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl">
+                  <div className="w-24 h-24 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00] shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+                    <MessageCircle size={48} />
                   </div>
-                  <div className="flex-1 overflow-hidden">
-                    <ChatSystem isDirect user={user} profile={profile} currentUser={user} />
+                  <div className="text-center space-y-2">
+                    <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Secure Messaging Hub</h3>
+                    <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Chat with our team and manage your project communications</p>
                   </div>
+                  <button 
+                    onClick={() => setIsMessagesOpen(true)}
+                    className="px-12 py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)]"
+                  >
+                    Open Full Screen Messages
+                  </button>
                 </div>
               ) : activeTab === 'settings' ? (
                 <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl">
@@ -405,6 +407,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           </AnimatePresence>
         </div>
       </main>
+
+      <AnimatePresence>
+        {isMessagesOpen && user && (
+          <MessagesModule 
+            currentUser={user}
+            profile={profile}
+            onClose={() => setIsMessagesOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Chat Sidebar */}
       <AnimatePresence>

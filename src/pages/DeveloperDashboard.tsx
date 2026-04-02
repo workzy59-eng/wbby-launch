@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
+import MessagesModule from '../components/MessagesModule';
 import { Project } from '../types';
 
 interface DeveloperDashboardProps {
@@ -44,6 +45,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [newLeave, setNewLeave] = useState({
     startDate: '',
     endDate: '',
@@ -448,21 +450,21 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       case 'messages':
         return (
           <div className="space-y-8">
-            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-12 text-center space-y-8">
-              <div className="w-24 h-24 bg-[#E6FF00]/10 rounded-full flex items-center justify-center mx-auto text-[#E6FF00]">
+            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-12 text-center space-y-8 backdrop-blur-xl">
+              <div className="w-24 h-24 bg-[#818CF8]/10 rounded-full flex items-center justify-center mx-auto text-[#818CF8] shadow-[0_0_30px_rgba(129,140,248,0.2)]">
                 <MessageSquare size={48} />
               </div>
               <div className="space-y-4">
-                <h3 className="text-3xl font-black text-white uppercase italic">Direct Support</h3>
+                <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Secure Communication Hub</h3>
                 <p className="text-white/60 italic leading-relaxed font-bold uppercase max-w-md mx-auto">
-                  Need help with your assigned projects or have questions about your role? Chat directly with the system administrator.
+                  Connect with the system administrator or your fellow developers. All messages are end-to-end encrypted.
                 </p>
               </div>
               <button 
-                onClick={() => setShowChat(true)}
-                className="px-12 py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.2)]"
+                onClick={() => setIsMessagesOpen(true)}
+                className="px-12 py-6 bg-[#818CF8] text-white rounded-2xl font-black uppercase italic text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(129,140,248,0.3)]"
               >
-                Open Admin Chat
+                Open Full Screen Messages
               </button>
             </div>
           </div>
@@ -582,6 +584,16 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           </AnimatePresence>
         </div>
       </main>
+
+      <AnimatePresence>
+        {isMessagesOpen && user && (
+          <MessagesModule 
+            currentUser={user}
+            profile={profile}
+            onClose={() => setIsMessagesOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showChat && user && (
