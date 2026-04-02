@@ -502,12 +502,12 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#00F2FF] selection:text-black text-slate-200">
+    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#E6FF00] selection:text-black text-slate-200">
       {/* Sidebar */}
       <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#00F2FF] rounded-lg rotate-12 shadow-[0_0_20px_rgba(0,242,255,0.3)]" />
-          Webby<span className="text-[#00F2FF]">Admin</span>
+          <div className="w-8 h-8 bg-[#E6FF00] rounded-lg rotate-12 shadow-[0_0_20px_rgba(230,255,0,0.3)]" />
+          Webby<span className="text-[#E6FF00]">Admin</span>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -525,7 +525,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-[#00F2FF] text-black shadow-[0_0_30px_rgba(0,242,255,0.2)] scale-[1.02]' 
+                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] scale-[1.02]' 
                   : 'text-slate-500 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -559,9 +559,9 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
           <div className="flex items-center gap-6">
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">System Admin</div>
-              <div className="text-[10px] font-black text-[#00F2FF] uppercase tracking-widest">Online</div>
+              <div className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">Online</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00F2FF] to-blue-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(0,242,255,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
               A
             </div>
           </div>
@@ -570,7 +570,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
         <div className="p-12 max-w-7xl mx-auto">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <Loader2 className="animate-spin text-[#00F2FF]" size={48} />
+              <Loader2 className="animate-spin text-[#E6FF00]" size={48} />
             </div>
           ) : (
             <AnimatePresence mode="wait">

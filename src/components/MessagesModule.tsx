@@ -63,7 +63,14 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
     
     const fetchProfiles = async () => {
       const profiles = await getProfiles();
-      setAllProfiles(profiles.filter(p => p.uid !== currentUser.uid) as UserProfile[]);
+      let filteredProfiles = profiles.filter(p => p.uid !== currentUser.uid) as UserProfile[];
+      
+      // Messaging Restriction: Developers and Clients can only message Admin
+      if (profile?.role !== 'admin') {
+        filteredProfiles = filteredProfiles.filter(p => p.role === 'admin');
+      }
+      
+      setAllProfiles(filteredProfiles);
     };
     fetchProfiles();
 
@@ -73,12 +80,19 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
         const recipientProfile = await getProfiles().then(profiles => profiles.find(p => p.uid === recipientId));
         return { ...conv, recipientProfile };
       }));
-      setConversations(enrichedConvs as Conversation[]);
+      
+      // Filter conversations as well for non-admins
+      let finalConvs = enrichedConvs;
+      if (profile?.role !== 'admin') {
+        finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin');
+      }
+      
+      setConversations(finalConvs as Conversation[]);
       setIsLoading(false);
     });
 
     return () => unsubConversations?.();
-  }, [currentUser.uid]);
+  }, [currentUser.uid, profile?.role]);
 
   useEffect(() => {
     if (!activeConversation) return;
@@ -184,7 +198,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
             <input 
               type="text"
               placeholder="Search chats..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#00F2FF]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -194,7 +208,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
-              <Loader2 className="text-[#00F2FF] animate-spin" size={32} />
+              <Loader2 className="text-[#E6FF00] animate-spin" size={32} />
             </div>
           ) : filteredConversations.length === 0 ? (
             <div className="p-10 text-center space-y-4">
@@ -202,7 +216,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
               <p className="text-white/40 text-sm font-bold">No conversations yet</p>
               <button 
                 onClick={() => setShowUserList(true)}
-                className="text-[#00F2FF] text-xs font-black uppercase tracking-widest hover:underline"
+                className="text-[#E6FF00] text-xs font-black uppercase tracking-widest hover:underline"
               >
                 Start a new chat
               </button>
@@ -215,7 +229,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                 className={`w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all border-b border-white/5 ${activeConversation?.id === conv.id ? 'bg-white/10' : ''}`}
               >
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00F2FF] to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-xl shadow-lg">
                     {conv.recipientProfile?.displayName?.[0] || 'U'}
                   </div>
                   <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#020617] rounded-full"></div>
@@ -247,7 +261,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
         <div className="p-4 border-t border-white/5">
           <button 
             onClick={() => setShowUserList(true)}
-            className="w-full py-4 bg-[#00F2FF] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(0,242,255,0.2)]"
+            className="w-full py-4 bg-[#E6FF00] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
           >
             New Message
           </button>
@@ -267,7 +281,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                 >
                   <ChevronLeft size={24} />
                 </button>
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00F2FF] to-blue-600 flex items-center justify-center text-white font-black text-lg">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-lg">
                   {activeConversation.recipientProfile?.displayName?.[0] || 'U'}
                 </div>
                 <div>
@@ -315,7 +329,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                     <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] md:max-w-[60%]`}>
                       <div className={`p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-lg ${
                         isMe 
-                          ? 'bg-[#00F2FF] text-black rounded-br-none' 
+                          ? 'bg-[#E6FF00] text-black rounded-br-none' 
                           : 'bg-white/5 text-white border border-white/10 rounded-bl-none'
                       }`}>
                         {m.text}
@@ -327,7 +341,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                         {isMe && (
                           <span className="text-white/30">
                             {m.seen ? (
-                              <CheckCheck size={12} className="text-[#00F2FF]" />
+                              <CheckCheck size={12} className="text-[#E6FF00]" />
                             ) : (
                               <Check size={12} />
                             )}
@@ -355,7 +369,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                   <input 
                     type="text"
                     placeholder="Type a message..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#00F2FF]/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                   />
@@ -366,7 +380,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                 <button 
                   type="submit"
                   disabled={!inputText.trim() || isSending}
-                  className="p-4 bg-[#00F2FF] text-black rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-[0_0_20px_rgba(0,242,255,0.2)]"
+                  className="p-4 bg-[#E6FF00] text-black rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]"
                 >
                   <Send size={20} />
                 </button>
@@ -376,7 +390,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
             <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
-              <MessageCircle size={48} strokeWidth={1.5} className="text-[#00F2FF]" />
+              <MessageCircle size={48} strokeWidth={1.5} className="text-[#E6FF00]" />
             </div>
             <div className="text-center">
               <h3 className="text-xl font-black text-white/40 uppercase italic tracking-tighter">Select a conversation</h3>
@@ -408,7 +422,7 @@ export default function MessagesModule({ currentUser, profile, onClose }: Messag
                   <input 
                     type="text"
                     placeholder="Search users..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#00F2FF]/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
                   />
                 </div>
               </div>

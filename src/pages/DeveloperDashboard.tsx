@@ -16,7 +16,8 @@ import {
   User,
   ChevronRight,
   Send,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
@@ -54,6 +55,32 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
   const [resignAgreed, setResignAgreed] = useState(false);
   const [showResignConfirm, setShowResignConfirm] = useState(false);
+  const [projectUpdate, setProjectUpdate] = useState({
+    projectId: '',
+    details: '',
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleUpdateSubmit = async () => {
+    if (!projectUpdate.projectId || !projectUpdate.details || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      const { updateProject } = await import('../services/database');
+      await updateProject(projectUpdate.projectId, {
+        lastUpdate: projectUpdate.details,
+        lastUpdateAt: new Date().toISOString(),
+        // We could also increment progress here if needed
+      });
+      setProjectUpdate({ projectId: '', details: '' });
+      alert('Project update posted successfully!');
+    } catch (error) {
+      console.error('Error updating project:', error);
+      alert('Failed to post update. Please try again.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   useEffect(() => {
     if (profile && !profile.devRole) {
@@ -233,16 +260,16 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { label: 'My Projects', value: projects.length, icon: Briefcase, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                { label: 'Attendance', value: attendance.length > 0 ? `${Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100)}%` : '0%', icon: Clock, color: 'text-[#818CF8]', bg: 'bg-[#818CF8]/10' },
-                { label: 'Messages', value: '0', icon: MessageSquare, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                { label: 'My Projects', value: projects.length, icon: Briefcase, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+                { label: 'Attendance', value: attendance.length > 0 ? `${Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100)}%` : '0%', icon: Clock, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10' },
+                { label: 'Messages', value: '0', icon: MessageSquare, color: 'text-yellow-200', bg: 'bg-yellow-500/10' },
               ].map((stat, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#818CF8]/30 transition-all group"
+                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#E6FF00]/30 transition-all group"
                 >
                   <div className="flex justify-between items-start">
                     <div className={`p-3 ${stat.bg} rounded-2xl ${stat.color} group-hover:scale-110 transition-transform`}>
@@ -451,7 +478,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         return (
           <div className="space-y-8">
             <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-12 text-center space-y-8 backdrop-blur-xl">
-              <div className="w-24 h-24 bg-[#818CF8]/10 rounded-full flex items-center justify-center mx-auto text-[#818CF8] shadow-[0_0_30px_rgba(129,140,248,0.2)]">
+              <div className="w-24 h-24 bg-[#E6FF00]/10 rounded-full flex items-center justify-center mx-auto text-[#E6FF00] shadow-[0_0_30px_rgba(230,255,0,0.2)]">
                 <MessageSquare size={48} />
               </div>
               <div className="space-y-4">
@@ -462,7 +489,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               </div>
               <button 
                 onClick={() => setIsMessagesOpen(true)}
-                className="px-12 py-6 bg-[#818CF8] text-white rounded-2xl font-black uppercase italic text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(129,140,248,0.3)]"
+                className="px-12 py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)]"
               >
                 Open Full Screen Messages
               </button>
@@ -477,7 +504,11 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Select Project</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase appearance-none">
+                  <select 
+                    value={projectUpdate.projectId}
+                    onChange={(e) => setProjectUpdate({ ...projectUpdate, projectId: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase appearance-none"
+                  >
                     <option value="" className="bg-[#4A5D4E]">Choose Project</option>
                     {projects.map(p => (
                       <option key={p.id} value={p.id} className="bg-[#4A5D4E]">{p.businessName}</option>
@@ -487,12 +518,18 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Update Details</label>
                   <textarea 
+                    value={projectUpdate.details}
+                    onChange={(e) => setProjectUpdate({ ...projectUpdate, details: e.target.value })}
                     placeholder="What have you completed today?"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase h-40" 
                   />
                 </div>
-                <button className="w-full bg-[#E6FF00] text-black py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all">
-                  Post Update
+                <button 
+                  onClick={handleUpdateSubmit}
+                  disabled={!projectUpdate.projectId || !projectUpdate.details || isUpdating}
+                  className="w-full bg-[#E6FF00] text-black py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {isUpdating ? <Loader2 className="animate-spin mx-auto" /> : 'Post Update'}
                 </button>
               </div>
             </div>
@@ -502,12 +539,12 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] font-sans selection:bg-[#818CF8] selection:text-white text-slate-200">
+    <div className="min-h-screen bg-[#0F172A] font-sans selection:bg-[#E6FF00] selection:text-black text-slate-200">
       {/* Sidebar */}
       <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#818CF8] rounded-lg -rotate-6 shadow-[0_0_20px_rgba(129,140,248,0.3)]" />
-          Webby<span className="text-[#818CF8]">Dev</span>
+          <div className="w-8 h-8 bg-[#E6FF00] rounded-lg -rotate-6 shadow-[0_0_20px_rgba(230,255,0,0.3)]" />
+          Webby<span className="text-[#E6FF00]">Dev</span>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -524,7 +561,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-[#818CF8] text-white shadow-[0_0_30px_rgba(129,140,248,0.2)] scale-[1.02]' 
+                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] scale-[1.02]' 
                   : 'text-slate-500 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -562,9 +599,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           <div className="flex items-center gap-6">
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">{profile?.displayName}</div>
-              <div className="text-[10px] font-black text-[#818CF8] uppercase tracking-widest">{profile?.status || 'Active'}</div>
+              <div className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">{profile?.status || 'Active'}</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#818CF8] to-indigo-600 flex items-center justify-center text-white font-black text-xl italic shadow-[0_0_30px_rgba(129,140,248,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
               {profile?.displayName?.[0] || 'D'}
             </div>
           </div>

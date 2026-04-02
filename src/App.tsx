@@ -103,7 +103,16 @@ export default function App() {
       <MobileRestriction>
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<LandingPage user={user} profile={profile} />} />
+            <Route 
+              path="/" 
+              element={
+                user && profile?.role === 'client' ? (
+                  <Navigate to="/dashboard" />
+                ) : (
+                  <LandingPage user={user} profile={profile} />
+                )
+              } 
+            />
             <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
             <Route 
               path="/onboarding" 
@@ -133,10 +142,18 @@ export default function App() {
               path="/admin" 
               element={user && profile?.role === 'admin' ? <AdminDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
             />
-            <Route path="/portfolio/autos" element={<Autos />} />
-            <Route path="/portfolio/gym" element={<Gym />} />
-            <Route path="/portfolio/cargo" element={<Cargo />} />
-            <Route path="/portfolio/school" element={<School />} />
+            <Route 
+              path="/portfolio/autos" 
+              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Autos />} 
+            />
+            <Route 
+              path="/portfolio/gym" 
+              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Gym />} 
+            />
+            <Route 
+              path="/portfolio/cargo" 
+              element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Cargo />} 
+            />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AnimatePresence>

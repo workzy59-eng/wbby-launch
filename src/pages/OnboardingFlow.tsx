@@ -88,7 +88,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         businessName: formData.businessName,
         businessType: finalBusinessType,
         description: formData.description,
-        templateId: formData.templateId,
+        templateId: 'custom-dev', // Default to custom development since template selection is removed
         estimatedCompletion: null,
       };
 
@@ -100,12 +100,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       console.error('Error submitting project:', error);
     }
   };
-
-  const templates = [
-    { id: 'food-court', name: 'Food Court', type: 'Food', img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800' },
-    { id: 'autos', name: 'Global Autos', type: 'Automobiles', img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800' },
-    { id: 'clothing', name: 'Wearism Fashion', type: 'Clothing', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800' },
-  ];
 
   const renderStep = () => {
     switch (step) {
@@ -247,90 +241,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
-            <h2 className="text-5xl font-bold tracking-tighter text-[#E6FF00] uppercase italic">Pick a Design</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {templates.map((template) => (
-                <div key={template.id} className="space-y-4">
-                  <div className="aspect-video bg-white/5 rounded-[2rem] overflow-hidden border border-white/10 group relative">
-                    <img src={template.img} alt={template.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#064E3B] to-transparent opacity-60"></div>
-                  </div>
-                  <div className="flex justify-between items-center px-2">
-                    <div className="flex flex-col">
-                      <span className="font-black text-white uppercase italic tracking-tighter">{template.name}</span>
-                      <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{template.type}</span>
-                    </div>
-                    <button
-                      onClick={() => setFormData({ ...formData, templateId: template.id })}
-                      className={`px-8 py-3 rounded-full font-black uppercase italic transition-all ${
-                        formData.templateId === template.id
-                          ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.3)]'
-                          : 'bg-white/5 text-white hover:bg-[#E6FF00] hover:text-black'
-                      }`}
-                    >
-                      {formData.templateId === template.id ? 'Selected' : 'Select'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-              
-              {/* AI Custom Template */}
-              <div className="space-y-4">
-                <div className="aspect-video bg-white/5 rounded-[2rem] overflow-hidden border border-white/10 group relative flex items-center justify-center">
-                  {aiImage ? (
-                    <img src={aiImage} alt="AI Generated" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  ) : (
-                    <div className="text-center space-y-4 p-6">
-                      <div className="w-16 h-16 bg-[#E6FF00]/10 rounded-full flex items-center justify-center mx-auto text-[#E6FF00]">
-                        <Sparkles size={32} />
-                      </div>
-                      <p className="text-xs font-black text-white/40 uppercase tracking-widest leading-relaxed">
-                        Generate a custom design using Gemini AI based on your business details.
-                      </p>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#064E3B] to-transparent opacity-60"></div>
-                </div>
-                <div className="flex justify-between items-center px-2">
-                  <div className="flex flex-col">
-                    <span className="font-black text-[#E6FF00] uppercase italic flex items-center gap-2 tracking-tighter">
-                      AI Custom <Sparkles size={14} />
-                    </span>
-                    <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">Gemini Nano Banana</span>
-                  </div>
-                  <button
-                    onClick={handleGenerateAI}
-                    disabled={isGenerating}
-                    className={`px-8 py-3 rounded-full font-black uppercase italic transition-all flex items-center gap-2 ${
-                      formData.templateId === 'ai-custom'
-                        ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.3)]'
-                        : 'bg-white text-black hover:bg-[#E6FF00]'
-                    }`}
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="animate-spin" size={18} />
-                    ) : (
-                      formData.templateId === 'ai-custom' ? 'Selected' : 'Generate'
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
-              <button disabled={!formData.templateId} onClick={handleNext} className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all">Continue</button>
-            </div>
-          </motion.div>
-        );
-      case 4:
-        return (
-          <motion.div 
-            key="step4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
-          >
             <h2 className="text-5xl font-bold tracking-tighter text-[#E6FF00] uppercase italic">Finalize Project</h2>
             <div className="bg-white/5 rounded-[2rem] p-10 space-y-8 border border-white/10">
               <div className="space-y-4">
@@ -386,11 +296,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="h-1 w-24 bg-white/10 rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${(step / 4) * 100}%` }}
+                animate={{ width: `${(step / 3) * 100}%` }}
                 className="h-full bg-[#E6FF00]"
               />
             </div>
-            <div className="text-xs font-black text-[#E6FF00] uppercase tracking-widest">Step {step} of 4</div>
+            <div className="text-xs font-black text-[#E6FF00] uppercase tracking-widest">Step {step} of 3</div>
           </div>
         </div>
       </header>

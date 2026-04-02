@@ -46,8 +46,8 @@ export default function LandingPage({ user }: LandingPageProps) {
           </div>
 
           <div className="hidden md:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-            {['Features', 'About Us', 'Pricing', 'Contact'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-[#E6FF00] transition-colors">{item}</a>
+            {['Home', 'About Us', 'Cars'].map((item) => (
+              <a key={item} href={item === 'Home' ? '#home' : item === 'Cars' ? '/portfolio/autos' : `#${item.toLowerCase().replace(' ', '-')}`} className="hover:text-[#E6FF00] transition-colors">{item}</a>
             ))}
           </div>
 
@@ -169,12 +169,11 @@ export default function LandingPage({ user }: LandingPageProps) {
             <div className="text-[10rem] font-black text-white/5 tabular-nums leading-none hidden lg:block">01-04</div>
           </div>
  
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-20">
             {[
               { title: 'Automobiles', category: 'Luxury Car UI', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200', link: '/portfolio/autos', span: 'md:col-span-1' },
               { title: 'Gym', category: 'Fitness Dashboard', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200', link: '/portfolio/gym', span: 'md:col-span-1' },
               { title: 'Logistics', category: 'Cargo Tracking', image: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=1200', link: '/portfolio/cargo', span: 'md:col-span-1' },
-              { title: 'School', category: 'Education Portal', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200', link: '/portfolio/school', span: 'md:col-span-1' }
             ].map((p, i) => (
               <motion.div
                 key={i}

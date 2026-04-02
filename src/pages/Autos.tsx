@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowRight, 
   ChevronRight, 
@@ -9,11 +9,42 @@ import {
   Cpu,
   Gauge,
   Wind,
-  Settings
+  Settings,
+  Users
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const CAR_IMAGES = [
+  "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1920", // Mercedes AMG
+  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1920", // Porsche
+  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1920", // Corvette
+  "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1920", // Ferrari
+  "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80&w=1920"  // Audi R8
+];
+
 export default function Autos() {
+  const [currentCar, setCurrentCar] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const carInterval = setInterval(() => {
+      setCurrentCar((prev) => (prev + 1) % CAR_IMAGES.length);
+    }, 3000);
+
+    const counterInterval = setInterval(() => {
+      setCount((prev) => {
+        if (prev < 5) return prev + 1;
+        clearInterval(counterInterval);
+        return prev;
+      });
+    }, 500);
+
+    return () => {
+      clearInterval(carInterval);
+      clearInterval(counterInterval);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#E6FF00] selection:text-black">
       {/* Navigation */}
@@ -31,15 +62,22 @@ export default function Autos() {
         </Link>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section with Car Animation */}
       <section className="relative h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1920" 
-            alt="Mercedes AMG" 
-            className="w-full h-full object-cover opacity-60"
-            referrerPolicy="no-referrer"
-          />
+          <AnimatePresence mode="wait">
+            <motion.img 
+              key={currentCar}
+              src={CAR_IMAGES[currentCar]} 
+              alt={`Car ${currentCar + 1}`} 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="absolute inset-0 w-full h-full object-cover opacity-60"
+              referrerPolicy="no-referrer"
+            />
+          </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent" />
         </div>
 
@@ -64,9 +102,10 @@ export default function Autos() {
               <button className="px-12 py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)]">
                 Configure Yours
               </button>
-              <button className="px-12 py-6 bg-white/5 border border-white/10 rounded-2xl font-black uppercase italic text-xl hover:bg-white/10 transition-all">
-                Test Drive
-              </button>
+              <div className="flex items-center gap-4 px-8 py-6 bg-white/5 border border-white/10 rounded-2xl">
+                <div className="text-4xl font-black italic text-[#E6FF00] tabular-nums">{count}</div>
+                <div className="text-[10px] font-black uppercase tracking-widest opacity-40">Experience<br />Level</div>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -113,10 +152,14 @@ export default function Autos() {
         </div>
       </section>
 
-      {/* Visual Showcase */}
+      {/* Visual Showcase with Team Image */}
       <section className="py-32 px-10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div className="space-y-10">
+            <div className="flex items-center gap-3">
+              <Users className="text-[#E6FF00]" size={32} />
+              <span className="text-xs font-black uppercase tracking-[0.5em] text-[#E6FF00]">Our Team</span>
+            </div>
             <h2 className="text-7xl font-black tracking-tighter uppercase italic leading-[0.9]">
               ENGINEERED TO <span className="text-[#E6FF00]">EXCITE</span>
             </h2>
@@ -142,8 +185,8 @@ export default function Autos() {
           <div className="relative">
             <div className="aspect-square rounded-[4rem] overflow-hidden border border-white/10">
               <img 
-                src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200" 
-                alt="AMG Interior" 
+                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200" 
+                alt="Team Working" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
