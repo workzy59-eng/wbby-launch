@@ -613,6 +613,13 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           </div>
 
           <div className="flex items-center gap-6">
+            <button 
+              onClick={() => setShowChat(true)}
+              className="p-4 bg-[#E6FF00]/10 text-[#E6FF00] rounded-2xl hover:bg-[#E6FF00] hover:text-black transition-all flex items-center gap-2 group"
+            >
+              <MessageSquare size={20} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Chat with Admin</span>
+            </button>
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">{profile?.displayName}</div>
               <div className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">{profile?.status || 'Active'}</div>

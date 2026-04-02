@@ -41,6 +41,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const [aiImage, setAiImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
@@ -80,26 +82,37 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setError(null);
+    console.log('Submitting project data:', formData);
+
     try {
       const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
       const projectData = {
         userId: user?.uid,
-        userName: formData.name,
-        userEmail: formData.email,
+        userName: formData.name || profile?.displayName || 'User',
+        userEmail: formData.email || profile?.email || '',
         businessName: formData.businessName,
         businessNumber: formData.businessNumber,
         businessType: finalBusinessType,
         description: formData.description,
-        templateId: 'custom-dev', // Default to custom development since template selection is removed
+        templateId: 'custom-dev',
         estimatedCompletion: null,
       };
 
-      await createProject(projectData);
+      console.log('Final project data for Firestore:', projectData);
+      const projectId = await createProject(projectData);
+      console.log('Project created successfully with ID:', projectId);
+
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('onboarding_step');
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Error submitting project:', error);
+    } catch (err: any) {
+      console.error('Error submitting project:', err);
+      setError(err.message || 'Failed to submit project. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -207,14 +220,25 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Phone Number</label>
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Phone Number <span className="text-red-500">*</span></label>
                 <input
                   type="tel"
                   placeholder="E.G. +1 (555) 000-0000"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={`w-full p-6 rounded-2xl bg-white/5 border transition-all uppercase font-black italic tracking-tighter ${
+                    !formData.businessNumber && formData.businessName.length >= 2
+                      ? 'border-yellow-500/50'
+                      : formData.businessNumber
+                      ? 'border-green-500/50'
+                      : 'border-white/10'
+                  } text-white focus:outline-none focus:border-[#E6FF00]`}
                   value={formData.businessNumber}
                   onChange={(e) => setFormData({ ...formData, businessNumber: e.target.value })}
                 />
+                {!formData.businessNumber && formData.businessName.length >= 2 && (
+                  <p className="text-yellow-500/70 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">
+                    Phone number is required to continue
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Describe your website</label>
@@ -265,20 +289,34 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   Your project details have been captured. Click continue to finalize your request and move to your dashboard.
                 </p>
               </div>
+              {error && (
+                <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-black uppercase tracking-widest">
+                  {error}
+                </div>
+              )}
             </div>
             <div className="flex gap-4">
               <button 
                 onClick={() => navigate('/')} 
-                className="flex-1 border border-red-500 text-red-500 py-6 rounded-full font-black text-xl uppercase italic hover:bg-red-500 hover:text-white transition-all"
+                disabled={isSubmitting}
+                className="flex-1 border border-red-500 text-red-500 py-6 rounded-full font-black text-xl uppercase italic hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
               >
                 Discontinue
               </button>
               {user ? (
                 <button 
                   onClick={handleSubmit} 
-                  className="flex-1 bg-[#E6FF00] text-black py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)]"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-[#E6FF00] text-black py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)] disabled:opacity-50 flex items-center justify-center gap-3"
                 >
-                  Continue
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={24} />
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    'Continue'
+                  )}
                 </button>
               ) : (
                 <button 

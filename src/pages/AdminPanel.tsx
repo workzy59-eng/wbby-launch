@@ -262,48 +262,66 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
         <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">In Progress</span>
-        <h2 className="text-6xl font-bold tracking-tighter text-white">ACTIVE OPERATIONS</h2>
+        <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Active Operations</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status) && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#E6FF00]/30 transition-all">
-            <div className="flex justify-between items-start mb-8">
+          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#E6FF00]/30 transition-all relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#E6FF00]/5 rounded-full blur-3xl"></div>
+            
+            <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
-                <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName} • {p.userEmail} • {p.businessNumber}</div>
-                <div className="mt-2 inline-block px-3 py-1 bg-[#E6FF00]/10 rounded-full text-[8px] font-black text-[#E6FF00] uppercase tracking-widest border border-[#E6FF00]/20">
-                  Template: {p.templateId}
+                <h3 className="text-3xl font-bold tracking-tighter text-white mb-1 uppercase italic">{p.businessName}</h3>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName} • {p.userEmail}</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="px-3 py-1 bg-[#E6FF00]/10 rounded-full text-[8px] font-black text-[#E6FF00] uppercase tracking-widest border border-[#E6FF00]/20">
+                    {p.status}
+                  </div>
+                  <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest">
+                    {p.businessNumber}
+                  </div>
                 </div>
               </div>
-              <button 
-                onClick={() => { setSelectedProject(p); setShowChat(true); }}
-                className="p-4 bg-white/5 rounded-full text-white hover:bg-[#E6FF00] hover:text-black transition-all"
-              >
-                <MessageCircle size={20} />
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => { setSelectedProject(p); setShowChat(true); }}
+                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#E6FF00] hover:text-black transition-all shadow-lg"
+                  title="Project Chat"
+                >
+                  <MessageCircle size={20} />
+                </button>
+              </div>
             </div>
             
-            <div className="mb-10">
+            <div className="mb-10 relative z-10">
               <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-3">
-                <span>Progress</span>
+                <span>Current Progress</span>
                 <span className="text-[#E6FF00]">{p.progress}%</span>
               </div>
-              <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${p.progress}%` }}
-                  className="h-full bg-[#E6FF00]" 
+                  className="h-full bg-[#E6FF00] rounded-full shadow-[0_0_10px_rgba(230,255,0,0.3)]" 
                 />
               </div>
             </div>
 
-            <button 
-              onClick={() => { setSelectedProject(p); setNewProgress(p.progress); setShowProgressModal(true); }}
-              className="w-full bg-white text-black py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
-            >
-              Update Progress
-            </button>
+            <div className="flex gap-3 relative z-10">
+              <button 
+                onClick={() => { setSelectedProject(p); setNewProgress(p.progress); setShowProgressModal(true); }}
+                className="flex-1 bg-white text-black py-4 rounded-full font-black hover:scale-[1.02] active:scale-[0.98] transition-all text-[10px] uppercase tracking-widest shadow-xl"
+              >
+                Update Progress
+              </button>
+              <button 
+                onClick={() => { setSelectedProject(p); setShowRejectModal(true); }}
+                className="px-6 border border-red-500/30 text-red-400 py-4 rounded-full font-black hover:bg-red-500 hover:text-white transition-all text-[10px] uppercase tracking-widest"
+              >
+                Terminate
+              </button>
+            </div>
           </div>
         ))}
         {projects.filter(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status) && !p.isDeleted).length === 0 && (
@@ -684,7 +702,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">
-                <ChatSystem projectId={selectedProject.id} user={user} profile={profile} currentUser={user} />
+                <ChatSystem 
+                  projectId={selectedProject.id} 
+                  profile={profile} 
+                  currentUser={user} 
+                  onClose={() => setShowChat(false)} 
+                  recipientUser={{ uid: selectedProject.userId, displayName: selectedProject.userName }}
+                />
               </div>
             </motion.div>
           </div>
@@ -719,9 +743,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">
-                {/* For admin, the "user" prop to ChatSystem should be the user they are chatting with if we want to use the same collection path */}
-                {/* Wait, ChatSystem uses user.uid to determine the path. So if admin is chatting with User A, the path should be direct_messages/UserA/messages */}
-                <ChatSystem isDirect recipientUser={selectedUser as any} profile={profile} currentUser={user} />
+                <ChatSystem 
+                  isDirect 
+                  recipientUser={selectedUser as any} 
+                  profile={profile} 
+                  currentUser={user} 
+                  onClose={() => setShowDirectChat(false)}
+                />
               </div>
             </motion.div>
           </div>

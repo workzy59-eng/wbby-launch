@@ -164,8 +164,16 @@ export default function AuthPage() {
             )}
           </button>
         ) : (
-          <div className="p-8 bg-white/5 border border-white/10 rounded-2xl text-white/40 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed italic">
-            Sorry, you can't use the webapp on your device's browser. Please download the app.
+          <div className="space-y-4">
+            <div className="p-8 bg-white/5 border border-white/10 rounded-2xl text-white/40 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed italic">
+              Sorry, you can't use the webapp on your device's browser. Please download the app.
+            </div>
+            <button 
+              onClick={() => setIsMobile(false)}
+              className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase italic text-[10px] hover:text-white transition-all"
+            >
+              Continue in Browser (Not Recommended)
+            </button>
           </div>
         )}
 

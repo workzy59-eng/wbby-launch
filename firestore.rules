@@ -44,7 +44,7 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'businessName', 'businessType', 'businessNumber', 'description', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl']) &&
+      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'businessName', 'businessType', 'businessNumber', 'description', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl', 'developerId']) &&
              data.userId is string && 
              data.businessName is string && data.businessName.size() > 0 &&
              data.status in ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed", "completed", "active", "in-progress", "pending", "rejected"];
@@ -130,16 +130,16 @@ service cloud.firestore {
     }
 
     match /conversations/{conversationId} {
-      allow read: if isAuthenticated() && (request.auth.uid in resource.data.participants || isAdmin());
-      allow list: if isAuthenticated() && (request.auth.uid in resource.data.participants || isAdmin());
-      allow create: if isAuthenticated() && (request.auth.uid in request.resource.data.participants || isAdmin()) && isValidConversation(request.resource.data);
-      allow update: if isAuthenticated() && (request.auth.uid in resource.data.participants || isAdmin()) && isValidConversation(request.resource.data);
+      allow read: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin());
+      allow list: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin());
+      allow create: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin()) && isValidConversation(request.resource.data);
+      allow update: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin()) && isValidConversation(request.resource.data);
       
       match /messages/{messageId} {
-        allow read: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin());
-        allow create: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin()) && isValidDirectMessage(request.resource.data);
-        allow update: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin()) && isValidDirectMessage(request.resource.data);
-        allow delete: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin());
+        allow read: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin());
+        allow create: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin()) && isValidDirectMessage(request.resource.data);
+        allow update: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin()) && isValidDirectMessage(request.resource.data);
+        allow delete: if isAuthenticated() && (conversationId.matches("^" + request.auth.uid + "_.*") || conversationId.matches(".*_" + request.auth.uid + "$") || isAdmin());
       }
     }
 
