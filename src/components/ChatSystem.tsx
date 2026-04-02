@@ -87,7 +87,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     }
 
     return () => unsubscribe?.();
-  }, [projectId, isDirect, recipientUser.uid, currentUser.uid]);
+  }, [projectId, isDirect, recipientUser?.uid, currentUser.uid]);
 
   useEffect(() => {
     if (scrollRef.current) {

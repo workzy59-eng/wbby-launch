@@ -9,8 +9,15 @@
         "email": { "type": "string", "format": "email" },
         "displayName": { "type": "string" },
         "photoURL": { "type": "string" },
-        "role": { "type": "string", "enum": ["admin", "client"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "role": { "type": "string", "enum": ["admin", "client", "developer"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "phone": { "type": "string" },
+        "experience": { "type": "number" },
+        "devRole": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "declined", "approved"] },
+        "joiningDate": { "type": "string", "format": "date-time" },
+        "absences": { "type": "number" },
+        "isApproved": { "type": "boolean" }
       },
       "required": ["uid", "email", "role"]
     },
@@ -27,12 +34,14 @@
         "businessType": { "type": "string" },
         "description": { "type": "string" },
         "templateId": { "type": "string" },
-        "status": { "type": "string", "enum": ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed"] },
+        "status": { "type": "string", "enum": ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed", "completed", "active", "in-progress", "pending", "rejected"] },
         "progress": { "type": "number" },
         "estimatedCompletion": { "type": "string", "format": "date-time" },
         "createdAt": { "type": "string", "format": "date-time" },
         "rejectionReason": { "type": "string" },
-        "isDeleted": { "type": "boolean" }
+        "isDeleted": { "type": "boolean" },
+        "isLocked": { "type": "boolean" },
+        "previewUrl": { "type": "string" }
       },
       "required": ["userId", "businessName", "status"]
     },
@@ -47,6 +56,7 @@
         "senderName": { "type": "string" },
         "text": { "type": "string" },
         "attachmentUrl": { "type": "string" },
+        "imageUrl": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
         "seen": { "type": "boolean" },
         "isDeleted": { "type": "boolean" },
@@ -97,6 +107,24 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["participants", "updatedAt"]
+    },
+    "BlogPost": {
+      "title": "Blog Post",
+      "description": "Article for the blog section.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "content": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "author": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "image": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "category": { "type": "string" }
+      },
+      "required": ["title", "slug", "content", "date"]
     }
   },
   "firestore": {
@@ -127,6 +155,10 @@
     "/conversations/{conversationId}/messages/{messageId}": {
       "schema": "Message",
       "description": "Direct chat messages."
+    },
+    "/blog_posts/{postId}": {
+      "schema": "BlogPost",
+      "description": "Blog articles."
     }
   }
 }

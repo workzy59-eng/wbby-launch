@@ -106,6 +106,18 @@ export const getProfiles = async () => {
   }
 };
 
+export const getAdmins = async () => {
+  const path = 'users';
+  try {
+    const q = query(collection(db, 'users'), where('role', '==', 'admin'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 // Leave Operations
 export const requestLeave = async (leaveData: any) => {
   const path = 'leave_requests';
@@ -204,12 +216,14 @@ export const updateProject = async (projectId: string, updateData: any) => {
   }
 };
 
-export const getProjectsAsync = async (userId?: string) => {
+export const getProjectsAsync = async (userId?: string, developerId?: string) => {
   const path = 'projects';
   try {
     let q = query(collection(db, 'projects'), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
     if (userId) {
       q = query(collection(db, 'projects'), where('userId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+    } else if (developerId) {
+      q = query(collection(db, 'projects'), where('developerId', '==', developerId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
     }
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));

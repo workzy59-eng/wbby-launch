@@ -24,7 +24,9 @@ import {
   getDirectMessages, 
   updateDirectMessage,
   getConversations,
-  getProfiles
+  getProfiles,
+  getAdmins,
+  getUserProfile
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 
@@ -63,7 +65,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
     
     const fetchProfiles = async () => {
-      const profiles = await getProfiles();
+      let profiles: UserProfile[] = [];
+      
+      if (profile?.role === 'admin') {
+        profiles = await getProfiles();
+      } else {
+        profiles = await getAdmins();
+      }
+      
       let filteredProfiles = profiles.filter(p => p.uid !== currentUser.uid) as UserProfile[];
       
       // Messaging Restriction: Developers and Clients can only message Admin
@@ -78,7 +87,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const unsubConversations = getConversations(async (convs) => {
       const enrichedConvs = await Promise.all(convs.map(async (conv) => {
         const recipientId = conv.participants.find((id: string) => id !== currentUser.uid);
-        const recipientProfile = await getProfiles().then(profiles => profiles.find(p => p.uid === recipientId));
+        const recipientProfile = await getUserProfile(recipientId);
         return { ...conv, recipientProfile };
       }));
       

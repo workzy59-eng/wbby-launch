@@ -20,7 +20,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { formatDate } from '../lib/utils';
-import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync } from '../services/database';
+import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync, getAdmins } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { Project } from '../types';
@@ -45,6 +45,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
@@ -93,14 +94,18 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     if (user?.uid) {
       const fetchDevData = async () => {
         setLoading(true);
-        const [leaves, att, projs] = await Promise.all([
+        const [leaves, att, projs, admins] = await Promise.all([
           getLeaveRequests(user.uid),
           getAttendance(user.uid),
-          getProjectsAsync()
+          getProjectsAsync(undefined, user.uid),
+          getAdmins()
         ]);
         setLeaveRequests(leaves);
         setAttendance(att);
-        setProjects(projs.filter((p: any) => p.developerId === user.uid));
+        setProjects(projs);
+        if (admins.length > 0) {
+          setAdminProfile(admins[0]);
+        }
         setLoading(false);
       };
       fetchDevData();
@@ -634,10 +639,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       </main>
 
       <AnimatePresence>
-        {showChat && user && (
+        {showChat && user && adminProfile && (
           <ChatSystem 
             isDirect={true}
-            recipientUser={{ uid: 'admin', displayName: 'System Admin' }} // Hardcoded admin ID for now
+            recipientUser={{ uid: adminProfile.uid, displayName: adminProfile.displayName || 'System Admin' }}
             profile={profile}
             currentUser={user}
             onClose={() => setShowChat(false)}
