@@ -9,9 +9,9 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({ 
-  title = "WebbyLaunch – Website Developer for Small Businesses in India", 
-  description = "WebbyLaunch provides expert custom web design services and premium website development for small businesses in India. Get your business website built in 24-48 hours.", 
-  keywords = "website developer India, car showroom website India, gym website builder, logistics website design, small business website India, affordable web design",
+  title = "WebbyLaunch – Website Developer for Everyone in India", 
+  description = "WebbyLaunch provides expert custom web design services and premium website development for everyone in India. Get your business website built in 24-48 hours.", 
+  keywords = "website developer India, car showroom website India, gym website builder, logistics website design, website builder for everyone, affordable web design",
   image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop",
   url = "https://webbylaunch.vercel.app"
 }) => {

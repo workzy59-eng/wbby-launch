@@ -333,12 +333,98 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           className="max-w-5xl mx-auto flex items-center gap-6"
         >
           <div className="flex gap-3">
-            <button type="button" className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
+            <input 
+              type="file" 
+              id="chat-file-upload" 
+              className="hidden" 
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setIsSending(true);
+                try {
+                  const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
+                  const storageRef = ref(storage, `attachments/${projectId || 'direct'}/${Date.now()}_${file.name}`);
+                  await uploadBytes(storageRef, file);
+                  const url = await getDownloadURL(storageRef);
+                  
+                  if (isDirect && recipientUser) {
+                    await sendDirectMessage(recipientUser.uid, {
+                      senderId: currentUser.uid,
+                      senderName: currentUser.displayName || profile?.displayName || 'User',
+                      text: `Sent an attachment: ${file.name}`,
+                      attachmentUrl: url
+                    });
+                  } else if (projectId) {
+                    await sendMessage(projectId, {
+                      senderId: currentUser.uid,
+                      senderName: currentUser.displayName || profile?.displayName || 'User',
+                      text: `Sent an attachment: ${file.name}`,
+                      attachmentUrl: url
+                    });
+                  }
+                } catch (error) {
+                  console.error('File upload failed:', error);
+                  alert('File upload failed. Please try again.');
+                } finally {
+                  setIsSending(false);
+                }
+              }}
+            />
+            <label 
+              htmlFor="chat-file-upload"
+              className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all cursor-pointer"
+            >
               <Paperclip size={24} />
-            </button>
-            <button type="button" className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
+            </label>
+
+            <input 
+              type="file" 
+              id="chat-image-upload" 
+              accept="image/*"
+              className="hidden" 
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                  alert('Only image files are allowed');
+                  return;
+                }
+                setIsSending(true);
+                try {
+                  const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
+                  const storageRef = ref(storage, `images/${projectId || 'direct'}/${Date.now()}_${file.name}`);
+                  await uploadBytes(storageRef, file);
+                  const url = await getDownloadURL(storageRef);
+                  
+                  if (isDirect && recipientUser) {
+                    await sendDirectMessage(recipientUser.uid, {
+                      senderId: currentUser.uid,
+                      senderName: currentUser.displayName || profile?.displayName || 'User',
+                      text: 'Sent an image',
+                      imageUrl: url
+                    });
+                  } else if (projectId) {
+                    await sendMessage(projectId, {
+                      senderId: currentUser.uid,
+                      senderName: currentUser.displayName || profile?.displayName || 'User',
+                      text: 'Sent an image',
+                      imageUrl: url
+                    });
+                  }
+                } catch (error) {
+                  console.error('Image upload failed:', error);
+                  alert('Image upload failed. Please try again.');
+                } finally {
+                  setIsSending(false);
+                }
+              }}
+            />
+            <label 
+              htmlFor="chat-image-upload"
+              className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all cursor-pointer"
+            >
               <ImageIcon size={24} />
-            </button>
+            </label>
           </div>
           
           <div className="flex-1 relative">

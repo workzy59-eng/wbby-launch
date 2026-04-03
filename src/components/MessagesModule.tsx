@@ -457,12 +457,86 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <footer className="p-6 bg-white/5 border-t border-white/5">
               <form onSubmit={handleSendMessage} className="flex items-center gap-4 max-w-4xl mx-auto">
                 <div className="flex gap-2">
-                  <button type="button" className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all">
+                  <input 
+                    type="file" 
+                    id="direct-file-upload" 
+                    className="hidden" 
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !activeConversation) return;
+                      const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+                      if (!recipientId) return;
+
+                      setIsSending(true);
+                      try {
+                        const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
+                        const storageRef = ref(storage, `attachments/direct/${Date.now()}_${file.name}`);
+                        await uploadBytes(storageRef, file);
+                        const url = await getDownloadURL(storageRef);
+                        
+                        await sendDirectMessage(recipientId, {
+                          senderId: currentUser.uid,
+                          senderName: currentUser.displayName || profile?.displayName || 'User',
+                          text: `Sent an attachment: ${file.name}`,
+                          attachmentUrl: url
+                        });
+                      } catch (error) {
+                        console.error('File upload failed:', error);
+                        alert('File upload failed. Please try again.');
+                      } finally {
+                        setIsSending(false);
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="direct-file-upload"
+                    className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all cursor-pointer"
+                  >
                     <Paperclip size={20} />
-                  </button>
-                  <button type="button" className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all">
+                  </label>
+
+                  <input 
+                    type="file" 
+                    id="direct-image-upload" 
+                    accept="image/*"
+                    className="hidden" 
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !activeConversation) return;
+                      if (!file.type.startsWith('image/')) {
+                        alert('Only image files are allowed');
+                        return;
+                      }
+                      const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+                      if (!recipientId) return;
+
+                      setIsSending(true);
+                      try {
+                        const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
+                        const storageRef = ref(storage, `images/direct/${Date.now()}_${file.name}`);
+                        await uploadBytes(storageRef, file);
+                        const url = await getDownloadURL(storageRef);
+                        
+                        await sendDirectMessage(recipientId, {
+                          senderId: currentUser.uid,
+                          senderName: currentUser.displayName || profile?.displayName || 'User',
+                          text: 'Sent an image',
+                          imageUrl: url
+                        });
+                      } catch (error) {
+                        console.error('Image upload failed:', error);
+                        alert('Image upload failed. Please try again.');
+                      } finally {
+                        setIsSending(false);
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="direct-image-upload"
+                    className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all cursor-pointer"
+                  >
                     <ImageIcon size={20} />
-                  </button>
+                  </label>
                 </div>
                 <div className="flex-1 relative">
                   <input 

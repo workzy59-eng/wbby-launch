@@ -133,26 +133,26 @@ At **WebbyLaunch**, we incorporate all these features into our standard business
             tags: ["Small Business", "2026", "Trends"]
           },
           {
-            title: "Affordable website design for startups",
-            slug: "affordable-website-design-startups",
-            excerpt: "Startups need high-quality design without the high-quality price tag. Here is how to get it.",
+            title: "Affordable website design for everyone",
+            slug: "affordable-website-design-everyone",
+            excerpt: "Everyone needs high-quality design without the high-quality price tag. Here is how to get it.",
             content: `
-# Affordable website design for startups
+# Affordable website design for everyone
 
-Startups often operate on tight budgets. However, skimping on your website can cost you more in the long run through lost customers.
+Everyone often operates on tight budgets. However, skimping on your website can cost you more in the long run through lost customers.
 
 ## How to Save Costs:
 1. **Use Templates:** Don't reinvent the wheel. Use high-quality industry templates.
 2. **Focus on MVP:** Start with the essential pages (Home, About, Services, Contact).
 3. **Subscription Models:** Instead of a huge upfront cost, look for affordable monthly plans.
 
-**WebbyLaunch** offers plans starting from just ₹899/month, making it the perfect choice for Indian startups.
+**WebbyLaunch** offers plans starting from just ₹899/month, making it the perfect choice for everyone in India.
             `,
             author: "WebbyLaunch Team",
             date: serverTimestamp(),
             image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2340",
-            category: "Startups",
-            tags: ["Affordable", "Startups", "Web Design"]
+            category: "Everyone",
+            tags: ["Affordable", "Everyone", "Web Design"]
           }
         ];
 

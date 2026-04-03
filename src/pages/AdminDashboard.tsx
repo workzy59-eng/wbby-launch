@@ -22,8 +22,10 @@ import {
   ArrowUpRight,
   RefreshCcw,
   MapPin,
-  Download
+  Download,
+  FileText
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { formatDate } from '../lib/utils';
 import { 
   getProfiles, 
@@ -132,6 +134,105 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDownloadDescription = (project: Project, format: 'pdf' | 'txt') => {
+    const content = `
+WebbyLaunch Project Details
+EST 2020
+--------------------------------------------------
+
+1. PROJECT OVERVIEW (BUSINESS)
+Project Number: ${project.id}
+Project Name: ${project.websiteName || 'Not Provided'}
+Project Phone: ${project.businessNumber || 'Not Provided'}
+Project Email: ${project.userEmail || 'Not Provided'}
+Project Address: ${project.businessLocation || 'Not Provided'}
+
+2. UI CONFIGURATION
+Primary Color: ${project.primaryColor || 'Not Provided'}
+Secondary Color: ${project.secondaryColor || 'Not Provided'}
+Logo: ${project.logoUrl || 'No Logo Uploaded'}
+
+3. DESCRIPTION
+Business Name: ${project.businessName || 'Not Provided'}
+Description Content: ${project.description || 'Not Provided'}
+
+4. USER PERSONAL DETAILS
+Name: ${project.userName || 'Not Provided'}
+Email: ${project.userEmail || 'Not Provided'}
+Phone: ${project.userPhone || 'Not Provided'}
+
+--------------------------------------------------
+Generated on: ${new Date().toLocaleString()}
+`;
+
+    if (format === 'txt') {
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Project_${project.id}_Description.txt`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(74, 93, 78); // #4A5D4E
+      doc.text('WebbyLaunch Project Details', 20, 20);
+      doc.setFontSize(12);
+      doc.text('EST 2020', 20, 28);
+      
+      doc.setDrawColor(230, 255, 0); // #E6FF00
+      doc.setLineWidth(1);
+      doc.line(20, 32, 190, 32);
+
+      // Section 1: Project Overview
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text('1. PROJECT OVERVIEW (BUSINESS)', 20, 45);
+      doc.setFontSize(10);
+      doc.text(`Project Number: ${project.id}`, 25, 55);
+      doc.text(`Project Name: ${project.websiteName || 'Not Provided'}`, 25, 62);
+      doc.text(`Project Phone: ${project.businessNumber || 'Not Provided'}`, 25, 69);
+      doc.text(`Project Email: ${project.userEmail || 'Not Provided'}`, 25, 76);
+      doc.text(`Project Address: ${project.businessLocation || 'Not Provided'}`, 25, 83);
+
+      // Section 2: UI Configuration
+      doc.setFontSize(16);
+      doc.text('2. UI CONFIGURATION', 20, 98);
+      doc.setFontSize(10);
+      doc.text(`Primary Color: ${project.primaryColor || 'Not Provided'}`, 25, 108);
+      doc.text(`Secondary Color: ${project.secondaryColor || 'Not Provided'}`, 25, 115);
+      doc.text(`Logo: ${project.logoUrl ? 'Uploaded' : 'No Logo Uploaded'}`, 25, 122);
+
+      // Section 3: Description
+      doc.setFontSize(16);
+      doc.text('3. DESCRIPTION', 20, 137);
+      doc.setFontSize(10);
+      doc.text(`Business Name: ${project.businessName || 'Not Provided'}`, 25, 147);
+      const splitDescription = doc.splitTextToSize(`Description Content: ${project.description || 'Not Provided'}`, 160);
+      doc.text(splitDescription, 25, 154);
+
+      // Section 4: User Personal Details
+      const descriptionHeight = splitDescription.length * 5;
+      const userSectionY = 154 + descriptionHeight + 10;
+      doc.setFontSize(16);
+      doc.text('4. USER PERSONAL DETAILS', 20, userSectionY);
+      doc.setFontSize(10);
+      doc.text(`Name: ${project.userName || 'Not Provided'}`, 25, userSectionY + 10);
+      doc.text(`Email: ${project.userEmail || 'Not Provided'}`, 25, userSectionY + 17);
+      doc.text(`Phone: ${project.userPhone || 'Not Provided'}`, 25, userSectionY + 24);
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 280);
+
+      doc.save(`Project_${project.id}_Description.pdf`);
+    }
   };
 
   const handleGenerateWarning = async (dev: UserProfile) => {
@@ -480,14 +581,38 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
                       <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{project.businessName}</h4>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{project.businessType}</p>
                     </div>
-                    <div className="pt-6 border-t border-white/5 flex justify-between items-center">
+                    <div className="pt-6 border-t border-white/5 flex flex-wrap gap-4 justify-between items-center">
                       <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress: {project.progress || 0}%</div>
-                      <button 
-                        onClick={() => setEditingProject(project)}
-                        className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all"
-                      >
-                        Manage <ChevronRight size={14} />
-                      </button>
+                      <div className="flex gap-2">
+                        <div className="relative group/download">
+                          <button 
+                            className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all"
+                            title="Download Description"
+                          >
+                            <Download size={16} />
+                          </button>
+                          <div className="absolute bottom-full right-0 mb-2 hidden group-hover/download:flex flex-col bg-slate-800 border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 min-w-[120px]">
+                            <button 
+                              onClick={() => handleDownloadDescription(project, 'pdf')}
+                              className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 text-left"
+                            >
+                              PDF Format
+                            </button>
+                            <button 
+                              onClick={() => handleDownloadDescription(project, 'txt')}
+                              className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 text-left border-t border-white/5"
+                            >
+                              Text Format
+                            </button>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => setEditingProject(project)}
+                          className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 hover:gap-4 transition-all"
+                        >
+                          Manage <ChevronRight size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

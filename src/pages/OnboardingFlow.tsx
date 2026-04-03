@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
-import { Check, Sparkles, Loader2 } from 'lucide-react';
+import { Check, Sparkles, Loader2, Image as ImageIcon } from 'lucide-react';
 import { createProject } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 
@@ -332,14 +332,62 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Logo URL (Optional)</label>
-                <input
-                  type="url"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
-                  value={formData.logoUrl}
-                  onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-                  placeholder="Link to your logo image"
-                />
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Logo (Optional)</label>
+                <div className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/10">
+                  <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                    {formData.logoUrl ? (
+                      <img src={formData.logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="text-white/20" size={32} />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/jpg"
+                      className="hidden"
+                      id="logo-upload"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        // Validation
+                        if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+                          setError('Only image files (JPG, PNG) are allowed');
+                          return;
+                        }
+                        if (file.size > 2 * 1024 * 1024) {
+                          setError('Logo file size must be less than 2MB');
+                          return;
+                        }
+
+                        setIsSubmitting(true);
+                        setError(null);
+                        try {
+                          const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
+                          const storageRef = ref(storage, `logos/${user?.uid || 'guest'}_${Date.now()}_${file.name}`);
+                          await uploadBytes(storageRef, file);
+                          const url = await getDownloadURL(storageRef);
+                          setFormData({ ...formData, logoUrl: url });
+                        } catch (err) {
+                          console.error('Logo upload failed:', err);
+                          setError('Logo upload failed. Please try again.');
+                        } finally {
+                          setIsSubmitting(false);
+                        }
+                      }}
+                    />
+                    <label 
+                      htmlFor="logo-upload"
+                      className="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-all"
+                    >
+                      {formData.logoUrl ? 'Change Logo' : 'Upload Logo'}
+                    </label>
+                    <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">
+                      {formData.logoUrl ? 'Logo Uploaded' : 'JPG, PNG (Max 2MB)'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
