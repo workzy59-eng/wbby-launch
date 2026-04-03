@@ -108,6 +108,7 @@ Project Address: ${project.businessLocation || 'Not Provided'}
 Primary Color: ${project.primaryColor || 'Not Provided'}
 Secondary Color: ${project.secondaryColor || 'Not Provided'}
 Logo: ${project.logoUrl || 'No Logo Uploaded'}
+Documents: ${project.documentsUrl || 'No Documents Uploaded'}
 
 3. DESCRIPTION
 Business Name: ${project.businessName || 'Not Provided'}
@@ -162,18 +163,32 @@ Generated on: ${new Date().toLocaleString()}
       doc.text(`Primary Color: ${project.primaryColor || 'Not Provided'}`, 25, 108);
       doc.text(`Secondary Color: ${project.secondaryColor || 'Not Provided'}`, 25, 115);
       doc.text(`Logo: ${project.logoUrl ? 'Uploaded' : 'No Logo Uploaded'}`, 25, 122);
+      if (project.logoUrl) {
+        doc.setFontSize(8);
+        doc.setTextColor(0, 0, 255);
+        doc.text(`Logo URL: ${project.logoUrl}`, 25, 128);
+        doc.setTextColor(0, 0, 0);
+      }
+      doc.setFontSize(10);
+      doc.text(`Documents: ${project.documentsUrl ? 'Uploaded' : 'No Documents Uploaded'}`, 25, 135);
+      if (project.documentsUrl) {
+        doc.setFontSize(8);
+        doc.setTextColor(0, 0, 255);
+        doc.text(`Docs URL: ${project.documentsUrl}`, 25, 141);
+        doc.setTextColor(0, 0, 0);
+      }
 
       // Section 3: Description
       doc.setFontSize(16);
-      doc.text('3. DESCRIPTION', 20, 137);
+      doc.text('3. DESCRIPTION', 20, 155);
       doc.setFontSize(10);
-      doc.text(`Business Name: ${project.businessName || 'Not Provided'}`, 25, 147);
+      doc.text(`Business Name: ${project.businessName || 'Not Provided'}`, 25, 165);
       const splitDescription = doc.splitTextToSize(`Description Content: ${project.description || 'Not Provided'}`, 160);
-      doc.text(splitDescription, 25, 154);
+      doc.text(splitDescription, 25, 172);
 
       // Section 4: User Personal Details
       const descriptionHeight = splitDescription.length * 5;
-      const userSectionY = 154 + descriptionHeight + 10;
+      const userSectionY = 172 + descriptionHeight + 10;
       doc.setFontSize(16);
       doc.text('4. USER PERSONAL DETAILS', 20, userSectionY);
       doc.setFontSize(10);

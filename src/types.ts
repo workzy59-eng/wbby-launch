@@ -67,8 +67,11 @@ export interface Project {
   primaryColor: string;
   secondaryColor: string;
   logoUrl?: string;
+  documentsUrl?: string;
   referenceWebsite?: string;
   templateId: string;
+  plan?: 'Basic' | 'Pro';
+  paymentStatus?: 'pending' | 'paid';
   status: ProjectStatus;
   progress: number;
   estimatedCompletion: string | Timestamp | null;

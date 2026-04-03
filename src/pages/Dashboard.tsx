@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2 } from 'lucide-react';
+import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { getProjects, updateProject } from '../services/database';
@@ -344,10 +344,45 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 </div>
                               </div>
                               <div className="space-y-6">
-                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Business Type</h3>
-                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-                                  <div className="text-xl font-black uppercase italic">{selectedProject.businessType}</div>
-                                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">Industry Sector</p>
+                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Your Resources</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                  {selectedProject.logoUrl && (
+                                    <a 
+                                      href={selectedProject.logoUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3 hover:bg-white/10 transition-all group"
+                                    >
+                                      <div className="w-10 h-10 rounded-xl bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
+                                        <ImageIcon size={20} />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Logo</div>
+                                        <Download size={14} className="text-white/20 group-hover:text-[#E6FF00] transition-colors" />
+                                      </div>
+                                    </a>
+                                  )}
+                                  {selectedProject.documentsUrl && (
+                                    <a 
+                                      href={selectedProject.documentsUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3 hover:bg-white/10 transition-all group"
+                                    >
+                                      <div className="w-10 h-10 rounded-xl bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
+                                        <FileText size={20} />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Docs</div>
+                                        <Download size={14} className="text-white/20 group-hover:text-[#E6FF00] transition-colors" />
+                                      </div>
+                                    </a>
+                                  )}
+                                  {!selectedProject.logoUrl && !selectedProject.documentsUrl && (
+                                    <div className="col-span-2 p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
+                                      <p className="text-[10px] font-black uppercase tracking-widest text-white/20">No files uploaded</p>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>

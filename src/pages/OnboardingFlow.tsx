@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
-import { Check, Sparkles, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
 import { createProject } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 
@@ -29,6 +29,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       primaryColor: '#E6FF00',
       secondaryColor: '#000000',
       logoUrl: '',
+      documentsUrl: '',
+      plan: 'Basic' as 'Basic' | 'Pro',
       referenceWebsite: '',
       templateId: '',
     };
@@ -95,12 +97,18 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         primaryColor: formData.primaryColor,
         secondaryColor: formData.secondaryColor,
         logoUrl: formData.logoUrl,
+        documentsUrl: formData.documentsUrl,
+        plan: formData.plan,
+        paymentStatus: 'pending' as 'pending' | 'paid',
         referenceWebsite: formData.referenceWebsite,
         templateId: 'custom-dev',
         estimatedCompletion: null,
       };
 
-      await createProject(projectData);
+      const projectId = await createProject(projectData);
+
+      // Trigger Razorpay
+      await handlePayment(projectId, formData.plan);
 
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('onboarding_step');
@@ -110,6 +118,61 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       setError(err.message || 'Failed to submit project. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePayment = async (projectId: string, plan: 'Basic' | 'Pro') => {
+    try {
+      const response = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+
+      const order = await response.json();
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "WebbyLaunch",
+        description: `${plan} Website Service`,
+        order_id: order.id,
+        handler: async (response: any) => {
+          const verifyRes = await fetch('/api/payment/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          const verifyData = await verifyRes.json();
+          if (verifyData.status === 'success') {
+            const { updateProject } = await import('../services/database');
+            await updateProject(projectId, { 
+              paymentStatus: 'paid',
+              isLocked: false 
+            });
+          }
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: {
+          color: "#4A5D4E",
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Payment failed:", error);
+      throw new Error("Payment initialization failed");
     }
   };
 
@@ -391,6 +454,65 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               </div>
 
               <div className="space-y-2">
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Additional Documents (Optional)</label>
+                <div className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/10">
+                  <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                    {formData.documentsUrl ? (
+                      <FileText className="text-[#E6FF00]" size={32} />
+                    ) : (
+                      <FileText className="text-white/20" size={32} />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/jpg,application/pdf"
+                      className="hidden"
+                      id="doc-upload"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        // Validation
+                        if (!['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) {
+                          setError('Only JPG, PNG, or PDF files are allowed');
+                          return;
+                        }
+                        if (file.size > 2 * 1024 * 1024) {
+                          setError('File size must be less than 2MB');
+                          return;
+                        }
+
+                        setIsSubmitting(true);
+                        setError(null);
+                        try {
+                          const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
+                          const storageRef = ref(storage, `docs/${user?.uid || 'guest'}_${Date.now()}_${file.name}`);
+                          await uploadBytes(storageRef, file);
+                          const url = await getDownloadURL(storageRef);
+                          setFormData({ ...formData, documentsUrl: url });
+                        } catch (err) {
+                          console.error('Document upload failed:', err);
+                          setError('Document upload failed. Please try again.');
+                        } finally {
+                          setIsSubmitting(false);
+                        }
+                      }}
+                    />
+                    <label 
+                      htmlFor="doc-upload"
+                      className="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-all"
+                    >
+                      {formData.documentsUrl ? 'Change Document' : 'Upload Document'}
+                    </label>
+                    <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">
+                      {formData.documentsUrl ? 'Document Uploaded' : 'JPG, PNG, PDF (Max 2MB)'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Reference Website (Optional)</label>
                 <input
                   type="url"
@@ -425,6 +547,60 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Step 4</h2>
+              <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Choose Plan</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                { id: 'Basic', name: 'Basic Plan', price: '₹9,999', features: ['Single Page', 'Basic SEO', '1 Month Support'] },
+                { id: 'Pro', name: 'Pro Plan', price: '₹19,999', features: ['Multi Page', 'Advanced SEO', '6 Months Support'] }
+              ].map((plan) => (
+                <button
+                  key={plan.id}
+                  onClick={() => setFormData({ ...formData, plan: plan.id as 'Basic' | 'Pro' })}
+                  className={`p-8 rounded-[2rem] border transition-all text-left flex flex-col h-full ${
+                    formData.plan === plan.id 
+                      ? 'bg-[#E6FF00] border-[#E6FF00] text-[#4A5D4E]' 
+                      : 'bg-white/5 border-white/10 text-white hover:border-white/30'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                      <CreditCard size={24} />
+                    </div>
+                    {formData.plan === plan.id && <Check size={20} />}
+                  </div>
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter mb-2">{plan.name}</h4>
+                  <div className="text-4xl font-black mb-6">{plan.price}</div>
+                  <ul className="space-y-3 flex-1">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="text-[10px] font-bold uppercase tracking-widest opacity-60 flex items-center gap-2">
+                        <div className="w-1 h-1 rounded-full bg-current" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
+              <button onClick={handleNext} className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all">Next</button>
+            </div>
+          </motion.div>
+        );
+      case 5:
+        return (
+          <motion.div 
+            key="step5"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-2">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Step 5</h2>
               <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Finalize Project</h3>
             </div>
             
@@ -432,8 +608,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <div className="space-y-4">
                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Ready to Launch</h3>
                 <p className="text-white/50 italic text-lg leading-relaxed font-medium">
-                  Your project details have been captured. Click continue to finalize your request and move to your dashboard.
+                  Your project details have been captured. Click continue to proceed to payment and finalize your request.
                 </p>
+              </div>
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center">
+                <div>
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Selected Plan</div>
+                  <div className="text-xl font-black text-[#E6FF00] uppercase italic">{formData.plan} Plan</div>
+                </div>
+                <div className="text-2xl font-black text-white">{formData.plan === 'Basic' ? '₹9,999' : '₹19,999'}</div>
               </div>
               {error && (
                 <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-black uppercase tracking-widest">
@@ -458,10 +641,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="animate-spin" size={24} />
-                      <span>Submitting...</span>
+                      <span>Processing...</span>
                     </>
                   ) : (
-                    'Continue'
+                    'Proceed to Payment'
                   )}
                 </button>
               ) : (
@@ -500,7 +683,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 className="h-full bg-[#E6FF00]"
               />
             </div>
-            <div className="text-xs font-black text-[#E6FF00] uppercase tracking-widest">Step {step} of 4</div>
+            <div className="text-xs font-black text-[#E6FF00] uppercase tracking-widest">Step {step} of 5</div>
           </div>
         </div>
       </header>
