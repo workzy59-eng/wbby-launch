@@ -579,9 +579,84 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
                     <div>
                       <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{project.businessName}</h4>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{project.businessType}</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{project.businessType} • {project.userEmail}</p>
                     </div>
-                    <div className="pt-6 border-t border-white/5 flex flex-wrap gap-4 justify-between items-center">
+
+                    {/* File Display Section */}
+                    <div className="grid grid-cols-1 gap-4 py-4 border-y border-white/5">
+                      {/* Logo Display */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
+                            {project.logoUrl ? (
+                              <img src={project.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                            ) : (
+                              <FileText size={20} className="text-white/20" />
+                            )}
+                          </div>
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Business Logo</span>
+                        </div>
+                        {project.logoUrl && (
+                          <div className="flex gap-2">
+                            <a 
+                              href={project.logoUrl} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#00F2FF] transition-all"
+                              title="View Logo"
+                            >
+                              <ArrowUpRight size={14} />
+                            </a>
+                            <a 
+                              href={project.logoUrl} 
+                              download
+                              className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#E6FF00] transition-all"
+                              title="Download Logo"
+                            >
+                              <Download size={14} />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Documents Display */}
+                      {project.documentsUrl && (
+                        <div className="space-y-2">
+                          <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-2">Project Documents</div>
+                          {project.documentsUrl.split(',').map((docUrl, dIdx) => (
+                            <div key={dIdx} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                              <div className="flex items-center gap-3">
+                                <FileText size={20} className="text-[#E6FF00]" />
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest truncate max-w-[150px]">
+                                  {docUrl.split('/').pop()?.split('_').slice(1).join('_') || `Document ${dIdx + 1}`}
+                                </span>
+                              </div>
+                              <div className="flex gap-2">
+                                <a 
+                                  href={docUrl} 
+                                  target="_blank" 
+                                  rel="noreferrer"
+                                  className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#00F2FF] transition-all"
+                                  title="View Document"
+                                >
+                                  <ArrowUpRight size={14} />
+                                </a>
+                                <a 
+                                  href={docUrl} 
+                                  download
+                                  className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#E6FF00] transition-all"
+                                  title="Download Document"
+                                >
+                                  <Download size={14} />
+                                </a>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-6 flex flex-wrap gap-4 justify-between items-center">
                       <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress: {project.progress || 0}%</div>
                       <div className="flex gap-2">
                         <div className="relative group/download">

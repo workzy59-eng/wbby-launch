@@ -46,6 +46,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     return defaults;
   });
 
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [docFiles, setDocFiles] = useState<File[]>([]);
+  const [logoPreview, setLogoPreview] = useState<string>(formData.logoUrl || '');
+
   const [step, setStep] = useState(() => {
     const saved = localStorage.getItem('onboarding_step');
     return saved ? parseInt(saved, 10) : 1;
@@ -82,6 +86,26 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     setError(null);
 
     try {
+      let finalLogoUrl = formData.logoUrl;
+      let finalDocsUrl = formData.documentsUrl;
+
+      // Upload files if present
+      if (logoFile || docFiles.length > 0) {
+        const uploadData = new FormData();
+        if (logoFile) uploadData.append('logo', logoFile);
+        docFiles.forEach(file => uploadData.append('documents', file));
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData,
+        });
+
+        if (!uploadRes.ok) throw new Error('File upload failed');
+        const uploadResult = await uploadRes.json();
+        finalLogoUrl = uploadResult.logoUrl || finalLogoUrl;
+        finalDocsUrl = uploadResult.documentsUrl || finalDocsUrl;
+      }
+
       const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
       const projectData = {
         userId: user?.uid,
@@ -96,8 +120,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         websiteName: formData.websiteName,
         primaryColor: formData.primaryColor,
         secondaryColor: formData.secondaryColor,
-        logoUrl: formData.logoUrl,
-        documentsUrl: formData.documentsUrl,
+        logoUrl: finalLogoUrl,
+        documentsUrl: finalDocsUrl,
         plan: formData.plan,
         paymentStatus: 'pending' as 'pending' | 'paid',
         referenceWebsite: formData.referenceWebsite,
@@ -398,8 +422,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Logo (Optional)</label>
                 <div className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/10">
                   <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                    {formData.logoUrl ? (
-                      <img src={formData.logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
                     ) : (
                       <ImageIcon className="text-white/20" size={32} />
                     )}
@@ -410,7 +434,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       accept="image/jpeg,image/png,image/jpg"
                       className="hidden"
                       id="logo-upload"
-                      onChange={async (e) => {
+                      onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
                         
@@ -419,35 +443,24 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                           setError('Only image files (JPG, PNG) are allowed');
                           return;
                         }
-                        if (file.size > 2 * 1024 * 1024) {
-                          setError('Logo file size must be less than 2MB');
+                        if (file.size > 5 * 1024 * 1024) {
+                          setError('Logo file size must be less than 5MB');
                           return;
                         }
 
-                        setIsSubmitting(true);
+                        setLogoFile(file);
+                        setLogoPreview(URL.createObjectURL(file));
                         setError(null);
-                        try {
-                          const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
-                          const storageRef = ref(storage, `logos/${user?.uid || 'guest'}_${Date.now()}_${file.name}`);
-                          await uploadBytes(storageRef, file);
-                          const url = await getDownloadURL(storageRef);
-                          setFormData({ ...formData, logoUrl: url });
-                        } catch (err) {
-                          console.error('Logo upload failed:', err);
-                          setError('Logo upload failed. Please try again.');
-                        } finally {
-                          setIsSubmitting(false);
-                        }
                       }}
                     />
                     <label 
                       htmlFor="logo-upload"
                       className="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-all"
                     >
-                      {formData.logoUrl ? 'Change Logo' : 'Upload Logo'}
+                      {logoFile || formData.logoUrl ? 'Change Logo' : 'Upload Logo'}
                     </label>
                     <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">
-                      {formData.logoUrl ? 'Logo Uploaded' : 'JPG, PNG (Max 2MB)'}
+                      {logoFile || formData.logoUrl ? 'Logo Selected' : 'JPG, PNG (Max 5MB)'}
                     </p>
                   </div>
                 </div>
@@ -457,7 +470,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Additional Documents (Optional)</label>
                 <div className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/10">
                   <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                    {formData.documentsUrl ? (
+                    {docFiles.length > 0 || formData.documentsUrl ? (
                       <FileText className="text-[#E6FF00]" size={32} />
                     ) : (
                       <FileText className="text-white/20" size={32} />
@@ -467,46 +480,37 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/jpg,application/pdf"
+                      multiple
                       className="hidden"
                       id="doc-upload"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length === 0) return;
                         
                         // Validation
-                        if (!['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) {
+                        const invalidType = files.find(f => !['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(f.type));
+                        if (invalidType) {
                           setError('Only JPG, PNG, or PDF files are allowed');
                           return;
                         }
-                        if (file.size > 2 * 1024 * 1024) {
-                          setError('File size must be less than 2MB');
+                        const tooBig = files.find(f => f.size > 5 * 1024 * 1024);
+                        if (tooBig) {
+                          setError('Each file must be less than 5MB');
                           return;
                         }
 
-                        setIsSubmitting(true);
+                        setDocFiles(files);
                         setError(null);
-                        try {
-                          const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
-                          const storageRef = ref(storage, `docs/${user?.uid || 'guest'}_${Date.now()}_${file.name}`);
-                          await uploadBytes(storageRef, file);
-                          const url = await getDownloadURL(storageRef);
-                          setFormData({ ...formData, documentsUrl: url });
-                        } catch (err) {
-                          console.error('Document upload failed:', err);
-                          setError('Document upload failed. Please try again.');
-                        } finally {
-                          setIsSubmitting(false);
-                        }
                       }}
                     />
                     <label 
                       htmlFor="doc-upload"
                       className="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-all"
                     >
-                      {formData.documentsUrl ? 'Change Document' : 'Upload Document'}
+                      {docFiles.length > 0 || formData.documentsUrl ? 'Change Documents' : 'Upload Documents'}
                     </label>
                     <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">
-                      {formData.documentsUrl ? 'Document Uploaded' : 'JPG, PNG, PDF (Max 2MB)'}
+                      {docFiles.length > 0 ? `${docFiles.length} files selected: ${docFiles.map(f => f.name).join(', ')}` : formData.documentsUrl ? 'Documents Uploaded' : 'JPG, PNG, PDF (Max 5MB)'}
                     </p>
                   </div>
                 </div>

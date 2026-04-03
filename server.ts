@@ -4,8 +4,41 @@ import path from "path";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import multer from "multer";
+import fs from "fs";
 
 dotenv.config();
+
+// Ensure uploads directory exists
+const uploadDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Multer configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+    cb(null, `${timestamp}_${cleanName}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, PNG, and PDF are allowed.'));
+    }
+  }
+});
 
 const key_id = process.env.RAZORPAY_KEY_ID;
 const key_secret = process.env.RAZORPAY_KEY_SECRET;
@@ -24,8 +57,31 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+  
+  // Serve uploads statically
+  app.use('/uploads', express.static(uploadDir));
 
   // API Routes
+  app.post("/api/upload", upload.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'documents', maxCount: 5 }
+  ]), (req, res) => {
+    try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const logoPath = files.logo ? `/uploads/${files.logo[0].filename}` : null;
+      const documentPaths = files.documents ? files.documents.map(f => `/uploads/${f.filename}`) : [];
+
+      res.json({
+        success: true,
+        logoUrl: logoPath,
+        documentsUrl: documentPaths.join(',') // Store as comma-separated string for simplicity
+      });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: error.message || "Failed to upload files" });
+    }
+  });
+
   app.post("/api/payment/create-order", async (req, res) => {
     try {
       const { plan } = req.body;
