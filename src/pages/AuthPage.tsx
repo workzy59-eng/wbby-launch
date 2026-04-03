@@ -47,9 +47,9 @@ export default function AuthPage() {
         await updateProfile(result.user.uid, {
           displayName: name,
           email: email,
-          phoneNumber: phoneNumber,
+          phone: phoneNumber,
           role: 'client',
-          status: 'active'
+          status: 'approved'
         });
       }
       navigate(from);

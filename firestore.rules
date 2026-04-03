@@ -44,7 +44,7 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'businessName', 'businessType', 'businessNumber', 'description', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl', 'developerId']) &&
+      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'userPhone', 'businessName', 'businessType', 'businessNumber', 'businessLocation', 'description', 'websiteName', 'primaryColor', 'secondaryColor', 'logoUrl', 'referenceWebsite', 'templateId', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl', 'developerId']) &&
              data.userId is string && 
              data.businessName is string && data.businessName.size() > 0 &&
              data.status in ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed", "completed", "active", "in-progress", "pending", "rejected"];

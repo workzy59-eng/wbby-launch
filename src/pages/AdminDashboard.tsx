@@ -21,7 +21,8 @@ import {
   Phone,
   ArrowUpRight,
   RefreshCcw,
-  MapPin
+  MapPin,
+  Download
 } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 import { 
@@ -107,6 +108,30 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   const handleLeaveAction = async (requestId: string, status: 'approved' | 'declined') => {
     await updateLeaveRequest(requestId, status);
     setLeaveRequests(prev => prev.map(r => r.id === requestId ? { ...r, status } : r));
+  };
+
+  const exportToCSV = (data: any[], filename: string) => {
+    if (data.length === 0) return;
+    
+    const headers = Object.keys(data[0]);
+    const csvRows = [
+      headers.join(','),
+      ...data.map(row => headers.map(header => {
+        const val = row[header];
+        return `"${val?.toString().replace(/"/g, '""') || ''}"`;
+      }).join(','))
+    ];
+    
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleGenerateWarning = async (dev: UserProfile) => {
@@ -242,6 +267,16 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
       case 'clients':
         return (
           <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Registered Clients</h2>
+              <button 
+                onClick={() => exportToCSV(profiles.filter(p => p.role === 'client'), 'clients')}
+                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:bg-white/10 transition-all flex items-center gap-2"
+              >
+                <Download size={14} />
+                Export Clients
+              </button>
+            </div>
             <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
               <h3 className="text-2xl font-black text-white uppercase italic mb-8">Registered Clients</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -329,6 +364,16 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
       case 'developers':
         return (
           <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#E6FF00]">Developers Team</h2>
+              <button 
+                onClick={() => exportToCSV(profiles.filter(p => p.role === 'developer'), 'developers')}
+                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:bg-white/10 transition-all flex items-center gap-2"
+              >
+                <Download size={14} />
+                Export Developers
+              </button>
+            </div>
             <div className="flex justify-between items-center bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
@@ -404,6 +449,16 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
       case 'projects':
         return (
           <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">All Projects</h2>
+              <button 
+                onClick={() => exportToCSV(projects, 'projects')}
+                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:bg-white/10 transition-all flex items-center gap-2"
+              >
+                <Download size={14} />
+                Export Projects
+              </button>
+            </div>
             <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
               <h3 className="text-2xl font-black text-white uppercase italic mb-8">All Projects</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

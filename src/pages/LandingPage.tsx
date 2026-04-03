@@ -12,7 +12,8 @@ import {
   Zap, 
   Smartphone, 
   Search, 
-  Layout as LayoutIcon 
+  Layout as LayoutIcon,
+  MessageCircle
 } from 'lucide-react';
 import SEO from '../components/SEO';
 
@@ -21,10 +22,10 @@ interface LandingPageProps {
   profile: UserProfile | null;
 }
 
-export default function LandingPage({ user }: LandingPageProps) {
+export default function LandingPage({ user, profile }: LandingPageProps) {
   const portfolios = [
     { 
-      title: 'Automobiles', 
+      title: 'Car Business', 
       category: 'Auto Speed UI', 
       image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200', 
       link: '/portfolio/autos',
@@ -63,6 +64,19 @@ export default function LandingPage({ user }: LandingPageProps) {
     <div className="bg-[#4A5D4E]">
       <SEO />
       
+      {/* WhatsApp Floating Button */}
+      <a 
+        href="https://wa.me/919876543210" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed bottom-8 right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all group"
+      >
+        <MessageCircle size={32} className="fill-white text-[#25D366]" />
+        <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-xl">
+          Chat with us on WhatsApp
+        </span>
+      </a>
+
       {/* Hero Section */}
       <section id="home" className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -83,22 +97,32 @@ export default function LandingPage({ user }: LandingPageProps) {
             </div>
 
             <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter mb-8 leading-[0.85] text-white uppercase italic">
-              Get Your Business<br />
-              <span className="text-[#E6FF00]">Built in 24 Hours.</span>
+              Get Your Business Website<br />
+              <span className="text-[#E6FF00]">in 24 Hours.</span>
             </h1>
 
             <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-medium text-white/60 leading-relaxed">
-              WebbyLaunch – Professional Website Development. No coding. No stress. We build it for you while you focus on your business.
+              We build professional websites for small businesses. No coding. No stress. We build it for you while you focus on your business.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link 
-                to="/auth" 
-                className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
-              >
-                Start My Website
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {user ? (
+                <Link 
+                  to="/dashboard" 
+                  className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
+                >
+                  Go to Dashboard
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              ) : (
+                <Link 
+                  to="/auth" 
+                  className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
+                >
+                  Start Now
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
               <a 
                 href="#portfolio" 
                 className="px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest border border-white/10 hover:bg-white/5 transition-all flex items-center gap-3"

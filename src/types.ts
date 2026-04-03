@@ -57,10 +57,17 @@ export interface Project {
   userId: string;
   userName: string;
   userEmail: string;
+  userPhone: string;
   businessName: string;
   businessType: string;
   businessNumber: string;
+  businessLocation: string;
   description: string;
+  websiteName: string;
+  primaryColor: string;
+  secondaryColor: string;
+  logoUrl?: string;
+  referenceWebsite?: string;
   templateId: string;
   status: ProjectStatus;
   progress: number;
