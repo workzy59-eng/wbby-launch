@@ -100,7 +100,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           body: uploadData,
         });
 
-        if (!uploadRes.ok) throw new Error('File upload failed');
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errorData.error || 'File upload failed');
+        }
         const uploadResult = await uploadRes.json();
         finalLogoUrl = uploadResult.logoUrl || finalLogoUrl;
         finalDocsUrl = uploadResult.documentsUrl || finalDocsUrl;

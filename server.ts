@@ -5,27 +5,41 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import multer from "multer";
-import fs from "fs";
+import admin from 'firebase-admin';
+import firebaseConfig from './firebase-applet-config.json';
 
 dotenv.config();
 
-// Ensure uploads directory exists
-const uploadDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+// Initialize Firebase Admin
+// On Vercel, you should set these environment variables:
+// FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
+if (!admin.apps.length) {
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const projectId = process.env.FIREBASE_PROJECT_ID || firebaseConfig.projectId;
+
+  if (privateKey && clientEmail) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+      storageBucket: firebaseConfig.storageBucket
+    });
+  } else {
+    // Fallback to application default for local development
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+      storageBucket: firebaseConfig.storageBucket
+    });
+  }
 }
 
-// Multer configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
-    cb(null, `${timestamp}_${cleanName}`);
-  }
-});
+const bucket = admin.storage().bucket();
+
+// Configure Multer for memory storage
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -58,23 +72,57 @@ async function startServer() {
 
   app.use(express.json());
   
-  // Serve uploads statically
-  app.use('/uploads', express.static(uploadDir));
-
   // API Routes
   app.post("/api/upload", upload.fields([
     { name: 'logo', maxCount: 1 },
     { name: 'documents', maxCount: 5 }
-  ]), (req, res) => {
+  ]), async (req, res) => {
     try {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      const logoPath = files.logo ? `/uploads/${files.logo[0].filename}` : null;
-      const documentPaths = files.documents ? files.documents.map(f => `/uploads/${f.filename}`) : [];
+      
+      const uploadToFirebase = async (file: Express.Multer.File) => {
+        const timestamp = Date.now();
+        const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+        const fileName = `uploads/${timestamp}_${cleanName}`;
+        const blob = bucket.file(fileName);
+        
+        const blobStream = blob.createWriteStream({
+          metadata: {
+            contentType: file.mimetype,
+            cacheControl: 'public, max-age=31536000'
+          },
+          resumable: false
+        });
+
+        return new Promise<string>((resolve, reject) => {
+          blobStream.on('error', (err) => {
+            console.error('Blob stream error:', err);
+            reject(err);
+          });
+          
+          blobStream.on('finish', async () => {
+            try {
+              // Make the file public and get the URL
+              await blob.makePublic();
+              const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+              resolve(publicUrl);
+            } catch (err) {
+              console.error('Make public error:', err);
+              reject(err);
+            }
+          });
+          
+          blobStream.end(file.buffer);
+        });
+      };
+
+      const logoUrl = files.logo ? await uploadToFirebase(files.logo[0]) : null;
+      const documentUrls = files.documents ? await Promise.all(files.documents.map(f => uploadToFirebase(f))) : [];
 
       res.json({
         success: true,
-        logoUrl: logoPath,
-        documentsUrl: documentPaths.join(',') // Store as comma-separated string for simplicity
+        logoUrl: logoUrl,
+        documentsUrl: documentUrls.join(',')
       });
     } catch (error: any) {
       console.error("Upload error:", error);
