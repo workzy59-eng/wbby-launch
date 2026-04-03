@@ -148,6 +148,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const handlePayment = async (projectId: string, plan: 'Basic' | 'Pro') => {
     try {
       const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      console.log("Razorpay Key:", razorpayKey);
       console.log("Initializing Razorpay payment...");
 
       if (!razorpayKey) {
