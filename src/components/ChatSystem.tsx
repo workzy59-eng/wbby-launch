@@ -410,7 +410,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                     onClick={() => !m.isDeleted && setSelectedMessage(m)}
                     className={`p-4 rounded-2xl text-sm font-bold leading-relaxed shadow-lg relative group cursor-pointer transition-all ${
                       isMe 
-                        ? 'bg-[#E6FF00] text-black rounded-tr-none' 
+                        ? 'bg-[#005c4b] text-white rounded-tr-none' 
                         : 'bg-[#202c33] text-white rounded-tl-none border border-white/5'
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
@@ -488,7 +488,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       </button>
                     )}
 
-                    <div className={`flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-black/40' : 'text-white/40'}`}>
+                    <div className="flex items-center justify-end gap-1 mt-1 text-white/40">
                       <span className="text-[9px] font-bold uppercase tracking-tighter">
                         {formatDate(m.createdAt, 'h:mm a')}
                       </span>

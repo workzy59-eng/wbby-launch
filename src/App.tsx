@@ -246,7 +246,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
                 path="/" 
                 element={
                   user ? (
-                    (profile?.role === 'admin' || user.email === ADMIN_EMAIL) ? (
+                    (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                       <Navigate to="/admin" />
                     ) : (
                       <Navigate to="/dashboard" />
@@ -273,7 +273,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
                 path="/dashboard" 
                 element={
                   user ? (
-                    (profile?.role === 'admin' || user.email === ADMIN_EMAIL) ? (
+                    (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                       <AdminPanel user={user} profile={profile} />
                     ) : profile?.role === 'developer' ? (
                       <DeveloperDashboard user={user} profile={profile} />
@@ -287,7 +287,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               />
               <Route 
                 path="/admin" 
-                element={user && (profile?.role === 'admin' || user.email === ADMIN_EMAIL) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                element={user && (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
               />
               <Route 
                 path="/portfolio/autos" 

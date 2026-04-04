@@ -11,6 +11,8 @@ import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import Papa from 'papaparse';
 
+import { ADMIN_EMAIL } from '../constants';
+
 interface AdminPanelProps {
   user: FirebaseUser;
   profile: UserProfile | null;
@@ -33,7 +35,9 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
-  if (profile?.role !== 'admin') {
+  const isUserAdmin = profile?.role === 'admin' || user.email === ADMIN_EMAIL;
+
+  if (!isUserAdmin) {
     return (
       <div className="min-h-screen bg-[#4A5D4E] flex items-center justify-center p-6 text-center">
         <div className="max-w-md w-full bg-[#5E7162] rounded-[3rem] p-12 border border-red-500/20 shadow-2xl">

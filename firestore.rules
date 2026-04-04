@@ -15,8 +15,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-             request.auth.token.email == "workzy59@gmail.com" &&
-             request.auth.token.email_verified == true;
+             (request.auth.token.email.lower() == "workzy59@gmail.com" || 
+              (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
     function hasOnlyAllowedFields(fields) {
@@ -50,7 +51,7 @@ service cloud.firestore {
     }
 
     function isValidMessage(data) {
-      return hasOnlyAllowedFields(['id', 'projectId', 'conversationId', 'senderId', 'senderName', 'text', 'attachments', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
+      return hasOnlyAllowedFields(['id', 'projectId', 'conversationId', 'senderId', 'senderName', 'text', 'attachments', 'attachmentUrl', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
              (data.projectId is string || data.conversationId is string) && 
              data.senderId is string && 
              data.text is string &&
@@ -59,7 +60,7 @@ service cloud.firestore {
     }
 
     function isValidDirectMessage(data) {
-      return hasOnlyAllowedFields(['id', 'conversationId', 'senderId', 'senderName', 'text', 'attachments', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
+      return hasOnlyAllowedFields(['id', 'conversationId', 'senderId', 'senderName', 'text', 'attachments', 'attachmentUrl', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
              data.conversationId is string &&
              data.senderId is string && 
              data.text is string &&

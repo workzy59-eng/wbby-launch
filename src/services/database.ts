@@ -120,7 +120,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
-        role: user.email === ADMIN_EMAIL ? 'admin' : 'client',
+        role: user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'client',
         status: 'online',
         lastSeen: serverTimestamp(),
         createdAt: serverTimestamp(),
