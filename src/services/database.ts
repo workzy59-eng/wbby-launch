@@ -15,51 +15,37 @@ export enum OperationType {
   WRITE = 'write',
 }
 
-// File Upload Helper (Using Backend Cloudinary API or Direct Upload as Fallback)
+// File Upload Helper (Direct Upload to Cloudinary - Frontend Only)
 export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dvrxv19t0';
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
-  const appUrl = import.meta.env.VITE_APP_URL || '';
 
-  // Try direct upload if preset is available (fallback for Vercel/Static deployments)
-  if (cloudName && uploadPreset) {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', uploadPreset);
-      formData.append('folder', folder);
+  console.log(`Starting direct Cloudinary upload for ${file.name} to folder ${folder}...`);
 
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.secure_url || data.url;
-      }
-    } catch (error) {
-      console.warn('Direct upload failed, falling back to backend:', error);
-    }
+  if (!cloudName || !uploadPreset) {
+    console.error('Cloudinary configuration is missing (VITE_CLOUDINARY_CLOUD_NAME or VITE_CLOUDINARY_UPLOAD_PRESET)');
+    throw new Error('Cloudinary configuration is missing. Please check your environment variables.');
   }
 
-  // Fallback to backend API
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('folder', folder);
-
   try {
-    const response = await fetch(`${appUrl}/api/upload`, {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', folder);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
       method: 'POST',
       body: formData,
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Upload failed');
+      console.error('Cloudinary upload failed:', errorData);
+      throw new Error(errorData.error?.message || 'Cloudinary upload failed');
     }
 
     const data = await response.json();
+    console.log('Cloudinary upload successful:', data.secure_url);
     return data.secure_url || data.url;
   } catch (error) {
     console.error('File upload error:', error);
