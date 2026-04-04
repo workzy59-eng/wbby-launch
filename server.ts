@@ -4,6 +4,7 @@ import path from "path";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import multer from "multer";
+import cors from "cors";
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import admin from 'firebase-admin';
@@ -46,11 +47,19 @@ if (!admin.apps.length) {
 }
 
 // Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME;
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (cloudinaryCloudName && cloudinaryApiKey && cloudinaryApiSecret) {
+  cloudinary.config({
+    cloud_name: cloudinaryCloudName,
+    api_key: cloudinaryApiKey,
+    api_secret: cloudinaryApiSecret
+  });
+} else {
+  console.warn("Cloudinary configuration is incomplete. Uploads may fail.");
+}
 
 // Configure Multer with Cloudinary
 const storage = new CloudinaryStorage({
@@ -74,6 +83,7 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  app.use(cors());
   app.use(express.json());
   
   // API Routes

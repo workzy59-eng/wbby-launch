@@ -77,14 +77,15 @@ export default function App() {
 
   useEffect(() => {
     const seedBlogPosts = async () => {
-      const snapshot = await getDocs(collection(db, 'blog_posts'));
-      if (snapshot.empty) {
-        const posts = [
-          {
-            title: "How to create a business website in India",
-            slug: "how-to-create-business-website-india",
-            excerpt: "Learn the step-by-step process of launching a professional business website in India, from domain registration to SEO optimization.",
-            content: `
+      try {
+        const snapshot = await getDocs(collection(db, 'blog_posts'));
+        if (snapshot.empty) {
+          const posts = [
+            {
+              title: "How to create a business website in India",
+              slug: "how-to-create-business-website-india",
+              excerpt: "Learn the step-by-step process of launching a professional business website in India, from domain registration to SEO optimization.",
+              content: `
 # How to create a business website in India
 
 In 2026, having a digital presence is no longer optional for businesses in India. Whether you're a local gym owner, a car dealer, or a logistics provider, your customers are searching for you online.
@@ -103,18 +104,18 @@ Use local keywords like "best gym in Mumbai" or "car showroom in Delhi" to attra
 
 ## 5. Fast Loading
 With varying internet speeds across the country, a fast-loading site is crucial for retaining visitors.
-            `,
-            author: "WebbyLaunch Team",
-            date: serverTimestamp(),
-            image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426",
-            category: "Business",
-            tags: ["India", "Business", "Web Design"]
-          },
-          {
-            title: "Best website for small business 2026",
-            slug: "best-website-small-business-2026",
-            excerpt: "Discover the top website features and designs that are driving growth for small businesses this year.",
-            content: `
+              `,
+              author: "WebbyLaunch Team",
+              date: serverTimestamp(),
+              image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426",
+              category: "Business",
+              tags: ["India", "Business", "Web Design"]
+            },
+            {
+              title: "Best website for small business 2026",
+              slug: "best-website-small-business-2026",
+              excerpt: "Discover the top website features and designs that are driving growth for small businesses this year.",
+              content: `
 # Best website for small business 2026
 
 What makes a website "the best" for a small business in 2026? It's not just about looking pretty; it's about performance and trust.
@@ -126,18 +127,18 @@ What makes a website "the best" for a small business in 2026? It's not just abou
 - **Clean UI:** Avoid clutter. Focus on the CTA (Call to Action).
 
 At **WebbyLaunch**, we incorporate all these features into our standard business launch plans.
-            `,
-            author: "WebbyLaunch Team",
-            date: serverTimestamp(),
-            image: "https://images.unsplash.com/photo-1454165833767-0274b0596d33?q=80&w=2340",
-            category: "Design",
-            tags: ["Small Business", "2026", "Trends"]
-          },
-          {
-            title: "Affordable website design for everyone",
-            slug: "affordable-website-design-everyone",
-            excerpt: "Everyone needs high-quality design without the high-quality price tag. Here is how to get it.",
-            content: `
+              `,
+              author: "WebbyLaunch Team",
+              date: serverTimestamp(),
+              image: "https://images.unsplash.com/photo-1454165833767-0274b0596d33?q=80&w=2340",
+              category: "Design",
+              tags: ["Small Business", "2026", "Trends"]
+            },
+            {
+              title: "Affordable website design for everyone",
+              slug: "affordable-website-design-everyone",
+              excerpt: "Everyone needs high-quality design without the high-quality price tag. Here is how to get it.",
+              content: `
 # Affordable website design for everyone
 
 Everyone often operates on tight budgets. However, skimping on your website can cost you more in the long run through lost customers.
@@ -148,18 +149,21 @@ Everyone often operates on tight budgets. However, skimping on your website can 
 3. **Subscription Models:** Instead of a huge upfront cost, look for affordable monthly plans.
 
 **WebbyLaunch** offers plans starting from just ₹899/month, making it the perfect choice for everyone in India.
-            `,
-            author: "WebbyLaunch Team",
-            date: serverTimestamp(),
-            image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2340",
-            category: "Everyone",
-            tags: ["Affordable", "Everyone", "Web Design"]
-          }
-        ];
+              `,
+              author: "WebbyLaunch Team",
+              date: serverTimestamp(),
+              image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2340",
+              category: "Everyone",
+              tags: ["Affordable", "Everyone", "Web Design"]
+            }
+          ];
 
-        for (const post of posts) {
-          await addDoc(collection(db, 'blog_posts'), post);
+          for (const post of posts) {
+            await addDoc(collection(db, 'blog_posts'), post);
+          }
         }
+      } catch (error) {
+        console.error("Error seeding blog posts:", error);
       }
     };
 
@@ -242,7 +246,11 @@ Everyone often operates on tight budgets. However, skimping on your website can 
                 path="/" 
                 element={
                   user ? (
-                    <Navigate to="/dashboard" />
+                    (profile?.role === 'admin' || user.email === ADMIN_EMAIL) ? (
+                      <Navigate to="/admin" />
+                    ) : (
+                      <Navigate to="/dashboard" />
+                    )
                   ) : (
                     <LandingPage user={user} profile={profile} />
                   )

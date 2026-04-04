@@ -356,81 +356,101 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       {/* Messages Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-10 py-12 space-y-10 scrollbar-hide"
+        className="flex-1 overflow-y-auto px-6 py-8 space-y-6 scrollbar-hide bg-[#0b141a] relative"
+        style={{
+          backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
+          backgroundRepeat: 'repeat',
+          backgroundSize: '400px',
+          backgroundBlendMode: 'overlay',
+          backgroundColor: '#0b141a'
+        }}
       >
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-white/20 space-y-8">
-            <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
-              <MessageCircle size={48} strokeWidth={1.5} className="text-[#E6FF00]" />
+          <div className="flex flex-col items-center justify-center h-full space-y-6">
+            <div className="w-24 h-24 bg-[#E6FF00]/10 rounded-full flex items-center justify-center relative">
+              <MessageCircle size={48} className="text-[#E6FF00]" />
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#E6FF00] rounded-full flex items-center justify-center text-black">
+                <Sparkles size={14} />
+              </div>
             </div>
             <div className="text-center space-y-2">
-              <p className="text-sm font-black uppercase tracking-[0.4em]">Secure Channel Established</p>
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 italic">Messages are end-to-end encrypted</p>
+              <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Secure Channel</h3>
+              <p className="text-xs font-bold text-white/40 uppercase tracking-widest max-w-[200px] leading-relaxed">
+                Messages are end-to-end encrypted and secure.
+              </p>
             </div>
           </div>
         ) : (
-          messages.map((m) => {
+          messages.map((m, idx) => {
             const isMe = m.senderId === currentUser.uid;
+            const showDate = idx === 0 || (m.createdAt && messages[idx - 1].createdAt && formatDate(m.createdAt, 'MMM d') !== formatDate(messages[idx - 1].createdAt, 'MMM d'));
+            
             return (
-              <div 
-                key={m.id} 
-                className={`flex gap-6 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
-              >
-                <div className="flex-shrink-0 mt-1">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black italic text-sm ${
-                    isMe ? 'bg-[#E6FF00] text-black' : 'bg-white/10 text-white border border-white/10'
-                  }`}>
-                    {m.senderName?.[0] || 'U'}
+              <React.Fragment key={m.id}>
+                {showDate && (
+                  <div className="flex justify-center my-8">
+                    <div className="bg-[#202c33]/50 backdrop-blur-md px-4 py-1.5 rounded-lg border border-white/5">
+                      <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">
+                        {formatDate(m.createdAt, 'MMMM d, yyyy')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-
-                <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[70%]`}>
+                )}
+                <div 
+                  className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                >
+                {!isMe && !isDirect && (
+                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1 ml-4 italic">
+                    {m.senderName}
+                  </span>
+                )}
+                <div className={`flex gap-3 max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                   <motion.div 
                     layout
                     onClick={() => !m.isDeleted && setSelectedMessage(m)}
-                    className={`p-6 rounded-[2.5rem] text-sm font-bold leading-relaxed shadow-2xl backdrop-blur-md border cursor-pointer transition-all ${
+                    className={`p-4 rounded-2xl text-sm font-bold leading-relaxed shadow-lg relative group cursor-pointer transition-all ${
                       isMe 
-                        ? 'bg-[#E6FF00] text-black border-[#E6FF00]/20 rounded-tr-none' 
-                        : 'bg-white/5 text-white border-white/10 rounded-tl-none'
+                        ? 'bg-[#E6FF00] text-black rounded-tr-none' 
+                        : 'bg-[#202c33] text-white rounded-tl-none border border-white/5'
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
                     {m.imageUrl && (
-                      <div className="mb-4 rounded-2xl overflow-hidden border border-white/10 relative group">
+                      <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
                         <img src={m.imageUrl} alt="AI Visualization" className="w-full h-auto max-h-64 object-cover" />
                         <button 
                           onClick={(e) => { e.stopPropagation(); setSelectedImage(m.imageUrl!); }}
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white"
+                          className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center text-white"
                         >
-                          <Maximize2 size={24} />
+                          <Maximize2 size={20} />
                         </button>
                       </div>
                     )}
 
                     {m.attachments && m.attachments.length > 0 && (
-                      <div className="space-y-3 mb-4">
+                      <div className="space-y-2 mb-3">
                         {m.attachments.map((att, idx) => {
                           const isImg = att.type.startsWith('image/');
                           if (isImg) {
                             return (
-                              <div key={idx} className="rounded-2xl overflow-hidden border border-white/10 relative group">
+                              <div key={idx} className="rounded-xl overflow-hidden border border-black/10 relative group/img">
                                 <img src={att.url} alt={att.name} className="w-full h-auto max-h-64 object-cover" />
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); setSelectedImage(att.url); }}
-                                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white"
+                                  className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center text-white"
                                 >
-                                  <Maximize2 size={24} />
+                                  <Maximize2 size={20} />
                                 </button>
                               </div>
                             );
                           }
                           return (
-                            <div key={idx} className={`flex items-center gap-4 p-4 rounded-2xl border ${isMe ? 'bg-black/10 border-black/10' : 'bg-white/5 border-white/10'}`}>
-                              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/60">
-                                <FileText size={20} />
+                            <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border ${isMe ? 'bg-black/10 border-black/5' : 'bg-white/5 border-white/10'}`}>
+                              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/60">
+                                <FileText size={16} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-black truncate uppercase tracking-widest">{att.name}</p>
-                                <p className="text-[10px] opacity-40 uppercase tracking-widest">{(att.size / 1024).toFixed(1)} KB</p>
+                                <p className="text-[10px] font-black truncate uppercase tracking-widest">{att.name}</p>
+                                <p className="text-[8px] opacity-40 uppercase tracking-widest">{(att.size / 1024).toFixed(1)} KB</p>
                               </div>
                               <a 
                                 href={att.url} 
@@ -438,9 +458,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className={`p-2 rounded-lg transition-all ${isMe ? 'hover:bg-black/20' : 'hover:bg-white/10'}`}
+                                className={`p-1.5 rounded-lg transition-all ${isMe ? 'hover:bg-black/20' : 'hover:bg-white/10'}`}
                               >
-                                <Download size={18} />
+                                <Download size={14} />
                               </a>
                             </div>
                           );
@@ -448,7 +468,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       </div>
                     )}
 
-                    {m.text}
+                    <p className="whitespace-pre-wrap">{m.text}</p>
+                    
                     {!m.imageUrl && !isMe && !m.isDeleted && (
                       <button 
                         onClick={(e) => {
@@ -456,7 +477,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                           handleGenerateAI(m);
                         }}
                         disabled={isGenerating === m.id}
-                        className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:opacity-80 transition-all"
+                        className="mt-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:opacity-80 transition-all"
                       >
                         {isGenerating === m.id ? (
                           <Loader2 size={12} className="animate-spin" />
@@ -466,22 +487,22 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         {isGenerating === m.id ? 'Generating...' : 'Visualize with AI'}
                       </button>
                     )}
-                  </motion.div>
-                  <div className="flex items-center gap-3 mt-3 px-4">
-                    <span className="text-[9px] text-white/30 font-black uppercase tracking-widest italic">
-                      {m.createdAt ? formatDate(m.createdAt, 'h:mm a') : 'Sending...'}
-                    </span>
-                    {isMe && (
-                      <span className="text-white/30">
-                        {m.seen ? <CheckCheck size={14} className="text-blue-400" /> : <Check size={14} />}
+
+                    <div className={`flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-black/40' : 'text-white/40'}`}>
+                      <span className="text-[9px] font-bold uppercase tracking-tighter">
+                        {formatDate(m.createdAt, 'h:mm a')}
                       </span>
-                    )}
-                  </div>
+                      {isMe && (
+                        m.seen ? <CheckCheck size={12} className="text-blue-500" /> : <Check size={12} />
+                      )}
+                    </div>
+                  </motion.div>
                 </div>
               </div>
-            );
-          })
-        )}
+            </React.Fragment>
+          );
+        })
+      )}
         {typingUsers.length > 0 && (
           <div className="flex items-center gap-3 text-[10px] text-[#E6FF00] font-black uppercase tracking-widest italic animate-pulse">
             <div className="flex gap-1">
@@ -596,12 +617,12 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       </AnimatePresence>
 
       {/* Input Area */}
-      <footer className="px-10 py-10 border-t border-white/10 bg-white/5">
+      <footer className="px-6 py-6 border-t border-white/10 bg-[#202c33]">
         <form 
           onSubmit={handleSendMessage}
-          className="max-w-5xl mx-auto flex items-center gap-6"
+          className="max-w-5xl mx-auto flex items-center gap-4"
         >
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <input 
               type="file" 
               id="chat-file-upload" 
@@ -611,7 +632,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             />
             <label 
               htmlFor="chat-file-upload"
-              className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all cursor-pointer"
+              className="p-3 text-white/40 hover:text-white transition-all cursor-pointer"
             >
               <Paperclip size={24} />
             </label>
@@ -626,7 +647,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             />
             <label 
               htmlFor="chat-image-upload"
-              className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all cursor-pointer"
+              className="p-3 text-white/40 hover:text-white transition-all cursor-pointer"
             >
               <ImageIcon size={24} />
             </label>
@@ -635,8 +656,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <div className="flex-1 relative">
             <input 
               type="text" 
-              placeholder="Type your message here..."
-              className="w-full bg-white/5 border border-white/10 rounded-[2rem] px-10 py-6 text-white font-bold outline-none focus:border-[#E6FF00] transition-all"
+              placeholder="Type a message..."
+              className="w-full bg-[#2a3942] border-none rounded-xl px-6 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-white/10 transition-all"
               value={inputText}
               onChange={handleInputChange}
             />
@@ -645,9 +666,17 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="submit"
             disabled={(!inputText.trim() && Object.keys(uploadProgress).length === 0) || isSending}
-            className="p-6 bg-[#E6FF00] text-black rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)]"
+            className={`p-3 rounded-xl transition-all ${
+              (inputText.trim() || Object.keys(uploadProgress).length > 0) && !isSending
+                ? 'bg-[#E6FF00] text-black shadow-lg shadow-[#E6FF00]/20'
+                : 'bg-white/5 text-white/20 cursor-not-allowed'
+            }`}
           >
-            <Send size={28} />
+            {isSending ? (
+              <Loader2 className="animate-spin" size={24} />
+            ) : (
+              <Send size={24} />
+            )}
           </button>
         </form>
       </footer>

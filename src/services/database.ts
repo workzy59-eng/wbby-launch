@@ -15,14 +15,41 @@ export enum OperationType {
   WRITE = 'write',
 }
 
-// File Upload Helper (Using Backend Cloudinary API)
+// File Upload Helper (Using Backend Cloudinary API or Direct Upload as Fallback)
 export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  const appUrl = import.meta.env.VITE_APP_URL || '';
+
+  // Try direct upload if preset is available (fallback for Vercel/Static deployments)
+  if (cloudName && uploadPreset) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+      formData.append('folder', folder);
+
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.secure_url || data.url;
+      }
+    } catch (error) {
+      console.warn('Direct upload failed, falling back to backend:', error);
+    }
+  }
+
+  // Fallback to backend API
   const formData = new FormData();
   formData.append('file', file);
   formData.append('folder', folder);
 
   try {
-    const response = await fetch('/api/upload', {
+    const response = await fetch(`${appUrl}/api/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -503,8 +530,7 @@ export const getConversations = (callback: (conversations: any[]) => void) => {
   const path = 'conversations';
   const q = query(
     collection(db, 'conversations'), 
-    where('participants', 'array-contains', auth.currentUser.uid),
-    orderBy('updatedAt', 'desc')
+    where('participants', 'array-contains', auth.currentUser.uid)
   );
 
   return onSnapshot(q, (snapshot) => {

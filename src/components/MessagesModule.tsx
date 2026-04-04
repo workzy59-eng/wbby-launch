@@ -18,7 +18,8 @@ import {
   Loader2,
   Briefcase,
   User as UserIcon,
-  Circle
+  Circle,
+  Sparkles
 } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Message, Project } from '../types';
@@ -106,7 +107,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         // Filter conversations as well for non-admins
         let finalConvs = enrichedConvs;
         if (profile?.role !== 'admin') {
-          finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin');
+          // Users should see conversations with admins OR conversations they are part of
+          finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin' || c.participants.includes(currentUser.uid));
         }
         
         // Add project conversations
@@ -120,7 +122,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           project: p
         }));
 
-        setConversations([...projectConvs, ...finalConvs] as Conversation[]);
+        // Sort by date
+        const allConvs = [...projectConvs, ...finalConvs].sort((a, b) => {
+          const dateA = a.lastMessageAt?.toMillis?.() || a.lastMessageAt || 0;
+          const dateB = b.lastMessageAt?.toMillis?.() || b.lastMessageAt || 0;
+          return dateB - dateA;
+        });
+
+        setConversations(allConvs as Conversation[]);
         setIsLoading(false);
       } catch (error) {
         console.error('Error loading conversations:', error);
@@ -214,6 +223,24 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     }
   };
 
+  const handleMessageAdmin = async () => {
+    setIsLoading(true);
+    try {
+      const admins = await getAdmins();
+      if (admins.length > 0) {
+        // Find the main admin by email if possible, else take the first one
+        const mainAdmin = admins.find(a => a.email === 'workzy59@gmail.com') || admins[0];
+        startNewChat(mainAdmin);
+      } else {
+        alert('No admin found. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error finding admin:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const startNewChat = (user: UserProfile) => {
     const existingConv = conversations.find(c => !c.isProject && c.participants.includes(user.uid));
     if (existingConv) {
@@ -293,7 +320,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </p>
               </div>
               <button 
-                onClick={() => setShowUserList(true)}
+                onClick={profile?.role === 'admin' ? () => setShowUserList(true) : handleMessageAdmin}
                 className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[#E6FF00] text-[10px] font-black uppercase tracking-widest hover:bg-[#E6FF00] hover:text-black hover:border-transparent transition-all"
               >
                 {profile?.role === 'admin' ? 'Start a new chat' : 'Message Admin'}
@@ -458,63 +485,104 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             {/* Messages Area */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-[#020617]/20"
+              className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-[#0b141a] relative"
+              style={{
+                backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
+                backgroundRepeat: 'repeat',
+                backgroundSize: '400px',
+                backgroundBlendMode: 'overlay',
+                backgroundColor: '#0b141a'
+              }}
             >
               {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full opacity-20 space-y-4">
-                  <MessageCircle size={64} />
-                  <p className="text-sm font-black uppercase tracking-widest italic">No messages yet</p>
+                <div className="flex flex-col items-center justify-center h-full space-y-6">
+                  <div className="w-24 h-24 bg-[#E6FF00]/10 rounded-full flex items-center justify-center relative">
+                    <MessageCircle size={48} className="text-[#E6FF00]" />
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#E6FF00] rounded-full flex items-center justify-center text-black">
+                      <Sparkles size={14} />
+                    </div>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Start a Conversation</h3>
+                    <p className="text-xs font-bold text-white/40 uppercase tracking-widest max-w-[200px] leading-relaxed">
+                      Send a message to begin your project journey with us.
+                    </p>
+                  </div>
                 </div>
               )}
               {messages.map((m, idx) => {
                 const isMe = m.senderId === currentUser.uid;
                 const showAvatar = idx === 0 || messages[idx - 1].senderId !== m.senderId;
+                const showDate = idx === 0 || (m.createdAt && messages[idx - 1].createdAt && formatDate(m.createdAt, 'MMM d') !== formatDate(messages[idx - 1].createdAt, 'MMM d'));
                 
                 return (
-                  <div key={m.id} className={`flex items-end gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                    {!isMe && (
-                      <div className="w-8 h-8 rounded-full bg-white/10 flex-shrink-0 flex items-center justify-center text-[10px] font-black">
-                        {showAvatar ? m.senderName?.[0] : ''}
+                  <React.Fragment key={m.id}>
+                    {showDate && (
+                      <div className="flex justify-center my-6">
+                        <span className="px-4 py-1.5 bg-white/5 backdrop-blur-md rounded-full text-[10px] font-black text-white/40 uppercase tracking-widest border border-white/5">
+                          {formatDate(m.createdAt, 'MMMM d, yyyy')}
+                        </span>
                       </div>
                     )}
-                    <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] md:max-w-[60%]`}>
-                      <div className={`p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-lg ${
-                        isMe 
-                          ? 'bg-[#E6FF00] text-black rounded-br-none' 
-                          : 'bg-white/5 text-white border border-white/10 rounded-bl-none'
-                      }`}>
-                        {m.text}
-                        {m.imageUrl && (
-                          <img src={m.imageUrl} alt="Attachment" className="mt-2 rounded-xl max-w-full h-auto border border-white/10" />
-                        )}
-                        {m.attachmentUrl && (
-                          <a 
-                            href={m.attachmentUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="mt-2 flex items-center gap-2 p-2 bg-black/20 rounded-xl text-xs hover:bg-black/40 transition-all"
-                          >
-                            <FileText size={16} />
-                            <span className="truncate">View Attachment</span>
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1.5 px-1">
-                        <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
-                          {m.createdAt ? formatDate(m.createdAt, 'h:mm a') : 'Sending...'}
-                        </span>
-                        {isMe && (
-                          <span className="text-white/30">
-                            {m.seen ? (
-                              <CheckCheck size={12} className="text-[#E6FF00]" />
-                            ) : (
-                              <Check size={12} />
+                    <div className={`flex items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[70%]`}>
+                        <div className={`relative p-3.5 rounded-2xl text-sm font-medium leading-relaxed shadow-xl ${
+                          isMe 
+                            ? 'bg-[#005c4b] text-white rounded-tr-none' 
+                            : 'bg-[#202c33] text-white border border-white/5 rounded-tl-none'
+                        }`}>
+                          {!isMe && activeConversation.isProject && (
+                            <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mb-1">
+                              {m.senderName}
+                            </p>
+                          )}
+                          {m.text}
+                          {m.imageUrl && (
+                            <div className="mt-2 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+                              <img 
+                                src={m.imageUrl} 
+                                alt="Attachment" 
+                                className="max-w-full h-auto object-cover cursor-pointer hover:scale-105 transition-transform duration-500" 
+                                referrerPolicy="no-referrer"
+                                onClick={() => window.open(m.imageUrl, '_blank')}
+                              />
+                            </div>
+                          )}
+                          {m.attachmentUrl && (
+                            <a 
+                              href={m.attachmentUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="mt-2 flex items-center gap-3 p-3 bg-black/20 rounded-xl text-xs hover:bg-black/40 transition-all border border-white/5 group"
+                            >
+                              <div className="w-10 h-10 bg-[#E6FF00]/10 rounded-lg flex items-center justify-center text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
+                                <FileText size={20} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-black uppercase tracking-tighter truncate">Document</p>
+                                <p className="text-[10px] opacity-40 font-bold uppercase tracking-widest">Click to view</p>
+                              </div>
+                            </a>
+                          )}
+                          
+                          <div className="flex items-center justify-end gap-1.5 mt-1 opacity-60">
+                            <span className="text-[9px] font-bold uppercase tracking-widest">
+                              {m.createdAt ? formatDate(m.createdAt, 'h:mm a') : '...'}
+                            </span>
+                            {isMe && (
+                              <span>
+                                {m.seen ? (
+                                  <CheckCheck size={14} className="text-[#53bdeb]" />
+                                ) : (
+                                  <Check size={14} />
+                                )}
+                              </span>
                             )}
-                          </span>
-                        )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </React.Fragment>
                 );
               })}
               {typingUsers.length > 0 && (
@@ -612,21 +680,26 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <input 
                     type="text"
                     placeholder="Type a message..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
                     value={inputText}
                     onChange={handleInputChange}
                   />
-                  <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all">
-                    <Smile size={20} />
+                  <button 
+                    type="submit"
+                    disabled={!inputText.trim() || isSending}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all ${
+                      inputText.trim() && !isSending 
+                        ? 'bg-[#E6FF00] text-black shadow-lg shadow-[#E6FF00]/20' 
+                        : 'bg-white/5 text-white/20 cursor-not-allowed'
+                    }`}
+                  >
+                    {isSending ? (
+                      <Loader2 className="animate-spin" size={20} />
+                    ) : (
+                      <Send size={20} />
+                    )}
                   </button>
                 </div>
-                <button 
-                  type="submit"
-                  disabled={!inputText.trim() || isSending}
-                  className="p-4 bg-[#E6FF00] text-black rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]"
-                >
-                  <Send size={20} />
-                </button>
               </form>
             </footer>
             </>
