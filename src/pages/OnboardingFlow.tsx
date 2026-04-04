@@ -134,8 +134,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
       const projectId = await createProject(projectData);
 
-      // Redirect to Stripe Payment Link
-      window.location.href = 'https://buy.stripe.com/test_9B65kC26g16Q2iU5PpbAs01';
+      // Redirect to Stripe Payment Link with projectId
+      const stripeLink = formData.plan === 'Basic' 
+        ? 'https://buy.stripe.com/test_9B65kC26g16Q2iU5PpbAs01' 
+        : 'https://buy.stripe.com/test_00w6oGbGQeXGcXy3HhbAs03';
+      
+      window.location.href = `${stripeLink}?client_reference_id=${projectId}`;
 
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('onboarding_step');
@@ -501,9 +505,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Choose Plan</h3>
             </div>
 
-            <div className="grid grid-cols-1 max-w-md mx-auto gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {[
-                { id: 'Basic', name: 'Starter Plan', price: '₹899/-', features: ['Single Page', 'Basic SEO', '1 Month Support'] },
+                { id: 'Basic', name: 'Starter Launch', price: '₹899/-', features: ['Single Page', 'Basic SEO', '1 Month Support'] },
+                { id: 'Pro', name: 'Business Pro', price: '₹1,499/-', features: ['Multi Page', 'Advanced SEO', '6 Months Support'] }
               ].map((plan) => (
                 <button
                   key={plan.id}
@@ -564,9 +569,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center">
                 <div>
                   <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Selected Plan</div>
-                  <div className="text-xl font-black text-[#E6FF00] uppercase italic">Starter Plan</div>
+                  <div className="text-xl font-black text-[#E6FF00] uppercase italic">{formData.plan === 'Basic' ? 'Starter Launch' : 'Business Pro'}</div>
                 </div>
-                <div className="text-2xl font-black text-white">₹899/-</div>
+                <div className="text-2xl font-black text-white">{formData.plan === 'Basic' ? '₹899/-' : '₹1,499/-'}</div>
               </div>
               {error && (
                 <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-black uppercase tracking-widest">

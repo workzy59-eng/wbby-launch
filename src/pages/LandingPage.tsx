@@ -364,7 +364,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               Most Popular
             </div>
             <div className="space-y-4">
-              <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Launch</h4>
+              <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
               <div className="flex items-end justify-center gap-2">
                 <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹899</span>
                 <span className="text-white/40 font-bold uppercase tracking-widest text-xs mb-2">/ month</span>
