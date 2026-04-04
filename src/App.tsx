@@ -24,6 +24,7 @@ import Layout from './components/Layout';
 import WhatsAppButton from './components/WhatsAppButton';
 import { AnimatePresence, motion } from 'motion/react';
 import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
+import { ADMIN_EMAIL } from './constants';
 import { Smartphone, Download } from 'lucide-react';
 
 function MobileRestriction({ children }: { children: React.ReactNode }) {
@@ -169,7 +170,14 @@ Everyone often operates on tight budgets. However, skimping on your website can 
         // Use onSnapshot for real-time profile updates
         const profileUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid), async (docSnap) => {
           if (docSnap.exists()) {
-            setProfile(docSnap.data() as UserProfile);
+            const data = docSnap.data() as UserProfile;
+            setProfile(data);
+            
+            // Sync admin role if email matches ADMIN_EMAIL but role is not admin
+            if (firebaseUser.email === ADMIN_EMAIL && data.role !== 'admin') {
+              const { updateDoc } = await import('./firebase');
+              await updateDoc(doc(db, 'users', firebaseUser.uid), { role: 'admin' });
+            }
           } else {
             // Create profile if it doesn't exist
             await createUserProfile(firebaseUser);
@@ -257,7 +265,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
                 path="/dashboard" 
                 element={
                   user ? (
-                    profile?.role === 'admin' ? (
+                    (profile?.role === 'admin' || user.email === ADMIN_EMAIL) ? (
                       <AdminPanel user={user} profile={profile} />
                     ) : profile?.role === 'developer' ? (
                       <DeveloperDashboard user={user} profile={profile} />
@@ -271,7 +279,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               />
               <Route 
                 path="/admin" 
-                element={user && profile?.role === 'admin' ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                element={user && (profile?.role === 'admin' || user.email === ADMIN_EMAIL) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
               />
               <Route 
                 path="/portfolio/autos" 
