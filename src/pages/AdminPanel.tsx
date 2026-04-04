@@ -238,6 +238,15 @@ Generated on: ${new Date().toLocaleString()}
     }
   };
 
+  const handleUpdatePaymentStatus = async (projectId: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
+      await updateProject(projectId, { paymentStatus: newStatus });
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+    }
+  };
+
   const stats = {
     totalUsers: users.length,
     activeProjects: projects.filter(p => !p.isDeleted && ['Accepted', 'Development Started'].includes(p.status)).length,
@@ -347,6 +356,21 @@ Generated on: ${new Date().toLocaleString()}
                   <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
                     {p.userName} • {p.userEmail} • {p.businessNumber}
                   </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button 
+                      onClick={() => handleUpdatePaymentStatus(p.id, p.paymentStatus || 'pending')}
+                      className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${
+                        p.paymentStatus === 'paid' 
+                          ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                          : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                      }`}
+                    >
+                      Payment: {p.paymentStatus || 'pending'}
+                    </button>
+                    <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
+                      Plan: {p.plan || 'N/A'}
+                    </div>
+                  </div>
                 </div>
               </div>
               <button 
@@ -397,7 +421,19 @@ Generated on: ${new Date().toLocaleString()}
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1 uppercase italic">{p.businessName}</h3>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName} • {p.userEmail}</div>
+                <div className="flex items-center gap-3">
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName} • {p.userEmail}</div>
+                  <button 
+                    onClick={() => handleUpdatePaymentStatus(p.id, p.paymentStatus || 'pending')}
+                    className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${
+                      p.paymentStatus === 'paid' 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                    }`}
+                  >
+                    {p.paymentStatus || 'pending'}
+                  </button>
+                </div>
                 <div className="mt-2 flex items-center gap-2">
                   <div className="px-3 py-1 bg-[#E6FF00]/10 rounded-full text-[8px] font-black text-[#E6FF00] uppercase tracking-widest border border-[#E6FF00]/20">
                     {p.status}

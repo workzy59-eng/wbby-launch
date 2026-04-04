@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
-import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
+import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { createProject, getSystemSettings } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
@@ -59,6 +60,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
+  const [paymentOption, setPaymentOption] = useState<'full' | 'advance'>('full');
 
   const navigate = useNavigate();
 
@@ -178,9 +180,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       const projectId = await createProject(projectData);
 
       // Redirect to Stripe Payment Link with projectId
-      const stripeLink = formData.plan === 'starter' 
-        ? 'https://buy.stripe.com/test_9B65kC26g16Q2iU5PpbAs01' 
-        : 'https://buy.stripe.com/test_00w6oGbGQeXGcXy3HhbAs03';
+      let stripeLink = '';
+      
+      if (paymentOption === 'advance') {
+        stripeLink = 'https://buy.stripe.com/test_aFa5kC26g2aU7De5PpbAs04';
+      } else {
+        stripeLink = formData.plan === 'starter' 
+          ? 'https://buy.stripe.com/test_9B65kC26g16Q2iU5PpbAs01' 
+          : 'https://buy.stripe.com/test_00w6oGbGQeXGcXy3HhbAs03';
+      }
       
       window.location.href = `${stripeLink}?client_reference_id=${projectId}`;
 
@@ -192,6 +200,49 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDownloadSummary = () => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(74, 93, 78); // #4A5D4E
+    doc.text('WebbyLaunch Project Summary', 20, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    let y = 40;
+    const addLine = (label: string, value: string) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label}:`, 20, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(value || 'Not Provided', 70, y);
+      y += 10;
+    };
+
+    addLine('Name', formData.name);
+    addLine('Email', formData.email);
+    addLine('Phone', formData.phone);
+    y += 5;
+    addLine('Business Name', formData.businessName);
+    addLine('Business Type', formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType);
+    addLine('Location', formData.location);
+    y += 5;
+    addLine('Website Name', formData.websiteName);
+    addLine('Selected Plan', formData.plan === 'starter' ? 'Starter Launch' : 'Business Pro');
+    addLine('Payment Option', paymentOption === 'full' ? 'Full Payment' : 'Advance Payment');
+    
+    y += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Description:', 20, y);
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    const splitDesc = doc.splitTextToSize(formData.description || 'No description provided.', 160);
+    doc.text(splitDesc, 20, y);
+    
+    doc.save(`WebbyLaunch_Project_Summary.pdf`);
   };
 
   const renderStep = () => {
@@ -603,19 +654,67 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
             
             <div className="bg-white/5 rounded-[2rem] p-10 space-y-8 border border-white/10">
-              <div className="space-y-4">
-                <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Ready to Launch</h3>
-                <p className="text-white/50 italic text-lg leading-relaxed font-medium">
-                  Your project details have been captured. Click continue to proceed to payment and finalize your request.
-                </p>
-              </div>
-              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center">
-                <div>
-                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Selected Plan</div>
-                  <div className="text-xl font-black text-[#E6FF00] uppercase italic">{formData.plan === 'starter' ? 'Starter Launch' : 'Business Pro'}</div>
+              <div className="flex justify-between items-start">
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Ready to Launch</h3>
+                  <p className="text-white/50 italic text-lg leading-relaxed font-medium">
+                    Your project details have been captured. Choose your payment method to finalize your request.
+                  </p>
                 </div>
-                <div className="text-2xl font-black text-white">{formData.plan === 'starter' ? '₹899/-' : '₹1,499/-'}</div>
+                <button 
+                  onClick={handleDownloadSummary}
+                  className="p-4 bg-white/5 rounded-full text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all"
+                  title="Download Summary"
+                >
+                  <Download size={24} />
+                </button>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setPaymentOption('full')}
+                  className={`p-6 rounded-2xl border transition-all text-left ${
+                    paymentOption === 'full' 
+                      ? 'bg-[#E6FF00] border-[#E6FF00] text-[#4A5D4E]' 
+                      : 'bg-white/5 border-white/10 text-white hover:border-white/30'
+                  }`}
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Option 1</div>
+                  <div className="text-xl font-black uppercase italic tracking-tighter">Pay Full Now</div>
+                  <div className="text-sm font-bold mt-2">{formData.plan === 'starter' ? '₹899/-' : '₹1,499/-'}</div>
+                </button>
+
+                <button
+                  onClick={() => setPaymentOption('advance')}
+                  className={`p-6 rounded-2xl border transition-all text-left ${
+                    paymentOption === 'advance' 
+                      ? 'bg-[#E6FF00] border-[#E6FF00] text-[#4A5D4E]' 
+                      : 'bg-white/5 border-white/10 text-white hover:border-white/30'
+                  }`}
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Option 2</div>
+                  <div className="text-xl font-black uppercase italic tracking-tighter">Pay Advance</div>
+                  <div className="text-sm font-bold mt-2">Start with just ₹499/-</div>
+                </button>
+              </div>
+
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
+                {paymentOption === 'full' ? (
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Selected Plan</div>
+                      <div className="text-xl font-black text-[#E6FF00] uppercase italic">{formData.plan === 'starter' ? 'Starter Launch' : 'Business Pro'}</div>
+                    </div>
+                    <div className="text-2xl font-black text-white">{formData.plan === 'starter' ? '₹899/-' : '₹1,499/-'}</div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="text-xl font-black text-[#E6FF00] uppercase italic">Pay Advance for starting with us</div>
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">You will pay the remaining balance once you receive your project.</p>
+                  </div>
+                )}
+              </div>
+              
               {error && (
                 <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-black uppercase tracking-widest">
                   {error}
