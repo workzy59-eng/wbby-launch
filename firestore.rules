@@ -51,19 +51,21 @@ service cloud.firestore {
     }
 
     function isValidMessage(data) {
-      return hasOnlyAllowedFields(['id', 'projectId', 'conversationId', 'senderId', 'senderName', 'text', 'attachmentUrl', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
+      return hasOnlyAllowedFields(['id', 'projectId', 'conversationId', 'senderId', 'senderName', 'text', 'attachments', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
              (data.projectId is string || data.conversationId is string) && 
              data.senderId is string && 
              data.text is string &&
-             data.seen is bool;
+             data.seen is bool &&
+             (!('attachments' in data) || data.attachments is list);
     }
 
     function isValidDirectMessage(data) {
-      return hasOnlyAllowedFields(['id', 'conversationId', 'senderId', 'senderName', 'text', 'attachmentUrl', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
+      return hasOnlyAllowedFields(['id', 'conversationId', 'senderId', 'senderName', 'text', 'attachments', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor']) &&
              data.conversationId is string &&
              data.senderId is string && 
              data.text is string &&
-             data.seen is bool;
+             data.seen is bool &&
+             (!('attachments' in data) || data.attachments is list);
     }
 
     function isValidLeaveRequest(data) {
@@ -149,6 +151,11 @@ service cloud.firestore {
 
     match /blog_posts/{postId} {
       allow read: if true; // Publicly readable
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /system_settings/{settingId} {
+      allow read: if isAuthenticated();
       allow create, update, delete: if isAdmin();
     }
   }

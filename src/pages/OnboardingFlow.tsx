@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
-import { createProject } from '../services/database';
+import { createProject, getSystemSettings } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
+import { SystemSettings } from '../types';
 
 interface OnboardingFlowProps {
   user: FirebaseUser | null;
@@ -57,8 +58,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getSystemSettings().then(settings => {
+      if (settings) setSystemSettings(settings);
+    });
+  }, []);
 
   // Persist state to localStorage
   useEffect(() => {
@@ -77,7 +85,42 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
   }, [profile]);
 
-  const handleNext = () => setStep(step + 1);
+  const isStepValid = () => {
+    if (!systemSettings) return true;
+    const req = systemSettings.requiredFields;
+
+    switch (step) {
+      case 1: // Personal info
+        return formData.name && formData.email && (!req.phone || formData.phone);
+      case 2: // Business info
+        return (!req.businessName || formData.businessName) && 
+               (!req.businessType || formData.businessType) && 
+               (!req.businessNumber || formData.businessNumber) && 
+               (!req.businessLocation || formData.location);
+      case 3: // Project details
+        return (!req.description || formData.description) && 
+               (!req.websiteName || formData.websiteName);
+      case 4: // Design
+        return (!req.primaryColor || formData.primaryColor) && 
+               (!req.secondaryColor || formData.secondaryColor);
+      case 5: // Assets
+        return (!req.logo || logoFile || formData.logoUrl) && 
+               (!req.documents || docFiles.length > 0 || formData.documentsUrl);
+      case 6: // Reference
+        return (!req.referenceWebsite || formData.referenceWebsite);
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = () => {
+    if (isStepValid()) {
+      setStep(step + 1);
+    } else {
+      setError("Please fill in all required fields.");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
   const handleBack = () => setStep(step - 1);
 
   const handleSubmit = async () => {

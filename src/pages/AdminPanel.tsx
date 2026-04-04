@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db, collection, onSnapshot, FirebaseUser, logOut } from '../firebase';
+import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs } from '../firebase';
 import { UserProfile, Project } from '../types';
 import { Link } from 'react-router-dom';
 import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
+import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
+import Papa from 'papaparse';
 
 interface AdminPanelProps {
   user: FirebaseUser;
@@ -28,6 +30,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [newProgress, setNewProgress] = useState(0);
   const [showChat, setShowChat] = useState(false);
   const [showDirectChat, setShowDirectChat] = useState(false);
+  const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   if (profile?.role !== 'admin') {
     return (
@@ -50,6 +54,11 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
       setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
     });
+    
+    getSystemSettings().then(settings => {
+      if (settings) setSystemSettings(settings);
+    });
+
     return () => {
       unsubscribeProjects();
       unsubscribeUsers();
@@ -539,9 +548,25 @@ Generated on: ${new Date().toLocaleString()}
 
   const renderMessages = () => (
     <div className="space-y-12">
-      <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Communications</span>
-        <h2 className="text-6xl font-bold tracking-tighter text-white">DIRECT MESSAGES</h2>
+      <div className="flex justify-between items-end">
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Communications</span>
+          <h2 className="text-6xl font-bold tracking-tighter text-white">MESSAGE CENTER</h2>
+        </div>
+        <div className="flex gap-4">
+          <button 
+            onClick={() => downloadMessageReport('csv')}
+            className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
+          >
+            <Download size={14} /> CSV Report
+          </button>
+          <button 
+            onClick={() => downloadMessageReport('pdf')}
+            className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
+          >
+            <Download size={14} /> PDF Report
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -566,40 +591,130 @@ Generated on: ${new Date().toLocaleString()}
     }
   };
 
+  const handleUpdateSettings = async (updates: Partial<SystemSettings>) => {
+    if (!systemSettings) return;
+    setIsSavingSettings(true);
+    try {
+      const newSettings = { ...systemSettings, ...updates };
+      await updateSystemSettings(updates);
+      setSystemSettings(newSettings);
+    } catch (error) {
+      console.error("Failed to update settings:", error);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  const downloadMessageReport = async (type: 'csv' | 'pdf') => {
+    const allMessages: any[] = [];
+    
+    for (const project of projects) {
+      const msgsSnap = await getDocs(collection(db, 'projects', project.id, 'messages'));
+      msgsSnap.forEach(doc => {
+        const data = doc.data();
+        allMessages.push({
+          type: 'Project',
+          context: project.businessName,
+          sender: data.senderName,
+          text: data.text,
+          date: data.createdAt?.toDate?.()?.toLocaleString() || 'N/A',
+          attachments: data.attachments?.map((a: any) => a.name).join(', ') || 'None'
+        });
+      });
+    }
+
+    if (type === 'csv') {
+      const csv = Papa.unparse(allMessages);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Message_Report_${new Date().toISOString()}.csv`;
+      link.click();
+    } else {
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.text('Message Report', 20, 20);
+      doc.setFontSize(10);
+      
+      let y = 30;
+      allMessages.forEach((m, i) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(`${m.date} - ${m.sender} (${m.type}: ${m.context})`, 20, y);
+        const splitText = doc.splitTextToSize(m.text || '[No Text]', 160);
+        doc.text(splitText, 25, y + 5);
+        y += 10 + (splitText.length * 5);
+      });
+      
+      doc.save(`Message_Report_${new Date().toISOString()}.pdf`);
+    }
+  };
+
   const renderSystem = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-red-500 uppercase tracking-[0.3em]">Danger Zone</span>
+        <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Configuration</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">SYSTEM SETTINGS</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
-          <h3 className="text-2xl font-bold text-white tracking-tight mb-4">Reset Database</h3>
-          <p className="text-sm text-white/40 mb-8">
-            This action will permanently delete all projects and their associated messages. This cannot be undone.
-          </p>
-          <button 
-            onClick={() => setShowResetModal(true)}
-            className="w-full py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
-          >
-            Wipe All Projects
-          </button>
-        </div>
+      {systemSettings && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+            <h3 className="text-2xl font-bold text-white tracking-tight mb-8">Required Registration Fields</h3>
+            <div className="space-y-4">
+              {Object.entries(systemSettings.requiredFields).map(([field, isRequired]) => (
+                <div key={field} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                  <span className="text-xs font-bold text-white/60 uppercase tracking-widest">{field.replace(/([A-Z])/g, ' $1')}</span>
+                  <button 
+                    onClick={() => handleUpdateSettings({
+                      requiredFields: { ...systemSettings.requiredFields, [field as keyof SystemSettings['requiredFields']]: !isRequired }
+                    })}
+                    className={`w-12 h-6 rounded-full transition-all relative ${isRequired ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${isRequired ? 'right-1' : 'left-1'}`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
-          <h3 className="text-2xl font-bold text-white tracking-tight mb-4">Reset Users</h3>
-          <p className="text-sm text-white/40 mb-8">
-            This action will permanently delete all client profiles. The main administrator will be preserved.
-          </p>
-          <button 
-            onClick={() => setShowResetModal(true)}
-            className="w-full py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
-          >
-            Wipe All Users
-          </button>
+          <div className="space-y-8">
+            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-8">Notifications</h3>
+              <div className="space-y-4">
+                {Object.entries(systemSettings.notifications).map(([key, enabled]) => (
+                  <div key={key} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <span className="text-xs font-bold text-white/60 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1')}</span>
+                    <button 
+                      onClick={() => handleUpdateSettings({
+                        notifications: { ...systemSettings.notifications, [key as keyof SystemSettings['notifications']]: !enabled }
+                      })}
+                      className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${enabled ? 'right-1' : 'left-1'}`} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-4">Danger Zone</h3>
+              <div className="space-y-4">
+                <button 
+                  onClick={() => setShowResetModal(true)}
+                  className="w-full py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+                >
+                  Wipe All Data
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 

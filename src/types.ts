@@ -82,6 +82,13 @@ export interface Project {
   previewUrl?: string;
 }
 
+export interface Attachment {
+  name: string;
+  type: string;
+  url: string;
+  size: number;
+}
+
 export interface Message {
   id: string;
   projectId?: string;
@@ -89,12 +96,34 @@ export interface Message {
   senderId: string;
   senderName: string;
   text: string;
-  attachmentUrl?: string;
+  attachments?: Attachment[];
   imageUrl?: string;
   createdAt: string | Timestamp;
   seen: boolean;
   isDeleted?: boolean;
   hiddenFor?: string[];
+}
+
+export interface SystemSettings {
+  id: string;
+  requiredFields: {
+    phone: boolean;
+    businessName: boolean;
+    businessType: boolean;
+    businessNumber: boolean;
+    businessLocation: boolean;
+    description: boolean;
+    websiteName: boolean;
+    primaryColor: boolean;
+    secondaryColor: boolean;
+    logo: boolean;
+    documents: boolean;
+    referenceWebsite: boolean;
+  };
+  notifications: {
+    newMessages: boolean;
+    newProjects: boolean;
+  };
 }
 
 export interface BlogPost {

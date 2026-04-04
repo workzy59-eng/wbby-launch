@@ -2,7 +2,7 @@ import {
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp 
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
-import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost } from '../types';
+import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings } from '../types';
 import { ADMIN_EMAIL } from '../constants';
 
 export enum OperationType {
@@ -286,6 +286,7 @@ export const sendMessage = async (projectId: string, messageData: any) => {
       projectId,
       createdAt: serverTimestamp(),
       seen: false,
+      attachments: messageData.attachments || [],
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
@@ -302,11 +303,12 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       conversationId,
       createdAt: serverTimestamp(),
       seen: false,
+      attachments: messageData.attachments || [],
     });
     
     // Update conversation metadata for list view
     await setDoc(doc(db, 'conversations', conversationId), {
-      lastMessage: messageData.text,
+      lastMessage: messageData.text || (messageData.attachments?.length ? 'Sent an attachment' : ''),
       lastMessageAt: serverTimestamp(),
       lastSenderId: auth.currentUser.uid,
       participants: [auth.currentUser.uid, recipientId],
@@ -425,6 +427,52 @@ export const getConversations = (callback: (conversations: any[]) => void) => {
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, path);
   });
+};
+
+// System Settings Operations
+export const getSystemSettings = async () => {
+  const path = 'system_settings/default';
+  try {
+    const docSnap = await getDoc(doc(db, 'system_settings', 'default'));
+    if (docSnap.exists()) {
+      return docSnap.data() as SystemSettings;
+    } else {
+      const defaultSettings: SystemSettings = {
+        id: 'default',
+        requiredFields: {
+          phone: true,
+          businessName: true,
+          businessType: true,
+          businessNumber: true,
+          businessLocation: true,
+          description: true,
+          websiteName: true,
+          primaryColor: true,
+          secondaryColor: true,
+          logo: false,
+          documents: false,
+          referenceWebsite: false,
+        },
+        notifications: {
+          newMessages: true,
+          newProjects: true,
+        },
+      };
+      await setDoc(doc(db, 'system_settings', 'default'), defaultSettings);
+      return defaultSettings;
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, path);
+  }
+};
+
+export const updateSystemSettings = async (data: Partial<SystemSettings>) => {
+  const path = 'system_settings/default';
+  try {
+    await updateDoc(doc(db, 'system_settings', 'default'), data);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
 };
 
 export const deleteAllProjects = async () => {

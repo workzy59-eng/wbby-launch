@@ -14,10 +14,14 @@ import {
   MessageCircle,
   Trash2,
   Sparkles,
-  Loader2
+  Loader2,
+  FileText,
+  Download,
+  Maximize2,
+  File
 } from 'lucide-react';
-import { FirebaseUser } from '../firebase';
-import { UserProfile, Message } from '../types';
+import { FirebaseUser, storage, ref, uploadBytesResumable, getDownloadURL } from '../firebase';
+import { UserProfile, Message, Attachment } from '../types';
 import { 
   sendMessage, 
   updateMessage, 
@@ -31,6 +35,7 @@ import {
 import { formatDate } from '../lib/utils';
 import { HYPHENATED_NAME } from '../constants';
 import { generateAIImageFromMessage } from '../services/geminiService';
+import imageCompression from 'browser-image-compression';
 
 interface ChatSystemProps {
   projectId?: string;
@@ -42,12 +47,18 @@ interface ChatSystemProps {
   user?: FirebaseUser | null;
 }
 
+interface UploadProgress {
+  [fileName: string]: number;
+}
+
 export default function ChatSystem({ projectId, isDirect, recipientUser, profile, currentUser, onClose, user }: ChatSystemProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
@@ -119,6 +130,90 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       console.error('Error sending message:', error);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleFileUpload = async (files: FileList | null, isImage: boolean) => {
+    if (!files || files.length === 0) return;
+    
+    setIsSending(true);
+    const attachments: Attachment[] = [];
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        const fileName = `${Date.now()}_${file.name}`;
+        
+        // Validate size
+        const maxSize = isImage ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+          alert(`File ${file.name} is too large. Max size is ${isImage ? '5MB' : '10MB'}.`);
+          continue;
+        }
+
+        // Compress image if needed
+        if (isImage) {
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true
+          };
+          try {
+            file = await imageCompression(file as any, options) as any;
+          } catch (error) {
+            console.error('Compression failed:', error);
+          }
+        }
+
+        const storageRef = ref(storage, `${isImage ? 'images' : 'attachments'}/${projectId || 'direct'}/${fileName}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        await new Promise<void>((resolve, reject) => {
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
+            }, 
+            (error) => reject(error), 
+            async () => {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              attachments.push({
+                name: file.name,
+                type: file.type,
+                url: url,
+                size: file.size
+              });
+              setUploadProgress(prev => {
+                const next = { ...prev };
+                delete next[file.name];
+                return next;
+              });
+              resolve();
+            }
+          );
+        });
+      }
+
+      if (attachments.length > 0) {
+        const messageData = {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
+          text: isImage ? 'Sent images' : 'Sent attachments',
+          attachments
+        };
+
+        if (isDirect && recipientUser) {
+          await sendDirectMessage(recipientUser.uid, messageData);
+        } else if (projectId) {
+          await sendMessage(projectId, messageData);
+        }
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setIsSending(false);
+      setUploadProgress({});
     }
   };
 
@@ -249,10 +344,59 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
                     {m.imageUrl && (
-                      <div className="mb-4 rounded-2xl overflow-hidden border border-white/10">
+                      <div className="mb-4 rounded-2xl overflow-hidden border border-white/10 relative group">
                         <img src={m.imageUrl} alt="AI Visualization" className="w-full h-auto max-h-64 object-cover" />
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setSelectedImage(m.imageUrl!); }}
+                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white"
+                        >
+                          <Maximize2 size={24} />
+                        </button>
                       </div>
                     )}
+
+                    {m.attachments && m.attachments.length > 0 && (
+                      <div className="space-y-3 mb-4">
+                        {m.attachments.map((att, idx) => {
+                          const isImg = att.type.startsWith('image/');
+                          if (isImg) {
+                            return (
+                              <div key={idx} className="rounded-2xl overflow-hidden border border-white/10 relative group">
+                                <img src={att.url} alt={att.name} className="w-full h-auto max-h-64 object-cover" />
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setSelectedImage(att.url); }}
+                                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white"
+                                >
+                                  <Maximize2 size={24} />
+                                </button>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div key={idx} className={`flex items-center gap-4 p-4 rounded-2xl border ${isMe ? 'bg-black/10 border-black/10' : 'bg-white/5 border-white/10'}`}>
+                              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/60">
+                                <FileText size={20} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-black truncate uppercase tracking-widest">{att.name}</p>
+                                <p className="text-[10px] opacity-40 uppercase tracking-widest">{(att.size / 1024).toFixed(1)} KB</p>
+                              </div>
+                              <a 
+                                href={att.url} 
+                                download={att.name}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className={`p-2 rounded-lg transition-all ${isMe ? 'hover:bg-black/20' : 'hover:bg-white/10'}`}
+                              >
+                                <Download size={18} />
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
                     {m.text}
                     {!m.imageUrl && !isMe && !m.isDeleted && (
                       <button 
@@ -288,6 +432,70 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           })
         )}
       </div>
+
+      {/* Upload Progress Overlay */}
+      <AnimatePresence>
+        {Object.keys(uploadProgress).length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-[120]"
+          >
+            <div className="bg-[#4A5D4E] p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading Files...</h4>
+                <Loader2 size={16} className="animate-spin text-[#E6FF00]" />
+              </div>
+              <div className="space-y-3">
+                {Object.entries(uploadProgress).map(([name, progress]) => (
+                  <div key={name} className="space-y-1">
+                    <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase tracking-widest">
+                      <span className="truncate max-w-[200px]">{name}</span>
+                      <span>{progress.toFixed(0)}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        className="h-full bg-[#E6FF00]"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+            className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-10 cursor-zoom-out"
+          >
+            <motion.img 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              src={selectedImage} 
+              alt="Full size" 
+              className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl"
+            />
+            <button 
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-10 right-10 p-5 bg-white/5 border border-white/10 rounded-2xl text-white hover:bg-white/10 transition-all"
+            >
+              <X size={24} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Options Modal */}
       <AnimatePresence>
@@ -336,39 +544,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             <input 
               type="file" 
               id="chat-file-upload" 
+              multiple
               className="hidden" 
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                setIsSending(true);
-                try {
-                  const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
-                  const storageRef = ref(storage, `attachments/${projectId || 'direct'}/${Date.now()}_${file.name}`);
-                  await uploadBytes(storageRef, file);
-                  const url = await getDownloadURL(storageRef);
-                  
-                  if (isDirect && recipientUser) {
-                    await sendDirectMessage(recipientUser.uid, {
-                      senderId: currentUser.uid,
-                      senderName: currentUser.displayName || profile?.displayName || 'User',
-                      text: `Sent an attachment: ${file.name}`,
-                      attachmentUrl: url
-                    });
-                  } else if (projectId) {
-                    await sendMessage(projectId, {
-                      senderId: currentUser.uid,
-                      senderName: currentUser.displayName || profile?.displayName || 'User',
-                      text: `Sent an attachment: ${file.name}`,
-                      attachmentUrl: url
-                    });
-                  }
-                } catch (error) {
-                  console.error('File upload failed:', error);
-                  alert('File upload failed. Please try again.');
-                } finally {
-                  setIsSending(false);
-                }
-              }}
+              onChange={(e) => handleFileUpload(e.target.files, false)}
             />
             <label 
               htmlFor="chat-file-upload"
@@ -381,43 +559,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
               type="file" 
               id="chat-image-upload" 
               accept="image/*"
+              multiple
               className="hidden" 
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (!file.type.startsWith('image/')) {
-                  alert('Only image files are allowed');
-                  return;
-                }
-                setIsSending(true);
-                try {
-                  const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
-                  const storageRef = ref(storage, `images/${projectId || 'direct'}/${Date.now()}_${file.name}`);
-                  await uploadBytes(storageRef, file);
-                  const url = await getDownloadURL(storageRef);
-                  
-                  if (isDirect && recipientUser) {
-                    await sendDirectMessage(recipientUser.uid, {
-                      senderId: currentUser.uid,
-                      senderName: currentUser.displayName || profile?.displayName || 'User',
-                      text: 'Sent an image',
-                      imageUrl: url
-                    });
-                  } else if (projectId) {
-                    await sendMessage(projectId, {
-                      senderId: currentUser.uid,
-                      senderName: currentUser.displayName || profile?.displayName || 'User',
-                      text: 'Sent an image',
-                      imageUrl: url
-                    });
-                  }
-                } catch (error) {
-                  console.error('Image upload failed:', error);
-                  alert('Image upload failed. Please try again.');
-                } finally {
-                  setIsSending(false);
-                }
-              }}
+              onChange={(e) => handleFileUpload(e.target.files, true)}
             />
             <label 
               htmlFor="chat-image-upload"
@@ -439,7 +583,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
 
           <button 
             type="submit"
-            disabled={!inputText.trim() || isSending}
+            disabled={(!inputText.trim() && Object.keys(uploadProgress).length === 0) || isSending}
             className="p-6 bg-[#E6FF00] text-black rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)]"
           >
             <Send size={28} />
