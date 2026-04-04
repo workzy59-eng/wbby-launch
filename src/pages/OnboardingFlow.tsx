@@ -134,111 +134,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
       const projectId = await createProject(projectData);
 
-      // Trigger Razorpay
-      await handlePayment(projectId, formData.plan);
+      // Redirect to Stripe Payment Link
+      window.location.href = 'https://buy.stripe.com/test_9B65kC26g16Q2iU5PpbAs01';
 
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('onboarding_step');
-      navigate('/dashboard');
     } catch (err: any) {
       console.error('Error submitting project:', err);
       setError(err.message || 'Failed to submit project. Please try again.');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handlePayment = async (projectId: string, plan: 'Basic' | 'Pro') => {
-    try {
-      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
-      console.log("Razorpay Key:", razorpayKey);
-      console.log("Initializing Razorpay payment...");
-
-      if (!razorpayKey) {
-        console.error("VITE_RAZORPAY_KEY_ID is missing in environment variables.");
-        throw new Error("Payment configuration error. Please check your settings.");
-      }
-
-      if (!(window as any).Razorpay) {
-        console.error("Razorpay SDK (checkout.js) not found on window object.");
-        throw new Error("Payment system not loaded. Please refresh and try again.");
-      }
-
-      const response = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create payment order");
-      }
-
-      const order = await response.json();
-      console.log("Order created successfully:", order.id);
-
-      const options = {
-        key: razorpayKey,
-        amount: order.amount,
-        currency: order.currency,
-        name: "WebbyLaunch",
-        description: `${plan} Website Package`,
-        order_id: order.id,
-        handler: async (response: any) => {
-          console.log("Payment successful! ID:", response.razorpay_payment_id);
-          alert("Payment Successful! Your project is now being processed.");
-          
-          try {
-            const verifyRes = await fetch('/api/payment/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            const verifyData = await verifyRes.json();
-            if (verifyData.status === 'success') {
-              const { updateProject } = await import('../services/database');
-              await updateProject(projectId, { 
-                paymentStatus: 'paid',
-                isLocked: false 
-              });
-              console.log("Project updated to paid status.");
-            } else {
-              console.error("Payment verification failed on server.");
-            }
-          } catch (err) {
-            console.error("Error during payment verification:", err);
-          }
-        },
-        prefill: {
-          name: formData.name,
-          email: formData.email,
-          contact: formData.phone,
-        },
-        theme: {
-          color: "#E6FF00",
-        },
-        modal: {
-          ondismiss: function() {
-            console.log("Payment popup closed by user.");
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', function (response: any) {
-        console.error("Razorpay payment failed:", response.error);
-        alert(`Payment Failed: ${response.error.description}`);
-      });
-      rzp.open();
-    } catch (error: any) {
-      console.error("Payment initialization error:", error);
-      throw new Error(error.message || "Payment initialization failed");
     }
   };
 

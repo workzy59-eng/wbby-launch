@@ -1,7 +1,6 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import multer from "multer";
@@ -14,25 +13,36 @@ dotenv.config();
 // On Vercel, you should set these environment variables:
 // FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
 if (!admin.apps.length) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+  const privateKey = rawKey ? rawKey.replace(/\\n/g, '\n').replace(/^"(.*)"$/, '$1').trim() : undefined;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const projectId = process.env.FIREBASE_PROJECT_ID || firebaseConfig.projectId;
 
   if (privateKey && clientEmail) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId,
-        clientEmail,
-        privateKey,
-      }),
-      storageBucket: firebaseConfig.storageBucket
-    });
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+        storageBucket: firebaseConfig.storageBucket
+      });
+      console.log("Firebase Admin initialized successfully with cert");
+    } catch (initErr: any) {
+      console.error("Firebase Admin initialization error:", initErr);
+    }
   } else {
     // Fallback to application default for local development
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-      storageBucket: firebaseConfig.storageBucket
-    });
+    try {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+        storageBucket: firebaseConfig.storageBucket
+      });
+      console.log("Firebase Admin initialized with application default");
+    } catch (initErr: any) {
+      console.error("Firebase Admin fallback initialization error:", initErr);
+    }
   }
 }
 
@@ -54,18 +64,6 @@ const upload = multer({
   }
 });
 
-const key_id = process.env.RAZORPAY_KEY_ID;
-const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-if (!key_id || !key_secret) {
-  console.warn("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing from environment variables.");
-}
-
-const razorpay = new Razorpay({
-  key_id: key_id || "",
-  key_secret: key_secret || "",
-});
-
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -78,42 +76,60 @@ async function startServer() {
     { name: 'documents', maxCount: 5 }
   ]), async (req, res) => {
     try {
+      // Check if Firebase is initialized
+      if (!admin.apps.length) {
+        throw new Error("Firebase Admin not initialized. Check environment variables.");
+      }
+
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      if (!files || (!files.logo && !files.documents)) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
       
       const uploadToFirebase = async (file: Express.Multer.File) => {
-        const timestamp = Date.now();
-        const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
-        const fileName = `uploads/${timestamp}_${cleanName}`;
-        const blob = bucket.file(fileName);
-        
-        const blobStream = blob.createWriteStream({
-          metadata: {
-            contentType: file.mimetype,
-            cacheControl: 'public, max-age=31536000'
-          },
-          resumable: false
-        });
+        try {
+          const timestamp = Date.now();
+          const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+          const fileName = `uploads/${timestamp}_${cleanName}`;
+          const blob = bucket.file(fileName);
+          
+          const blobStream = blob.createWriteStream({
+            metadata: {
+              contentType: file.mimetype,
+              cacheControl: 'public, max-age=31536000'
+            },
+            resumable: false
+          });
 
-        return new Promise<string>((resolve, reject) => {
-          blobStream.on('error', (err) => {
-            console.error('Blob stream error:', err);
-            reject(err);
+          return new Promise<string>((resolve, reject) => {
+            blobStream.on('error', (err) => {
+              console.error('Blob stream error:', err);
+              reject(new Error(`Storage error: ${err.message}`));
+            });
+            
+            blobStream.on('finish', async () => {
+              try {
+                // Try to make the file public
+                try {
+                  await blob.makePublic();
+                } catch (publicErr) {
+                  console.warn('Could not make file public, bucket might have public access prevention:', publicErr);
+                  // If makePublic fails, we'll try to return a signed URL or just the public link anyway
+                }
+                
+                const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+                resolve(publicUrl);
+              } catch (err: any) {
+                console.error('Post-upload error:', err);
+                reject(new Error(`Post-upload error: ${err.message}`));
+              }
+            });
+            
+            blobStream.end(file.buffer);
           });
-          
-          blobStream.on('finish', async () => {
-            try {
-              // Make the file public and get the URL
-              await blob.makePublic();
-              const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-              resolve(publicUrl);
-            } catch (err) {
-              console.error('Make public error:', err);
-              reject(err);
-            }
-          });
-          
-          blobStream.end(file.buffer);
-        });
+        } catch (err: any) {
+          throw new Error(`Upload process failed: ${err.message}`);
+        }
       };
 
       const logoUrl = files.logo ? await uploadToFirebase(files.logo[0]) : null;
@@ -125,56 +141,11 @@ async function startServer() {
         documentsUrl: documentUrls.join(',')
       });
     } catch (error: any) {
-      console.error("Upload error:", error);
-      res.status(500).json({ error: error.message || "Failed to upload files" });
-    }
-  });
-
-  app.post("/api/payment/create-order", async (req, res) => {
-    try {
-      const { plan } = req.body;
-      let amount = 0;
-
-      if (plan === "Basic") {
-        amount = 999900; // ₹9999
-      } else if (plan === "Pro") {
-        amount = 1999900; // ₹19999
-      } else {
-        return res.status(400).json({ error: "Invalid plan" });
-      }
-
-      const options = {
-        amount,
-        currency: "INR",
-        receipt: `receipt_${Date.now()}`,
-      };
-
-      const order = await razorpay.orders.create(options);
-      res.json(order);
-    } catch (error) {
-      console.error("Error creating order:", error);
-      res.status(500).json({ error: "Failed to create order" });
-    }
-  });
-
-  app.post("/api/payment/verify", async (req, res) => {
-    try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-      const body = razorpay_order_id + "|" + razorpay_payment_id;
-      const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "")
-        .update(body.toString())
-        .digest("hex");
-
-      if (expectedSignature === razorpay_signature) {
-        res.json({ status: "success" });
-      } else {
-        res.status(400).json({ error: "Invalid signature" });
-      }
-    } catch (error) {
-      console.error("Error verifying payment:", error);
-      res.status(500).json({ error: "Failed to verify payment" });
+      console.error("Full upload error details:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to upload files",
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   });
 
