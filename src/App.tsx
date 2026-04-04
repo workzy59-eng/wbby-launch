@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp } from './firebase';
+import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp, onSnapshot, doc } from './firebase';
 import { UserProfile } from './types';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
@@ -162,49 +162,54 @@ Everyone often operates on tight budgets. However, skimping on your website can 
       }
     };
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        try {
-          let userProfile = await getUserProfile(firebaseUser.uid);
-          if (!userProfile) {
+        
+        // Use onSnapshot for real-time profile updates
+        const profileUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid), async (docSnap) => {
+          if (docSnap.exists()) {
+            setProfile(docSnap.data() as UserProfile);
+          } else {
+            // Create profile if it doesn't exist
             await createUserProfile(firebaseUser);
-            userProfile = await getUserProfile(firebaseUser.uid);
           }
-          setProfile(userProfile as UserProfile);
-          
-          // Set online status
-          updateUserStatus(firebaseUser.uid, 'online');
-          
-          // Handle tab close/visibility change
-          const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
-              updateUserStatus(firebaseUser.uid, 'online');
-            } else {
-              updateUserStatus(firebaseUser.uid, 'away');
-            }
-          };
-          
-          const handleBeforeUnload = () => {
-            updateUserStatus(firebaseUser.uid, 'offline');
-          };
-          
-          document.addEventListener('visibilitychange', handleVisibilityChange);
-          window.addEventListener('beforeunload', handleBeforeUnload);
-          
-          return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-            updateUserStatus(firebaseUser.uid, 'offline');
-          };
-        } catch (error) {
+          setLoading(false);
+        }, (error) => {
           console.error("Error fetching user profile:", error);
-        }
+          setLoading(false);
+        });
+
+        // Set online status
+        updateUserStatus(firebaseUser.uid, 'online');
+        
+        // Handle tab close/visibility change
+        const handleVisibilityChange = () => {
+          if (document.visibilityState === 'visible') {
+            updateUserStatus(firebaseUser.uid, 'online');
+          } else {
+            updateUserStatus(firebaseUser.uid, 'away');
+          }
+        };
+        
+        const handleBeforeUnload = () => {
+          updateUserStatus(firebaseUser.uid, 'offline');
+        };
+        
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        return () => {
+          profileUnsubscribe();
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          window.removeEventListener('beforeunload', handleBeforeUnload);
+          updateUserStatus(firebaseUser.uid, 'offline');
+        };
       } else {
         setUser(null);
         setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
       seedBlogPosts();
     });
 
@@ -228,7 +233,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               <Route 
                 path="/" 
                 element={
-                  user && profile?.role === 'client' ? (
+                  user ? (
                     <Navigate to="/dashboard" />
                   ) : (
                     <LandingPage user={user} profile={profile} />

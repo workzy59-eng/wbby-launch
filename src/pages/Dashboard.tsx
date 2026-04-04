@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon } from 'lucide-react';
+import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { getProjects, updateProject } from '../services/database';
@@ -16,6 +16,11 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, profile }: DashboardProps) {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isSuccess = searchParams.get('success') === 'true';
+  const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
+
   const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings'>('dashboard');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -24,6 +29,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   const [showDirectChat, setShowDirectChat] = useState(false);
   const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (isSuccess) {
+      // Clear the URL params after showing the message
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => setShowSuccessMessage(false), 8000);
+    }
+  }, [isSuccess]);
 
   useEffect(() => {
     const fetchAdmin = async () => {
@@ -94,6 +107,30 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           <LogOut size={24} />
         </button>
       </aside>
+
+      <AnimatePresence>
+        {showSuccessMessage && (
+          <motion.div 
+            initial={{ opacity: 0, y: -100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -100 }}
+            className="fixed top-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6"
+          >
+            <div className="bg-[#E6FF00] text-black p-6 rounded-[2rem] shadow-2xl flex items-center gap-6 border border-white/20">
+              <div className="w-16 h-16 bg-black/10 rounded-2xl flex items-center justify-center shrink-0">
+                <PartyPopper size={32} className="animate-bounce" />
+              </div>
+              <div>
+                <h4 className="text-xl font-black uppercase italic tracking-tighter">Payment Successful!</h4>
+                <p className="text-sm font-bold opacity-70">Your project has been submitted and is now waiting for review.</p>
+              </div>
+              <button onClick={() => setShowSuccessMessage(false)} className="p-2 hover:bg-black/5 rounded-full transition-all">
+                <X size={20} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <header className="lg:hidden bg-black/20 backdrop-blur-xl px-6 py-6 border-b border-white/5 sticky top-0 z-40">
         <div className="flex justify-between items-center">

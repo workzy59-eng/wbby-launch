@@ -911,35 +911,100 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               )}
             </div>
-            <div className="flex gap-4">
-              <button 
-                onClick={handleBack} 
-                disabled={isSubmitting}
-                className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all disabled:opacity-50"
-              >
-                Back
-              </button>
-              {user ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
                 <button 
-                  onClick={handleSubmit} 
+                  onClick={handleBack} 
                   disabled={isSubmitting}
-                  className="flex-1 bg-[#E6FF00] text-black py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)] disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="animate-spin" size={24} />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    'Proceed to Payment'
-                  )}
+                  Back
                 </button>
-              ) : (
+                {user ? (
+                  <button 
+                    onClick={handleSubmit} 
+                    disabled={isSubmitting}
+                    className="flex-1 bg-[#E6FF00] text-black py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)] disabled:opacity-50 flex items-center justify-center gap-3"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="animate-spin" size={24} />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      'Proceed to Payment'
+                    )}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => navigate('/auth', { state: { from: '/onboarding' } })}
+                    className="flex-1 bg-[#E6FF00] text-black py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)]"
+                  >
+                    Sign in to Continue
+                  </button>
+                )}
+              </div>
+              {user && !isSubmitting && (
                 <button 
-                  onClick={() => navigate('/auth', { state: { from: '/onboarding' } })}
-                  className="flex-1 bg-[#E6FF00] text-black py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)]"
+                  onClick={async () => {
+                    setIsSubmitting(true);
+                    try {
+                      // Create project without redirecting to Stripe
+                      const finalLogoUrl = formData.logoUrl;
+                      const finalDocsUrl = formData.documentsUrl;
+                      const finalProfileUrl = profile?.photoURL || '';
+                      
+                      const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
+                      const projectData = {
+                        userId: user?.uid,
+                        userName: formData.name,
+                        userEmail: formData.email,
+                        userPhone: formData.phone,
+                        businessName: formData.businessName,
+                        businessNumber: formData.businessNumber,
+                        businessEmail: formData.businessEmail,
+                        businessPhone: formData.businessPhone,
+                        gstNumber: formData.gstNumber,
+                        addressLine: formData.addressLine,
+                        city: formData.city,
+                        state: formData.state,
+                        pincode: formData.pincode,
+                        country: formData.country,
+                        businessType: finalBusinessType,
+                        businessLocation: formData.location,
+                        description: formData.description,
+                        websiteName: formData.websiteName,
+                        primaryColor: formData.primaryColor,
+                        secondaryColor: formData.secondaryColor,
+                        logoUrl: finalLogoUrl,
+                        documentsUrl: finalDocsUrl,
+                        plan: formData.plan,
+                        paymentStatus: 'pending' as 'pending' | 'paid',
+                        referenceWebsite: formData.referenceWebsite,
+                        templateId: 'custom-dev',
+                        estimatedCompletion: null,
+                      };
+
+                      await createProject(projectData);
+                      if (user) {
+                        await createUserProfile(user, {
+                          username: formData.username,
+                          phone: formData.phone,
+                          photoURL: finalProfileUrl,
+                        });
+                      }
+                      localStorage.removeItem('onboarding_data');
+                      localStorage.removeItem('onboarding_step');
+                      navigate('/dashboard?success=true');
+                    } catch (err: any) {
+                      setError(err.message || 'Failed to skip payment. Please try again.');
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  className="text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-[#E6FF00] transition-all"
                 >
-                  Sign in to Continue
+                  Skip Payment (Test Mode)
                 </button>
               )}
             </div>
