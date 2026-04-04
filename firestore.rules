@@ -44,10 +44,8 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'userName', 'userEmail', 'userPhone', 'businessName', 'businessType', 'businessNumber', 'businessLocation', 'businessEmail', 'businessPhone', 'gstNumber', 'addressLine', 'city', 'state', 'pincode', 'country', 'description', 'websiteName', 'primaryColor', 'secondaryColor', 'logoUrl', 'documentsUrl', 'referenceWebsite', 'templateId', 'plan', 'paymentStatus', 'status', 'progress', 'estimatedCompletion', 'createdAt', 'updatedAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl', 'developerId']) &&
-             data.userId is string && 
-             data.businessName is string && data.businessName.size() > 0 &&
-             data.status in ["Waiting for Review", "Under Review", "Accepted", "Rejected", "Development Started", "Completed", "completed", "active", "in-progress", "pending", "rejected"];
+      return data.userId is string && 
+             data.businessName is string && data.businessName.size() > 0;
     }
 
     function isValidMessage(data) {

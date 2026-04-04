@@ -309,6 +309,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               <div>
                                 <h2 className="text-6xl font-black tracking-tighter mb-4 uppercase italic text-[#E6FF00]">Project Status</h2>
                                 <p className="text-2xl text-white/70 font-black uppercase italic tracking-tighter">{selectedProject.businessName}</p>
+                                <div className="mt-2 text-[10px] font-bold text-white/40 uppercase tracking-widest flex flex-wrap gap-x-4 gap-y-1">
+                                  <span>{selectedProject.businessType}</span>
+                                  <span>{selectedProject.businessPhone || selectedProject.businessNumber}</span>
+                                  <span>{selectedProject.city}, {selectedProject.state} • {selectedProject.pincode}</span>
+                                </div>
                               </div>
                               <button 
                                 onClick={() => setShowChat(true)}

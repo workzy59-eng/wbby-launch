@@ -580,6 +580,14 @@ Generated on: ${new Date().toLocaleString()}
                     <div>
                       <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{project.businessName}</h4>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{project.businessType} • {project.userEmail}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                          {project.businessPhone || project.businessNumber}
+                        </div>
+                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                          {project.city}, {project.state} • {project.pincode}
+                        </div>
+                      </div>
                     </div>
 
                     {/* File Display Section */}
