@@ -70,6 +70,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
   const [paymentOption, setPaymentOption] = useState<'full' | 'advance'>('full');
 
@@ -98,48 +99,79 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
   }, [profile]);
 
-  const isStepValid = () => {
-    if (!systemSettings) return true;
+  const getInvalidFieldsForStep = (currentStep: number) => {
+    if (!systemSettings) return [];
     const req = systemSettings.requiredFields;
 
     const validatePhone = (p: string) => /^[6-9]\d{9}$/.test(p);
     const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    const invalid: string[] = [];
 
-    switch (step) {
+    switch (currentStep) {
       case 1: // Personal info
-        return formData.name && 
-               validateEmail(formData.email) && 
-               (!req.phone || validatePhone(formData.phone)) &&
-               formData.username.length >= 3;
+        if (!formData.name) invalid.push('name');
+        if (!validateEmail(formData.email)) invalid.push('email');
+        if (req.phone && !validatePhone(formData.phone)) invalid.push('phone');
+        if (formData.username.length < 3) invalid.push('username');
+        break;
       case 2: // Business info
-        return (!req.businessName || formData.businessName) && 
-               (!req.businessType || formData.businessType) && 
-               (!req.businessNumber || formData.businessNumber) && 
-               (!req.businessLocation || formData.location) &&
-               formData.businessEmail && validateEmail(formData.businessEmail) &&
-               formData.businessPhone && validatePhone(formData.businessPhone) &&
-               formData.addressLine && formData.city && formData.state && formData.pincode;
+        if (req.businessName && !formData.businessName) invalid.push('businessName');
+        if (req.businessType && !formData.businessType) invalid.push('businessType');
+        if (formData.businessType === 'Other' && !formData.otherBusinessType) invalid.push('otherBusinessType');
+        if (req.businessNumber && !formData.businessNumber) invalid.push('businessNumber');
+        if (req.businessLocation && !formData.location) invalid.push('location');
+        if (!formData.businessEmail || !validateEmail(formData.businessEmail)) invalid.push('businessEmail');
+        if (!formData.businessPhone || !validatePhone(formData.businessPhone)) invalid.push('businessPhone');
+        if (!formData.addressLine) invalid.push('addressLine');
+        if (!formData.city) invalid.push('city');
+        if (!formData.state) invalid.push('state');
+        if (!formData.pincode) invalid.push('pincode');
+        if (req.description && !formData.description) invalid.push('description');
+        break;
       case 3: // Project details
-        return (!req.description || formData.description) && 
-               (!req.websiteName || formData.websiteName);
-      case 4: // Design
-        return (!req.primaryColor || formData.primaryColor) && 
-               (!req.secondaryColor || formData.secondaryColor);
+        if (!formData.websiteName) invalid.push('websiteName');
+        break;
+      case 4: // Design (Design step is actually step 3 in the UI, but step 4 in the switch)
+        // This logic seems to be slightly different from the switch in the original code
+        // Let's stick to the original logic but return field names
+        if (req.primaryColor && !formData.primaryColor) invalid.push('primaryColor');
+        if (req.secondaryColor && !formData.secondaryColor) invalid.push('secondaryColor');
+        break;
       case 5: // Assets
-        return (!req.logo || logoFile || formData.logoUrl) && 
-               (!req.documents || docFiles.length > 0 || formData.documentsUrl);
+        if (req.logo && !logoFile && !formData.logoUrl) invalid.push('logo');
+        if (req.documents && docFiles.length === 0 && !formData.documentsUrl) invalid.push('documents');
+        break;
       case 6: // Reference
-        return (!req.referenceWebsite || formData.referenceWebsite);
-      default:
-        return true;
+        if (req.referenceWebsite && !formData.referenceWebsite) invalid.push('referenceWebsite');
+        break;
+    }
+    return invalid;
+  };
+
+  const isStepValid = () => {
+    return getInvalidFieldsForStep(step).length === 0;
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData({ ...formData, [field]: value });
+    if (invalidFields.includes(field)) {
+      setInvalidFields(invalidFields.filter(f => f !== field));
     }
   };
 
+  const getInputClass = (fieldName: string, baseClass: string = "w-full p-6 rounded-2xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter") => {
+    const isInvalid = invalidFields.includes(fieldName);
+    return `${baseClass} ${isInvalid ? 'border-red-500 shadow-[0_0_20px_rgba(255,0,0,0.4)] ring-1 ring-red-500' : 'border-white/10'}`;
+  };
+
   const handleNext = () => {
-    if (isStepValid()) {
+    const invalid = getInvalidFieldsForStep(step);
+    if (invalid.length === 0) {
       setStep(step + 1);
+      setInvalidFields([]);
     } else {
-      setError("Please fill in all required fields.");
+      setInvalidFields(invalid);
+      setError("Please fill in all required fields correctly.");
       setTimeout(() => setError(null), 3000);
     }
   };
@@ -327,9 +359,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Full Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('name')}
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter your full name"
                 />
               </div>
@@ -337,9 +369,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Username <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('username')}
                   value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/\s/g, '_') })}
+                  onChange={(e) => handleInputChange('username', e.target.value.toLowerCase().replace(/\s/g, '_'))}
                   placeholder="rahul_123"
                 />
                 <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest ml-4">Only letters, numbers, and underscores</p>
@@ -348,9 +380,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Phone Number <span className="text-red-500">*</span></label>
                 <input
                   type="tel"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('phone')}
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
                   placeholder="E.G. 9876543210"
                 />
               </div>
@@ -358,18 +390,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Email Address <span className="text-red-500">*</span></label>
                 <input
                   type="email"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('email')}
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email address"
                 />
               </div>
             </div>
 
             <button
-              disabled={!formData.name || !formData.phone || !formData.email || formData.username.length < 3}
               onClick={handleNext}
-              className="w-full bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
+              className="w-full bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               Next
             </button>
@@ -395,19 +426,42 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Name <span className="text-red-500">*</span></label>
                   <input
                     type="text"
-                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    className={getInputClass('businessName')}
                     value={formData.businessName}
-                    onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                    onChange={(e) => handleInputChange('businessName', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Phone <span className="text-red-500">*</span></label>
                   <input
                     type="tel"
-                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    className={getInputClass('businessPhone')}
                     value={formData.businessPhone}
-                    onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
+                    onChange={(e) => handleInputChange('businessPhone', e.target.value)}
                     placeholder="E.G. 9876543210"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Registration No. (Optional)</label>
+                  <input
+                    type="text"
+                    className={getInputClass('businessNumber')}
+                    value={formData.businessNumber}
+                    onChange={(e) => handleInputChange('businessNumber', e.target.value)}
+                    placeholder="E.G. REG123456"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Location <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    className={getInputClass('location')}
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    placeholder="E.G. Mumbai, Maharashtra"
                   />
                 </div>
               </div>
@@ -417,18 +471,18 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Email <span className="text-red-500">*</span></label>
                   <input
                     type="email"
-                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    className={getInputClass('businessEmail')}
                     value={formData.businessEmail}
-                    onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
+                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">GST Number (Optional)</label>
                   <input
                     type="text"
-                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    className={getInputClass('gstNumber')}
                     value={formData.gstNumber}
-                    onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+                    onChange={(e) => handleInputChange('gstNumber', e.target.value)}
                     placeholder="22AAAAA0000A1Z5"
                   />
                 </div>
@@ -438,9 +492,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Address Line <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('addressLine')}
                   value={formData.addressLine}
-                  onChange={(e) => setFormData({ ...formData, addressLine: e.target.value })}
+                  onChange={(e) => handleInputChange('addressLine', e.target.value)}
                 />
               </div>
 
@@ -449,18 +503,18 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">City <span className="text-red-500">*</span></label>
                   <input
                     type="text"
-                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    className={getInputClass('city')}
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">State <span className="text-red-500">*</span></label>
                   <input
                     type="text"
-                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    className={getInputClass('state')}
                     value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
                   />
                 </div>
               </div>
@@ -470,9 +524,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Pincode <span className="text-red-500">*</span></label>
                   <input
                     type="text"
-                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    className={getInputClass('pincode')}
                     value={formData.pincode}
-                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                    onChange={(e) => handleInputChange('pincode', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -489,9 +543,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Category <span className="text-red-500">*</span></label>
                 <select
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter appearance-none"
+                  className={getInputClass('businessType', "w-full p-6 rounded-2xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter appearance-none")}
                   value={formData.businessType}
-                  onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
+                  onChange={(e) => handleInputChange('businessType', e.target.value)}
                 >
                   <option value="" className="bg-[#064E3B]">Select Category</option>
                   <option value="Food Court" className="bg-[#064E3B]">Food Court</option>
@@ -507,18 +561,18 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <input
                   type="text"
                   placeholder="ENTER YOUR BUSINESS TYPE"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('otherBusinessType')}
                   value={formData.otherBusinessType}
-                  onChange={(e) => setFormData({ ...formData, otherBusinessType: e.target.value })}
+                  onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
                 />
               )}
 
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Description <span className="text-red-500">*</span></label>
                 <textarea
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter h-32 resize-none"
+                  className={getInputClass('description', "w-full p-6 rounded-2xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter h-32 resize-none")}
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Tell us about your business..."
                 />
               </div>
@@ -527,9 +581,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                disabled={!formData.businessName || !formData.businessEmail || !formData.businessPhone || !formData.addressLine || !formData.city || !formData.state || !formData.pincode || !formData.businessType || !formData.description}
                 onClick={handleNext} 
-                className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
+                className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Next
               </button>
@@ -555,9 +608,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Website Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('websiteName')}
                   value={formData.websiteName}
-                  onChange={(e) => setFormData({ ...formData, websiteName: e.target.value })}
+                  onChange={(e) => handleInputChange('websiteName', e.target.value)}
                   placeholder="E.G. MyBusiness.com"
                 />
               </div>
@@ -570,13 +623,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       type="color"
                       className="w-16 h-16 rounded-xl bg-transparent border-none cursor-pointer"
                       value={formData.primaryColor}
-                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
                     />
                     <input
                       type="text"
-                      className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] font-mono text-sm"
+                      className={getInputClass('primaryColor', "flex-1 p-4 rounded-xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] font-mono text-sm")}
                       value={formData.primaryColor}
-                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
                     />
                   </div>
                 </div>
@@ -587,13 +640,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       type="color"
                       className="w-16 h-16 rounded-xl bg-transparent border-none cursor-pointer"
                       value={formData.secondaryColor}
-                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
                     />
                     <input
                       type="text"
-                      className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] font-mono text-sm"
+                      className={getInputClass('secondaryColor', "flex-1 p-4 rounded-xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] font-mono text-sm")}
                       value={formData.secondaryColor}
-                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
                     />
                   </div>
                 </div>
@@ -601,7 +654,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Logo (Optional)</label>
-                <div className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/10">
+                <div className={getInputClass('logo', "flex items-center gap-6 p-6 rounded-2xl bg-white/5 border")}>
                   <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
                     {logoPreview ? (
                       <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
@@ -632,6 +685,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                         setLogoFile(file);
                         setLogoPreview(URL.createObjectURL(file));
                         setError(null);
+                        setInvalidFields(prev => prev.filter(f => f !== 'logo'));
                       }}
                     />
                     <label 
@@ -649,7 +703,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Additional Documents (Optional)</label>
-                <div className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/10">
+                <div className={getInputClass('documents', "flex items-center gap-6 p-6 rounded-2xl bg-white/5 border")}>
                   <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
                     {docFiles.length > 0 || formData.documentsUrl ? (
                       <FileText className="text-[#E6FF00]" size={32} />
@@ -682,6 +736,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
                         setDocFiles(files);
                         setError(null);
+                        setInvalidFields(prev => prev.filter(f => f !== 'documents'));
                       }}
                     />
                     <label 
@@ -701,9 +756,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Reference Website (Optional)</label>
                 <input
                   type="url"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  className={getInputClass('referenceWebsite')}
                   value={formData.referenceWebsite}
-                  onChange={(e) => setFormData({ ...formData, referenceWebsite: e.target.value })}
+                  onChange={(e) => handleInputChange('referenceWebsite', e.target.value)}
                   placeholder="E.G. apple.com"
                 />
               </div>
@@ -712,9 +767,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                disabled={!formData.websiteName}
                 onClick={handleNext} 
-                className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
+                className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Next
               </button>
