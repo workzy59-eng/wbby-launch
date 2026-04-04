@@ -354,7 +354,10 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
                   </div>
                   <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                    {p.userName} • {p.userEmail} • {p.businessNumber}
+                    {p.userName} • {p.userEmail} • {p.businessPhone || p.businessNumber}
+                  </div>
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">
+                    {p.city}, {p.state} • {p.pincode}
                   </div>
                   <div className="mt-2 flex items-center gap-2">
                     <button 
@@ -439,7 +442,7 @@ Generated on: ${new Date().toLocaleString()}
                     {p.status}
                   </div>
                   <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest">
-                    {p.businessNumber}
+                    {p.businessPhone || p.businessNumber} • {p.city}
                   </div>
                 </div>
               </div>

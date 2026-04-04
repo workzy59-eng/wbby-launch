@@ -1,5 +1,6 @@
 import { 
-  db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp 
+  db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp,
+  ref, uploadBytes, getDownloadURL, storage
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings } from '../types';
@@ -13,6 +14,13 @@ export enum OperationType {
   GET = 'get',
   WRITE = 'write',
 }
+
+// File Upload Helper
+export const uploadFile = async (file: File, folder: string): Promise<string> => {
+  const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
+  const snapshot = await uploadBytes(storageRef, file);
+  return await getDownloadURL(snapshot.ref);
+};
 
 export interface FirestoreErrorInfo {
   error: string;
@@ -57,7 +65,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 }
 
 // User Profile Operations
-export const createUserProfile = async (user: FirebaseUser) => {
+export const createUserProfile = async (user: FirebaseUser, additionalData: any = {}) => {
   const path = `users/${user.uid}`;
   try {
     const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -68,11 +76,31 @@ export const createUserProfile = async (user: FirebaseUser) => {
         displayName: user.displayName,
         photoURL: user.photoURL,
         role: user.email === ADMIN_EMAIL ? 'admin' : 'client',
+        status: 'active',
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        ...additionalData
+      });
+    } else {
+      await updateDoc(doc(db, 'users', user.uid), {
+        updatedAt: serverTimestamp(),
+        ...additionalData
       });
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
+  }
+};
+
+export const checkUsernameUnique = async (username: string) => {
+  const path = 'users';
+  try {
+    const q = query(collection(db, 'users'), where('username', '==', username));
+    const snapshot = await getDocs(q);
+    return snapshot.empty;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return false;
   }
 };
 
@@ -196,6 +224,7 @@ export const createProject = async (projectData: any) => {
     const docRef = await addDoc(collection(db, 'projects'), {
       ...projectData,
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       status: 'Waiting for Review',
       progress: 0,
       isDeleted: false,

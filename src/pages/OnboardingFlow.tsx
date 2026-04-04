@@ -5,7 +5,7 @@ import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { createProject, getSystemSettings } from '../services/database';
+import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
 
@@ -21,8 +21,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       name: profile?.displayName || '',
       email: profile?.email || '',
       phone: '',
+      username: '',
       businessName: '',
       businessNumber: '',
+      businessEmail: '',
+      businessPhone: '',
+      gstNumber: '',
+      addressLine: '',
+      city: '',
+      state: '',
+      pincode: '',
+      country: 'India',
       businessType: '',
       otherBusinessType: '',
       description: '',
@@ -49,8 +58,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   });
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [profileFile, setProfileFile] = useState<File | null>(null);
   const [docFiles, setDocFiles] = useState<File[]>([]);
   const [logoPreview, setLogoPreview] = useState<string>(formData.logoUrl || '');
+  const [profilePreview, setProfilePreview] = useState<string>(profile?.photoURL || '');
 
   const [step, setStep] = useState(() => {
     const saved = localStorage.getItem('onboarding_step');
@@ -91,14 +102,23 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     if (!systemSettings) return true;
     const req = systemSettings.requiredFields;
 
+    const validatePhone = (p: string) => /^[6-9]\d{9}$/.test(p);
+    const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
     switch (step) {
       case 1: // Personal info
-        return formData.name && formData.email && (!req.phone || formData.phone);
+        return formData.name && 
+               validateEmail(formData.email) && 
+               (!req.phone || validatePhone(formData.phone)) &&
+               formData.username.length >= 3;
       case 2: // Business info
         return (!req.businessName || formData.businessName) && 
                (!req.businessType || formData.businessType) && 
                (!req.businessNumber || formData.businessNumber) && 
-               (!req.businessLocation || formData.location);
+               (!req.businessLocation || formData.location) &&
+               formData.businessEmail && validateEmail(formData.businessEmail) &&
+               formData.businessPhone && validatePhone(formData.businessPhone) &&
+               formData.addressLine && formData.city && formData.state && formData.pincode;
       case 3: // Project details
         return (!req.description || formData.description) && 
                (!req.websiteName || formData.websiteName);
@@ -133,25 +153,18 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     try {
       let finalLogoUrl = formData.logoUrl;
       let finalDocsUrl = formData.documentsUrl;
+      let finalProfileUrl = profile?.photoURL || '';
 
       // Upload files if present
-      if (logoFile || docFiles.length > 0) {
-        const uploadData = new FormData();
-        if (logoFile) uploadData.append('logo', logoFile);
-        docFiles.forEach(file => uploadData.append('documents', file));
-
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json().catch(() => ({}));
-          throw new Error(errorData.error || 'File upload failed');
-        }
-        const uploadResult = await uploadRes.json();
-        finalLogoUrl = uploadResult.logoUrl || finalLogoUrl;
-        finalDocsUrl = uploadResult.documentsUrl || finalDocsUrl;
+      if (profileFile) {
+        finalProfileUrl = await uploadFile(profileFile, 'profiles');
+      }
+      if (logoFile) {
+        finalLogoUrl = await uploadFile(logoFile, 'logos');
+      }
+      if (docFiles.length > 0) {
+        const urls = await Promise.all(docFiles.map(file => uploadFile(file, 'documents')));
+        finalDocsUrl = urls.join(',');
       }
 
       const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
@@ -162,6 +175,14 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         userPhone: formData.phone,
         businessName: formData.businessName,
         businessNumber: formData.businessNumber,
+        businessEmail: formData.businessEmail,
+        businessPhone: formData.businessPhone,
+        gstNumber: formData.gstNumber,
+        addressLine: formData.addressLine,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+        country: formData.country,
         businessType: finalBusinessType,
         businessLocation: formData.location,
         description: formData.description,
@@ -178,6 +199,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       };
 
       const projectId = await createProject(projectData);
+
+      // Update user profile with onboarding info
+      if (user) {
+        await createUserProfile(user, {
+          username: formData.username,
+          phone: formData.phone,
+          photoURL: finalProfileUrl,
+        });
+      }
 
       // Redirect to Stripe Payment Link with projectId
       let stripeLink = '';
@@ -262,6 +292,37 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
             
             <div className="space-y-6">
+              <div className="flex flex-col items-center gap-4 mb-8">
+                <div className="relative group">
+                  <div className="w-32 h-32 rounded-full bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden transition-all group-hover:border-[#E6FF00]/50">
+                    {profilePreview ? (
+                      <img src={profilePreview} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center">
+                        <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                        <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">Profile Photo</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setProfileFile(file);
+                          setProfilePreview(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 bg-[#E6FF00] text-[#4A5D4E] p-2 rounded-full shadow-lg">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                </div>
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Upload Profile Picture</p>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Full Name <span className="text-red-500">*</span></label>
                 <input
@@ -273,13 +334,24 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 />
               </div>
               <div className="space-y-2">
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Username <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/\s/g, '_') })}
+                  placeholder="rahul_123"
+                />
+                <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest ml-4">Only letters, numbers, and underscores</p>
+              </div>
+              <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Phone Number <span className="text-red-500">*</span></label>
                 <input
                   type="tel"
                   className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="E.G. +91 98765 43210"
+                  placeholder="E.G. 9876543210"
                 />
               </div>
               <div className="space-y-2">
@@ -295,7 +367,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
 
             <button
-              disabled={!formData.name || !formData.phone || !formData.email}
+              disabled={!formData.name || !formData.phone || !formData.email || formData.username.length < 3}
               onClick={handleNext}
               className="w-full bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
             >
@@ -333,8 +405,83 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <input
                     type="tel"
                     className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
-                    value={formData.businessNumber}
-                    onChange={(e) => setFormData({ ...formData, businessNumber: e.target.value })}
+                    value={formData.businessPhone}
+                    onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
+                    placeholder="E.G. 9876543210"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Email <span className="text-red-500">*</span></label>
+                  <input
+                    type="email"
+                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    value={formData.businessEmail}
+                    onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">GST Number (Optional)</label>
+                  <input
+                    type="text"
+                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    value={formData.gstNumber}
+                    onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+                    placeholder="22AAAAA0000A1Z5"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Address Line <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                  value={formData.addressLine}
+                  onChange={(e) => setFormData({ ...formData, addressLine: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">City <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">State <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Pincode <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
+                    value={formData.pincode}
+                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Country</label>
+                  <input
+                    type="text"
+                    readOnly
+                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white/40 focus:outline-none uppercase font-black italic tracking-tighter cursor-not-allowed"
+                    value={formData.country}
                   />
                 </div>
               </div>
@@ -367,17 +514,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               )}
 
               <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Location <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="City, State"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Description <span className="text-red-500">*</span></label>
                 <textarea
                   className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter h-32 resize-none"
@@ -391,7 +527,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                disabled={!formData.businessName || !formData.businessNumber || !formData.businessType || !formData.location || !formData.description}
+                disabled={!formData.businessName || !formData.businessEmail || !formData.businessPhone || !formData.addressLine || !formData.city || !formData.state || !formData.pincode || !formData.businessType || !formData.description}
                 onClick={handleNext} 
                 className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
               >

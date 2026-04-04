@@ -7,12 +7,14 @@ export interface UserProfile {
   photoURL: string;
   role: 'admin' | 'client' | 'developer';
   phone?: string;
+  username?: string;
+  status: 'active' | 'inactive' | RequestStatus;
   createdAt: string | Timestamp;
+  updatedAt?: string | Timestamp;
   isApproved?: boolean; // For manual approval
   // Developer specific fields
   experience?: number;
   devRole?: string;
-  status?: RequestStatus;
   joiningDate?: string | Timestamp;
   absences?: number;
 }
@@ -62,6 +64,14 @@ export interface Project {
   businessType: string;
   businessNumber: string;
   businessLocation: string;
+  businessEmail: string;
+  businessPhone: string;
+  gstNumber?: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
   description: string;
   websiteName: string;
   primaryColor: string;
@@ -70,7 +80,7 @@ export interface Project {
   documentsUrl?: string;
   referenceWebsite?: string;
   templateId: string;
-  plan?: 'Basic' | 'Pro';
+  plan?: 'starter' | 'business' | 'Basic' | 'Pro';
   paymentStatus?: 'pending' | 'paid';
   status: ProjectStatus;
   progress: number;
