@@ -23,7 +23,7 @@ import Terms from './pages/Terms';
 import Layout from './components/Layout';
 import WhatsAppButton from './components/WhatsAppButton';
 import { AnimatePresence, motion } from 'motion/react';
-import { createUserProfile, getUserProfile } from './services/database';
+import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
 import { Smartphone, Download } from 'lucide-react';
 
 function MobileRestriction({ children }: { children: React.ReactNode }) {
@@ -172,6 +172,31 @@ Everyone often operates on tight budgets. However, skimping on your website can 
             userProfile = await getUserProfile(firebaseUser.uid);
           }
           setProfile(userProfile as UserProfile);
+          
+          // Set online status
+          updateUserStatus(firebaseUser.uid, 'online');
+          
+          // Handle tab close/visibility change
+          const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+              updateUserStatus(firebaseUser.uid, 'online');
+            } else {
+              updateUserStatus(firebaseUser.uid, 'away');
+            }
+          };
+          
+          const handleBeforeUnload = () => {
+            updateUserStatus(firebaseUser.uid, 'offline');
+          };
+          
+          document.addEventListener('visibilitychange', handleVisibilityChange);
+          window.addEventListener('beforeunload', handleBeforeUnload);
+          
+          return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            updateUserStatus(firebaseUser.uid, 'offline');
+          };
         } catch (error) {
           console.error("Error fetching user profile:", error);
         }

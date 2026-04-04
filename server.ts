@@ -4,14 +4,14 @@ import path from "path";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import multer from "multer";
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import admin from 'firebase-admin';
 import firebaseConfig from './firebase-applet-config.json';
 
 dotenv.config();
 
 // Initialize Firebase Admin
-// On Vercel, you should set these environment variables:
-// FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
 if (!admin.apps.length) {
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
   const privateKey = rawKey ? rawKey.replace(/\\n/g, '\n').replace(/^"(.*)"$/, '$1').trim() : undefined;
@@ -33,7 +33,6 @@ if (!admin.apps.length) {
       console.error("Firebase Admin initialization error:", initErr);
     }
   } else {
-    // Fallback to application default for local development
     try {
       admin.initializeApp({
         credential: admin.credential.applicationDefault(),
@@ -46,22 +45,29 @@ if (!admin.apps.length) {
   }
 }
 
-const bucket = admin.storage().bucket();
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Configure Multer for memory storage
-const storage = multer.memoryStorage();
+// Configure Multer with Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    const isImage = file.mimetype.startsWith('image/');
+    return {
+      folder: 'webbylaunch_uploads',
+      resource_type: isImage ? 'image' : 'raw',
+      public_id: `${Date.now()}_${file.originalname.split('.')[0]}`,
+    };
+  },
+});
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPG, PNG, and PDF are allowed.'));
-    }
-  }
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
 async function startServer() {
@@ -71,69 +77,38 @@ async function startServer() {
   app.use(express.json());
   
   // API Routes
-  app.post("/api/upload", upload.fields([
+  app.post("/api/upload", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      res.json({
+        success: true,
+        url: req.file.path,
+        secure_url: (req.file as any).path,
+        public_id: (req.file as any).filename,
+        format: (req.file as any).format
+      });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: error.message || "Failed to upload file" });
+    }
+  });
+
+  // Legacy upload for onboarding flow
+  app.post("/api/upload-onboarding", upload.fields([
     { name: 'logo', maxCount: 1 },
     { name: 'documents', maxCount: 5 }
   ]), async (req, res) => {
     try {
-      // Check if Firebase is initialized
-      if (!admin.apps.length) {
-        throw new Error("Firebase Admin not initialized. Check environment variables.");
-      }
-
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       if (!files || (!files.logo && !files.documents)) {
         return res.status(400).json({ error: "No files uploaded" });
       }
       
-      const uploadToFirebase = async (file: Express.Multer.File) => {
-        try {
-          const timestamp = Date.now();
-          const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
-          const fileName = `uploads/${timestamp}_${cleanName}`;
-          const blob = bucket.file(fileName);
-          
-          const blobStream = blob.createWriteStream({
-            metadata: {
-              contentType: file.mimetype,
-              cacheControl: 'public, max-age=31536000'
-            },
-            resumable: false
-          });
-
-          return new Promise<string>((resolve, reject) => {
-            blobStream.on('error', (err) => {
-              console.error('Blob stream error:', err);
-              reject(new Error(`Storage error: ${err.message}`));
-            });
-            
-            blobStream.on('finish', async () => {
-              try {
-                // Try to make the file public
-                try {
-                  await blob.makePublic();
-                } catch (publicErr) {
-                  console.warn('Could not make file public, bucket might have public access prevention:', publicErr);
-                  // If makePublic fails, we'll try to return a signed URL or just the public link anyway
-                }
-                
-                const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-                resolve(publicUrl);
-              } catch (err: any) {
-                console.error('Post-upload error:', err);
-                reject(new Error(`Post-upload error: ${err.message}`));
-              }
-            });
-            
-            blobStream.end(file.buffer);
-          });
-        } catch (err: any) {
-          throw new Error(`Upload process failed: ${err.message}`);
-        }
-      };
-
-      const logoUrl = files.logo ? await uploadToFirebase(files.logo[0]) : null;
-      const documentUrls = files.documents ? await Promise.all(files.documents.map(f => uploadToFirebase(f))) : [];
+      const logoUrl = files.logo ? files.logo[0].path : null;
+      const documentUrls = files.documents ? files.documents.map(f => f.path) : [];
 
       res.json({
         success: true,
@@ -141,11 +116,8 @@ async function startServer() {
         documentsUrl: documentUrls.join(',')
       });
     } catch (error: any) {
-      console.error("Full upload error details:", error);
-      res.status(500).json({ 
-        error: error.message || "Failed to upload files",
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      });
+      console.error("Onboarding upload error:", error);
+      res.status(500).json({ error: error.message || "Failed to upload files" });
     }
   });
 

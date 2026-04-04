@@ -16,7 +16,9 @@ import {
   FileText,
   ChevronLeft,
   Loader2,
-  Briefcase
+  Briefcase,
+  User as UserIcon,
+  Circle
 } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Message, Project } from '../types';
@@ -27,7 +29,10 @@ import {
   getConversations,
   getProfiles,
   getAdmins,
-  getUserProfile
+  getUserProfile,
+  setUserTyping,
+  getTypingStatus,
+  uploadFile
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import ChatSystem from './ChatSystem';
@@ -62,9 +67,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
   const [showUserList, setShowUserList] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
@@ -72,11 +79,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const fetchProfiles = async () => {
       let profiles: UserProfile[] = [];
       
-      if (profile?.role === 'admin') {
-        profiles = await getProfiles();
-      } else {
-        profiles = await getAdmins();
-      }
+      // Admin can message everyone, others can message admin
+      profiles = await getProfiles();
       
       let filteredProfiles = profiles.filter(p => p.uid !== currentUser.uid) as UserProfile[];
       
@@ -118,14 +122,6 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
         setConversations([...projectConvs, ...finalConvs] as Conversation[]);
         setIsLoading(false);
-
-        // For clients, if no conversations exist, automatically show the admin list or select admin
-        if (profile?.role === 'client' && finalConvs.length === 0 && projectConvs.length === 0) {
-          const adminProfiles = await fetchProfiles();
-          if (adminProfiles.length > 0) {
-            // We don't automatically start a chat, but we could show the user list
-          }
-        }
       } catch (error) {
         console.error('Error loading conversations:', error);
         setIsLoading(false);
@@ -162,14 +158,22 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       });
     });
 
-    return () => unsubMessages?.();
+    // Typing status listener
+    const unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
+      setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
+    });
+
+    return () => {
+      unsubMessages?.();
+      unsubTyping?.();
+    };
   }, [activeConversation, currentUser.uid]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, typingUsers]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,10 +190,27 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         text: inputText,
       });
       setInputText('');
+      // Clear typing status
+      if (activeConversation.id !== 'new') {
+        setUserTyping(activeConversation.id, currentUser.uid, false);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+    
+    if (activeConversation && activeConversation.id !== 'new' && !activeConversation.isProject) {
+      setUserTyping(activeConversation.id, currentUser.uid, true);
+      
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        setUserTyping(activeConversation.id, currentUser.uid, false);
+      }, 3000);
     }
   };
 
@@ -293,7 +314,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   }`}>
                     {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
-                  {!conv.isProject && <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#020617] rounded-full"></div>}
+                  {!conv.isProject && (
+                    <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-[#020617] rounded-full ${
+                      conv.recipientProfile?.status === 'online' ? 'bg-green-500' : 
+                      conv.recipientProfile?.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+                    }`}></div>
+                  )}
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <div className="flex justify-between items-start mb-1">
@@ -305,7 +331,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-white/40 truncate font-medium pr-2">
+                    <p className="text-xs text-white/40 truncate font-medium pr-2 italic">
                       {conv.isProject ? 'Project Discussion' : (conv.lastSenderId === currentUser.uid ? 'You: ' : '') + conv.lastMessage}
                     </p>
                     {conv.unreadCount && conv.unreadCount > 0 && (
@@ -380,15 +406,35 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 >
                   <ChevronLeft size={24} />
                 </button>
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-lg">
-                  {activeConversation.recipientProfile?.displayName?.[0] || 'U'}
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-lg">
+                    {activeConversation.recipientProfile?.displayName?.[0] || 'U'}
+                  </div>
+                  <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#020617] rounded-full ${
+                    activeConversation.recipientProfile?.status === 'online' ? 'bg-green-500' : 
+                    activeConversation.recipientProfile?.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+                  }`}></div>
                 </div>
                 <div>
                   <h3 className="font-black text-white uppercase tracking-tight">{activeConversation.recipientProfile?.displayName}</h3>
-                  <p className="text-[10px] text-green-400 font-black uppercase tracking-widest flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                    Online
-                  </p>
+                  <div className="flex items-center gap-2">
+                    {typingUsers.length > 0 ? (
+                      <p className="text-[10px] text-[#E6FF00] font-black uppercase tracking-widest animate-pulse">typing...</p>
+                    ) : (
+                      <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
+                        activeConversation.recipientProfile?.status === 'online' ? 'text-green-400' : 'text-white/30'
+                      }`}>
+                        {activeConversation.recipientProfile?.status === 'online' ? (
+                          <>
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                            Active Now
+                          </>
+                        ) : (
+                          `Last seen ${activeConversation.recipientProfile?.lastSeen ? formatDate(activeConversation.recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`
+                        )}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -412,8 +458,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             {/* Messages Area */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
+              className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-[#020617]/20"
             >
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full opacity-20 space-y-4">
+                  <MessageCircle size={64} />
+                  <p className="text-sm font-black uppercase tracking-widest italic">No messages yet</p>
+                </div>
+              )}
               {messages.map((m, idx) => {
                 const isMe = m.senderId === currentUser.uid;
                 const showAvatar = idx === 0 || messages[idx - 1].senderId !== m.senderId;
@@ -432,6 +484,20 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           : 'bg-white/5 text-white border border-white/10 rounded-bl-none'
                       }`}>
                         {m.text}
+                        {m.imageUrl && (
+                          <img src={m.imageUrl} alt="Attachment" className="mt-2 rounded-xl max-w-full h-auto border border-white/10" />
+                        )}
+                        {m.attachmentUrl && (
+                          <a 
+                            href={m.attachmentUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="mt-2 flex items-center gap-2 p-2 bg-black/20 rounded-xl text-xs hover:bg-black/40 transition-all"
+                          >
+                            <FileText size={16} />
+                            <span className="truncate">View Attachment</span>
+                          </a>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-1.5 px-1">
                         <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
@@ -451,6 +517,16 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   </div>
                 );
               })}
+              {typingUsers.length > 0 && (
+                <div className="flex items-center gap-2 text-[10px] text-[#E6FF00] font-black uppercase tracking-widest italic animate-pulse">
+                  <div className="flex gap-1">
+                    <span className="w-1 h-1 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1 h-1 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1 h-1 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </div>
+                  {activeConversation.recipientProfile?.displayName} is typing
+                </div>
+              )}
             </div>
 
             {/* Input Area */}
@@ -469,10 +545,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
                       setIsSending(true);
                       try {
-                        const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
-                        const storageRef = ref(storage, `attachments/direct/${Date.now()}_${file.name}`);
-                        await uploadBytes(storageRef, file);
-                        const url = await getDownloadURL(storageRef);
+                        const url = await uploadFile(file, 'attachments');
                         
                         await sendDirectMessage(recipientId, {
                           senderId: currentUser.uid,
@@ -512,10 +585,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
                       setIsSending(true);
                       try {
-                        const { ref, uploadBytes, getDownloadURL, storage } = await import('../firebase');
-                        const storageRef = ref(storage, `images/direct/${Date.now()}_${file.name}`);
-                        await uploadBytes(storageRef, file);
-                        const url = await getDownloadURL(storageRef);
+                        const url = await uploadFile(file, 'images');
                         
                         await sendDirectMessage(recipientId, {
                           senderId: currentUser.uid,
@@ -544,7 +614,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     placeholder="Type a message..."
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
+                    onChange={handleInputChange}
                   />
                   <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all">
                     <Smile size={20} />
@@ -559,19 +629,19 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </button>
               </form>
             </footer>
-          </>
-        )
-      ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
-            <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
-              <MessageCircle size={48} strokeWidth={1.5} className="text-[#E6FF00]" />
+            </>
+          )
+        ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
+              <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
+                <MessageCircle size={48} strokeWidth={1.5} className="text-[#E6FF00]" />
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-black text-white/40 uppercase italic tracking-tighter">Select a conversation</h3>
+                <p className="text-xs font-bold uppercase tracking-widest opacity-40">Choose someone to start chatting</p>
+              </div>
             </div>
-            <div className="text-center">
-              <h3 className="text-xl font-black text-white/40 uppercase italic tracking-tighter">Select a conversation</h3>
-              <p className="text-xs font-bold uppercase tracking-widest opacity-40">Choose someone to start chatting</p>
-            </div>
-          </div>
-        )}
+          )}
       </div>
 
       {/* User List Modal for New Chat */}
@@ -607,8 +677,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     onClick={() => startNewChat(user)}
                     className="w-full p-4 flex items-center gap-4 hover:bg-white/5 rounded-2xl transition-all border border-transparent hover:border-white/5"
                   >
-                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white font-black">
-                      {user.displayName?.[0] || 'U'}
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white font-black">
+                        {user.displayName?.[0] || 'U'}
+                      </div>
+                      <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#0f172a] rounded-full ${
+                        user.status === 'online' ? 'bg-green-500' : 
+                        user.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+                      }`}></div>
                     </div>
                     <div className="text-left">
                       <p className="font-black text-white uppercase tracking-tight text-sm">{user.displayName}</p>

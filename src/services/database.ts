@@ -15,11 +15,29 @@ export enum OperationType {
   WRITE = 'write',
 }
 
-// File Upload Helper
-export const uploadFile = async (file: File, folder: string): Promise<string> => {
-  const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
-  const snapshot = await uploadBytes(storageRef, file);
-  return await getDownloadURL(snapshot.ref);
+// File Upload Helper (Using Backend Cloudinary API)
+export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Upload failed');
+    }
+
+    const data = await response.json();
+    return data.secure_url || data.url;
+  } catch (error) {
+    console.error('File upload error:', error);
+    throw error;
+  }
 };
 
 export interface FirestoreErrorInfo {
@@ -76,7 +94,8 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
         displayName: user.displayName,
         photoURL: user.photoURL,
         role: user.email === ADMIN_EMAIL ? 'admin' : 'client',
-        status: 'active',
+        status: 'online',
+        lastSeen: serverTimestamp(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         ...additionalData
@@ -84,12 +103,50 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
     } else {
       await updateDoc(doc(db, 'users', user.uid), {
         updatedAt: serverTimestamp(),
+        status: 'online',
+        lastSeen: serverTimestamp(),
         ...additionalData
       });
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
+};
+
+export const updateUserStatus = async (uid: string, status: 'online' | 'offline' | 'away') => {
+  const path = `users/${uid}`;
+  try {
+    await updateDoc(doc(db, 'users', uid), {
+      status,
+      lastSeen: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    // Silently fail for status updates to avoid UI noise
+    console.warn('Status update failed:', error);
+  }
+};
+
+export const setUserTyping = async (conversationId: string, userId: string, isTyping: boolean) => {
+  const path = `conversations/${conversationId}/typing/${userId}`;
+  try {
+    await setDoc(doc(db, 'conversations', conversationId, 'typing', userId), {
+      isTyping,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  } catch (error) {
+    console.warn('Typing status update failed:', error);
+  }
+};
+
+export const getTypingStatus = (conversationId: string, callback: (typingUsers: string[]) => void) => {
+  const path = `conversations/${conversationId}/typing`;
+  const q = query(collection(db, 'conversations', conversationId, 'typing'), where('isTyping', '==', true));
+  
+  return onSnapshot(q, (snapshot) => {
+    const typingUsers = snapshot.docs.map(doc => doc.id);
+    callback(typingUsers);
+  });
 };
 
 export const checkUsernameUnique = async (username: string) => {

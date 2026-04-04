@@ -20,7 +20,7 @@ import {
   Maximize2,
   File
 } from 'lucide-react';
-import { FirebaseUser, storage, ref, uploadBytesResumable, getDownloadURL } from '../firebase';
+import { FirebaseUser } from '../firebase';
 import { UserProfile, Message, Attachment } from '../types';
 import { 
   sendMessage, 
@@ -30,7 +30,11 @@ import {
   sendDirectMessage, 
   updateDirectMessage, 
   deleteMessage, 
-  deleteDirectMessage 
+  deleteDirectMessage,
+  uploadFile,
+  setUserTyping,
+  getTypingStatus,
+  getUserProfile
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { HYPHENATED_NAME } from '../constants';
@@ -59,17 +63,27 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [recipientProfile, setRecipientProfile] = useState<UserProfile | null>(null);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    notificationSound.current = new Audio('/notification.mp3');
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
   }, []);
 
   useEffect(() => {
     let unsubscribe: () => void;
+    let unsubTyping: () => void;
+
+    const chatId = isDirect && recipientUser ? (currentUser.uid < recipientUser.uid ? `${currentUser.uid}_${recipientUser.uid}` : `${recipientUser.uid}_${currentUser.uid}`) : projectId;
 
     if (isDirect && recipientUser) {
+      // Fetch recipient profile for status
+      getUserProfile(recipientUser.uid).then(p => setRecipientProfile(p as UserProfile));
+
       unsubscribe = getDirectMessages(recipientUser.uid, (messagesData) => {
         const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
         setMessages(filtered as Message[]);
@@ -82,6 +96,12 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           }
         });
       });
+
+      if (chatId) {
+        unsubTyping = getTypingStatus(chatId, (typing) => {
+          setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
+        });
+      }
     } else if (projectId) {
       unsubscribe = getMessages(projectId, (messagesData) => {
         const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
@@ -95,22 +115,31 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           }
         });
       });
+
+      unsubTyping = getTypingStatus(projectId, (typing) => {
+        setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
+      });
     }
 
-    return () => unsubscribe?.();
+    return () => {
+      unsubscribe?.();
+      unsubTyping?.();
+    };
   }, [projectId, isDirect, recipientUser?.uid, currentUser.uid]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, typingUsers]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || isSending) return;
 
     setIsSending(true);
+    const chatId = isDirect && recipientUser ? (currentUser.uid < recipientUser.uid ? `${currentUser.uid}_${recipientUser.uid}` : `${recipientUser.uid}_${currentUser.uid}`) : projectId;
+
     try {
       if (isDirect && recipientUser) {
         await sendDirectMessage(recipientUser.uid, {
@@ -126,10 +155,28 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         });
       }
       setInputText('');
+      if (chatId) {
+        setUserTyping(chatId, currentUser.uid, false);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+    
+    const chatId = isDirect && recipientUser ? (currentUser.uid < recipientUser.uid ? `${currentUser.uid}_${recipientUser.uid}` : `${recipientUser.uid}_${currentUser.uid}`) : projectId;
+    
+    if (chatId) {
+      setUserTyping(chatId, currentUser.uid, true);
+      
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        setUserTyping(chatId, currentUser.uid, false);
+      }, 3000);
     }
   };
 
@@ -142,7 +189,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     try {
       for (let i = 0; i < files.length; i++) {
         let file = files[i];
-        const fileName = `${Date.now()}_${file.name}`;
         
         // Validate size
         const maxSize = isImage ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
@@ -165,33 +211,20 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           }
         }
 
-        const storageRef = ref(storage, `${isImage ? 'images' : 'attachments'}/${projectId || 'direct'}/${fileName}`);
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        await new Promise<void>((resolve, reject) => {
-          uploadTask.on('state_changed', 
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
-            }, 
-            (error) => reject(error), 
-            async () => {
-              const url = await getDownloadURL(uploadTask.snapshot.ref);
-              attachments.push({
-                name: file.name,
-                type: file.type,
-                url: url,
-                size: file.size
-              });
-              setUploadProgress(prev => {
-                const next = { ...prev };
-                delete next[file.name];
-                return next;
-              });
-              resolve();
-            }
-          );
-        });
+        setUploadProgress(prev => ({ ...prev, [file.name]: 50 })); // Mock progress since fetch doesn't give it easily
+        
+        try {
+          const url = await uploadFile(file, isImage ? 'images' : 'attachments');
+          attachments.push({
+            name: file.name,
+            type: file.type,
+            url: url,
+            size: file.size
+          });
+          setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+        } catch (error) {
+          console.error(`Failed to upload ${file.name}:`, error);
+        }
       }
 
       if (attachments.length > 0) {
@@ -213,7 +246,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       alert('Upload failed. Please try again.');
     } finally {
       setIsSending(false);
-      setUploadProgress({});
+      setTimeout(() => setUploadProgress({}), 1000);
     }
   };
 
@@ -221,7 +254,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     if (!selectedMessage) return;
 
     try {
-      if (isDirect) {
+      if (isDirect && recipientUser) {
         await deleteDirectMessage(recipientUser.uid, selectedMessage.id, forEveryone, currentUser.uid);
       } else if (projectId) {
         await deleteMessage(projectId, selectedMessage.id, forEveryone, currentUser.uid);
@@ -271,14 +304,32 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       {/* Header */}
       <header className="px-10 py-8 border-b border-white/10 flex items-center justify-between bg-white/5">
         <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
-            {recipientUser?.displayName?.[0] || 'U'}
+          <div className="relative">
+            <div className="w-16 h-16 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+              {recipientUser?.displayName?.[0] || (projectId ? 'P' : 'U')}
+            </div>
+            {isDirect && (
+              <div className={`absolute -bottom-1 -right-1 w-5 h-5 border-4 border-black rounded-full ${
+                recipientProfile?.status === 'online' ? 'bg-green-500' : 
+                recipientProfile?.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+              }`}></div>
+            )}
           </div>
           <div>
-            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">{recipientUser?.displayName || 'Project Chat'}</h2>
+            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">{recipientUser?.displayName || (projectId ? 'Project Chat' : 'Chat')}</h2>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-              <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Active Now</span>
+              {typingUsers.length > 0 ? (
+                <p className="text-[10px] text-[#E6FF00] font-black uppercase tracking-widest animate-pulse italic">typing...</p>
+              ) : (
+                <>
+                  <div className={`w-2 h-2 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)] ${
+                    isDirect ? (recipientProfile?.status === 'online' ? 'bg-green-500' : 'bg-gray-500') : 'bg-green-500'
+                  }`}></div>
+                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                    {isDirect ? (recipientProfile?.status === 'online' ? 'Active Now' : `Last seen ${recipientProfile?.lastSeen ? formatDate(recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`) : 'Active Channel'}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -431,6 +482,16 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             );
           })
         )}
+        {typingUsers.length > 0 && (
+          <div className="flex items-center gap-3 text-[10px] text-[#E6FF00] font-black uppercase tracking-widest italic animate-pulse">
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+              <span className="w-1.5 h-1.5 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+              <span className="w-1.5 h-1.5 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+            </div>
+            Someone is typing...
+          </div>
+        )}
       </div>
 
       {/* Upload Progress Overlay */}
@@ -577,7 +638,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
               placeholder="Type your message here..."
               className="w-full bg-white/5 border border-white/10 rounded-[2rem] px-10 py-6 text-white font-bold outline-none focus:border-[#E6FF00] transition-all"
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={handleInputChange}
             />
           </div>
 

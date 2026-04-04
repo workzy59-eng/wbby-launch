@@ -8,7 +8,8 @@ export interface UserProfile {
   role: 'admin' | 'client' | 'developer';
   phone?: string;
   username?: string;
-  status: 'active' | 'inactive' | RequestStatus;
+  status: 'online' | 'offline' | 'away' | 'active' | 'inactive' | RequestStatus;
+  lastSeen?: string | Timestamp;
   createdAt: string | Timestamp;
   updatedAt?: string | Timestamp;
   isApproved?: boolean; // For manual approval
@@ -108,6 +109,7 @@ export interface Message {
   text: string;
   attachments?: Attachment[];
   imageUrl?: string;
+  attachmentUrl?: string;
   createdAt: string | Timestamp;
   seen: boolean;
   isDeleted?: boolean;
