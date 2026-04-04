@@ -17,8 +17,8 @@ export enum OperationType {
 
 // File Upload Helper (Using Backend Cloudinary API or Direct Upload as Fallback)
 export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dvrxv19t0';
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
   const appUrl = import.meta.env.VITE_APP_URL || '';
 
   // Try direct upload if preset is available (fallback for Vercel/Static deployments)

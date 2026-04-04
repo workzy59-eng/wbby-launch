@@ -47,9 +47,9 @@ if (!admin.apps.length) {
 }
 
 // Configure Cloudinary
-const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME;
-const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
-const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
+const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME || 'dvrxv19t0';
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY || '494485377637336';
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET || 'LH_OW3auJbrLAHJnKbmPCkFgD38';
 
 if (cloudinaryCloudName && cloudinaryApiKey && cloudinaryApiSecret) {
   cloudinary.config({
