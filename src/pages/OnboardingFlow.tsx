@@ -30,7 +30,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       secondaryColor: '#000000',
       logoUrl: '',
       documentsUrl: '',
-      plan: 'Basic' as 'Basic' | 'Pro',
+      plan: 'starter' as 'starter' | 'business',
       referenceWebsite: '',
       templateId: '',
     };
@@ -135,7 +135,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       const projectId = await createProject(projectData);
 
       // Redirect to Stripe Payment Link with projectId
-      const stripeLink = formData.plan === 'Basic' 
+      const stripeLink = formData.plan === 'starter' 
         ? 'https://buy.stripe.com/test_9B65kC26g16Q2iU5PpbAs01' 
         : 'https://buy.stripe.com/test_00w6oGbGQeXGcXy3HhbAs03';
       
@@ -507,12 +507,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {[
-                { id: 'Basic', name: 'Starter Launch', price: '₹899/-', features: ['Single Page', 'Basic SEO', '1 Month Support'] },
-                { id: 'Pro', name: 'Business Pro', price: '₹1,499/-', features: ['Multi Page', 'Advanced SEO', '6 Months Support'] }
+                { id: 'starter', name: 'Starter Launch', price: '₹899/-', features: ['Single Page', 'Basic SEO', '1 Month Support'] },
+                { id: 'business', name: 'Business Pro', price: '₹1,499/-', features: ['Multi Page', 'Advanced SEO', '6 Months Support'] }
               ].map((plan) => (
                 <button
                   key={plan.id}
-                  onClick={() => setFormData({ ...formData, plan: plan.id as 'Basic' | 'Pro' })}
+                  onClick={() => setFormData({ ...formData, plan: plan.id as 'starter' | 'business' })}
                   className={`p-8 rounded-[2rem] border transition-all text-left flex flex-col h-full ${
                     formData.plan === plan.id 
                       ? 'bg-[#E6FF00] border-[#E6FF00] text-[#4A5D4E]' 
@@ -569,9 +569,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center">
                 <div>
                   <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Selected Plan</div>
-                  <div className="text-xl font-black text-[#E6FF00] uppercase italic">{formData.plan === 'Basic' ? 'Starter Launch' : 'Business Pro'}</div>
+                  <div className="text-xl font-black text-[#E6FF00] uppercase italic">{formData.plan === 'starter' ? 'Starter Launch' : 'Business Pro'}</div>
                 </div>
-                <div className="text-2xl font-black text-white">{formData.plan === 'Basic' ? '₹899/-' : '₹1,499/-'}</div>
+                <div className="text-2xl font-black text-white">{formData.plan === 'starter' ? '₹899/-' : '₹1,499/-'}</div>
               </div>
               {error && (
                 <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-black uppercase tracking-widest">

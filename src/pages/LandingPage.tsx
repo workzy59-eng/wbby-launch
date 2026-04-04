@@ -359,38 +359,75 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </h3>
           </div>
 
-          <div className="max-w-lg mx-auto bg-white/5 border-2 border-[#E6FF00]/30 p-16 rounded-[3rem] text-center space-y-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-[#E6FF00] text-black px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest">
-              Most Popular
-            </div>
-            <div className="space-y-4">
-              <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
-              <div className="flex items-end justify-center gap-2">
-                <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹899</span>
-                <span className="text-white/40 font-bold uppercase tracking-widest text-xs mb-2">/ month</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Starter Launch */}
+            <div className="bg-white/5 border border-white/10 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all">
+              <div className="space-y-4">
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
+                <div className="flex items-end justify-center gap-2">
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹899</span>
+                  <span className="text-white/40 font-bold uppercase tracking-widest text-xs mb-2">/ month</span>
+                </div>
               </div>
+              <ul className="space-y-6 text-left flex-1">
+                {[
+                  'Custom Domain Setup',
+                  'Fast 48h Delivery',
+                  'Mobile Responsive Design',
+                  'Basic SEO Optimization',
+                  'Real-time Chat Support',
+                  'Project Dashboard Access'
+                ].map((feature, i) => (
+                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
+                    <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link 
+                to="/auth" 
+                className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+              >
+                Get Started
+              </Link>
             </div>
-            <ul className="space-y-6 text-left">
-              {[
-                'Custom Domain Setup',
-                'Fast 24-48h Delivery',
-                'Mobile Responsive Design',
-                'SEO Optimization',
-                'Real-time Chat Support',
-                'Project Dashboard Access'
-              ].map((feature, i) => (
-                <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
-                  <CheckCircle2 size={18} className="text-[#E6FF00]" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <Link 
-              to="/auth" 
-              className="block w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
-            >
-              Contact to Get Started
-            </Link>
+
+            {/* Business Pro */}
+            <div className="bg-white/5 border-2 border-[#E6FF00]/30 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(230,255,0,0.1)] group hover:border-[#E6FF00]/50 transition-all">
+              <div className="absolute top-0 right-0 bg-[#E6FF00] text-black px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest">
+                Most Popular
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
+                <div className="flex items-end justify-center gap-2">
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹1,499</span>
+                  <span className="text-white/40 font-bold uppercase tracking-widest text-xs mb-2">/ month</span>
+                </div>
+              </div>
+              <ul className="space-y-6 text-left flex-1">
+                {[
+                  'Custom Domain Setup',
+                  'Priority 24h Delivery',
+                  'Mobile Responsive Design',
+                  'Advanced SEO Optimization',
+                  'Real-time Chat Support',
+                  'Project Dashboard Access',
+                  'Custom Email Setup',
+                  'Performance Reports'
+                ].map((feature, i) => (
+                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
+                    <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link 
+                to="/auth" 
+                className="block w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+              >
+                Start Pro Project
+              </Link>
+            </div>
           </div>
         </div>
       </section>
