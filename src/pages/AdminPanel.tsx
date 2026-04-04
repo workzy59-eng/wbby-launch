@@ -50,9 +50,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   useEffect(() => {
     const unsubscribeProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
       setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+    }, (error) => {
+      console.error("Admin Projects Snapshot Error:", error);
     });
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
       setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
+    }, (error) => {
+      console.error("Admin Users Snapshot Error:", error);
     });
     
     getSystemSettings().then(settings => {
