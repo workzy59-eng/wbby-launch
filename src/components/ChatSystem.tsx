@@ -9,8 +9,6 @@ import {
   Paperclip, 
   MoreVertical,
   Search,
-  Phone,
-  Video,
   MessageCircle,
   Trash2,
   Sparkles,
@@ -34,7 +32,9 @@ import {
   uploadFile,
   setUserTyping,
   getTypingStatus,
-  getUserProfile
+  getUserProfile,
+  markMessageAsSeen,
+  deleteMessageForEveryone
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { HYPHENATED_NAME } from '../constants';
@@ -91,7 +91,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         // Mark as seen
         messagesData.forEach(async (m) => {
           if (m.senderId !== currentUser.uid && !m.seen) {
-            await updateDirectMessage(recipientUser.uid, m.id, { seen: true });
+            await markMessageAsSeen(m.id, chatId);
             notificationSound.current?.play().catch(() => {});
           }
         });
@@ -214,11 +214,11 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         setUploadProgress(prev => ({ ...prev, [file.name]: 50 })); // Mock progress since fetch doesn't give it easily
         
         try {
-          const url = await uploadFile(file, isImage ? 'images' : 'attachments');
+          const fileData = await uploadFile(file, isImage ? 'images' : 'attachments');
           attachments.push({
             name: file.name,
             type: file.type,
-            url: url,
+            url: fileData, // This is now the Base64 string
             size: file.size
           });
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
@@ -232,6 +232,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           senderId: currentUser.uid,
           senderName: currentUser.displayName || profile?.displayName || 'User',
           text: isImage ? 'Sent images' : 'Sent attachments',
+          fileData: attachments[0].url, // Store the first one as fileData for quick preview
           attachments
         };
 
@@ -335,12 +336,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
-            <Phone size={24} />
-          </button>
-          <button className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
-            <Video size={24} />
-          </button>
           <div className="w-[1px] h-12 bg-white/10 mx-4"></div>
           {onClose && (
             <button 
@@ -414,6 +409,18 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         : 'bg-[#202c33] text-white rounded-tl-none border border-white/5'
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
+                    {m.fileData && (
+                      <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
+                        <img src={m.fileData} alt="Shared file" className="w-full h-auto max-h-64 object-cover" />
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setSelectedImage(m.fileData!); }}
+                          className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center text-white"
+                        >
+                          <Maximize2 size={20} />
+                        </button>
+                      </div>
+                    )}
+
                     {m.imageUrl && (
                       <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
                         <img src={m.imageUrl} alt="AI Visualization" className="w-full h-auto max-h-64 object-cover" />

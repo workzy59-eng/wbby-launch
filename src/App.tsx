@@ -20,6 +20,7 @@ import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import WhatsAppButton from './components/WhatsAppButton';
 import { AnimatePresence, motion } from 'motion/react';
@@ -268,6 +269,10 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               <Route 
                 path="/onboarding" 
                 element={<OnboardingFlow user={user} profile={profile} />} 
+              />
+              <Route 
+                path="/settings" 
+                element={user ? <Settings user={user} profile={profile} /> : <Navigate to="/auth" />} 
               />
               <Route 
                 path="/dashboard" 

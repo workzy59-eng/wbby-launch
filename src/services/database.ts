@@ -15,40 +15,24 @@ export enum OperationType {
   WRITE = 'write',
 }
 
-// File Upload Helper (Direct Upload to Cloudinary - Frontend Only)
+// File Upload Helper (Base64 conversion)
+export const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+// Legacy upload helper - now uses Base64
 export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dvrxv19t0';
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
-
-  console.log(`Starting direct Cloudinary upload for ${file.name} to folder ${folder}...`);
-
-  if (!cloudName || !uploadPreset) {
-    console.error('Cloudinary configuration is missing (VITE_CLOUDINARY_CLOUD_NAME or VITE_CLOUDINARY_UPLOAD_PRESET)');
-    throw new Error('Cloudinary configuration is missing. Please check your environment variables.');
-  }
-
+  console.log(`Converting ${file.name} to Base64...`);
   try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('folder', folder);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Cloudinary upload failed:', errorData);
-      throw new Error(errorData.error?.message || 'Cloudinary upload failed');
-    }
-
-    const data = await response.json();
-    console.log('Cloudinary upload successful:', data.secure_url);
-    return data.secure_url || data.url;
+    const base64 = await convertFileToBase64(file);
+    return base64;
   } catch (error) {
-    console.error('File upload error:', error);
+    console.error('Base64 conversion error:', error);
     throw error;
   }
 };
@@ -415,6 +399,46 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
     }, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
+  }
+};
+
+export const markMessageAsSeen = async (messageId: string, conversationId?: string, projectId?: string) => {
+  try {
+    if (conversationId) {
+      await updateDoc(doc(db, 'conversations', conversationId, 'messages', messageId), {
+        seen: true,
+        seenTime: serverTimestamp()
+      });
+    } else if (projectId) {
+      await updateDoc(doc(db, 'projects', projectId, 'messages', messageId), {
+        seen: true,
+        seenTime: serverTimestamp()
+      });
+    }
+  } catch (error) {
+    console.error('Error marking message as seen:', error);
+  }
+};
+
+export const deleteMessageForEveryone = async (messageId: string, conversationId?: string, projectId?: string) => {
+  try {
+    if (conversationId) {
+      await updateDoc(doc(db, 'conversations', conversationId, 'messages', messageId), {
+        text: 'This message was deleted',
+        fileData: null,
+        attachments: null,
+        deletedForEveryone: true
+      });
+    } else if (projectId) {
+      await updateDoc(doc(db, 'projects', projectId, 'messages', messageId), {
+        text: 'This message was deleted',
+        fileData: null,
+        attachments: null,
+        deletedForEveryone: true
+      });
+    }
+  } catch (error) {
+    console.error('Error deleting message for everyone:', error);
   }
 };
 

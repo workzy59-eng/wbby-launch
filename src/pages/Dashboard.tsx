@@ -29,21 +29,21 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   const [showDirectChat, setShowDirectChat] = useState(false);
   const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    if (isSuccess) {
-      // Clear the URL params after showing the message
-      window.history.replaceState({}, '', window.location.pathname);
-      setTimeout(() => setShowSuccessMessage(false), 8000);
-    }
-  }, [isSuccess]);
+  const [expandedBox, setExpandedBox] = useState<string | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchAdmin = async () => {
-      const { getProfiles } = await import('../services/database');
+      const { getProfiles, getDirectMessages } = await import('../services/database');
       const profiles = await getProfiles();
       const admin = profiles.find(p => p.role === 'admin');
-      if (admin) setAdminProfile(admin);
+      if (admin) {
+        setAdminProfile(admin);
+        // Also fetch messages for the unread count
+        getDirectMessages(admin.uid, (msgs) => {
+          setMessages(msgs);
+        });
+      }
     };
     fetchAdmin();
   }, []);
@@ -255,28 +255,54 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 </div>
               ) : (
                 <div className="space-y-10">
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Stats Grid - 4 Boxes */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                      { label: 'Active Projects', value: projects.filter(p => p.status === 'active').length, icon: Layout },
-                      { label: 'Pending Requests', value: projects.filter(p => p.status === 'pending').length, icon: Clock },
-                      { label: 'Completed', value: projects.filter(p => p.status === 'completed').length, icon: CheckCircle2 },
+                      { id: 'projects', label: 'Active Projects', value: projects.length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.map(p => p.businessName) },
+                      { id: 'messages', label: 'Unread Messages', value: messages.filter(m => !m.seen && m.senderId !== user.uid).length, icon: MessageCircle, color: 'text-green-400', bg: 'bg-green-400/10', items: messages.filter(m => !m.seen && m.senderId !== user.uid).map(m => m.text) },
+                      { id: 'tasks', label: 'Pending Tasks', value: 2, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: ['Submit logo', 'Review initial draft'] },
+                      { id: 'completed', label: 'Completed', value: projects.filter(p => p.status === 'completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'completed').map(p => p.businessName) },
                     ].map((stat, i) => (
-                      <motion.div 
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="bg-black/20 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#E6FF00]/30 transition-all"
-                      >
-                        <div className="flex justify-between items-start mb-6">
-                          <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-[#E6FF00] group-hover:scale-110 transition-transform">
-                            <stat.icon size={24} />
+                      <div key={stat.id} className="relative">
+                        <motion.button 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          onClick={() => setExpandedBox(expandedBox === stat.id ? null : stat.id)}
+                          className={`w-full bg-black/20 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#E6FF00]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#E6FF00]/50' : ''}`}
+                        >
+                          <div className="flex justify-between items-start mb-6">
+                            <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
+                              <stat.icon size={24} />
+                            </div>
+                            <div className="text-4xl font-black italic tracking-tighter">{stat.value}</div>
                           </div>
-                          <div className="text-4xl font-black italic tracking-tighter">{stat.value}</div>
-                        </div>
-                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{stat.label}</div>
-                      </motion.div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{stat.label}</div>
+                        </motion.button>
+
+                        <AnimatePresence>
+                          {expandedBox === stat.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              className="absolute top-full left-0 right-0 mt-4 z-30 bg-[#202c33] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden"
+                            >
+                              <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                {stat.items.length > 0 ? stat.items.map((item, idx) => (
+                                  <div key={idx} className="p-3 bg-white/5 rounded-xl border border-white/5 text-[10px] font-bold uppercase tracking-widest text-white/70 truncate">
+                                    {item}
+                                  </div>
+                                )) : (
+                                  <div className="text-center py-4 text-[10px] font-bold uppercase tracking-widest text-white/20">
+                                    No items found
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     ))}
                   </div>
 

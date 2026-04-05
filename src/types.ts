@@ -81,6 +81,8 @@ export interface Project {
   documentsUrl?: string;
   referenceWebsite?: string;
   templateId: string;
+  domain?: string;
+  paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'starter' | 'business' | 'Basic' | 'Pro';
   paymentStatus?: 'pending' | 'paid';
   status: ProjectStatus;
@@ -110,10 +112,13 @@ export interface Message {
   attachments?: Attachment[];
   imageUrl?: string;
   attachmentUrl?: string;
+  fileData?: string; // Base64 string
   createdAt: string | Timestamp;
   seen: boolean;
+  seenTime?: string | Timestamp;
   isDeleted?: boolean;
   hiddenFor?: string[];
+  deletedForEveryone?: boolean;
 }
 
 export interface SystemSettings {

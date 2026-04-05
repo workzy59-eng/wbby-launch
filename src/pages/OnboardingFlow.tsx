@@ -72,7 +72,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [error, setError] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
-  const [paymentOption, setPaymentOption] = useState<'full' | 'advance'>('full');
+  const [paymentOption, setPaymentOption] = useState<'full' | 'advance' | 'understanding'>('full');
 
   const navigate = useNavigate();
 
@@ -305,6 +305,66 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     doc.text(splitDesc, 20, y);
     
     doc.save(`WebbyLaunch_Project_Summary.pdf`);
+  };
+
+  const [domainData, setDomainData] = useState({
+    businessName: '',
+    extension: '.com' as '.com' | '.in' | '.net' | 'Custom',
+    customDomain: ''
+  });
+  const [domainError, setDomainError] = useState<string | null>(null);
+  const [generatedDomain, setGeneratedDomain] = useState('');
+
+  const handleDomainBusinessNameChange = (val: string) => {
+    const sanitized = val.toLowerCase().replace(/[^a-z0-9]/g, '');
+    setDomainData(prev => ({ ...prev, businessName: sanitized }));
+    validateDomain(sanitized, domainData.extension, domainData.customDomain);
+  };
+
+  const handleCustomDomainChange = (val: string) => {
+    setDomainData(prev => ({ ...prev, customDomain: val }));
+    validateDomain(domainData.businessName, domainData.extension, val);
+  };
+
+  const validateDomain = (name: string, ext: string, custom: string) => {
+    if (ext !== 'Custom') {
+      if (name.length < 3) {
+        setDomainError('Business name must be at least 3 characters');
+        setGeneratedDomain('');
+        return;
+      }
+      if (name.length > 20) {
+        setDomainError('Business name must be at most 20 characters');
+        setGeneratedDomain('');
+        return;
+      }
+      setDomainError(null);
+      setGeneratedDomain(`${name}${ext}`);
+    } else {
+      if (!custom) {
+        setDomainError('Please enter a custom domain');
+        setGeneratedDomain('');
+        return;
+      }
+      // Basic domain regex
+      const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}$/i;
+      if (!domainRegex.test(custom)) {
+        setDomainError('Invalid domain format');
+        setGeneratedDomain('');
+        return;
+      }
+      setDomainError(null);
+      setGeneratedDomain(custom);
+    }
+  };
+
+  useEffect(() => {
+    validateDomain(domainData.businessName, domainData.extension, domainData.customDomain);
+  }, [domainData.extension]);
+
+  const handleDomainNext = () => {
+    setFormData(prev => ({ ...prev, websiteName: generatedDomain, domain: generatedDomain }));
+    setStep(4);
   };
 
   const renderStep = () => {
@@ -600,175 +660,76 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Step 3</h2>
-              <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Website Details</h3>
+              <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Choose Your Domain</h3>
             </div>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Website Name <span className="text-red-500">*</span></label>
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Business Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  className={getInputClass('websiteName')}
-                  value={formData.websiteName}
-                  onChange={(e) => handleInputChange('websiteName', e.target.value)}
-                  placeholder="E.G. MyBusiness.com"
+                  className={getInputClass('businessNameDomain', "w-full p-6 rounded-2xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter")}
+                  value={domainData.businessName}
+                  onChange={(e) => handleDomainBusinessNameChange(e.target.value)}
+                  placeholder="E.G. mybusiness"
                 />
+                <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest ml-4 italic">Lowercase letters and numbers only, no spaces (3-20 characters)</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Primary Color</label>
-                  <div className="flex gap-4">
-                    <input
-                      type="color"
-                      className="w-16 h-16 rounded-xl bg-transparent border-none cursor-pointer"
-                      value={formData.primaryColor}
-                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      className={getInputClass('primaryColor', "flex-1 p-4 rounded-xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] font-mono text-sm")}
-                      value={formData.primaryColor}
-                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Secondary Color</label>
-                  <div className="flex gap-4">
-                    <input
-                      type="color"
-                      className="w-16 h-16 rounded-xl bg-transparent border-none cursor-pointer"
-                      value={formData.secondaryColor}
-                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      className={getInputClass('secondaryColor', "flex-1 p-4 rounded-xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] font-mono text-sm")}
-                      value={formData.secondaryColor}
-                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Logo (Optional)</label>
-                <div className={getInputClass('logo', "flex items-center gap-6 p-6 rounded-2xl bg-white/5 border")}>
-                  <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                    {logoPreview ? (
-                      <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <ImageIcon className="text-white/20" size={32} />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/jpg"
-                      className="hidden"
-                      id="logo-upload"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        
-                        // Validation
-                        if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-                          setError('Only image files (JPG, PNG) are allowed');
-                          return;
-                        }
-                        if (file.size > 5 * 1024 * 1024) {
-                          setError('Logo file size must be less than 5MB');
-                          return;
-                        }
-
-                        setLogoFile(file);
-                        setLogoPreview(URL.createObjectURL(file));
-                        setError(null);
-                        setInvalidFields(prev => prev.filter(f => f !== 'logo'));
-                      }}
-                    />
-                    <label 
-                      htmlFor="logo-upload"
-                      className="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-all"
+              <div className="space-y-4">
+                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Select Extension</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {['.com', '.in', '.net', 'Custom'].map((ext) => (
+                    <button
+                      key={ext}
+                      onClick={() => setDomainData(prev => ({ ...prev, extension: ext as any }))}
+                      className={`py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all border ${
+                        domainData.extension === ext 
+                          ? 'bg-[#E6FF00] text-black border-[#E6FF00]' 
+                          : 'bg-white/5 text-white/40 border-white/10 hover:border-white/20'
+                      }`}
                     >
-                      {logoFile || formData.logoUrl ? 'Change Logo' : 'Upload Logo'}
-                    </label>
-                    <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">
-                      {logoFile || formData.logoUrl ? 'Logo Selected' : 'JPG, PNG (Max 5MB)'}
-                    </p>
-                  </div>
+                      {ext}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Additional Documents (Optional)</label>
-                <div className={getInputClass('documents', "flex items-center gap-6 p-6 rounded-2xl bg-white/5 border")}>
-                  <div className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                    {docFiles.length > 0 || formData.documentsUrl ? (
-                      <FileText className="text-[#E6FF00]" size={32} />
-                    ) : (
-                      <FileText className="text-white/20" size={32} />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/jpg,application/pdf"
-                      multiple
-                      className="hidden"
-                      id="doc-upload"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        if (files.length === 0) return;
-                        
-                        // Validation
-                        const invalidType = files.find(f => !['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(f.type));
-                        if (invalidType) {
-                          setError('Only JPG, PNG, or PDF files are allowed');
-                          return;
-                        }
-                        const tooBig = files.find(f => f.size > 5 * 1024 * 1024);
-                        if (tooBig) {
-                          setError('Each file must be less than 5MB');
-                          return;
-                        }
-
-                        setDocFiles(files);
-                        setError(null);
-                        setInvalidFields(prev => prev.filter(f => f !== 'documents'));
-                      }}
-                    />
-                    <label 
-                      htmlFor="doc-upload"
-                      className="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-all"
-                    >
-                      {docFiles.length > 0 || formData.documentsUrl ? 'Change Documents' : 'Upload Documents'}
-                    </label>
-                    <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">
-                      {docFiles.length > 0 ? `${docFiles.length} files selected: ${docFiles.map(f => f.name).join(', ')}` : formData.documentsUrl ? 'Documents Uploaded' : 'JPG, PNG, PDF (Max 5MB)'}
-                    </p>
-                  </div>
+              {domainData.extension === 'Custom' && (
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Enter Full Domain</label>
+                  <input
+                    type="text"
+                    className={getInputClass('customDomain', "w-full p-6 rounded-2xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter")}
+                    value={domainData.customDomain}
+                    onChange={(e) => handleCustomDomainChange(e.target.value)}
+                    placeholder="E.G. mysite.com"
+                  />
                 </div>
+              )}
+
+              <div className="p-6 rounded-2xl bg-[#E6FF00]/5 border border-[#E6FF00]/20">
+                <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-2 italic">Live Preview</p>
+                <p className="text-2xl font-black text-[#E6FF00] italic tracking-tighter">
+                  Your domain: {generatedDomain || '...'}
+                </p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Reference Website (Optional)</label>
-                <input
-                  type="url"
-                  className={getInputClass('referenceWebsite')}
-                  value={formData.referenceWebsite}
-                  onChange={(e) => handleInputChange('referenceWebsite', e.target.value)}
-                  placeholder="E.G. apple.com"
-                />
-              </div>
+              {domainError && (
+                <p className="text-xs font-bold text-red-500 uppercase tracking-widest ml-4 italic">{domainError}</p>
+              )}
             </div>
 
             <div className="flex gap-4">
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
-                onClick={handleNext} 
-                className="flex-1 bg-[#E6FF00] text-[#4A5D4E] py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all"
+                onClick={handleDomainNext}
+                disabled={!!domainError || !generatedDomain}
+                className={`flex-1 py-6 rounded-full font-black text-xl uppercase italic transition-all ${
+                  !domainError && generatedDomain
+                    ? 'bg-[#E6FF00] text-[#4A5D4E] hover:scale-[1.02] active:scale-[0.98]'
+                    : 'bg-white/5 text-white/20 cursor-not-allowed'
+                }`}
               >
                 Next
               </button>
@@ -863,28 +824,42 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   onClick={() => setPaymentOption('full')}
-                  className={`p-6 rounded-2xl border transition-all text-left ${
+                  className={`p-10 rounded-[2.5rem] border transition-all text-left relative overflow-hidden group ${
                     paymentOption === 'full' 
                       ? 'bg-[#E6FF00] border-[#E6FF00] text-[#4A5D4E]' 
                       : 'bg-white/5 border-white/10 text-white hover:border-white/30'
                   }`}
                 >
-                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Option 1</div>
-                  <div className="text-xl font-black uppercase italic tracking-tighter">Pay Full Now</div>
-                  <div className="text-sm font-bold mt-2">{formData.plan === 'starter' ? '₹899/-' : '₹1,499/-'}</div>
+                  <div className="absolute top-6 right-6">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${paymentOption === 'full' ? 'border-[#4A5D4E]' : 'border-white/20'}`}>
+                      {paymentOption === 'full' && <div className="w-3 h-3 rounded-full bg-[#4A5D4E]" />}
+                    </div>
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-60 italic">Option 1</div>
+                  <div className="text-3xl font-black uppercase italic tracking-tighter leading-none mb-4">Pay Full Amount + Monthly Subscription</div>
+                  <p className="text-xs font-bold opacity-60 uppercase tracking-widest leading-relaxed">
+                    Get your website live instantly with full ownership and priority support.
+                  </p>
                 </button>
 
                 <button
-                  onClick={() => setPaymentOption('advance')}
-                  className={`p-6 rounded-2xl border transition-all text-left ${
-                    paymentOption === 'advance' 
+                  onClick={() => setPaymentOption('understanding')}
+                  className={`p-10 rounded-[2.5rem] border transition-all text-left relative overflow-hidden group ${
+                    paymentOption === 'understanding' 
                       ? 'bg-[#E6FF00] border-[#E6FF00] text-[#4A5D4E]' 
                       : 'bg-white/5 border-white/10 text-white hover:border-white/30'
                   }`}
                 >
-                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Option 2</div>
-                  <div className="text-xl font-black uppercase italic tracking-tighter">Pay Advance</div>
-                  <div className="text-sm font-bold mt-2">Start with just ₹499/-</div>
+                  <div className="absolute top-6 right-6">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${paymentOption === 'understanding' ? 'border-[#4A5D4E]' : 'border-white/20'}`}>
+                      {paymentOption === 'understanding' && <div className="w-3 h-3 rounded-full bg-[#4A5D4E]" />}
+                    </div>
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-60 italic">Option 2</div>
+                  <div className="text-3xl font-black uppercase italic tracking-tighter leading-none mb-4">I Understand the Plan & Payment Terms</div>
+                  <p className="text-xs font-bold opacity-60 uppercase tracking-widest leading-relaxed">
+                    I agree to the project terms and will proceed with the agreed payment schedule.
+                  </p>
                 </button>
               </div>
 
