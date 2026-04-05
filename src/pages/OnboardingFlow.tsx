@@ -44,6 +44,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       plan: 'basic' as 'basic' | 'standard' | 'premium',
       referenceWebsite: '',
       templateId: '',
+      domainPreferences: ['', '', ''],
     };
 
     if (saved) {
@@ -361,7 +362,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   }, [domainData.extension]);
 
   const handleDomainNext = () => {
-    setFormData(prev => ({ ...prev, websiteName: generatedDomain, domain: generatedDomain }));
+    setFormData(prev => ({ 
+      ...prev, 
+      websiteName: generatedDomain, 
+      domain: generatedDomain,
+      domainPreferences: [
+        generatedDomain,
+        domainData.businessName + '.in',
+        domainData.businessName + '.net'
+      ]
+    }));
     setStep(4);
   };
 
@@ -706,12 +716,34 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               )}
 
-              <div className="p-6 rounded-2xl bg-[#E6FF00]/5 border border-[#E6FF00]/20">
-                <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-2 italic">Live Preview</p>
-                <p className="text-2xl font-black text-[#E6FF00] italic tracking-tighter">
-                  Your domain: {generatedDomain || '...'}
-                </p>
+              <div className="p-6 rounded-2xl bg-[#E6FF00]/5 border border-[#E6FF00]/20 space-y-4">
+                <div>
+                  <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-2 italic">1st Preference (Primary)</p>
+                  <p className="text-2xl font-black text-[#E6FF00] italic tracking-tighter">
+                    {generatedDomain || '...'}
+                  </p>
+                </div>
+                {domainData.businessName && (
+                  <>
+                    <div className="pt-4 border-t border-white/5">
+                      <p className="text-xs font-black text-white/20 uppercase tracking-widest mb-2 italic">2nd Preference</p>
+                      <p className="text-lg font-black text-white/40 italic tracking-tighter">
+                        {domainData.businessName}.in
+                      </p>
+                    </div>
+                    <div className="pt-4 border-t border-white/5">
+                      <p className="text-xs font-black text-white/20 uppercase tracking-widest mb-2 italic">3rd Preference</p>
+                      <p className="text-lg font-black text-white/40 italic tracking-tighter">
+                        {domainData.businessName}.net
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
+
+              <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center italic">
+                Note: Your first choice is your primary preference. We will try to secure it first.
+              </p>
 
               {domainError && (
                 <p className="text-xs font-bold text-red-500 uppercase tracking-widest ml-4 italic">{domainError}</p>

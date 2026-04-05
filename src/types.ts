@@ -82,6 +82,7 @@ export interface Project {
   referenceWebsite?: string;
   templateId: string;
   domain?: string;
+  domainPreferences?: string[];
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'starter' | 'business' | 'Basic' | 'Pro';
   paymentStatus?: 'pending' | 'paid';

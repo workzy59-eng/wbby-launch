@@ -55,6 +55,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [showResetModal, setShowResetModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showProjectDetailModal, setShowProjectDetailModal] = useState(false);
+  const [projectDetailTab, setProjectDetailTab] = useState<'overview' | 'inputs'>('overview');
   const [editingProjectDetails, setEditingProjectDetails] = useState<Project | null>(null);
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -304,7 +305,8 @@ Generated on: ${new Date().toLocaleString()}
       try {
         await updateProject(selectedProject.id, { 
           status: 'Rejected',
-          rejectionReason: rejectionReason
+          rejectionReason: rejectionReason,
+          isDeleted: true
         });
         setShowRejectModal(false);
         setRejectionReason('');
@@ -621,7 +623,7 @@ Generated on: ${new Date().toLocaleString()}
         <div className="flex justify-between items-center mb-12">
           <div>
             <h3 className="text-2xl font-bold text-white tracking-tight">Platform Engagement</h3>
-            <p className="text-xs text-white/40 uppercase tracking-widest mt-1">Daily Active Users</p>
+            <p className="text-xs text-white/40 uppercase tracking-widest mt-1">Users Visited Per Day</p>
           </div>
           <div className="text-[10px] font-bold text-[#E6FF00] border border-[#E6FF00]/20 px-4 py-2 rounded-full uppercase tracking-widest">Last 7 Days</div>
         </div>
@@ -840,20 +842,6 @@ Generated on: ${new Date().toLocaleString()}
             Message Center {unreadTotal > 0 && `(${unreadTotal})`}
           </h2>
           <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2 italic">Manage all incoming project communications efficiently.</p>
-        </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={() => downloadMessageReport('pdf')}
-            className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
-          >
-            PDF Report
-          </button>
-          <button 
-            onClick={() => downloadMessageReport('csv')}
-            className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
-          >
-            CSV Report
-          </button>
         </div>
       </div>
 
@@ -1320,7 +1308,7 @@ Generated on: ${new Date().toLocaleString()}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
             >
-              <div className="flex justify-between items-start mb-10">
+              <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{viewingProject.businessName}</h3>
                   <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">Project Details</div>
@@ -1330,97 +1318,178 @@ Generated on: ${new Date().toLocaleString()}
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-8">
-                  <section>
-                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Client Information</h4>
-                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Name</span>
-                        <span className="text-xs font-bold text-white uppercase">{viewingProject.userName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Email</span>
-                        <span className="text-xs font-bold text-white uppercase">{viewingProject.userEmail}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Phone</span>
-                        <span className="text-xs font-bold text-white uppercase">{viewingProject.userPhone || 'N/A'}</span>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Project Overview</h4>
-                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Type</span>
-                        <span className="text-xs font-bold text-white uppercase">{viewingProject.businessType}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span>
-                        <span className="text-xs font-bold text-[#E6FF00] uppercase">{viewingProject.plan || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Status</span>
-                        <span className="text-xs font-bold text-white uppercase">{viewingProject.status}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Progress</span>
-                        <span className="text-xs font-bold text-white uppercase">{viewingProject.progress}%</span>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Timeline</h4>
-                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Start Date</span>
-                        <span className="text-xs font-bold text-white uppercase">{viewingProject.startDate ? new Date(viewingProject.startDate as any).toLocaleDateString() : 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deadline</span>
-                        <span className="text-xs font-bold text-red-400 uppercase">{viewingProject.deadline ? new Date(viewingProject.deadline as any).toLocaleDateString() : 'N/A'}</span>
-                      </div>
-                    </div>
-                  </section>
-                </div>
-
-                <div className="space-y-8">
-                  <section>
-                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Description</h4>
-                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5">
-                      <p className="text-xs font-medium text-white/70 leading-relaxed">{viewingProject.description}</p>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Internal Notes</h4>
-                    <div className="bg-[#E6FF00]/5 p-6 rounded-3xl border border-[#E6FF00]/10">
-                      <p className="text-xs font-medium text-[#E6FF00]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Files & Assets</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      {viewingProject.logoUrl && (
-                        <a href={viewingProject.logoUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
-                          <FileText size={24} className="text-[#E6FF00]" />
-                          <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Logo</span>
-                        </a>
-                      )}
-                      {viewingProject.documentsUrl && (
-                        <a href={viewingProject.documentsUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
-                          <FileText size={24} className="text-[#00F2FF]" />
-                          <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Documents</span>
-                        </a>
-                      )}
-                    </div>
-                  </section>
-                </div>
+              <div className="flex gap-8 mb-10 border-b border-white/5">
+                <button 
+                  onClick={() => setProjectDetailTab('overview')}
+                  className={`text-xs font-black uppercase tracking-[0.3em] pb-4 transition-all relative ${
+                    projectDetailTab === 'overview' ? 'text-[#E6FF00]' : 'text-white/40 hover:text-white'
+                  }`}
+                >
+                  Overview
+                  {projectDetailTab === 'overview' && (
+                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-[#E6FF00] rounded-full" />
+                  )}
+                </button>
+                <button 
+                  onClick={() => setProjectDetailTab('inputs')}
+                  className={`text-xs font-black uppercase tracking-[0.3em] pb-4 transition-all relative ${
+                    projectDetailTab === 'inputs' ? 'text-[#E6FF00]' : 'text-white/40 hover:text-white'
+                  }`}
+                >
+                  User Inputs
+                  {projectDetailTab === 'inputs' && (
+                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-[#E6FF00] rounded-full" />
+                  )}
+                </button>
               </div>
+
+              {projectDetailTab === 'overview' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <div className="space-y-8">
+                    <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Client Information</h4>
+                      <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Name</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.userName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Email</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.userEmail}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Phone</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.userPhone || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Project Overview</h4>
+                      <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Type</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.businessType}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span>
+                          <span className="text-xs font-bold text-[#E6FF00] uppercase">{viewingProject.plan || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Status</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.status}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Progress</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.progress}%</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Timeline</h4>
+                      <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Start Date</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.startDate ? new Date(viewingProject.startDate as any).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deadline</span>
+                          <span className="text-xs font-bold text-red-400 uppercase">{viewingProject.deadline ? new Date(viewingProject.deadline as any).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+
+                  <div className="space-y-8">
+                    <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Description</h4>
+                      <div className="bg-black/20 p-6 rounded-3xl border border-white/5">
+                        <p className="text-xs font-medium text-white/70 leading-relaxed">{viewingProject.description}</p>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Internal Notes</h4>
+                      <div className="bg-[#E6FF00]/5 p-6 rounded-3xl border border-[#E6FF00]/10">
+                        <p className="text-xs font-medium text-[#E6FF00]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Files & Assets</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        {viewingProject.logoUrl && (
+                          <a href={viewingProject.logoUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
+                            <FileText size={24} className="text-[#E6FF00]" />
+                            <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Logo</span>
+                          </a>
+                        )}
+                        {viewingProject.documentsUrl && (
+                          <a href={viewingProject.documentsUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
+                            <FileText size={24} className="text-[#00F2FF]" />
+                            <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Documents</span>
+                          </a>
+                        )}
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <section className="space-y-4">
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">Personal Details</h4>
+                      <div className="bg-black/20 p-8 rounded-[2rem] border border-white/5 space-y-6">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">User Name</span>
+                          <span className="text-xl font-bold text-white uppercase tracking-tight">{viewingProject.userName}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">User Phone</span>
+                          <span className="text-xl font-bold text-white tracking-tight">{viewingProject.userPhone || 'Not Provided'}</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="space-y-4">
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">Business Details</h4>
+                      <div className="bg-black/20 p-8 rounded-[2rem] border border-white/5 space-y-6">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Business Name</span>
+                          <span className="text-xl font-bold text-white uppercase tracking-tight">{viewingProject.businessName}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Business Phone</span>
+                          <span className="text-xl font-bold text-white tracking-tight">{viewingProject.businessPhone || viewingProject.businessNumber || 'Not Provided'}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Business Address</span>
+                          <span className="text-sm font-bold text-white/70 leading-relaxed">{viewingProject.businessLocation || 'Not Provided'}</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+
+                  <section className="space-y-4">
+                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">Domain Preferences</h4>
+                    <div className="bg-black/20 p-8 rounded-[2rem] border border-white/5">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[0, 1, 2].map((idx) => (
+                          <div key={idx} className="p-6 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-2">
+                            <span className="text-[8px] font-black text-[#E6FF00] uppercase tracking-[0.2em]">
+                              {idx === 0 ? '1st Preference' : idx === 1 ? '2nd Preference' : '3rd Preference'}
+                            </span>
+                            <span className="text-lg font-black text-white italic tracking-tighter">
+                              {viewingProject.domainPreferences?.[idx] || (idx === 0 ? viewingProject.domain : 'N/A')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              )}
 
               <div className="mt-12 pt-10 border-t border-white/5 flex gap-4">
                 <button 
