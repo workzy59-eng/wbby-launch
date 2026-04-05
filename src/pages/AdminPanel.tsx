@@ -60,6 +60,17 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [reasonToShow, setReasonToShow] = useState('');
   const [projectSearch, setProjectSearch] = useState('');
+  const [unreadTotal, setUnreadTotal] = useState(0);
+  const [userUnreadCounts, setUserUnreadCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const total = Object.values(userUnreadCounts).reduce((acc, count) => acc + count, 0);
+    setUnreadTotal(total);
+  }, [userUnreadCounts]);
+
+  const updateUnreadCount = (userId: string, count: number) => {
+    setUserUnreadCounts(prev => ({ ...prev, [userId]: count }));
+  };
   const [projectStatusFilter, setProjectStatusFilter] = useState<ProjectStatus | 'all'>('all');
   const [isResetting, setIsResetting] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -825,7 +836,9 @@ Generated on: ${new Date().toLocaleString()}
       <div className="flex justify-between items-end">
         <div className="flex flex-col gap-2">
           <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Communications</span>
-          <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Message Center</h2>
+          <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">
+            Message Center {unreadTotal > 0 && `(${unreadTotal})`}
+          </h2>
           <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2 italic">Manage all incoming project communications efficiently.</p>
         </div>
         <div className="flex gap-4">
@@ -846,7 +859,12 @@ Generated on: ${new Date().toLocaleString()}
 
       <div className="space-y-4">
         {users.filter(u => u.uid !== user.uid).map((u) => (
-          <UserCard key={u.uid} u={u} onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} />
+          <UserCard 
+            key={u.uid} 
+            u={u} 
+            onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} 
+            onUnreadUpdate={(count) => updateUnreadCount(u.uid, count)}
+          />
         ))}
       </div>
     </div>
@@ -1012,7 +1030,7 @@ Generated on: ${new Date().toLocaleString()}
             { id: 'requests', label: 'Requests', icon: FileText },
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
-            { id: 'messages', label: 'Messages', icon: MessageCircle },
+            { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
             { id: 'system', label: 'System', icon: TrendingUp },
@@ -1622,18 +1640,26 @@ Generated on: ${new Date().toLocaleString()}
 interface UserCardProps {
   u: UserProfile;
   onOpenChat: () => void;
+  onUnreadUpdate: (count: number) => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat }) => {
+const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat, onUnreadUpdate }) => {
   const [msgCount, setMsgCount] = useState(0);
   const [lastMessage, setLastMessage] = useState<any>(null);
 
   useEffect(() => {
     const q = collection(db, 'direct_messages', u.uid, 'messages');
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMsgCount(snapshot.size);
+      const unread = snapshot.docs.filter(d => d.data().senderId !== 'admin' && !d.data().seen).length;
+      setMsgCount(unread);
+      onUnreadUpdate(unread);
+      
       if (!snapshot.empty) {
-        const sorted = snapshot.docs.sort((a, b) => b.data().createdAt?.toMillis() - a.data().createdAt?.toMillis());
+        const sorted = snapshot.docs.sort((a, b) => {
+          const timeA = a.data().createdAt?.toMillis() || 0;
+          const timeB = b.data().createdAt?.toMillis() || 0;
+          return timeB - timeA;
+        });
         setLastMessage(sorted[0].data());
       }
     });
@@ -1685,7 +1711,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat }) => {
       <div className="flex items-center gap-6">
         {msgCount > 0 && (
           <div className="flex items-center gap-3">
-            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">1 NEW MESSAGE</span>
+            <span className="text-[8px] font-black text-[#E6FF00] uppercase tracking-[0.2em]">NEW MESSAGE</span>
             <div className="w-6 h-6 rounded-full bg-[#E6FF00] flex items-center justify-center text-black text-[10px] font-black shadow-[0_0_15px_rgba(230,255,0,0.3)]">
               {msgCount}
             </div>

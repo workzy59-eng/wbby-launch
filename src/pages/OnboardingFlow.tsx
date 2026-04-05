@@ -751,8 +751,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
                 { id: 'basic', name: 'Basic', price: '₹1,499/-', features: ['5 Pages', 'Basic SEO', 'Email Support'] },
-                { id: 'standard', name: 'Standard', price: '₹3,499/-', features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] },
-                { id: 'premium', name: 'Premium', price: '₹9,999/-', features: ['Everything in Standard', 'E-commerce', 'AI features'] }
+                { id: 'standard', name: 'Standard', price: '₹1,499/-', features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] },
+                { id: 'premium', name: 'Premium', price: '₹1,499/-', features: ['Everything in Standard', 'E-commerce', 'AI features'] }
               ].map((plan) => (
                 <button
                   key={plan.id}
@@ -865,7 +865,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       </div>
                     </div>
                     <div className="text-2xl font-black text-white">
-                      {formData.plan === 'basic' ? '₹1,499/-' : formData.plan === 'standard' ? '₹3,499/-' : '₹9,999/-'}
+                      ₹1,499/-
                     </div>
                   </div>
                 ) : (
@@ -875,7 +875,26 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   </div>
                 )}
               </div>
-              
+
+              {/* Payment Terms & Conditions */}
+              <div className="p-8 bg-black/20 rounded-3xl border border-white/5 space-y-6">
+                <h3 className="text-xl font-black text-[#E6FF00] uppercase italic flex items-center gap-3">
+                  ⚠️ Payment Terms & Conditions
+                </h3>
+                <div className="space-y-4 text-sm font-medium text-white/60 leading-relaxed">
+                  <p>• The advance payment is non-refundable.</p>
+                  <p>• Full payment, once made, is generally non-refundable.</p>
+                  <p className="text-white/80 font-bold mt-4">• In case of project rejection by admin:</p>
+                  <ul className="list-disc list-inside ml-4 space-y-2">
+                    <li>A refund may be initiated.</li>
+                    <li>Refund processing time is 5–7 working days.</li>
+                    <li>The amount will be credited back to the original payment method.</li>
+                  </ul>
+                  <p className="mt-4">• By proceeding with the payment, you agree to our terms and conditions.</p>
+                  <p>• For any queries, please contact support before making payment.</p>
+                </div>
+              </div>
+
               {error && (
                 <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-black uppercase tracking-widest">
                   {error}
@@ -892,20 +911,25 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   Back
                 </button>
                 {user ? (
-                  <button 
-                    onClick={handleSubmit} 
-                    disabled={isSubmitting}
-                    className="flex-1 bg-[#E6FF00] text-black py-6 rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)] disabled:opacity-50 flex items-center justify-center gap-3"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={24} />
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      'Proceed to Payment'
-                    )}
-                  </button>
+                  <div className="flex-1 flex flex-col gap-2">
+                    <button 
+                      onClick={handleSubmit} 
+                      disabled={isSubmitting}
+                      className="w-full py-6 bg-[#E6FF00] text-black rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)] disabled:opacity-50 flex items-center justify-center gap-3"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="animate-spin" size={24} />
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        'Proceed to Payment'
+                      )}
+                    </button>
+                    <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest text-center">
+                      By continuing, you agree that advance is non-refundable and refunds (if applicable) may take 5–7 working days.
+                    </p>
+                  </div>
                 ) : (
                   <button 
                     onClick={() => navigate('/auth', { state: { from: '/onboarding' } })}

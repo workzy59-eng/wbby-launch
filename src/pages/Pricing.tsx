@@ -24,7 +24,7 @@ export default function Pricing() {
     },
     {
       name: 'Standard',
-      price: '₹3,499',
+      price: '₹1,499',
       description: 'Everything in Basic + SEO optimization, blog/content updates, analytics reports, faster support.',
       features: [
         'Everything in Basic',
@@ -40,7 +40,7 @@ export default function Pricing() {
     },
     {
       name: 'Premium',
-      price: '₹9,999',
+      price: '₹1,499',
       description: 'Everything in Standard + E-commerce support, AI features integration, priority support, monthly performance review.',
       features: [
         'Everything in Standard',
@@ -90,7 +90,7 @@ export default function Pricing() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
@@ -111,7 +111,7 @@ export default function Pricing() {
                 <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4">{plan.name}</h3>
                 <div className="flex items-baseline gap-2">
                   <span className="text-6xl font-black tracking-tighter">{plan.price}</span>
-                  <span className="text-white/40 font-bold uppercase tracking-widest text-xs">/ project</span>
+                  <span className="text-white/40 font-bold uppercase tracking-widest text-xs">/ month</span>
                 </div>
                 <p className="mt-6 text-white/50 text-sm font-medium italic leading-relaxed">
                   {plan.description}
