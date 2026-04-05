@@ -14,9 +14,9 @@ import {
   Sparkles,
   Loader2,
   FileText,
-  Download,
   Maximize2,
-  File
+  File,
+  ExternalLink
 } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Message, Attachment } from '../types';
@@ -467,7 +467,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                                 onClick={(e) => e.stopPropagation()}
                                 className={`p-1.5 rounded-lg transition-all ${isMe ? 'hover:bg-black/20' : 'hover:bg-white/10'}`}
                               >
-                                <Download size={14} />
+                                <ExternalLink size={14} />
                               </a>
                             </div>
                           );

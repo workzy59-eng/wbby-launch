@@ -61,7 +61,7 @@ function MobileRestriction({ children }: { children: React.ReactNode }) {
             Sorry, the dashboard is optimized for desktop. Please use a computer or download our official app.
           </p>
           <button className="w-full bg-[#E6FF00] text-black py-5 rounded-2xl font-black uppercase italic text-lg flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl">
-            <Download size={24} /> Download App
+            Get Started
           </button>
         </motion.div>
       </div>

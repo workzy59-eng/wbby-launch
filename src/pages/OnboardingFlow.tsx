@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
-import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard, Download } from 'lucide-react';
+import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
@@ -812,13 +812,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     Your project details have been captured. Choose your payment method to finalize your request.
                   </p>
                 </div>
-                <button 
-                  onClick={handleDownloadSummary}
-                  className="p-4 bg-white/5 rounded-full text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all"
-                  title="Download Summary"
-                >
-                  <Download size={24} />
-                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

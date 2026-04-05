@@ -31,11 +31,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
+  const [totalUsersCount, setTotalUsersCount] = useState(0);
 
   useEffect(() => {
     const fetchAdmin = async () => {
       const { getProfiles, getDirectMessages } = await import('../services/database');
       const profiles = await getProfiles();
+      setTotalUsersCount(profiles.length);
       const admin = profiles.find(p => p.role === 'admin');
       if (admin) {
         setAdminProfile(admin);
@@ -258,10 +260,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   {/* Stats Grid - 4 Boxes */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                      { id: 'projects', label: 'Active Projects', value: projects.length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.map(p => p.businessName) },
-                      { id: 'messages', label: 'Unread Messages', value: messages.filter(m => !m.seen && m.senderId !== user.uid).length, icon: MessageCircle, color: 'text-green-400', bg: 'bg-green-400/10', items: messages.filter(m => !m.seen && m.senderId !== user.uid).map(m => m.text) },
-                      { id: 'tasks', label: 'Pending Tasks', value: 2, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: ['Submit logo', 'Review initial draft'] },
-                      { id: 'completed', label: 'Completed', value: projects.filter(p => p.status === 'completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'completed').map(p => p.businessName) },
+                      { id: 'users', label: 'Total Users', value: totalUsersCount, icon: User, color: 'text-pink-400', bg: 'bg-pink-400/10', items: ['User count: ' + totalUsersCount] },
+                      { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
+                      { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
+                      { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
                     ].map((stat, i) => (
                       <div key={stat.id} className="relative">
                         <motion.button 
@@ -426,7 +428,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Logo</div>
-                                        <Download size={14} className="text-white/20 group-hover:text-[#E6FF00] transition-colors" />
                                       </div>
                                     </a>
                                   )}
@@ -442,7 +443,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Docs</div>
-                                        <Download size={14} className="text-white/20 group-hover:text-[#E6FF00] transition-colors" />
                                       </div>
                                     </a>
                                   )}

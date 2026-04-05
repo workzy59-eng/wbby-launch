@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs } from '../firebase';
 import { UserProfile, Project } from '../types';
 import { Link } from 'react-router-dom';
-import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout, Download } from 'lucide-react';
+import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
 import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings } from '../services/database';
@@ -458,24 +458,10 @@ Generated on: ${new Date().toLocaleString()}
                 <div className="relative group/download">
                   <button 
                     className="p-4 bg-white/5 rounded-full text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all shadow-lg"
-                    title="Download Description"
+                    title="View Description"
                   >
-                    <Download size={20} />
+                    <FileText size={20} />
                   </button>
-                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover/download:flex flex-col bg-[#5E7162] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 min-w-[140px]">
-                    <button 
-                      onClick={() => handleDownloadDescription(p, 'pdf')}
-                      className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 text-left"
-                    >
-                      PDF Format
-                    </button>
-                    <button 
-                      onClick={() => handleDownloadDescription(p, 'txt')}
-                      className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 text-left border-t border-white/5"
-                    >
-                      Text Format
-                    </button>
-                  </div>
                 </div>
                 <button 
                   onClick={() => { setSelectedProject(p); setShowChat(true); }}
@@ -602,16 +588,16 @@ Generated on: ${new Date().toLocaleString()}
         </div>
         <div className="flex gap-4">
           <button 
-            onClick={() => downloadMessageReport('csv')}
+            onClick={() => {}}
             className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
           >
-            <Download size={14} /> CSV Report
+            CSV Report
           </button>
           <button 
-            onClick={() => downloadMessageReport('pdf')}
+            onClick={() => {}}
             className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
           >
-            <Download size={14} /> PDF Report
+            PDF Report
           </button>
         </div>
       </div>

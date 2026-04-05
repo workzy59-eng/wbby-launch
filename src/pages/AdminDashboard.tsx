@@ -22,7 +22,6 @@ import {
   ArrowUpRight,
   RefreshCcw,
   MapPin,
-  Download,
   FileText
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
@@ -370,13 +369,6 @@ Generated on: ${new Date().toLocaleString()}
           <div className="space-y-8">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Registered Clients</h2>
-              <button 
-                onClick={() => exportToCSV(profiles.filter(p => p.role === 'client'), 'clients')}
-                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:bg-white/10 transition-all flex items-center gap-2"
-              >
-                <Download size={14} />
-                Export Clients
-              </button>
             </div>
             <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
               <h3 className="text-2xl font-black text-white uppercase italic mb-8">Registered Clients</h3>
@@ -467,13 +459,6 @@ Generated on: ${new Date().toLocaleString()}
           <div className="space-y-8">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#E6FF00]">Developers Team</h2>
-              <button 
-                onClick={() => exportToCSV(profiles.filter(p => p.role === 'developer'), 'developers')}
-                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:bg-white/10 transition-all flex items-center gap-2"
-              >
-                <Download size={14} />
-                Export Developers
-              </button>
             </div>
             <div className="flex justify-between items-center bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="relative flex-1 max-w-md">
@@ -552,13 +537,6 @@ Generated on: ${new Date().toLocaleString()}
           <div className="space-y-8">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">All Projects</h2>
-              <button 
-                onClick={() => exportToCSV(projects, 'projects')}
-                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:bg-white/10 transition-all flex items-center gap-2"
-              >
-                <Download size={14} />
-                Export Projects
-              </button>
             </div>
             <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
               <h3 className="text-2xl font-black text-white uppercase italic mb-8">All Projects</h3>
@@ -615,14 +593,6 @@ Generated on: ${new Date().toLocaleString()}
                             >
                               <ArrowUpRight size={14} />
                             </a>
-                            <a 
-                              href={project.logoUrl} 
-                              download
-                              className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#E6FF00] transition-all"
-                              title="Download Logo"
-                            >
-                              <Download size={14} />
-                            </a>
                           </div>
                         )}
                       </div>
@@ -649,14 +619,6 @@ Generated on: ${new Date().toLocaleString()}
                                 >
                                   <ArrowUpRight size={14} />
                                 </a>
-                                <a 
-                                  href={docUrl} 
-                                  download
-                                  className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#E6FF00] transition-all"
-                                  title="Download Document"
-                                >
-                                  <Download size={14} />
-                                </a>
                               </div>
                             </div>
                           ))}
@@ -670,24 +632,10 @@ Generated on: ${new Date().toLocaleString()}
                         <div className="relative group/download">
                           <button 
                             className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all"
-                            title="Download Description"
+                            title="View Description"
                           >
-                            <Download size={16} />
+                            <FileText size={16} />
                           </button>
-                          <div className="absolute bottom-full right-0 mb-2 hidden group-hover/download:flex flex-col bg-slate-800 border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 min-w-[120px]">
-                            <button 
-                              onClick={() => handleDownloadDescription(project, 'pdf')}
-                              className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 text-left"
-                            >
-                              PDF Format
-                            </button>
-                            <button 
-                              onClick={() => handleDownloadDescription(project, 'txt')}
-                              className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 text-left border-t border-white/5"
-                            >
-                              Text Format
-                            </button>
-                          </div>
                         </div>
                         <button 
                           onClick={() => setEditingProject(project)}

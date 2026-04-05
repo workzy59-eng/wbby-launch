@@ -7,37 +7,58 @@ import { APP_NAME } from '../constants';
 export default function Pricing() {
   const plans = [
     {
-      name: 'Starter Launch',
-      price: '₹899/-',
-      description: 'Perfect for small businesses starting their digital journey.',
+      name: 'Basic',
+      price: '₹1,499',
+      description: 'Hosting & maintenance, minor text/image updates, backups, email support.',
       features: [
-        'Single Page Website',
-        'Mobile Responsive Design',
-        'Basic SEO Optimization',
-        '1 Month Free Support',
-        'Standard Hosting',
-        'SSL Certificate'
+        '5 Pages Website',
+        'Basic SEO',
+        'Mobile Responsive',
+        'Free Hosting',
+        'Minor text/image updates',
+        'Backups',
+        'Email Support'
       ],
-      color: 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+      color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      stripeLink: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07'
     },
     {
-      name: 'Business Pro',
-      price: '₹1,499/-',
-      description: 'Advanced features for growing businesses and professional brands.',
+      name: 'Standard',
+      price: '₹3,499',
+      description: 'Everything in Basic + SEO optimization, blog/content updates, analytics reports, faster support.',
       features: [
-        'Multi-Page Website (Up to 5)',
-        'Premium UI/UX Design',
-        'Advanced SEO Strategy',
-        '6 Months Priority Support',
-        'High-Speed Hosting',
-        'SSL Certificate',
-        'Custom Email Integration',
-        'Social Media Integration'
+        'Everything in Basic',
+        'SEO optimization',
+        'Blog/content updates',
+        'Analytics reports',
+        'Faster support',
+        'Custom Design'
       ],
       color: 'bg-[#E6FF00]/10 text-[#E6FF00] border-[#E6FF00]/20',
-      popular: true
+      popular: true,
+      stripeLink: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08'
+    },
+    {
+      name: 'Premium',
+      price: '₹9,999',
+      description: 'Everything in Standard + E-commerce support, AI features integration, priority support, monthly performance review.',
+      features: [
+        'Everything in Standard',
+        'Unlimited Pages',
+        'Advanced SEO',
+        'E-commerce support',
+        'AI features integration',
+        'Priority support',
+        'Monthly performance review'
+      ],
+      color: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+      stripeLink: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09'
     }
   ];
+
+  const handleSubscribe = (link: string) => {
+    window.location.href = link;
+  };
 
   return (
     <div className="min-h-screen bg-[#064E3B] font-sans text-white selection:bg-[#E6FF00] selection:text-[#064E3B] py-20 px-6">
@@ -65,7 +86,7 @@ export default function Pricing() {
             transition={{ delay: 0.2 }}
             className="text-xl text-white/40 max-w-2xl mx-auto font-medium italic"
           >
-            Choose the plan that fits your business goals. No hidden fees, just pure value.
+            Choose the plan that fits your business goals. Secure payments powered by Stripe. Subscription renews monthly. Cancel anytime.
           </motion.p>
         </div>
 
@@ -110,16 +131,16 @@ export default function Pricing() {
                 ))}
               </div>
 
-              <Link 
-                to="/onboarding"
+              <button 
+                onClick={() => handleSubscribe(plan.stripeLink)}
                 className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
                   plan.popular 
                     ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] hover:scale-[1.05]' 
                     : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
                 }`}
               >
-                Get Started <ArrowRight size={24} />
-              </Link>
+                Subscribe Now <ArrowRight size={24} />
+              </button>
             </motion.div>
           ))}
         </div>
