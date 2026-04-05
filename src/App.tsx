@@ -149,7 +149,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
 2. **Focus on MVP:** Start with the essential pages (Home, About, Services, Contact).
 3. **Subscription Models:** Instead of a huge upfront cost, look for affordable monthly plans.
 
-**WebbyLaunch** offers plans starting from just ₹899/month, making it the perfect choice for everyone in India.
+**WebbyLaunch** offers plans starting from just ₹1,499/-, making it the perfect choice for everyone in India.
               `,
               author: "WebbyLaunch Team",
               date: serverTimestamp(),

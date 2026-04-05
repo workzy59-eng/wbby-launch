@@ -308,69 +308,46 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const [domainData, setDomainData] = useState({
     businessName: '',
-    extension: '.com' as '.com' | '.in' | '.net' | 'Custom',
+    preferences: ['', '', ''],
     customDomain: ''
   });
   const [domainError, setDomainError] = useState<string | null>(null);
-  const [generatedDomain, setGeneratedDomain] = useState('');
+
+  const extensions = ['.com', '.in', '.org'];
 
   const handleDomainBusinessNameChange = (val: string) => {
     const sanitized = val.toLowerCase().replace(/[^a-z0-9]/g, '');
     setDomainData(prev => ({ ...prev, businessName: sanitized }));
-    validateDomain(sanitized, domainData.extension, domainData.customDomain);
-  };
-
-  const handleCustomDomainChange = (val: string) => {
-    setDomainData(prev => ({ ...prev, customDomain: val }));
-    validateDomain(domainData.businessName, domainData.extension, val);
-  };
-
-  const validateDomain = (name: string, ext: string, custom: string) => {
-    if (ext !== 'Custom') {
-      if (name.length < 3) {
-        setDomainError('Business name must be at least 3 characters');
-        setGeneratedDomain('');
-        return;
-      }
-      if (name.length > 20) {
-        setDomainError('Business name must be at most 20 characters');
-        setGeneratedDomain('');
-        return;
-      }
-      setDomainError(null);
-      setGeneratedDomain(`${name}${ext}`);
+    if (sanitized.length < 3) {
+      setDomainError('Business name must be at least 3 characters');
+    } else if (sanitized.length > 20) {
+      setDomainError('Business name must be at most 20 characters');
     } else {
-      if (!custom) {
-        setDomainError('Please enter a custom domain');
-        setGeneratedDomain('');
-        return;
-      }
-      // Basic domain regex
-      const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}$/i;
-      if (!domainRegex.test(custom)) {
-        setDomainError('Invalid domain format');
-        setGeneratedDomain('');
-        return;
-      }
       setDomainError(null);
-      setGeneratedDomain(custom);
     }
   };
 
-  useEffect(() => {
-    validateDomain(domainData.businessName, domainData.extension, domainData.customDomain);
-  }, [domainData.extension]);
+  const handlePreferenceChange = (index: number, ext: string) => {
+    const newPrefs = [...domainData.preferences];
+    newPrefs[index] = ext;
+    
+    // Clear subsequent preferences if they match the new selection
+    for (let i = index + 1; i < 3; i++) {
+      if (newPrefs[i] === ext) {
+        newPrefs[i] = '';
+      }
+    }
+    
+    setDomainData(prev => ({ ...prev, preferences: newPrefs }));
+  };
 
   const handleDomainNext = () => {
+    const domainPrefs = domainData.preferences.map(ext => `${domainData.businessName}${ext}`);
     setFormData(prev => ({ 
       ...prev, 
-      websiteName: generatedDomain, 
-      domain: generatedDomain,
-      domainPreferences: [
-        generatedDomain,
-        domainData.businessName + '.in',
-        domainData.businessName + '.net'
-      ]
+      websiteName: domainPrefs[0], 
+      domain: domainPrefs[0],
+      domainPreferences: domainPrefs
     }));
     setStep(4);
   };
@@ -668,10 +645,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Step 3</h2>
-              <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Choose Your Domain</h3>
+              <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Domain Preferences</h3>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div className="space-y-2">
                 <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Business Name <span className="text-red-500">*</span></label>
                 <input
@@ -684,62 +661,41 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest ml-4 italic">Lowercase letters and numbers only, no spaces (3-20 characters)</p>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Select Extension</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {['.com', '.in', '.net', 'Custom'].map((ext) => (
-                    <button
-                      key={ext}
-                      onClick={() => setDomainData(prev => ({ ...prev, extension: ext as any }))}
-                      className={`py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all border ${
-                        domainData.extension === ext 
-                          ? 'bg-[#E6FF00] text-black border-[#E6FF00]' 
-                          : 'bg-white/5 text-white/40 border-white/10 hover:border-white/20'
-                      }`}
-                    >
-                      {ext}
-                    </button>
+              {domainData.businessName.length >= 3 && (
+                <div className="space-y-10">
+                  {[0, 1, 2].map((prefIdx) => (
+                    <div key={prefIdx} className="space-y-4">
+                      <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">
+                        {prefIdx === 0 ? '1st Preference' : prefIdx === 1 ? '2nd Preference' : '3rd Preference'}
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {extensions.map((ext) => {
+                          const isSelectedElsewhere = domainData.preferences.some((p, i) => i !== prefIdx && p === ext);
+                          const isCurrentSelection = domainData.preferences[prefIdx] === ext;
+                          
+                          return (
+                            <button
+                              key={ext}
+                              disabled={isSelectedElsewhere}
+                              onClick={() => handlePreferenceChange(prefIdx, ext)}
+                              className={`py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all border flex flex-col items-center gap-1 ${
+                                isCurrentSelection 
+                                  ? 'bg-[#E6FF00] text-black border-[#E6FF00]' 
+                                  : isSelectedElsewhere
+                                    ? 'bg-black/20 text-white/10 border-white/5 cursor-not-allowed'
+                                    : 'bg-white/5 text-white/40 border-white/10 hover:border-white/20'
+                              }`}
+                            >
+                              <span>{domainData.businessName}{ext}</span>
+                              {isCurrentSelection && <Check size={12} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-
-              {domainData.extension === 'Custom' && (
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Enter Full Domain</label>
-                  <input
-                    type="text"
-                    className={getInputClass('customDomain', "w-full p-6 rounded-2xl bg-white/5 border text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter")}
-                    value={domainData.customDomain}
-                    onChange={(e) => handleCustomDomainChange(e.target.value)}
-                    placeholder="E.G. mysite.com"
-                  />
-                </div>
               )}
-
-              <div className="p-6 rounded-2xl bg-[#E6FF00]/5 border border-[#E6FF00]/20 space-y-4">
-                <div>
-                  <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-2 italic">1st Preference (Primary)</p>
-                  <p className="text-2xl font-black text-[#E6FF00] italic tracking-tighter">
-                    {generatedDomain || '...'}
-                  </p>
-                </div>
-                {domainData.businessName && (
-                  <>
-                    <div className="pt-4 border-t border-white/5">
-                      <p className="text-xs font-black text-white/20 uppercase tracking-widest mb-2 italic">2nd Preference</p>
-                      <p className="text-lg font-black text-white/40 italic tracking-tighter">
-                        {domainData.businessName}.in
-                      </p>
-                    </div>
-                    <div className="pt-4 border-t border-white/5">
-                      <p className="text-xs font-black text-white/20 uppercase tracking-widest mb-2 italic">3rd Preference</p>
-                      <p className="text-lg font-black text-white/40 italic tracking-tighter">
-                        {domainData.businessName}.net
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
 
               <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center italic">
                 Note: Your first choice is your primary preference. We will try to secure it first.
@@ -754,9 +710,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
               <button 
                 onClick={handleDomainNext}
-                disabled={!!domainError || !generatedDomain}
+                disabled={!!domainError || domainData.preferences.some(p => !p)}
                 className={`flex-1 py-6 rounded-full font-black text-xl uppercase italic transition-all ${
-                  !domainError && generatedDomain
+                  !domainError && !domainData.preferences.some(p => !p)
                     ? 'bg-[#E6FF00] text-[#4A5D4E] hover:scale-[1.02] active:scale-[0.98]'
                     : 'bg-white/5 text-white/20 cursor-not-allowed'
                 }`}
@@ -860,7 +816,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     </div>
                   </div>
                   <div className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-60 italic">Option 1</div>
-                  <div className="text-3xl font-black uppercase italic tracking-tighter leading-none mb-4">Pay Full Amount + Monthly Subscription</div>
+                  <div className="text-3xl font-black uppercase italic tracking-tighter leading-none mb-4">Pay Full Amount</div>
                   <p className="text-xs font-bold opacity-60 uppercase tracking-widest leading-relaxed">
                     Get your website live instantly with full ownership and priority support.
                   </p>

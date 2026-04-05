@@ -365,8 +365,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
                 <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹899</span>
-                  <span className="text-white/40 font-bold uppercase tracking-widest text-xs mb-2">/ month</span>
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹1,499/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
@@ -400,8 +399,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
                 <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹1,499</span>
-                  <span className="text-white/40 font-bold uppercase tracking-widest text-xs mb-2">/ month</span>
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹1,499/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
