@@ -57,6 +57,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [showProjectDetailModal, setShowProjectDetailModal] = useState(false);
   const [editingProjectDetails, setEditingProjectDetails] = useState<Project | null>(null);
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [reasonToShow, setReasonToShow] = useState('');
   const [projectSearch, setProjectSearch] = useState('');
   const [projectStatusFilter, setProjectStatusFilter] = useState<ProjectStatus | 'all'>('all');
   const [isResetting, setIsResetting] = useState(false);
@@ -413,7 +415,7 @@ Generated on: ${new Date().toLocaleString()}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {projects.filter(p => p.status === 'Waiting for Review' && !p.isDeleted).map((p) => (
+        {projects.filter(p => (p.status === 'Waiting for Review' || p.status === 'Rejected') && !p.isDeleted).map((p) => (
           <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#E6FF00]/30 transition-all">
             <div className="flex justify-between items-start mb-8">
               <div>
@@ -445,15 +447,37 @@ Generated on: ${new Date().toLocaleString()}
                     <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
                       Plan: {p.plan || 'N/A'}
                     </div>
+                    {p.status === 'Rejected' && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 border border-red-500/30">
+                          <X size={12} strokeWidth={3} />
+                        </div>
+                        <button 
+                          onClick={() => { setReasonToShow(p.rejectionReason || 'No reason provided.'); setShowReasonModal(true); }}
+                          className="text-[8px] font-black text-red-400 uppercase tracking-widest hover:underline"
+                        >
+                          View Reason
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-              <button 
-                onClick={() => { setSelectedProject(p); setShowChat(true); }}
-                className="p-4 bg-white/5 rounded-full text-white hover:bg-[#E6FF00] hover:text-black transition-all"
-              >
-                <MessageCircle size={20} />
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
+                  className="p-4 bg-white/5 rounded-full text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all"
+                  title="View Details"
+                >
+                  <ArrowRight size={20} />
+                </button>
+                <button 
+                  onClick={() => { setSelectedProject(p); setShowChat(true); }}
+                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#E6FF00] hover:text-black transition-all"
+                >
+                  <MessageCircle size={20} />
+                </button>
+              </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed mb-10 flex-1">{p.description}</p>
             <div className="flex gap-3">
@@ -519,14 +543,13 @@ Generated on: ${new Date().toLocaleString()}
                 </div>
               </div>
               <div className="flex gap-2">
-                <div className="relative group/download">
-                  <button 
-                    className="p-4 bg-white/5 rounded-full text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all shadow-lg"
-                    title="View Description"
-                  >
-                    <FileText size={20} />
-                  </button>
-                </div>
+                <button 
+                  onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
+                  className="p-4 bg-white/5 rounded-full text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all shadow-lg"
+                  title="View Details"
+                >
+                  <ArrowRight size={20} />
+                </button>
                 <button 
                   onClick={() => { setSelectedProject(p); setShowChat(true); }}
                   className="p-4 bg-white/5 rounded-full text-white hover:bg-[#E6FF00] hover:text-black transition-all shadow-lg"
@@ -802,25 +825,26 @@ Generated on: ${new Date().toLocaleString()}
       <div className="flex justify-between items-end">
         <div className="flex flex-col gap-2">
           <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Communications</span>
-          <h2 className="text-6xl font-bold tracking-tighter text-white">MESSAGE CENTER</h2>
+          <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Message Center</h2>
+          <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2 italic">Manage all incoming project communications efficiently.</p>
         </div>
         <div className="flex gap-4">
           <button 
-            onClick={() => {}}
-            className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
-          >
-            CSV Report
-          </button>
-          <button 
-            onClick={() => {}}
-            className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
+            onClick={() => downloadMessageReport('pdf')}
+            className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
           >
             PDF Report
+          </button>
+          <button 
+            onClick={() => downloadMessageReport('csv')}
+            className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
+          >
+            CSV Report
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="space-y-4">
         {users.filter(u => u.uid !== user.uid).map((u) => (
           <UserCard key={u.uid} u={u} onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} />
         ))}
@@ -1554,6 +1578,43 @@ Generated on: ${new Date().toLocaleString()}
           </div>
         )}
       </AnimatePresence>
+
+      {/* Rejection Reason Modal */}
+      <AnimatePresence>
+        {showReasonModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-xl" 
+              onClick={() => setShowReasonModal(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-md w-full shadow-2xl border border-red-500/20"
+            >
+              <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                <X size={40} className="text-red-500" strokeWidth={3} />
+              </div>
+              <h3 className="text-4xl font-bold tracking-tighter text-white text-center mb-4 uppercase italic">Rejection Reason</h3>
+              <div className="bg-black/20 p-8 rounded-3xl border border-white/5 mb-10">
+                <p className="text-white/70 text-sm leading-relaxed italic text-center">
+                  "{reasonToShow}"
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowReasonModal(false)}
+                className="w-full bg-white/5 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
+              >
+                Close
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1565,11 +1626,16 @@ interface UserCardProps {
 
 const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat }) => {
   const [msgCount, setMsgCount] = useState(0);
+  const [lastMessage, setLastMessage] = useState<any>(null);
 
   useEffect(() => {
     const q = collection(db, 'direct_messages', u.uid, 'messages');
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setMsgCount(snapshot.size);
+      if (!snapshot.empty) {
+        const sorted = snapshot.docs.sort((a, b) => b.data().createdAt?.toMillis() - a.data().createdAt?.toMillis());
+        setLastMessage(sorted[0].data());
+      }
     });
     return () => unsubscribe();
   }, [u.uid]);
@@ -1585,24 +1651,50 @@ const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat }) => {
     }
   }
 
+  const formatTime = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
-    <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 group hover:border-[#E6FF00]/30 transition-all flex flex-col">
-      <div className="flex items-center gap-6 mb-8">
-        <div className="w-16 h-16 rounded-full bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00] text-2xl font-black italic border border-[#E6FF00]/20">
+    <div 
+      onClick={onOpenChat}
+      className="bg-[#5E7162]/30 backdrop-blur-md p-6 rounded-3xl border border-white/5 group hover:border-[#E6FF00]/30 transition-all flex items-center justify-between cursor-pointer"
+    >
+      <div className="flex items-center gap-6">
+        <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white/40 text-xl font-bold border border-white/5 group-hover:border-[#E6FF00]/30 group-hover:text-[#E6FF00] transition-all">
           {u.displayName?.[0] || 'U'}
         </div>
-        <div>
-          <h3 className="text-xl font-bold text-white tracking-tight">{displayName}</h3>
-          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{u.email}</p>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-bold text-white tracking-tight uppercase italic">{displayName}</h3>
+            <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest">{u.email}</span>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-[10px] font-medium text-white/40 line-clamp-1 max-w-[300px]">
+              {lastMessage ? lastMessage.text : 'No messages yet...'}
+            </p>
+            {lastMessage && (
+              <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest">• {formatTime(lastMessage.createdAt)}</span>
+            )}
+          </div>
         </div>
       </div>
-      <button 
-        onClick={onOpenChat}
-        className="w-full bg-[#E6FF00] text-black py-4 rounded-full font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-      >
-        <MessageCircle size={16} />
-        Open Chat
-      </button>
+
+      <div className="flex items-center gap-6">
+        {msgCount > 0 && (
+          <div className="flex items-center gap-3">
+            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">1 NEW MESSAGE</span>
+            <div className="w-6 h-6 rounded-full bg-[#E6FF00] flex items-center justify-center text-black text-[10px] font-black shadow-[0_0_15px_rgba(230,255,0,0.3)]">
+              {msgCount}
+            </div>
+          </div>
+        )}
+        <div className="p-3 bg-white/5 rounded-full text-white/20 group-hover:text-[#E6FF00] group-hover:bg-[#E6FF00]/10 transition-all">
+          <ArrowRight size={16} />
+        </div>
+      </div>
     </div>
   );
 }
