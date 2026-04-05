@@ -41,7 +41,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       secondaryColor: '#000000',
       logoUrl: '',
       documentsUrl: '',
-      plan: 'starter' as 'starter' | 'business',
+      plan: 'basic' as 'basic' | 'standard' | 'premium',
       referenceWebsite: '',
       templateId: '',
     };
@@ -72,7 +72,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [error, setError] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
-  const [paymentOption, setPaymentOption] = useState<'full' | 'advance' | 'understanding'>('full');
+  const [paymentOption, setPaymentOption] = useState<'full' | 'understanding'>('full');
 
   const navigate = useNavigate();
 
@@ -242,15 +242,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       }
 
       // Redirect to Stripe Payment Link with projectId
-      let stripeLink = '';
-      
-      if (paymentOption === 'advance') {
-        stripeLink = 'https://buy.stripe.com/test_aFa5kC26g2aU7De5PpbAs04';
-      } else {
-        stripeLink = formData.plan === 'starter' 
-          ? 'https://buy.stripe.com/test_9B65kC26g16Q2iU5PpbAs01' 
-          : 'https://buy.stripe.com/test_00w6oGbGQeXGcXy3HhbAs03';
-      }
+      const stripeLinks: Record<string, string> = {
+        basic: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07',
+        standard: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08',
+        premium: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09'
+      };
+
+      const stripeLink = stripeLinks[formData.plan] || stripeLinks.basic;
       
       window.location.href = `${stripeLink}?client_reference_id=${projectId}`;
 
@@ -293,7 +291,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     addLine('Location', formData.location);
     y += 5;
     addLine('Website Name', formData.websiteName);
-    addLine('Selected Plan', formData.plan === 'starter' ? 'Starter Launch' : 'Business Pro');
+    addLine('Selected Plan', formData.plan === 'basic' ? 'Basic' : formData.plan === 'standard' ? 'Standard' : 'Premium');
     addLine('Payment Option', paymentOption === 'full' ? 'Full Payment' : 'Advance Payment');
     
     y += 10;
@@ -750,14 +748,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Choose Plan</h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { id: 'starter', name: 'Starter Launch', price: '₹899/-', features: ['Single Page', 'Basic SEO', '1 Month Support'] },
-                { id: 'business', name: 'Business Pro', price: '₹1,499/-', features: ['Multi Page', 'Advanced SEO', '6 Months Support'] }
+                { id: 'basic', name: 'Basic', price: '₹1,499/-', features: ['5 Pages', 'Basic SEO', 'Email Support'] },
+                { id: 'standard', name: 'Standard', price: '₹3,499/-', features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] },
+                { id: 'premium', name: 'Premium', price: '₹9,999/-', features: ['Everything in Standard', 'E-commerce', 'AI features'] }
               ].map((plan) => (
                 <button
                   key={plan.id}
-                  onClick={() => setFormData({ ...formData, plan: plan.id as 'starter' | 'business' })}
+                  onClick={() => setFormData({ ...formData, plan: plan.id as any })}
                   className={`p-8 rounded-[2rem] border transition-all text-left flex flex-col h-full ${
                     formData.plan === plan.id 
                       ? 'bg-[#E6FF00] border-[#E6FF00] text-[#4A5D4E]' 
@@ -861,9 +860,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <div className="flex justify-between items-center">
                     <div>
                       <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Selected Plan</div>
-                      <div className="text-xl font-black text-[#E6FF00] uppercase italic">{formData.plan === 'starter' ? 'Starter Launch' : 'Business Pro'}</div>
+                      <div className="text-xl font-black text-[#E6FF00] uppercase italic">
+                        {formData.plan === 'basic' ? 'Basic' : formData.plan === 'standard' ? 'Standard' : 'Premium'}
+                      </div>
                     </div>
-                    <div className="text-2xl font-black text-white">{formData.plan === 'starter' ? '₹899/-' : '₹1,499/-'}</div>
+                    <div className="text-2xl font-black text-white">
+                      {formData.plan === 'basic' ? '₹1,499/-' : formData.plan === 'standard' ? '₹3,499/-' : '₹9,999/-'}
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
