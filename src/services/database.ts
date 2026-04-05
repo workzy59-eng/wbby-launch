@@ -357,7 +357,7 @@ export const getBlogPostBySlug = async (slug: string) => {
 };
 
 // Message Operations
-const getConversationId = (uid1: string, uid2: string) => {
+export const getConversationId = (uid1: string, uid2: string) => {
   return [uid1, uid2].sort().join('_');
 };
 

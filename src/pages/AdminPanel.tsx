@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import Papa from 'papaparse';
@@ -55,7 +55,6 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [showResetModal, setShowResetModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showProjectDetailModal, setShowProjectDetailModal] = useState(false);
-  const [projectDetailTab, setProjectDetailTab] = useState<'overview' | 'inputs'>('overview');
   const [editingProjectDetails, setEditingProjectDetails] = useState<Project | null>(null);
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -1308,7 +1307,7 @@ Generated on: ${new Date().toLocaleString()}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
             >
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-10">
                 <div>
                   <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{viewingProject.businessName}</h3>
                   <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">Project Details</div>
@@ -1316,35 +1315,7 @@ Generated on: ${new Date().toLocaleString()}
                 <button onClick={() => setShowProjectDetailModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
                   <X size={24} />
                 </button>
-              </div>
-
-              <div className="flex gap-8 mb-10 border-b border-white/5">
-                <button 
-                  onClick={() => setProjectDetailTab('overview')}
-                  className={`text-xs font-black uppercase tracking-[0.3em] pb-4 transition-all relative ${
-                    projectDetailTab === 'overview' ? 'text-[#E6FF00]' : 'text-white/40 hover:text-white'
-                  }`}
-                >
-                  Overview
-                  {projectDetailTab === 'overview' && (
-                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-[#E6FF00] rounded-full" />
-                  )}
-                </button>
-                <button 
-                  onClick={() => setProjectDetailTab('inputs')}
-                  className={`text-xs font-black uppercase tracking-[0.3em] pb-4 transition-all relative ${
-                    projectDetailTab === 'inputs' ? 'text-[#E6FF00]' : 'text-white/40 hover:text-white'
-                  }`}
-                >
-                  User Inputs
-                  {projectDetailTab === 'inputs' && (
-                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-[#E6FF00] rounded-full" />
-                  )}
-                </button>
-              </div>
-
-              {projectDetailTab === 'overview' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div className="space-y-8">
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Client Information</h4>
@@ -1387,6 +1358,22 @@ Generated on: ${new Date().toLocaleString()}
                     </section>
 
                     <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Preferences</h4>
+                      <div className="bg-[#E6FF00]/5 p-6 rounded-3xl border border-[#E6FF00]/10 space-y-3">
+                        {[0, 1, 2].map((idx) => (
+                          <div key={idx} className="flex justify-between items-center">
+                            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
+                              {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
+                            </span>
+                            <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#E6FF00]' : 'text-white/60'}`}>
+                              {viewingProject.domainPreferences?.[idx] || (idx === 0 ? viewingProject.domain : 'N/A')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Timeline</h4>
                       <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
                         <div className="flex justify-between">
@@ -1402,6 +1389,24 @@ Generated on: ${new Date().toLocaleString()}
                   </div>
 
                   <div className="space-y-8">
+                    <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Business Details</h4>
+                      <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Name</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.businessName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Phone</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.businessPhone || viewingProject.businessNumber || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Location</span>
+                          <span className="text-xs font-bold text-white uppercase">{viewingProject.businessLocation || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </section>
+
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Description</h4>
                       <div className="bg-black/20 p-6 rounded-3xl border border-white/5">
@@ -1435,61 +1440,7 @@ Generated on: ${new Date().toLocaleString()}
                     </section>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <section className="space-y-4">
-                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">Personal Details</h4>
-                      <div className="bg-black/20 p-8 rounded-[2rem] border border-white/5 space-y-6">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">User Name</span>
-                          <span className="text-xl font-bold text-white uppercase tracking-tight">{viewingProject.userName}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">User Phone</span>
-                          <span className="text-xl font-bold text-white tracking-tight">{viewingProject.userPhone || 'Not Provided'}</span>
-                        </div>
-                      </div>
-                    </section>
-
-                    <section className="space-y-4">
-                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">Business Details</h4>
-                      <div className="bg-black/20 p-8 rounded-[2rem] border border-white/5 space-y-6">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Business Name</span>
-                          <span className="text-xl font-bold text-white uppercase tracking-tight">{viewingProject.businessName}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Business Phone</span>
-                          <span className="text-xl font-bold text-white tracking-tight">{viewingProject.businessPhone || viewingProject.businessNumber || 'Not Provided'}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Business Address</span>
-                          <span className="text-sm font-bold text-white/70 leading-relaxed">{viewingProject.businessLocation || 'Not Provided'}</span>
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-
-                  <section className="space-y-4">
-                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">Domain Preferences</h4>
-                    <div className="bg-black/20 p-8 rounded-[2rem] border border-white/5">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[0, 1, 2].map((idx) => (
-                          <div key={idx} className="p-6 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-2">
-                            <span className="text-[8px] font-black text-[#E6FF00] uppercase tracking-[0.2em]">
-                              {idx === 0 ? '1st Preference' : idx === 1 ? '2nd Preference' : '3rd Preference'}
-                            </span>
-                            <span className="text-lg font-black text-white italic tracking-tighter">
-                              {viewingProject.domainPreferences?.[idx] || (idx === 0 ? viewingProject.domain : 'N/A')}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </section>
-                </div>
-              )}
+              </div>
 
               <div className="mt-12 pt-10 border-t border-white/5 flex gap-4">
                 <button 
@@ -1717,7 +1668,8 @@ const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat, onUnreadUpdate }) =>
   const [lastMessage, setLastMessage] = useState<any>(null);
 
   useEffect(() => {
-    const q = collection(db, 'direct_messages', u.uid, 'messages');
+    const chatId = getConversationId('admin', u.uid);
+    const q = collection(db, 'conversations', chatId, 'messages');
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const unread = snapshot.docs.filter(d => d.data().senderId !== 'admin' && !d.data().seen).length;
       setMsgCount(unread);

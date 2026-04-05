@@ -922,6 +922,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     <li>Refund processing time is 5–7 working days.</li>
                     <li>The amount will be credited back to the original payment method.</li>
                   </ul>
+                  <p className="mt-4">• By continuing, you agree that advance is non-refundable and refunds (if applicable) may take 5–7 working days.</p>
                   <p className="mt-4">• By proceeding with the payment, you agree to our terms and conditions.</p>
                   <p>• For any queries, please contact support before making payment.</p>
                 </div>

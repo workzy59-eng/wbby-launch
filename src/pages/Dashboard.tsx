@@ -258,9 +258,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               ) : (
                 <div className="space-y-10">
                   {/* Stats Grid - 4 Boxes */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
-                      { id: 'users', label: 'Total Users', value: totalUsersCount, icon: User, color: 'text-pink-400', bg: 'bg-pink-400/10', items: ['User count: ' + totalUsersCount] },
                       { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
                       { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
                       { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
