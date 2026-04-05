@@ -1,9 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs } from '../firebase';
-import { UserProfile, Project } from '../types';
+import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc } from '../firebase';
+import { UserProfile, Project, ProjectStatus } from '../types';
 import { Link } from 'react-router-dom';
-import { LogOut, User, LayoutDashboard, FileText, BarChart3, Trash2, Check, X, MessageCircle, TrendingUp, Users, Clock, CheckCircle2, Layout } from 'lucide-react';
+import { 
+  LogOut, 
+  User, 
+  LayoutDashboard, 
+  FileText, 
+  BarChart3, 
+  Trash2, 
+  Check, 
+  X, 
+  MessageCircle, 
+  TrendingUp, 
+  Users, 
+  Clock, 
+  CheckCircle2, 
+  Layout,
+  FolderKanban,
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Calendar,
+  DollarSign,
+  Edit2,
+  ChevronDown,
+  ChevronUp,
+  ArrowRight
+} from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
 import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings } from '../services/database';
@@ -21,12 +47,18 @@ interface AdminPanelProps {
 export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'analytics' | 'messages' | 'recycle' | 'system'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system'>('dashboard');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showProjectDetailModal, setShowProjectDetailModal] = useState(false);
+  const [editingProjectDetails, setEditingProjectDetails] = useState<Project | null>(null);
+  const [viewingProject, setViewingProject] = useState<Project | null>(null);
+  const [projectSearch, setProjectSearch] = useState('');
+  const [projectStatusFilter, setProjectStatusFilter] = useState<ProjectStatus | 'all'>('all');
   const [isResetting, setIsResetting] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [newProgress, setNewProgress] = useState(0);
@@ -98,13 +130,45 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         const status = newProgress === 100 ? 'Completed' : 'Development Started';
         await updateProject(selectedProject.id, { 
           progress: newProgress,
-          status: status
+          status: status as ProjectStatus
         });
         setShowProgressModal(false);
         setSelectedProject(null);
       } catch (error) {
         console.error("Error updating progress:", error);
       }
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (window.confirm('Are you sure you want to delete this project?')) {
+      try {
+        await updateProject(projectId, { isDeleted: true });
+      } catch (error) {
+        console.error("Error deleting project:", error);
+      }
+    }
+  };
+
+  const handleSaveProject = async (projectData: Partial<Project>) => {
+    try {
+      if (editingProjectDetails) {
+        await updateProject(editingProjectDetails.id, projectData);
+      } else {
+        const newProject = {
+          ...projectData,
+          createdAt: new Date().toISOString(),
+          status: projectData.status || 'Waiting for Review',
+          progress: projectData.progress || 0,
+          isLocked: false,
+          isDeleted: false
+        };
+        await addDoc(collection(db, 'projects'), newProject);
+      }
+      setShowProjectModal(false);
+      setEditingProjectDetails(null);
+    } catch (error) {
+      console.error("Error saving project:", error);
     }
   };
 
@@ -548,6 +612,160 @@ Generated on: ${new Date().toLocaleString()}
     </div>
   );
 
+  const renderProjectDetails = () => {
+    const filteredProjects = projects.filter(p => {
+      const matchesSearch = p.businessName.toLowerCase().includes(projectSearch.toLowerCase()) || 
+                           p.userName.toLowerCase().includes(projectSearch.toLowerCase());
+      const matchesStatus = projectStatusFilter === 'all' || p.status === projectStatusFilter;
+      return matchesSearch && matchesStatus && !p.isDeleted;
+    });
+
+    return (
+      <div className="space-y-12">
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Management</span>
+            <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Project Details</h2>
+          </div>
+          <button 
+            onClick={() => { setEditingProjectDetails(null); setShowProjectModal(true); }}
+            className="px-8 py-4 bg-[#E6FF00] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+          >
+            <Plus size={18} />
+            Add New Project
+          </button>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={20} />
+            <input 
+              type="text" 
+              placeholder="Search by project or user name..."
+              value={projectSearch}
+              onChange={(e) => setProjectSearch(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-white font-bold uppercase tracking-widest outline-none focus:border-[#E6FF00]/50 transition-all placeholder:text-white/10"
+            />
+          </div>
+          <div className="relative">
+            <Filter className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={20} />
+            <select 
+              value={projectStatusFilter}
+              onChange={(e) => setProjectStatusFilter(e.target.value as any)}
+              className="appearance-none bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-12 text-white font-bold uppercase tracking-widest outline-none focus:border-[#E6FF00]/50 transition-all"
+            >
+              <option value="all">All Status</option>
+              <option value="Waiting for Review">Waiting for Review</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Development Started">Development Started</option>
+              <option value="Completed">Completed</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+          </div>
+        </div>
+
+        {/* Projects Table */}
+        <div className="bg-[#5E7162]/30 backdrop-blur-md rounded-[3rem] border border-white/10 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Project</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Client</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Type & Plan</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Status</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Timeline</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em] text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProjects.map((p) => (
+                  <tr key={p.id} className="border-b border-white/5 group hover:bg-white/5 transition-all">
+                    <td className="p-8">
+                      <div className="flex flex-col">
+                        <span className="text-lg font-bold text-white tracking-tight uppercase italic">{p.businessName}</span>
+                        <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1 truncate max-w-[200px]">{p.description}</span>
+                      </div>
+                    </td>
+                    <td className="p-8">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-white uppercase">{p.userName}</span>
+                        <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{p.userEmail}</span>
+                      </div>
+                    </td>
+                    <td className="p-8">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-white uppercase italic tracking-tighter">{p.businessType}</span>
+                        <span className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mt-1">{p.plan || 'N/A'}</span>
+                      </div>
+                    </td>
+                    <td className="p-8">
+                      <div className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                        p.status === 'Completed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                        p.status === 'Development Started' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                        p.status === 'Rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                        'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                      }`}>
+                        {p.status}
+                      </div>
+                    </td>
+                    <td className="p-8">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-[8px] font-bold text-white/40 uppercase tracking-widest">
+                          <Calendar size={10} />
+                          <span>Start: {p.startDate ? new Date(p.startDate as any).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[8px] font-bold text-[#E6FF00] uppercase tracking-widest">
+                          <Clock size={10} />
+                          <span>End: {p.deadline ? new Date(p.deadline as any).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-8 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => { setSelectedProject(p); setShowProjectModal(false); /* Open View Modal */ }}
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#E6FF00] hover:text-black transition-all"
+                          title="View Details"
+                        >
+                          <ArrowRight size={16} />
+                        </button>
+                        <button 
+                          onClick={() => { setEditingProjectDetails(p); setShowProjectModal(true); }}
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#E6FF00] hover:text-black transition-all"
+                          title="Edit Project"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteProject(p.id)}
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-red-500 hover:text-white transition-all"
+                          title="Delete Project"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredProjects.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="p-32 text-center">
+                      <div className="text-white/20 text-sm font-bold uppercase tracking-[0.5em]">No projects found</div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderRecycleBin = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
@@ -769,6 +987,7 @@ Generated on: ${new Date().toLocaleString()}
             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'requests', label: 'Requests', icon: FileText },
             { id: 'active', label: 'Active Projects', icon: Check },
+            { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'messages', label: 'Messages', icon: MessageCircle },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
@@ -816,6 +1035,7 @@ Generated on: ${new Date().toLocaleString()}
             {activeTab === 'dashboard' && renderDashboard()}
             {activeTab === 'requests' && renderRequests()}
             {activeTab === 'active' && renderActiveProjects()}
+            {activeTab === 'projects' && renderProjectDetails()}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'recycle' && renderRecycleBin()}
@@ -1036,6 +1256,300 @@ Generated on: ${new Date().toLocaleString()}
                   onClose={() => setShowDirectChat(false)}
                 />
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Project Detail Modal */}
+      <AnimatePresence>
+        {showProjectDetailModal && viewingProject && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+              onClick={() => setShowProjectDetailModal(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
+            >
+              <div className="flex justify-between items-start mb-10">
+                <div>
+                  <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{viewingProject.businessName}</h3>
+                  <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">Project Details</div>
+                </div>
+                <button onClick={() => setShowProjectDetailModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                  <section>
+                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Client Information</h4>
+                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Name</span>
+                        <span className="text-xs font-bold text-white uppercase">{viewingProject.userName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Email</span>
+                        <span className="text-xs font-bold text-white uppercase">{viewingProject.userEmail}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Phone</span>
+                        <span className="text-xs font-bold text-white uppercase">{viewingProject.userPhone || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Project Overview</h4>
+                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Type</span>
+                        <span className="text-xs font-bold text-white uppercase">{viewingProject.businessType}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span>
+                        <span className="text-xs font-bold text-[#E6FF00] uppercase">{viewingProject.plan || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Status</span>
+                        <span className="text-xs font-bold text-white uppercase">{viewingProject.status}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Progress</span>
+                        <span className="text-xs font-bold text-white uppercase">{viewingProject.progress}%</span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Timeline</h4>
+                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Start Date</span>
+                        <span className="text-xs font-bold text-white uppercase">{viewingProject.startDate ? new Date(viewingProject.startDate as any).toLocaleDateString() : 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deadline</span>
+                        <span className="text-xs font-bold text-red-400 uppercase">{viewingProject.deadline ? new Date(viewingProject.deadline as any).toLocaleDateString() : 'N/A'}</span>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div className="space-y-8">
+                  <section>
+                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Description</h4>
+                    <div className="bg-black/20 p-6 rounded-3xl border border-white/5">
+                      <p className="text-xs font-medium text-white/70 leading-relaxed">{viewingProject.description}</p>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Internal Notes</h4>
+                    <div className="bg-[#E6FF00]/5 p-6 rounded-3xl border border-[#E6FF00]/10">
+                      <p className="text-xs font-medium text-[#E6FF00]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Files & Assets</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {viewingProject.logoUrl && (
+                        <a href={viewingProject.logoUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
+                          <FileText size={24} className="text-[#E6FF00]" />
+                          <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Logo</span>
+                        </a>
+                      )}
+                      {viewingProject.documentsUrl && (
+                        <a href={viewingProject.documentsUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
+                          <FileText size={24} className="text-[#00F2FF]" />
+                          <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Documents</span>
+                        </a>
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <div className="mt-12 pt-10 border-t border-white/5 flex gap-4">
+                <button 
+                  onClick={() => { setEditingProjectDetails(viewingProject); setShowProjectDetailModal(false); setShowProjectModal(true); }}
+                  className="flex-1 bg-[#E6FF00] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                >
+                  Edit Project
+                </button>
+                <button 
+                  onClick={() => setShowProjectDetailModal(false)}
+                  className="flex-1 bg-white/5 text-white py-5 rounded-full font-black uppercase italic text-sm hover:bg-white/10 transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Project Add/Edit Modal */}
+      <AnimatePresence>
+        {showProjectModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+              onClick={() => setShowProjectModal(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
+            >
+              <div className="flex justify-between items-start mb-10">
+                <div>
+                  <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{editingProjectDetails ? 'Edit Project' : 'Add New Project'}</h3>
+                  <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">Configuration</div>
+                </div>
+                <button onClick={() => setShowProjectModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const data = Object.fromEntries(formData.entries());
+                handleSaveProject(data as any);
+              }} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Project Name</label>
+                    <input 
+                      name="businessName"
+                      defaultValue={editingProjectDetails?.businessName}
+                      required
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Client Name</label>
+                    <input 
+                      name="userName"
+                      defaultValue={editingProjectDetails?.userName}
+                      required
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Client Email</label>
+                    <input 
+                      name="userEmail"
+                      type="email"
+                      defaultValue={editingProjectDetails?.userEmail}
+                      required
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Project Type</label>
+                      <input 
+                        name="businessType"
+                        defaultValue={editingProjectDetails?.businessType}
+                        required
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Plan</label>
+                      <select 
+                        name="plan"
+                        defaultValue={editingProjectDetails?.plan}
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest appearance-none"
+                      >
+                        <option value="Basic">Basic</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Premium">Premium</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Start Date</label>
+                      <input 
+                        name="startDate"
+                        type="date"
+                        defaultValue={editingProjectDetails?.startDate ? new Date(editingProjectDetails.startDate as any).toISOString().split('T')[0] : ''}
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Deadline</label>
+                      <input 
+                        name="deadline"
+                        type="date"
+                        defaultValue={editingProjectDetails?.deadline ? new Date(editingProjectDetails.deadline as any).toISOString().split('T')[0] : ''}
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Status</label>
+                    <select 
+                      name="status"
+                      defaultValue={editingProjectDetails?.status}
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest appearance-none"
+                    >
+                      <option value="Waiting for Review">Waiting for Review</option>
+                      <option value="Under Review">Under Review</option>
+                      <option value="Accepted">Accepted</option>
+                      <option value="Development Started">Development Started</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Description</label>
+                    <textarea 
+                      name="description"
+                      defaultValue={editingProjectDetails?.description}
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest h-32 resize-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Internal Notes</label>
+                    <textarea 
+                      name="internalNotes"
+                      defaultValue={editingProjectDetails?.internalNotes}
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-[#E6FF00] focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest h-32 resize-none placeholder:text-[#E6FF00]/20"
+                      placeholder="Admin only notes..."
+                    />
+                  </div>
+                </div>
+
+                <div className="col-span-full mt-8 flex gap-4">
+                  <button type="submit" className="flex-1 bg-[#E6FF00] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl">
+                    {editingProjectDetails ? 'Update Project' : 'Create Project'}
+                  </button>
+                  <button type="button" onClick={() => setShowProjectModal(false)} className="flex-1 bg-white/5 text-white py-5 rounded-full font-black uppercase italic text-sm hover:bg-white/10 transition-all">
+                    Cancel
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

@@ -87,6 +87,9 @@ export interface Project {
   paymentStatus?: 'pending' | 'paid';
   status: ProjectStatus;
   progress: number;
+  startDate?: string | Timestamp;
+  deadline?: string | Timestamp;
+  internalNotes?: string;
   estimatedCompletion: string | Timestamp | null;
   createdAt: string | Timestamp;
   rejectionReason?: string;
