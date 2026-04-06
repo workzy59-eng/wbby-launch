@@ -20,10 +20,6 @@ service cloud.firestore {
                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
-    function hasOnlyAllowedFields(fields) {
-      return request.resource.data.keys().hasOnly(fields);
-    }
-
     function isValidEmail(email) {
       return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
     }
@@ -39,7 +35,8 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen']) &&
+      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen'];
+      return data.keys().hasOnly(allowedFields) &&
              data.uid is string && data.uid.size() > 0 &&
              data.email is string && isValidEmail(data.email) &&
              data.role in ['admin', 'client', 'developer'];

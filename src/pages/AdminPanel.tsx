@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
+import ImageGenerator from '../components/ImageGenerator';
 import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
@@ -57,6 +58,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [showProjectDetailModal, setShowProjectDetailModal] = useState(false);
   const [editingProjectDetails, setEditingProjectDetails] = useState<Project | null>(null);
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
+  const [modalTab, setModalTab] = useState<'overview' | 'inputs'>('overview');
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [reasonToShow, setReasonToShow] = useState('');
   const [projectSearch, setProjectSearch] = useState('');
@@ -342,9 +344,12 @@ Generated on: ${new Date().toLocaleString()}
 
   const renderDashboard = () => (
     <div className="space-y-12">
-      <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Overview</span>
-        <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Overview</span>
+          <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
+        </div>
+        <ImageGenerator />
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -362,6 +367,14 @@ Generated on: ${new Date().toLocaleString()}
             <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
           </div>
         ))}
+      </div>
+
+      <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-white mb-2">UI Concept Generator</h3>
+          <p className="text-sm text-white/40">Generate a high-resolution UI/UX screenshot of the modern admin panel concept.</p>
+        </div>
+        <ImageGenerator />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -458,6 +471,13 @@ Generated on: ${new Date().toLocaleString()}
                     </button>
                     <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
                       Plan: {p.plan || 'N/A'}
+                    </div>
+                    <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
+                      p.status === 'Rejected' 
+                        ? 'bg-red-500/20 text-red-400 border-red-500/30' 
+                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                    }`}>
+                      Status: {p.status}
                     </div>
                     {p.status === 'Rejected' && (
                       <div className="flex items-center gap-2">
@@ -709,9 +729,9 @@ Generated on: ${new Date().toLocaleString()}
               <thead>
                 <tr className="border-b border-white/5">
                   <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Project</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Status</th>
                   <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Client</th>
                   <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Type & Plan</th>
-                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Status</th>
                   <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Timeline</th>
                   <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em] text-right">Actions</th>
                 </tr>
@@ -726,6 +746,16 @@ Generated on: ${new Date().toLocaleString()}
                       </div>
                     </td>
                     <td className="p-8">
+                      <div className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                        p.status === 'Completed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                        p.status === 'Development Started' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                        p.status === 'Rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                        'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                      }`}>
+                        {p.status}
+                      </div>
+                    </td>
+                    <td className="p-8">
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-white uppercase">{p.userName}</span>
                         <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{p.userEmail}</span>
@@ -735,16 +765,6 @@ Generated on: ${new Date().toLocaleString()}
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-white uppercase italic tracking-tighter">{p.businessType}</span>
                         <span className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mt-1">{p.plan || 'N/A'}</span>
-                      </div>
-                    </td>
-                    <td className="p-8">
-                      <div className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
-                        p.status === 'Completed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                        p.status === 'Development Started' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-                        p.status === 'Rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                        'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                      }`}>
-                        {p.status}
                       </div>
                     </td>
                     <td className="p-8">
@@ -762,7 +782,7 @@ Generated on: ${new Date().toLocaleString()}
                     <td className="p-8 text-right">
                       <div className="flex justify-end gap-2">
                         <button 
-                          onClick={() => { setSelectedProject(p); setShowProjectModal(false); /* Open View Modal */ }}
+                          onClick={() => { setViewingProject(p); setModalTab('overview'); setShowProjectDetailModal(true); }}
                           className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#E6FF00] hover:text-black transition-all"
                           title="View Details"
                         >
@@ -1315,7 +1335,26 @@ Generated on: ${new Date().toLocaleString()}
                 <button onClick={() => setShowProjectDetailModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
                   <X size={24} />
                 </button>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              </div>
+
+              {/* Tab Switcher */}
+              <div className="flex gap-4 mb-10 border-b border-white/5 pb-4">
+                <button 
+                  onClick={() => setModalTab('overview')}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'overview' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                >
+                  Overview
+                </button>
+                <button 
+                  onClick={() => setModalTab('inputs')}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'inputs' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                >
+                  User Inputs
+                </button>
+              </div>
+
+              {modalTab === 'overview' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div className="space-y-8">
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Client Information</h4>
@@ -1440,8 +1479,72 @@ Generated on: ${new Date().toLocaleString()}
                     </section>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-12">
+                  <section>
+                    <h4 className="text-[10px] font-black text-[#E6FF00] uppercase tracking-[0.4em] mb-6 italic">Personal Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">User Name</span>
+                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.userName}</span>
+                      </div>
+                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">User Phone</span>
+                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.userPhone || 'Not Provided'}</span>
+                      </div>
+                    </div>
+                  </section>
 
+                  <section>
+                    <h4 className="text-[10px] font-black text-[#E6FF00] uppercase tracking-[0.4em] mb-6 italic">Business Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Name</span>
+                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.businessName}</span>
+                      </div>
+                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Phone</span>
+                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.businessPhone || viewingProject.businessNumber || 'Not Provided'}</span>
+                      </div>
+                      <div className="md:col-span-2 bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Address (Location)</span>
+                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.businessLocation || 'Not Provided'}</span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-[10px] font-black text-[#E6FF00] uppercase tracking-[0.4em] mb-6 italic">Domain Preferences</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {[0, 1, 2].map((idx) => (
+                        <div 
+                          key={idx} 
+                          className={`p-8 rounded-3xl border transition-all flex flex-col gap-2 ${
+                            idx === 0 
+                              ? 'bg-[#E6FF00]/10 border-[#E6FF00]/30 shadow-[0_0_30px_rgba(230,255,0,0.1)]' 
+                              : 'bg-black/30 border-white/5'
+                          }`}
+                        >
+                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                            {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
+                          </div>
+                          <div className={`text-xl font-black uppercase italic tracking-tighter ${idx === 0 ? 'text-[#E6FF00]' : 'text-white'}`}>
+                            {viewingProject.domainPreferences?.[idx] || (idx === 0 ? viewingProject.domain : 'N/A')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-[10px] font-black text-[#E6FF00] uppercase tracking-[0.4em] mb-6 italic">User Description</h4>
+                    <div className="bg-black/30 p-8 rounded-3xl border border-white/5">
+                      <p className="text-sm font-medium text-white/70 leading-relaxed italic">{viewingProject.description}</p>
+                    </div>
+                  </section>
+                </div>
+              )}
+              
               <div className="mt-12 pt-10 border-t border-white/5 flex gap-4">
                 <button 
                   onClick={() => { setEditingProjectDetails(viewingProject); setShowProjectDetailModal(false); setShowProjectModal(true); }}
