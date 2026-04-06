@@ -1393,7 +1393,7 @@ Generated on: ${new Date().toLocaleString()}
                               {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
                             </span>
                             <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#E6FF00]' : 'text-white/60'}`}>
-                              {viewingProject.domainPreferences?.[idx] || (idx === 0 ? viewingProject.domain : 'N/A')}
+                              {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
                             </span>
                           </div>
                         ))}
@@ -1517,7 +1517,7 @@ Generated on: ${new Date().toLocaleString()}
                             {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
                           </div>
                           <div className={`text-xl font-black uppercase italic tracking-tighter ${idx === 0 ? 'text-[#E6FF00]' : 'text-white'}`}>
-                            {viewingProject.domainPreferences?.[idx] || (idx === 0 ? viewingProject.domain : 'N/A')}
+                            {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
                           </div>
                         </div>
                       ))}

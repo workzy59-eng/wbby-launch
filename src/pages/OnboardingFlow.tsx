@@ -220,6 +220,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         businessLocation: formData.location,
         description: formData.description,
         websiteName: formData.websiteName,
+        domain: formData.domain,
+        domainPreferences: formData.domainPreferences,
         primaryColor: formData.primaryColor,
         secondaryColor: formData.secondaryColor,
         logoUrl: finalLogoUrl,
@@ -239,6 +241,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           username: formData.username,
           phone: formData.phone,
           photoURL: finalProfileUrl,
+          businessName: formData.businessName,
+          businessType: finalBusinessType,
+          businessEmail: formData.businessEmail,
+          businessPhone: formData.businessPhone,
+          businessLocation: formData.location,
+          onboardingCompleted: true
         });
       }
 

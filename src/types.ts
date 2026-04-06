@@ -13,6 +13,12 @@ export interface UserProfile {
   createdAt: string | Timestamp;
   updatedAt?: string | Timestamp;
   isApproved?: boolean; // For manual approval
+  // Business details for clients
+  businessName?: string;
+  businessType?: string;
+  businessEmail?: string;
+  businessPhone?: string;
+  businessLocation?: string;
   // Developer specific fields
   experience?: number;
   devRole?: string;
