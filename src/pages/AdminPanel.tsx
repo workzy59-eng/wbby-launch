@@ -32,7 +32,6 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
-import ImageGenerator from '../components/ImageGenerator';
 import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
@@ -344,12 +343,9 @@ Generated on: ${new Date().toLocaleString()}
 
   const renderDashboard = () => (
     <div className="space-y-12">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Overview</span>
-          <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
-        </div>
-        <ImageGenerator />
+      <div className="flex flex-col gap-2">
+        <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Overview</span>
+        <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -367,14 +363,6 @@ Generated on: ${new Date().toLocaleString()}
             <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
           </div>
         ))}
-      </div>
-
-      <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-bold text-white mb-2">UI Concept Generator</h3>
-          <p className="text-sm text-white/40">Generate a high-resolution UI/UX screenshot of the modern admin panel concept.</p>
-        </div>
-        <ImageGenerator />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
