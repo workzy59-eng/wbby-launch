@@ -50,7 +50,9 @@ import {
   getUserProfile,
   setUserTyping,
   getTypingStatus,
-  uploadFile
+  uploadFile,
+  markConversationAsSeen,
+  markProjectAsSeen
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import ChatSystem from './ChatSystem';
@@ -69,7 +71,7 @@ interface Conversation {
   lastMessageAt: any;
   lastSenderId: string;
   participants: string[];
-  unreadCount?: number;
+  unreadCount?: { [userId: string]: number };
   recipientProfile?: UserProfile;
   isProject?: boolean;
   project?: Project;
@@ -131,12 +133,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         // Add project conversations
         const projectConvs: Conversation[] = projects.map(p => ({
           id: p.id,
-          lastMessage: 'Project Chat',
-          lastMessageAt: p.createdAt,
-          lastSenderId: '',
-          participants: [],
+          lastMessage: p.lastMessage || 'Project Chat',
+          lastMessageAt: p.lastMessageAt || p.createdAt,
+          lastSenderId: p.lastSenderId || '',
+          participants: [p.userId, p.developerId].filter(Boolean) as string[],
           isProject: true,
-          project: p
+          project: p,
+          unreadCount: p.unreadCount
         }));
 
         // Sort by date
@@ -146,7 +149,26 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           return dateB - dateA;
         });
 
-        setConversations(allConvs as Conversation[]);
+        // Check for new messages to play sound
+        setConversations(prev => {
+          if (prev.length > 0) {
+            const hasNewMessage = allConvs.some(newConv => {
+              const oldConv = prev.find(c => c.id === newConv.id);
+              if (!oldConv) return false;
+              
+              const newUnread = newConv.unreadCount?.[currentUser.uid] || 0;
+              const oldUnread = oldConv.unreadCount?.[currentUser.uid] || 0;
+              
+              return newUnread > oldUnread;
+            });
+
+            if (hasNewMessage) {
+              notificationSound.current?.play().catch(() => {});
+            }
+          }
+          return allConvs as Conversation[];
+        });
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error loading conversations:', error);
@@ -158,30 +180,23 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   }, [currentUser.uid, profile?.role, projects]);
 
   useEffect(() => {
-    if (!activeConversation || activeConversation.isProject) return;
+    if (!activeConversation) return;
+
+    // Mark as seen when opening
+    if (activeConversation.isProject) {
+      markProjectAsSeen(activeConversation.id, currentUser.uid);
+    } else if (activeConversation.id !== 'new') {
+      markConversationAsSeen(activeConversation.id, currentUser.uid);
+    }
+
+    if (activeConversation.isProject) return;
 
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
 
     const unsubMessages = getDirectMessages(recipientId, (messagesData) => {
       const newMessages = messagesData as Message[];
-      
-      // Check for new incoming messages to play sound
-      if (messages.length > 0 && newMessages.length > messages.length) {
-        const lastMsg = newMessages[newMessages.length - 1];
-        if (lastMsg.senderId !== currentUser.uid) {
-          notificationSound.current?.play().catch(() => {});
-        }
-      }
-      
       setMessages(newMessages);
-      
-      // Mark as seen
-      newMessages.forEach(async (m) => {
-        if (m.senderId !== currentUser.uid && !m.seen) {
-          await updateDirectMessage(recipientId, m.id, { seen: true });
-        }
-      });
     });
 
     // Typing status listener
@@ -376,13 +391,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-white/40 truncate font-medium pr-2 italic">
-                      {conv.isProject ? 'Project Discussion' : (conv.lastSenderId === currentUser.uid ? 'You: ' : '') + conv.lastMessage}
+                      {conv.lastSenderId === currentUser.uid ? 'You: ' : ''}{conv.lastMessage}
                     </p>
-                    {conv.unreadCount && conv.unreadCount > 0 && (
+                    {conv.unreadCount?.[currentUser.uid] ? (
                       <div className="bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] shrink-0">
-                        {conv.unreadCount}
+                        {conv.unreadCount[currentUser.uid]}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </button>

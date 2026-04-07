@@ -141,16 +141,18 @@ export default function Settings({ user, profile }: SettingsProps) {
   const clientSections = [
     { id: 'profile', label: 'Profile Settings', icon: User, desc: 'Manage your personal info' },
     { id: 'business', label: 'Business Settings', icon: Briefcase, desc: 'Manage your business details' },
-    { id: 'security', label: 'Password Settings', icon: Shield, desc: 'Update your password' },
+    { id: 'security', label: 'Security', icon: Shield, desc: 'Password & 2FA' },
     { id: 'notifications', label: 'Notifications', icon: Bell, desc: 'Manage alerts' },
+    { id: 'account', label: 'Account', icon: Settings2, desc: 'Deactivate or delete' },
   ];
 
   const adminSections = [
     { id: 'profile', label: 'Profile Settings', icon: User, desc: 'Admin personal info' },
     { id: 'payment', label: 'Payment Settings', icon: CreditCard, desc: 'Stripe & Razorpay config' },
     { id: 'website', label: 'Website Settings', icon: Globe, desc: 'Maintenance & SEO' },
-    { id: 'notifications', label: 'Notification Settings', icon: Bell, desc: 'Admin & Client alerts' },
     { id: 'system', label: 'System Controls', icon: Settings2, desc: 'Database & Users' },
+    { id: 'security', label: 'Security', icon: Shield, desc: 'Admin password' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, desc: 'Admin & Client alerts' },
   ];
 
   const sections = isAdmin ? adminSections : clientSections;
@@ -241,6 +243,23 @@ export default function Settings({ user, profile }: SettingsProps) {
                   className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter transition-all"
                   value={formData.businessPhone}
                   onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Business Location</label>
+                <input
+                  type="text"
+                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter transition-all"
+                  value={formData.businessLocation}
+                  onChange={(e) => setFormData({ ...formData, businessLocation: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">GST Number</label>
+                <input
+                  type="text"
+                  className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00] uppercase font-black italic tracking-tighter transition-all"
+                  placeholder="22AAAAA0000A1Z5"
                 />
               </div>
             </div>
@@ -416,6 +435,39 @@ export default function Settings({ user, profile }: SettingsProps) {
                 </div>
               </div>
             )}
+          </motion.div>
+        );
+      case 'account':
+        return (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+            <div className="p-8 bg-red-500/10 rounded-3xl border border-red-500/20 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-500">
+                  <Trash2 size={24} />
+                </div>
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter text-red-500">Deactivate Account</h4>
+              </div>
+              <p className="text-sm font-bold text-white/60 uppercase tracking-widest leading-relaxed">
+                Temporarily disable your account. You can reactivate it at any time by signing back in.
+              </p>
+              <button className="px-10 py-4 bg-red-600 text-white rounded-full font-black text-sm uppercase italic hover:bg-red-700 transition-all">
+                Deactivate Account
+              </button>
+            </div>
+            <div className="p-8 bg-red-500/10 rounded-3xl border border-red-500/20 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-500">
+                  <Trash2 size={24} />
+                </div>
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter text-red-500">Delete All Data</h4>
+              </div>
+              <p className="text-sm font-bold text-white/60 uppercase tracking-widest leading-relaxed">
+                Permanently delete all your projects, messages, and personal information. This action cannot be undone.
+              </p>
+              <button className="px-10 py-4 border border-red-500 text-red-500 rounded-full font-black text-sm uppercase italic hover:bg-red-500 hover:text-white transition-all">
+                Delete My Data
+              </button>
+            </div>
           </motion.div>
         );
       default:

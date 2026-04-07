@@ -87,6 +87,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     return saved ? parseInt(saved, 10) : 1;
   });
 
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
@@ -147,21 +148,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.pincode) invalid.push('pincode');
         if (req.description && !formData.description) invalid.push('description');
         break;
-      case 3: // Project details
+      case 3: // Domain Preferences
         if (!formData.websiteName) invalid.push('websiteName');
         break;
-      case 4: // Design (Design step is actually step 3 in the UI, but step 4 in the switch)
-        // This logic seems to be slightly different from the switch in the original code
-        // Let's stick to the original logic but return field names
-        if (req.primaryColor && !formData.primaryColor) invalid.push('primaryColor');
-        if (req.secondaryColor && !formData.secondaryColor) invalid.push('secondaryColor');
+      case 4: // Choose Plan
+        if (!formData.plan) invalid.push('plan');
         break;
-      case 5: // Assets
-        if (req.logo && !logoFile && !formData.logoUrl) invalid.push('logo');
-        if (req.documents && docFiles.length === 0 && !formData.documentsUrl) invalid.push('documents');
+      case 5: // Terms and Conditions
+        if (!agreedToTerms) invalid.push('terms');
         break;
-      case 6: // Reference
-        if (req.referenceWebsite && !formData.referenceWebsite) invalid.push('referenceWebsite');
+      case 6: // Finalize
         break;
     }
     return invalid;
@@ -814,6 +810,92 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Step 5</h2>
+              <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Terms & Conditions</h3>
+            </div>
+
+            <div className="bg-white/5 rounded-[2rem] p-10 space-y-8 border border-white/10 max-h-[60vh] overflow-y-auto scrollbar-hide">
+              <div className="space-y-8 text-white/70 font-medium leading-relaxed">
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">1. Services</h4>
+                  <p>We provide website development services based on the information submitted by the client.</p>
+                </section>
+
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">2. Project Approval</h4>
+                  <p>All projects are subject to review and approval by the admin. We reserve the right to reject any project.</p>
+                </section>
+
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">3. Payment Terms</h4>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>An advance payment is required to start the project.</li>
+                    <li>Advance payment is non-refundable.</li>
+                    <li>Final payment must be completed before project delivery.</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">4. Refund Policy</h4>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Advance payments are non-refundable.</li>
+                    <li>In case of project rejection, a refund (if applicable) will be processed within 5–7 working days.</li>
+                    <li>Refunds will be credited to the original payment method.</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">5. Delivery Timeline</h4>
+                  <p>Estimated delivery time will be provided after project approval. Delays may occur due to missing information or technical complexities.</p>
+                </section>
+
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">6. Client Responsibilities</h4>
+                  <p>The client is responsible for providing accurate information, logos, and content required for the website.</p>
+                </section>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-6 bg-white/5 rounded-2xl border border-white/10">
+              <button 
+                onClick={() => setAgreedToTerms(!agreedToTerms)}
+                className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${
+                  agreedToTerms ? 'bg-[#E6FF00] border-[#E6FF00] text-black' : 'border-white/20'
+                }`}
+              >
+                {agreedToTerms && <Check size={20} />}
+              </button>
+              <p className="text-xs font-bold text-white/60 uppercase tracking-widest leading-relaxed">
+                I have read and agree to the <span className="text-[#E6FF00]">Terms & Conditions</span>
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
+              <button 
+                onClick={handleNext} 
+                disabled={!agreedToTerms}
+                className={`flex-1 py-6 rounded-full font-black text-xl uppercase italic transition-all ${
+                  agreedToTerms 
+                    ? 'bg-[#E6FF00] text-[#4A5D4E] hover:scale-[1.02] active:scale-[0.98]' 
+                    : 'bg-white/5 text-white/20 cursor-not-allowed'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </motion.div>
+        );
+      case 6:
+        return (
+          <motion.div 
+            key="step6"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-2">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Step 6</h2>
               <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Finalize Project</h3>
             </div>
             
@@ -1042,7 +1124,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 className="h-full bg-[#E6FF00]"
               />
             </div>
-            <div className="text-xs font-black text-[#E6FF00] uppercase tracking-widest">Step {step} of 5</div>
+            <div className="text-xs font-black text-[#E6FF00] uppercase tracking-widest">Step {step} of 6</div>
           </div>
         </div>
       </header>

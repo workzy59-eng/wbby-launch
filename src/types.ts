@@ -103,6 +103,11 @@ export interface Project {
   isDeleted?: boolean;
   isLocked: boolean; // For the lock system
   previewUrl?: string;
+  lastMessage?: string;
+  lastMessageAt?: string | Timestamp;
+  lastSenderId?: string;
+  developerId?: string;
+  unreadCount?: Record<string, number>;
 }
 
 export interface Attachment {

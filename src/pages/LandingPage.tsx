@@ -28,21 +28,21 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { 
       title: 'Car Business', 
       category: 'Auto Speed UI', 
-      image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200', 
+      image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=800&auto=format&fit=crop', 
       link: '/portfolio/autos',
       description: 'Premium showroom experience for car dealerships.'
     },
     { 
       title: 'Gym & Fitness', 
       category: 'Iron Pulse UI', 
-      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200', 
+      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop', 
       link: '/portfolio/gym',
       description: 'High-energy landing page for fitness centers.'
     },
     { 
       title: 'Logistics', 
       category: 'Cargo Flow UI', 
-      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200', 
+      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=800&auto=format&fit=crop', 
       link: '/portfolio/cargo',
       description: 'Efficient tracking and management for logistics.'
     }
@@ -52,61 +52,61 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { 
       id: 1, 
       name: 'Rahul Sharma', 
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop', 
       description: 'Got my gym website in 2 days. Super smooth! The design is top-notch and my clients love it.' 
     },
     { 
       id: 2, 
       name: 'Priya Patel', 
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop', 
       description: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer.' 
     },
     { 
       id: 3, 
       name: 'Amit Verma', 
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop', 
       description: 'The Auto Speed UI is exactly what I needed for my showroom. Fast, clean, and mobile responsive.' 
     },
     { 
       id: 4, 
       name: 'Sneha Reddy', 
-      avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=200&auto=format&fit=crop', 
       description: 'My online boutique took off after WebbyLaunch built my site. The payment integration is flawless and secure.' 
     },
     { 
       id: 5, 
       name: 'Vikram Singh', 
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop', 
       description: 'Professional and fast. I can now showcase my real estate properties with high-quality galleries that load instantly.' 
     },
     { 
       id: 6, 
       name: 'Ananya Gupta', 
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop', 
       description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend WebbyLaunch!' 
     },
     { 
       id: 7, 
       name: 'Rajesh Kumar', 
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop', 
       description: 'Clean, professional, and exactly what I needed for my legal consultancy firm. The appointment booking feature is great.' 
     },
     { 
       id: 8, 
       name: 'Meera Iyer', 
-      avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop', 
       description: 'As a tutor, I needed a platform to share resources. WebbyLaunch delivered a perfect portal in record time.' 
     },
     { 
       id: 9, 
       name: 'Karan Malhotra', 
-      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=200&auto=format&fit=crop', 
       description: 'My photography portfolio looks stunning. The dark theme really makes my photos pop. Great work by the team!' 
     },
     { 
       id: 10, 
       name: 'Pooja Sharma', 
-      avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?q=80&w=1000&auto=format&fit=crop', 
+      avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?q=80&w=200&auto=format&fit=crop', 
       description: 'The booking system for my salon is so intuitive. My clients find it very easy to schedule their appointments now.' 
     }
   ];
@@ -251,6 +251,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <img 
                     src={item.image} 
                     alt={item.title} 
+                    width="400"
+                    height="300"
+                    loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     referrerPolicy="no-referrer"
                   />
@@ -353,8 +356,11 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <div className="aspect-square bg-gradient-to-br from-[#E6FF00]/20 to-transparent rounded-[3rem] border border-white/10 p-8">
               <div className="w-full h-full bg-slate-900 rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426" 
+                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" 
                   alt="Dashboard Preview" 
+                  width="600"
+                  height="600"
+                  loading="lazy"
                   className="w-full h-full object-cover opacity-50"
                   referrerPolicy="no-referrer"
                 />

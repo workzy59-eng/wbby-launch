@@ -364,15 +364,61 @@ export const getConversationId = (uid1: string, uid2: string) => {
 export const sendMessage = async (projectId: string, messageData: any) => {
   const path = `projects/${projectId}/messages`;
   try {
-    await addDoc(collection(db, 'projects', projectId, 'messages'), {
+    const docRef = await addDoc(collection(db, 'projects', projectId, 'messages'), {
       ...messageData,
       projectId,
       createdAt: serverTimestamp(),
       seen: false,
       attachments: messageData.attachments || [],
     });
+
+    // Update project metadata for unread counts
+    const projectDoc = await getDoc(doc(db, 'projects', projectId));
+    if (projectDoc.exists()) {
+      const data = projectDoc.data();
+      const unreadCount = data.unreadCount || {};
+      
+      // Increment unread count for everyone except sender
+      // For simplicity, we'll assume the participants are the client and admin
+      const participants = [data.userId, data.developerId].filter(id => id && id !== messageData.senderId);
+      // Also include admins
+      const admins = await getAdmins();
+      admins.forEach(admin => {
+        if (admin.uid !== messageData.senderId) {
+          participants.push(admin.uid);
+        }
+      });
+
+      const uniqueParticipants = Array.from(new Set(participants));
+      uniqueParticipants.forEach(uid => {
+        unreadCount[uid] = (unreadCount[uid] || 0) + 1;
+      });
+
+      await updateDoc(doc(db, 'projects', projectId), {
+        lastMessage: messageData.text || (messageData.attachments?.length ? 'Sent an attachment' : 'Sent an image'),
+        lastMessageAt: serverTimestamp(),
+        lastSenderId: messageData.senderId,
+        unreadCount,
+        updatedAt: serverTimestamp(),
+      });
+    }
+    return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
+  }
+};
+
+export const markProjectAsSeen = async (projectId: string, userId: string) => {
+  const path = `projects/${projectId}`;
+  try {
+    const projectDoc = await getDoc(doc(db, 'projects', projectId));
+    if (projectDoc.exists()) {
+      const unreadCount = projectDoc.data().unreadCount || {};
+      unreadCount[userId] = 0;
+      await updateDoc(doc(db, 'projects', projectId), { unreadCount });
+    }
+  } catch (error) {
+    console.error('Error marking project as seen:', error);
   }
 };
 
@@ -389,16 +435,40 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       attachments: messageData.attachments || [],
     });
     
-    // Update conversation metadata for list view
+    // Update conversation metadata for list view and unread counts
+    const convDoc = await getDoc(doc(db, 'conversations', conversationId));
+    let unreadCount = {};
+    if (convDoc.exists()) {
+      unreadCount = convDoc.data().unreadCount || {};
+    }
+    
+    // Increment unread count for recipient
+    unreadCount[recipientId] = (unreadCount[recipientId] || 0) + 1;
+
     await setDoc(doc(db, 'conversations', conversationId), {
-      lastMessage: messageData.text || (messageData.attachments?.length ? 'Sent an attachment' : ''),
+      lastMessage: messageData.text || (messageData.attachments?.length ? 'Sent an attachment' : 'Sent an image'),
       lastMessageAt: serverTimestamp(),
       lastSenderId: auth.currentUser.uid,
       participants: [auth.currentUser.uid, recipientId],
+      unreadCount,
       updatedAt: serverTimestamp(),
     }, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
+  }
+};
+
+export const markConversationAsSeen = async (conversationId: string, userId: string) => {
+  const path = `conversations/${conversationId}`;
+  try {
+    const convDoc = await getDoc(doc(db, 'conversations', conversationId));
+    if (convDoc.exists()) {
+      const unreadCount = convDoc.data().unreadCount || {};
+      unreadCount[userId] = 0;
+      await updateDoc(doc(db, 'conversations', conversationId), { unreadCount });
+    }
+  } catch (error) {
+    console.error('Error marking conversation as seen:', error);
   }
 };
 
