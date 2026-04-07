@@ -14,10 +14,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      let adminEmail = "workzy59@gmail.com";
+      let userDoc = /databases/$(database)/documents/users/$(request.auth.uid);
       return isAuthenticated() && 
-             (request.auth.token.get('email', '').lower() == "workzy59@gmail.com" || 
-              (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin'));
+             ((request.auth.token.get('email', '').lower() == adminEmail.lower() && request.auth.token.get('email_verified', false) == true) || 
+              (exists(userDoc) && get(userDoc).data.get('role', '') == 'admin'));
     }
 
     function isValidEmail(email) {
@@ -39,11 +40,10 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen'];
+      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen', 'businessName', 'businessType', 'businessEmail', 'businessPhone', 'businessLocation'];
       return hasOnlyAllowedFields(allowedFields) &&
-             data.uid is string && data.uid.size() > 0 &&
-             data.email is string && isValidEmail(data.email) &&
-             data.role in ['admin', 'client', 'developer'];
+             (data.get('email', '') == '' || isValidEmail(data.get('email', ''))) &&
+             data.get('role', 'client') in ['admin', 'client', 'developer'];
     }
 
     function isValidProject(data) {
@@ -100,8 +100,8 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow list: if isAuthenticated() && (isAdmin() || resource.data.role == 'admin');
-      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role in ['client', 'developer'] || isAdmin());
+      allow list: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.get('role', 'client') in ['client', 'developer'] || isAdmin());
       allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
     }
 
