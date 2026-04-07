@@ -16,6 +16,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { TestimonialCarousel, type Testimonial } from '../components/ui/testimonial';
 
 interface LandingPageProps {
   user: FirebaseUser | null;
@@ -47,10 +48,67 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     }
   ];
 
-  const testimonials = [
-    { name: 'Rahul Sharma', role: 'Gym Owner', text: 'Got my gym website in 2 days. Super smooth! The design is top-notch and my clients love it.', rating: 5 },
-    { name: 'Priya Patel', role: 'Logistics Manager', text: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer.', rating: 5 },
-    { name: 'Amit Verma', role: 'Car Dealer', text: 'The Auto Speed UI is exactly what I needed for my showroom. Fast, clean, and mobile responsive.', rating: 5 }
+  const testimonialCards: Testimonial[] = [
+    { 
+      id: 1, 
+      name: 'Rahul Sharma', 
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop', 
+      description: 'Got my gym website in 2 days. Super smooth! The design is top-notch and my clients love it.' 
+    },
+    { 
+      id: 2, 
+      name: 'Priya Patel', 
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop', 
+      description: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer.' 
+    },
+    { 
+      id: 3, 
+      name: 'Amit Verma', 
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1000&auto=format&fit=crop', 
+      description: 'The Auto Speed UI is exactly what I needed for my showroom. Fast, clean, and mobile responsive.' 
+    },
+    { 
+      id: 4, 
+      name: 'Sneha Reddy', 
+      avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1000&auto=format&fit=crop', 
+      description: 'My online boutique took off after WebbyLaunch built my site. The payment integration is flawless and secure.' 
+    },
+    { 
+      id: 5, 
+      name: 'Vikram Singh', 
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop', 
+      description: 'Professional and fast. I can now showcase my real estate properties with high-quality galleries that load instantly.' 
+    },
+    { 
+      id: 6, 
+      name: 'Ananya Gupta', 
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000&auto=format&fit=crop', 
+      description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend WebbyLaunch!' 
+    },
+    { 
+      id: 7, 
+      name: 'Rajesh Kumar', 
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop', 
+      description: 'Clean, professional, and exactly what I needed for my legal consultancy firm. The appointment booking feature is great.' 
+    },
+    { 
+      id: 8, 
+      name: 'Meera Iyer', 
+      avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=1000&auto=format&fit=crop', 
+      description: 'As a tutor, I needed a platform to share resources. WebbyLaunch delivered a perfect portal in record time.' 
+    },
+    { 
+      id: 9, 
+      name: 'Karan Malhotra', 
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1000&auto=format&fit=crop', 
+      description: 'My photography portfolio looks stunning. The dark theme really makes my photos pop. Great work by the team!' 
+    },
+    { 
+      id: 10, 
+      name: 'Pooja Sharma', 
+      avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?q=80&w=1000&auto=format&fit=crop', 
+      description: 'The booking system for my salon is so intuitive. My clients find it very easy to schedule their appointments now.' 
+    }
   ];
 
   const steps = [
@@ -325,26 +383,8 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((t, idx) => (
-              <div key={idx} className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] space-y-8">
-                <div className="flex gap-1">
-                  {[...Array(t.rating)].map((_, i) => (
-                    <Star key={i} size={16} className="fill-[#E6FF00] text-[#E6FF00]" />
-                  ))}
-                </div>
-                <p className="text-lg font-medium leading-relaxed italic text-white/80">"{t.text}"</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-[#E6FF00] font-black">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <h4 className="font-black uppercase italic tracking-tighter text-sm">{t.name}</h4>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="flex justify-center">
+            <TestimonialCarousel testimonials={testimonialCards} />
           </div>
         </div>
       </section>

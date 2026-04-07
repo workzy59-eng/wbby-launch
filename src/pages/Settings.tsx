@@ -14,7 +14,6 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  Loader2,
   X,
   Globe,
   Settings2,
@@ -23,6 +22,24 @@ import {
   Briefcase,
   Phone
 } from 'lucide-react';
+
+const Loader = ({ color = "white" }: { color?: string }) => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : 'black'} border-t-transparent rounded-full`}
+    />
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : 'black'} animate-pulse italic`}>Processing...</span>
+  </div>
+);
 import { FirebaseUser, logOut, db } from '../firebase';
 import { UserProfile, SystemSettings } from '../types';
 import { updateProfile, getSystemSettings, updateSystemSettings } from '../services/database';
@@ -182,7 +199,7 @@ export default function Settings({ user, profile }: SettingsProps) {
               </div>
             </div>
             <button onClick={handleSave} disabled={isSaving} className="px-12 py-5 bg-[#E6FF00] text-black rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)] flex items-center gap-4">
-              {isSaving ? <Loader2 className="animate-spin" size={24} /> : (saveSuccess ? <Check size={24} /> : 'Save Changes')}
+              {isSaving ? <Loader color="black" /> : (saveSuccess ? <Check size={24} /> : 'Save Changes')}
             </button>
           </motion.div>
         );
@@ -228,7 +245,7 @@ export default function Settings({ user, profile }: SettingsProps) {
               </div>
             </div>
             <button onClick={handleSave} disabled={isSaving} className="px-12 py-5 bg-[#E6FF00] text-black rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)] flex items-center gap-4">
-              {isSaving ? <Loader2 className="animate-spin" size={24} /> : (saveSuccess ? <Check size={24} /> : 'Update Business')}
+              {isSaving ? <Loader color="black" /> : (saveSuccess ? <Check size={24} /> : 'Update Business')}
             </button>
           </motion.div>
         );

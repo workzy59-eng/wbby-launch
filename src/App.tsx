@@ -21,12 +21,14 @@ import BlogPost from './pages/BlogPost';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Settings from './pages/Settings';
+import ComponentShowcase from './pages/ComponentShowcase';
 import Layout from './components/Layout';
 import WhatsAppButton from './components/WhatsAppButton';
 import { AnimatePresence, motion } from 'motion/react';
 import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
 import { ADMIN_EMAIL } from './constants';
 import { Smartphone, Download } from 'lucide-react';
+import { Loader } from './components/ui/loader';
 
 function MobileRestriction({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -232,7 +234,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#4A5D4E]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E6FF00]"></div>
+        <Loader size={48} />
       </div>
     );
   }
@@ -266,6 +268,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/privacy-policy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/showcase" element={<ComponentShowcase />} />
               <Route 
                 path="/onboarding" 
                 element={<OnboardingFlow user={user} profile={profile} />} 

@@ -3,7 +3,25 @@ import { motion, AnimatePresence } from 'motion/react';
 import { signInWithGoogle } from '../firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_NAME } from '../constants';
-import { AlertCircle, Loader2, ArrowRight, Phone } from 'lucide-react';
+import { AlertCircle, ArrowRight, Phone } from 'lucide-react';
+
+const Loader = () => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className="w-6 h-6 border-2 border-black border-t-transparent rounded-full"
+    />
+    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black animate-pulse italic">Processing...</span>
+  </div>
+);
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -154,7 +172,7 @@ export default function AuthPage() {
             className="w-full flex items-center justify-center gap-4 bg-[#E6FF00] text-black py-5 rounded-2xl font-black uppercase italic text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)] disabled:opacity-50 disabled:cursor-not-allowed group"
           >
             {loading ? (
-              <Loader2 className="animate-spin" size={24} />
+              <Loader />
             ) : (
               <>
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />

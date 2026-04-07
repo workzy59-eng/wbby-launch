@@ -16,9 +16,26 @@ import {
   User,
   ChevronRight,
   Send,
-  X,
-  Loader2
+  X
 } from 'lucide-react';
+
+const Loader = ({ color = "white" }: { color?: string }) => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+    />
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Loading...</span>
+  </div>
+);
 import { formatDate } from '../lib/utils';
 import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync, getAdmins } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
@@ -522,7 +539,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   disabled={!projectUpdate.projectId || !projectUpdate.details || isUpdating}
                   className="w-full bg-[#E6FF00] text-black py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {isUpdating ? <Loader2 className="animate-spin mx-auto" /> : 'Post Update'}
+                  {isUpdating ? <Loader color="black" /> : 'Post Update'}
                 </button>
               </div>
             </div>

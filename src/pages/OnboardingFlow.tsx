@@ -3,7 +3,25 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
-import { Check, Sparkles, Loader2, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
+import { Check, Sparkles, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
+
+const Loader = ({ color = "black" }: { color?: string }) => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={`w-6 h-6 border-2 border-${color === 'black' ? 'black' : '[#E6FF00]'} border-t-transparent rounded-full`}
+    />
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#E6FF00]'} animate-pulse italic`}>Processing...</span>
+  </div>
+);
 import { jsPDF } from 'jspdf';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
@@ -915,10 +933,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       className="w-full py-6 bg-[#E6FF00] text-black rounded-full font-black text-xl uppercase italic hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(230,255,0,0.3)] disabled:opacity-50 flex items-center justify-center gap-3"
                     >
                       {isSubmitting ? (
-                        <>
-                          <Loader2 className="animate-spin" size={24} />
-                          <span>Processing...</span>
-                        </>
+                        <Loader color="black" />
                       ) : (
                         'Proceed to Payment'
                       )}

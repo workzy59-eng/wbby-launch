@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
+import NavHeader from './ui/nav-header';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,8 +32,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   return (
     <div className="min-h-screen bg-[#4A5D4E] text-white font-sans selection:bg-[#E6FF00] selection:text-black">
       {/* Navbar */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl">
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#E6FF00] rounded-lg flex items-center justify-center">
               <span className="text-black font-black text-xl italic tracking-tighter">W</span>
@@ -42,16 +43,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
             </div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-            {navItems.map((item) => (
-              <Link 
-                key={item.name} 
-                to={item.path} 
-                className={`hover:text-[#E6FF00] transition-colors ${location.pathname === item.path ? 'text-[#E6FF00] opacity-100' : ''}`}
-              >
-                {item.name}
-              </Link>
-            ))}
+          <div className="hidden lg:block">
+            <NavHeader />
           </div>
 
           <div className="flex items-center gap-6">

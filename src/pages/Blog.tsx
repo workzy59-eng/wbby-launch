@@ -1,7 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Calendar, User, Tag, ArrowRight, Search, Loader2 } from 'lucide-react';
+import { Calendar, User, Tag, ArrowRight, Search } from 'lucide-react';
+
+const Loader = ({ color = "white" }: { color?: string }) => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+    />
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Loading...</span>
+  </div>
+);
 import SEO from '../components/SEO';
 import { getBlogPosts } from '../services/database';
 import { BlogPost as BlogPostType } from '../types';
@@ -58,7 +76,7 @@ export default function Blog() {
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-40 space-y-6">
-            <Loader2 className="text-[#E6FF00] animate-spin" size={48} />
+            <Loader color="white" />
             <p className="text-xs font-black uppercase tracking-widest text-white/20">Loading articles...</p>
           </div>
         ) : filteredPosts.length === 0 ? (

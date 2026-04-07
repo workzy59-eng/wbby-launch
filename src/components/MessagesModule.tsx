@@ -15,12 +15,29 @@ import {
   Smile,
   FileText,
   ChevronLeft,
-  Loader2,
   Briefcase,
   User as UserIcon,
   Circle,
   Sparkles
 } from 'lucide-react';
+
+const Loader = ({ color = "white" }: { color?: string }) => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+    />
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Loading...</span>
+  </div>
+);
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Message, Project } from '../types';
 import { 
@@ -304,7 +321,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
-              <Loader2 className="text-[#E6FF00] animate-spin" size={32} />
+              <Loader color="white" />
             </div>
           ) : filteredConversations.length === 0 ? (
             <div className="p-10 text-center space-y-6">
@@ -694,7 +711,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     }`}
                   >
                     {isSending ? (
-                      <Loader2 className="animate-spin" size={20} />
+                      <Loader color="black" />
                     ) : (
                       <Send size={20} />
                     )}

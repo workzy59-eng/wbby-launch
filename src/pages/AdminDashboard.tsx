@@ -46,6 +46,24 @@ interface AdminDashboardProps {
 
 type Tab = 'overview' | 'clients' | 'developers' | 'projects' | 'leaves' | 'attendance' | 'messages';
 
+const Loader = ({ color = "white" }: { color?: string }) => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+    />
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Loading...</span>
+  </div>
+);
+
 export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -893,7 +911,7 @@ Generated on: ${new Date().toLocaleString()}
         <div className="p-12 max-w-7xl mx-auto">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <Loader2 className="animate-spin text-[#E6FF00]" size={48} />
+              <Loader color="white" />
             </div>
           ) : (
             <AnimatePresence mode="wait">
@@ -926,6 +944,4 @@ Generated on: ${new Date().toLocaleString()}
   );
 }
 
-function Loader2({ className, size }: { className?: string; size?: number }) {
-  return <RefreshCcw className={className} size={size} />;
-}
+

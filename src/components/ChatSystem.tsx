@@ -12,12 +12,29 @@ import {
   MessageCircle,
   Trash2,
   Sparkles,
-  Loader2,
   FileText,
   Maximize2,
   File,
   ExternalLink
 } from 'lucide-react';
+
+const Loader = ({ color = "white" }: { color?: string }) => (
+  <div className="flex items-center justify-center gap-2">
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+    />
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Processing...</span>
+  </div>
+);
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Message, Attachment } from '../types';
 import { 
@@ -487,7 +504,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         className="mt-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:opacity-80 transition-all"
                       >
                         {isGenerating === m.id ? (
-                          <Loader2 size={12} className="animate-spin" />
+                          <Loader color="white" />
                         ) : (
                           <Sparkles size={12} />
                         )}
@@ -534,7 +551,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             <div className="bg-[#4A5D4E] p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading Files...</h4>
-                <Loader2 size={16} className="animate-spin text-[#E6FF00]" />
+                <Loader color="white" />
               </div>
               <div className="space-y-3">
                 {Object.entries(uploadProgress).map(([name, progress]) => (
@@ -680,7 +697,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             }`}
           >
             {isSending ? (
-              <Loader2 className="animate-spin" size={24} />
+              <Loader color="black" />
             ) : (
               <Send size={24} />
             )}
