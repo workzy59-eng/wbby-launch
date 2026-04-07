@@ -399,9 +399,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Starter Launch */}
-            <div className="bg-white/5 border border-white/10 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all">
+            <div className="bg-white/5 border border-white/10 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
                 <div className="flex items-end justify-center gap-2">
@@ -423,23 +423,25 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   </li>
                 ))}
               </ul>
-              <Link 
-                to="/auth" 
-                className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+              <a 
+                href="https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
               >
                 Get Started
-              </Link>
+              </a>
             </div>
 
             {/* Business Pro */}
-            <div className="bg-white/5 border-2 border-[#E6FF00]/30 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(230,255,0,0.1)] group hover:border-[#E6FF00]/50 transition-all">
+            <div className="bg-white/5 border-2 border-[#E6FF00]/30 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(230,255,0,0.1)] group hover:border-[#E6FF00]/50 transition-all flex flex-col">
               <div className="absolute top-0 right-0 bg-[#E6FF00] text-black px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest">
                 Most Popular
               </div>
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
                 <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹1,499/-</span>
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹3,499/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
@@ -459,12 +461,47 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   </li>
                 ))}
               </ul>
-              <Link 
-                to="/auth" 
-                className="block w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+              <a 
+                href="https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)] text-center"
               >
                 Start Pro Project
-              </Link>
+              </a>
+            </div>
+
+            {/* Enterprise Elite */}
+            <div className="bg-white/5 border border-white/10 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
+              <div className="space-y-4">
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Enterprise Elite</h4>
+                <div className="flex items-end justify-center gap-2">
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹9,999/-</span>
+                </div>
+              </div>
+              <ul className="space-y-6 text-left flex-1">
+                {[
+                  'Everything in Business Pro',
+                  'Custom Web App Features',
+                  'E-commerce Integration',
+                  'Dedicated Account Manager',
+                  '1 Year Free Maintenance',
+                  'Premium Hosting Included'
+                ].map((feature, i) => (
+                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
+                    <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <a 
+                href="https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
+              >
+                Go Elite
+              </a>
             </div>
           </div>
         </div>

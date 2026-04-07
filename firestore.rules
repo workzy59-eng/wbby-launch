@@ -40,7 +40,7 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen', 'businessName', 'businessType', 'businessEmail', 'businessPhone', 'businessLocation'];
+      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen', 'businessName', 'businessType', 'businessEmail', 'businessPhone', 'businessLocation', 'onboardingCompleted', 'lastLogin', 'providerId', 'emailVerified'];
       return hasOnlyAllowedFields(allowedFields) &&
              (data.get('email', '') == '' || isValidEmail(data.get('email', ''))) &&
              data.get('role', 'client') in ['admin', 'client', 'developer'];

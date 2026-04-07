@@ -765,8 +765,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
                 { id: 'basic', name: 'Basic', price: '₹1,499/-', features: ['5 Pages', 'Basic SEO', 'Email Support'] },
-                { id: 'standard', name: 'Standard', price: '₹1,499/-', features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] },
-                { id: 'premium', name: 'Premium', price: '₹1,499/-', features: ['Everything in Standard', 'E-commerce', 'AI features'] }
+                { id: 'standard', name: 'Standard', price: '₹3,499/-', features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] },
+                { id: 'premium', name: 'Premium', price: '₹9,999/-', features: ['Everything in Standard', 'E-commerce', 'AI features'] }
               ].map((plan) => (
                 <button
                   key={plan.id}
