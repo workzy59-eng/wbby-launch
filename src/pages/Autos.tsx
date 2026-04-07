@@ -14,12 +14,32 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const CAR_IMAGES = [
-  "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1920", // Mercedes AMG
-  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1920", // Porsche
-  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1920", // Corvette
-  "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1920", // Ferrari
-  "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80&w=1920"  // Audi R8
+const CARS = [
+  {
+    image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1920",
+    name: "AMG GT COUPE",
+    stats: { zeroToSixty: "3.1s", topSpeed: "196 MPH", horsepower: "577 HP" }
+  },
+  {
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1920",
+    name: "911 TURBO S",
+    stats: { zeroToSixty: "2.6s", topSpeed: "205 MPH", horsepower: "640 HP" }
+  },
+  {
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1920",
+    name: "CORVETTE Z06",
+    stats: { zeroToSixty: "2.6s", topSpeed: "189 MPH", horsepower: "670 HP" }
+  },
+  {
+    image: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1920",
+    name: "FERRARI F8",
+    stats: { zeroToSixty: "2.9s", topSpeed: "211 MPH", horsepower: "710 HP" }
+  },
+  {
+    image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80&w=1920",
+    name: "AUDI R8 V10",
+    stats: { zeroToSixty: "3.2s", topSpeed: "201 MPH", horsepower: "602 HP" }
+  }
 ];
 
 export default function Autos() {
@@ -28,8 +48,8 @@ export default function Autos() {
 
   useEffect(() => {
     const carInterval = setInterval(() => {
-      setCurrentCar((prev) => (prev + 1) % CAR_IMAGES.length);
-    }, 3000);
+      setCurrentCar((prev) => (prev + 1) % CARS.length);
+    }, 6000);
 
     const counterInterval = setInterval(() => {
       setCount((prev) => {
@@ -68,8 +88,8 @@ export default function Autos() {
           <AnimatePresence mode="wait">
             <motion.img 
               key={currentCar}
-              src={CAR_IMAGES[currentCar]} 
-              alt={`Car ${currentCar + 1}`} 
+              src={CARS[currentCar].image} 
+              alt={CARS[currentCar].name} 
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -93,7 +113,7 @@ export default function Autos() {
               <span className="text-xs font-bold uppercase tracking-[0.4em] text-[#E6FF00]">AMG Performance</span>
             </div>
             <h1 className="text-8xl md:text-[10rem] font-black tracking-tighter leading-[0.8] uppercase italic mb-8">
-              AUTO <span className="text-[#E6FF00]">SPEED</span>
+              {CARS[currentCar].name.split(' ')[0]} <span className="text-[#E6FF00]">{CARS[currentCar].name.split(' ').slice(1).join(' ')}</span>
             </h1>
             <p className="text-xl text-white/60 max-w-xl mb-12 font-medium leading-relaxed italic">
               Experience the pinnacle of automotive engineering. Handcrafted performance that pushes the boundaries of what's possible on four wheels.
@@ -113,9 +133,9 @@ export default function Autos() {
         {/* Floating Stats */}
         <div className="absolute bottom-20 right-10 flex flex-col gap-4">
           {[
-            { label: '0-60 MPH', value: '3.1s' },
-            { label: 'TOP SPEED', value: '190 MPH' },
-            { label: 'HORSEPOWER', value: '503 HP' }
+            { label: '0-60 MPH', value: CARS[currentCar].stats.zeroToSixty },
+            { label: 'TOP SPEED', value: CARS[currentCar].stats.topSpeed },
+            { label: 'HORSEPOWER', value: CARS[currentCar].stats.horsepower }
           ].map((stat, i) => (
             <motion.div 
               key={i}
@@ -136,9 +156,24 @@ export default function Autos() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Gauge, title: 'Precision Control', desc: 'Advanced suspension systems that adapt to every curve in real-time.' },
-              { icon: Wind, title: 'Aerodynamics', desc: 'Sculpted by the wind to minimize drag and maximize downforce.' },
-              { icon: Cpu, title: 'Smart Tech', desc: 'MBUX infotainment system with AI-driven voice control and navigation.' }
+              { 
+                icon: Gauge, 
+                title: 'Precision Control', 
+                desc: 'Advanced suspension systems that adapt to every curve in real-time.',
+                details: 'Active Body Control (ABC) with crosswind stabilization and curve tilting function for maximum comfort and stability.'
+              },
+              { 
+                icon: Wind, 
+                title: 'Aerodynamics', 
+                desc: 'Sculpted by the wind to minimize drag and maximize downforce.',
+                details: 'Active aerodynamic elements including adjustable rear spoilers and front air intakes that optimize airflow at high speeds.'
+              },
+              { 
+                icon: Cpu, 
+                title: 'Smart Tech', 
+                desc: 'MBUX infotainment system with AI-driven voice control and navigation.',
+                details: 'Next-gen AI integration that learns your habits, providing predictive suggestions for navigation, comfort, and entertainment.'
+              }
             ].map((f, i) => (
               <div key={i} className="p-12 bg-white/5 border border-white/10 rounded-[3rem] space-y-6 hover:border-[#E6FF00]/40 transition-all group">
                 <div className="w-16 h-16 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
@@ -146,6 +181,9 @@ export default function Autos() {
                 </div>
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter">{f.title}</h3>
                 <p className="text-white/40 font-bold uppercase italic text-xs leading-relaxed">{f.desc}</p>
+                <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest leading-relaxed pt-4 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-all">
+                  {f.details}
+                </p>
               </div>
             ))}
           </div>

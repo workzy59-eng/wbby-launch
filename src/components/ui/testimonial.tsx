@@ -110,19 +110,23 @@ const TestimonialCarousel = React.forwardRef<
                   </div>
                 )}
 
-                <div className="p-6 flex flex-col items-center gap-4">
-                  <img
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-[#E6FF00]"
-                    referrerPolicy="no-referrer"
-                  />
-                  <h3 className="text-lg font-black uppercase italic tracking-tighter text-[#E6FF00]">
-                    {testimonial.name}
-                  </h3>
-                  <p className="text-center text-sm font-medium italic text-white/70 leading-tight">
-                    {testimonial.description}
-                  </p>
+                <div className="p-8 h-full flex flex-col justify-between relative">
+                  <div className="space-y-4">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span key={star} className="text-[#E6FF00] text-xs">★</span>
+                      ))}
+                    </div>
+                    <p className="text-lg font-medium italic text-white/90 leading-relaxed">
+                      "{testimonial.description}"
+                    </p>
+                  </div>
+                  <div className="flex justify-end items-center gap-3">
+                    <div className="h-[1px] w-8 bg-[#E6FF00]/30" />
+                    <h3 className="text-sm font-black uppercase italic tracking-widest text-[#E6FF00]">
+                      {testimonial.name}
+                    </h3>
+                  </div>
                 </div>
               </motion.div>
             )

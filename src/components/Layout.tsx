@@ -16,8 +16,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
+  const isPortfolio = location.pathname.startsWith('/portfolio');
 
-  if (isDashboard) return <>{children}</>;
+  if (isDashboard || isPortfolio) return <>{children}</>;
 
   const navItems = [
     { name: 'Home', path: '/' },
