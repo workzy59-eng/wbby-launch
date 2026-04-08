@@ -9,11 +9,11 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({ 
-  title = "WebbyLaunch – Website Developer for Everyone in India", 
-  description = "WebbyLaunch provides expert custom web design services and premium website development for everyone in India. Get your business website built in 24-48 hours.", 
-  keywords = "website developer India, car showroom website India, gym website builder, logistics website design, website builder for everyone, affordable web design",
+  title = "QUICWEB – Premium Mobile-First Web Solutions", 
+  description = "QUICWEB provides expert custom web design services and premium mobile-first website development. Launch your business website in 24-48 hours.", 
+  keywords = "website developer, mobile-first design, premium web design, affordable website builder, business growth",
   image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop",
-  url = "https://webbylaunch.vercel.app"
+  url = "https://quicweb.vercel.app"
 }) => {
   return (
     <>

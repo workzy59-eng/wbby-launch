@@ -14,7 +14,7 @@ export default function Contact() {
 
   return (
     <div className="pt-40 pb-20 px-10">
-      <SEO title="Contact WebbyLaunch – Get Your Website Built Today" />
+      <SEO title="Contact QUICWEB – Get Your Website Built Today" />
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-20">
           <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter">
@@ -41,7 +41,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-widest text-white/20 mb-1">Email Us</h4>
-                  <p className="text-xl font-black uppercase italic tracking-tighter">hello@webbylaunch.com</p>
+                  <p className="text-xl font-black uppercase italic tracking-tighter">hello@quicweb.com</p>
                 </div>
               </div>
 

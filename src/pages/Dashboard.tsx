@@ -72,11 +72,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const currentStepIndex = selectedProject ? statusSteps.indexOf(selectedProject.status) : -1;
 
   return (
-    <div className="min-h-screen bg-[#064E3B] font-sans text-white selection:bg-[#E6FF00] selection:text-[#064E3B]">
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black">
       {/* Sidebar Navigation */}
       <aside className="fixed left-0 top-0 bottom-0 w-24 bg-black/20 backdrop-blur-3xl border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
-        <div className="w-12 h-12 bg-[#E6FF00] rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(230,255,0,0.2)]">
-          <span className="text-black font-black text-xl italic tracking-tighter">W</span>
+        <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-xl">
+          <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
         </div>
         <nav className="flex-1 flex flex-col gap-6">
           {[
@@ -137,8 +137,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       <header className="lg:hidden bg-black/20 backdrop-blur-xl px-6 py-6 border-b border-white/5 sticky top-0 z-40">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#E6FF00] rounded-lg flex items-center justify-center">
-              <span className="text-black font-black text-sm italic">W</span>
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-sm italic">Q</span>
             </div>
             <div className="text-xl font-black tracking-tighter uppercase italic">{APP_NAME}</div>
           </div>
@@ -149,22 +149,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       </header>
 
       {/* Mobile Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-2xl border-t border-white/5 px-6 py-4 flex justify-around items-center z-40">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-around items-center z-40">
         {[
-          { id: 'dashboard', icon: LayoutDashboard },
-          { id: 'messages', icon: MessageCircle },
-          { id: 'settings', icon: Settings },
+          { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+          { id: 'messages', icon: MessageCircle, label: 'Chat' },
+          { id: 'settings', icon: Settings, label: 'Settings' },
         ].map((tab) => (
           <button 
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`p-3 rounded-xl transition-all ${
+            onClick={() => tab.id === 'settings' ? navigate('/settings') : setActiveTab(tab.id as any)}
+            className={`flex flex-col items-center gap-1 transition-all ${
               activeTab === tab.id 
-                ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.2)]' 
-                : 'text-white/30'
+                ? 'text-black' 
+                : 'text-gray-400'
             }`}
           >
-            <tab.icon size={20} />
+            <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
           </button>
         ))}
       </nav>
@@ -559,7 +560,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[#4A5D4E]/80 backdrop-blur-md" 
+              className="absolute inset-0 bg-black/80 backdrop-blur-md" 
               onClick={() => setShowChat(false)} 
             />
             <motion.div 
@@ -567,7 +568,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xl bg-[#064E3B] h-full shadow-2xl flex flex-col border-l border-white/10"
+              className="relative w-full max-w-xl bg-black h-full shadow-2xl flex flex-col border-l border-white/10"
             >
               <div className="px-10 py-10 border-b border-white/5 flex justify-between items-center">
                 <h2 className="text-3xl font-black tracking-tighter uppercase italic text-[#E6FF00]">Project Chat</h2>
@@ -610,7 +611,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-[#064E3B] rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#E6FF00]/10"
+              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#E6FF00]/10"
             >
               <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#E6FF00]">Cancel Project?</h3>
               <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>

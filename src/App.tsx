@@ -47,26 +47,26 @@ function MobileRestriction({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Allow Public Pages
-  const publicPaths = ['/', '/auth', '/about', '/contact', '/services', '/pricing', '/blog', '/privacy-policy', '/terms'];
+  const publicPaths = ['/', '/auth', '/about', '/contact', '/services', '/pricing', '/blog', '/privacy-policy', '/terms', '/settings'];
   const isPublicPage = publicPaths.includes(location.pathname) || location.pathname.startsWith('/portfolio') || location.pathname.startsWith('/blog/');
 
   if (isMobile && !isPublicPage) {
     return (
-      <div className="min-h-screen bg-[#4A5D4E] flex items-center justify-center p-10 text-center font-sans">
+      <div className="min-h-screen bg-black flex items-center justify-center p-10 text-center font-sans">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 p-12 rounded-[3rem] max-w-md shadow-2xl"
+          className="bg-white/5 backdrop-blur-xl border border-white/10 p-12 rounded-[3rem] max-w-md shadow-2xl"
         >
-          <div className="w-24 h-24 bg-[#E6FF00] rounded-full flex items-center justify-center mx-auto mb-8 text-black shadow-[0_0_40px_rgba(230,255,0,0.3)]">
+          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 text-black shadow-xl">
             <Smartphone size={48} />
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic mb-4">Mobile Browser Restricted</h1>
+          <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic mb-4">Mobile Optimized</h1>
           <p className="text-white/60 font-medium mb-10 leading-relaxed">
-            Sorry, the dashboard is optimized for desktop. Please use a computer or download our official app.
+            QUICWEB is best experienced on our mobile app or desktop. Some dashboard features are restricted on mobile browsers.
           </p>
-          <button className="w-full bg-[#E6FF00] text-black py-5 rounded-2xl font-black uppercase italic text-lg flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl">
-            Get Started
+          <button onClick={() => window.location.href = '/'} className="w-full bg-white text-black py-5 rounded-2xl font-black uppercase italic text-lg flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl">
+            Back to Home
           </button>
         </motion.div>
       </div>
@@ -105,7 +105,7 @@ In 2026, having a digital presence is no longer optional for businesses in India
 Before you start, decide what your website needs to do. Is it for lead generation, showcasing a portfolio, or direct sales?
 
 ## 2. Choose the Right Platform
-While DIY builders exist, professional services like **WebbyLaunch** offer custom designs that are optimized for the Indian market.
+While DIY builders exist, professional services like **QUICWEB** offer custom designs that are optimized for the Indian market.
 
 ## 3. Focus on Mobile
 Over 80% of Indian users access the web via smartphones. Your site must be mobile-responsive.
@@ -116,7 +116,7 @@ Use local keywords like "best gym in Mumbai" or "car showroom in Delhi" to attra
 ## 5. Fast Loading
 With varying internet speeds across the country, a fast-loading site is crucial for retaining visitors.
               `,
-              author: "WebbyLaunch Team",
+              author: "QUICWEB Team",
               date: serverTimestamp(),
               image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426",
               category: "Business",
@@ -132,7 +132,7 @@ With varying internet speeds across the country, a fast-loading site is crucial 
 What makes a website "the best" for a small business in 2026? It's not just about looking pretty; it's about performance, trust, and real-time engagement.
 
 ## 1. Real-Time Communication
-In 2026, customers expect instant answers. Integrating a real-time chat system like the one provided by **WebbyLaunch** ensures you never miss a lead. Our system allows you to chat directly with your customers, providing a seamless experience similar to WhatsApp.
+In 2026, customers expect instant answers. Integrating a real-time chat system like the one provided by **QUICWEB** ensures you never miss a lead. Our system allows you to chat directly with your customers, providing a seamless experience similar to WhatsApp.
 
 ## 2. AI-Driven Personalization
 Websites that adapt to user behavior are seeing 40% higher conversion rates. From personalized product recommendations to dynamic content, AI is the future. We integrate Gemini AI to help you generate content and analyze user data.
@@ -146,9 +146,9 @@ Clear testimonials, SSL certificates, and secure payment gateways are non-negoti
 ## 5. Mobile-First Design
 Your website must look and function perfectly on mobile devices. Our "Iron Pulse" and "Cargo Flow" UIs are designed mobile-first, ensuring a premium experience on every screen.
 
-At **WebbyLaunch**, we incorporate all these features into our standard business launch plans to ensure your success.
+At **QUICWEB**, we incorporate all these features into our standard business launch plans to ensure your success.
               `,
-              author: "WebbyLaunch Team",
+              author: "QUICWEB Team",
               date: serverTimestamp(),
               image: "https://images.unsplash.com/photo-1454165833767-0274b0596d33?q=80&w=2340",
               category: "Design",
@@ -168,9 +168,9 @@ Everyone often operates on tight budgets. However, skimping on your website can 
 2. **Focus on MVP:** Start with the essential pages (Home, About, Services, Contact).
 3. **Subscription Models:** Instead of a huge upfront cost, look for affordable monthly plans.
 
-**WebbyLaunch** offers plans starting from just ₹1,499/-, making it the perfect choice for everyone in India.
+**QUICWEB** offers plans starting from just ₹1,499/-, making it the perfect choice for everyone in India.
               `,
-              author: "WebbyLaunch Team",
+              author: "QUICWEB Team",
               date: serverTimestamp(),
               image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2340",
               category: "Everyone",

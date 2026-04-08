@@ -19,7 +19,7 @@ export default function Pricing() {
         'Backups',
         'Email Support'
       ],
-      color: 'bg-[#E6FF00]/5 border-[#E6FF00]/20 rounded-[3.5rem] shadow-[0_0_30px_rgba(230,255,0,0.05)]',
+      color: 'bg-white/5 border-[#E6FF00]/30 rounded-[3.5rem] shadow-[0_0_40px_rgba(230,255,0,0.15)]',
       stripeLink: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07'
     },
     {
@@ -51,7 +51,7 @@ export default function Pricing() {
         'Priority support',
         'Monthly performance review'
       ],
-      color: 'bg-[#E6FF00]/5 border-[#E6FF00]/20 rounded-[3.5rem] shadow-[0_0_30px_rgba(230,255,0,0.05)]',
+      color: 'bg-white/5 border-[#E6FF00]/30 rounded-[3.5rem] shadow-[0_0_40px_rgba(230,255,0,0.15)]',
       stripeLink: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09'
     }
   ];
@@ -61,7 +61,7 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-screen bg-[#064E3B] font-sans text-white selection:bg-[#E6FF00] selection:text-[#064E3B] py-20 px-6">
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black py-20 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-20">
           <motion.div 
@@ -86,7 +86,7 @@ export default function Pricing() {
             transition={{ delay: 0.2 }}
             className="text-xl text-white/40 max-w-2xl mx-auto font-medium italic"
           >
-            Choose the plan that fits your business goals. Secure payments powered by Stripe. Subscription renews monthly. Cancel anytime.
+            QUICWEB offers simple, transparent pricing for every business size. Secure payments powered by Stripe. Subscription renews monthly. Cancel anytime.
           </motion.p>
         </div>
 

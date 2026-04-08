@@ -40,9 +40,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       description: 'High-energy landing page for fitness centers.'
     },
     { 
-      title: 'Logistics', 
+      title: 'Cargo Logistics', 
       category: 'Cargo Flow UI', 
-      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=800&auto=format&fit=crop', 
+      image: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=800&auto=format&fit=crop', 
       link: '/portfolio/cargo',
       description: 'Efficient tracking and management for logistics.'
     }
@@ -59,7 +59,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       id: 2, 
       name: 'Priya Patel', 
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop', 
-      description: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer.' 
+      description: 'QUICWEB made our logistics portal look professional. The tracking feature is a game changer.' 
     },
     { 
       id: 3, 
@@ -71,7 +71,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       id: 4, 
       name: 'Sneha Reddy', 
       avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=200&auto=format&fit=crop', 
-      description: 'My online boutique took off after WebbyLaunch built my site. The payment integration is flawless and secure.' 
+      description: 'My online boutique took off after QUICWEB built my site. The payment integration is flawless and secure.' 
     },
     { 
       id: 5, 
@@ -83,7 +83,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       id: 6, 
       name: 'Ananya Gupta', 
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop', 
-      description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend WebbyLaunch!' 
+      description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend QUICWEB!' 
     },
     { 
       id: 7, 
@@ -95,7 +95,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       id: 8, 
       name: 'Meera Iyer', 
       avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop', 
-      description: 'As a tutor, I needed a platform to share resources. WebbyLaunch delivered a perfect portal in record time.' 
+      description: 'As a tutor, I needed a platform to share resources. QUICWEB delivered a perfect portal in record time.' 
     },
     { 
       id: 9, 
@@ -119,7 +119,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
   ];
 
   return (
-    <div className="bg-[#4A5D4E]">
+    <div className="bg-black">
       <SEO />
       
       {/* WhatsApp Floating Button */}
@@ -150,12 +150,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             className="max-w-5xl mx-auto"
           >
             <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter mb-8 leading-[0.85] text-white uppercase italic">
-              Get Your Business Website<br />
+              Launch Your Business<br />
               <span className="text-[#E6FF00]">in 24 Hours.</span>
             </h1>
 
             <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-medium text-white/60 leading-relaxed">
-              We build professional websites for small businesses. No coding. No stress. We build it for you while you focus on your business.
+              QUICWEB builds premium, mobile-first websites for modern businesses. No coding. No stress. We build it for you while you focus on growth.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -409,7 +409,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Starter Launch */}
-            <div className="bg-[#E6FF00]/5 border border-[#E6FF00]/20 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col shadow-[0_0_30px_rgba(230,255,0,0.05)]">
+            <div className="bg-white/5 border border-[#E6FF00]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/50 transition-all flex flex-col shadow-[0_0_40px_rgba(230,255,0,0.15)]">
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
                 <div className="flex items-end justify-center gap-2">
@@ -480,7 +480,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </div>
 
             {/* Enterprise Elite */}
-            <div className="bg-[#E6FF00]/5 border border-[#E6FF00]/20 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col shadow-[0_0_30px_rgba(230,255,0,0.05)]">
+            <div className="bg-white/5 border border-[#E6FF00]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/50 transition-all flex flex-col shadow-[0_0_40px_rgba(230,255,0,0.15)]">
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Enterprise Elite</h4>
                 <div className="flex items-end justify-center gap-2">

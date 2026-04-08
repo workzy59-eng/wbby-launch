@@ -1,5 +1,5 @@
 export const ADMIN_EMAIL = 'workzy59@gmail.com';
-export const PROFESSIONAL_EMAIL = 'contact@webbylaunch.com';
-export const APP_NAME = 'WebbyLaunch';
-export const HYPHENATED_NAME = 'webby-launch';
+export const PROFESSIONAL_EMAIL = 'contact@quicweb.com';
+export const APP_NAME = 'QUICWEB';
+export const HYPHENATED_NAME = 'quic-web';
 export const MONTHLY_PRICE = '899';

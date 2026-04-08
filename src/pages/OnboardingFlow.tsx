@@ -290,8 +290,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     
     // Header
     doc.setFontSize(22);
-    doc.setTextColor(74, 93, 78); // #4A5D4E
-    doc.text('WebbyLaunch Project Summary', 20, 20);
+    doc.setTextColor(0, 0, 0);
+    doc.text('QUICWEB Project Summary', 20, 20);
     
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
@@ -325,7 +325,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     const splitDesc = doc.splitTextToSize(formData.description || 'No description provided.', 160);
     doc.text(splitDesc, 20, y);
     
-    doc.save(`WebbyLaunch_Project_Summary.pdf`);
+    doc.save(`QUICWEB_Project_Summary.pdf`);
   };
 
   const [domainData, setDomainData] = useState({
@@ -961,7 +961,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       </div>
                     </div>
                     <div className="text-2xl font-black text-white">
-                      ₹1,499/-
+                      {formData.plan === 'basic' ? '₹1,499/-' : formData.plan === 'standard' ? '₹3,499/-' : '₹9,999/-'}
                     </div>
                   </div>
                 ) : (
@@ -1105,15 +1105,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#064E3B] font-sans selection:bg-[#E6FF00] selection:text-black">
+    <div className="min-h-screen bg-black font-sans selection:bg-[#E6FF00] selection:text-black">
       <header className="px-10 py-8 border-b border-white/5">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#E6FF00] rounded-lg flex items-center justify-center">
-              <span className="text-black font-black text-xl italic tracking-tighter">W</span>
+              <span className="text-black font-black text-xl italic tracking-tighter">Q</span>
             </div>
             <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
-              Webby<span className="text-[#E6FF00]">Launch</span>
+              QUIC<span className="text-[#E6FF00]">WEB</span>
             </div>
           </div>
           <div className="flex items-center gap-4">

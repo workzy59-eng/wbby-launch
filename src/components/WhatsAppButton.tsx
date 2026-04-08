@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 
 const WhatsAppButton: React.FC = () => {
   const phoneNumber = "919876543210"; // Replace with actual admin number
-  const message = "Hi WebbyLaunch, I'm interested in starting a website project.";
+  const message = "Hi QUICWEB, I'm interested in starting a website project.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (

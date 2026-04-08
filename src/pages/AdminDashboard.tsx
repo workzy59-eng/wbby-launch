@@ -155,8 +155,8 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
 
   const handleDownloadDescription = (project: Project, format: 'pdf' | 'txt') => {
     const content = `
-WebbyLaunch Project Details
-EST 2020
+QUICWEB Project Details
+EST 2026
 --------------------------------------------------
 
 1. PROJECT OVERVIEW (BUSINESS)
@@ -197,12 +197,12 @@ Generated on: ${new Date().toLocaleString()}
       
       // Header
       doc.setFontSize(22);
-      doc.setTextColor(74, 93, 78); // #4A5D4E
-      doc.text('WebbyLaunch Project Details', 20, 20);
+      doc.setTextColor(0, 0, 0);
+      doc.text('QUICWEB Project Details', 20, 20);
       doc.setFontSize(12);
-      doc.text('EST 2020', 20, 28);
+      doc.text('EST 2026', 20, 28);
       
-      doc.setDrawColor(230, 255, 0); // #E6FF00
+      doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(1);
       doc.line(20, 32, 190, 32);
 

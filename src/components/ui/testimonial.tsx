@@ -44,12 +44,12 @@ const TestimonialCarousel = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "h-72 w-full flex items-center justify-center",
+          "h-[32rem] w-full flex items-center justify-center",
           className
         )}
         {...props}
       >
-        <div className="relative w-80 h-64">
+        <div className="relative w-[32rem] h-[24rem]">
           {testimonials.map((testimonial, index) => {
             const isCurrentCard = index === currentIndex
             const isPrevCard =
@@ -63,9 +63,9 @@ const TestimonialCarousel = React.forwardRef<
               <motion.div
                 key={testimonial.id}
                 className={cn(
-                  "absolute w-full h-full rounded-2xl cursor-grab active:cursor-grabbing",
-                  "bg-[#4A5D4E] border border-white/10 shadow-2xl",
-                  "dark:bg-[#4A5D4E] dark:shadow-[0_0_30px_rgba(230,255,0,0.1)]",
+                  "absolute w-full h-full rounded-[3rem] cursor-grab active:cursor-grabbing",
+                  "bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl",
+                  "dark:bg-white/5 dark:shadow-[0_0_50px_rgba(230,255,0,0.15)]",
                 )}
                 style={{
                   zIndex: isCurrentCard ? 3 : isPrevCard ? 2 : 1,
@@ -117,7 +117,7 @@ const TestimonialCarousel = React.forwardRef<
                         <span key={star} className="text-[#E6FF00] text-xs">★</span>
                       ))}
                     </div>
-                    <p className="text-lg font-medium italic text-white/90 leading-relaxed">
+                    <p className="text-2xl font-black italic text-white leading-tight uppercase tracking-tighter">
                       "{testimonial.description}"
                     </p>
                   </div>

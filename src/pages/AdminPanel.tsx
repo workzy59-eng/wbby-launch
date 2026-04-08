@@ -85,11 +85,11 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
   if (!isUserAdmin) {
     return (
-      <div className="min-h-screen bg-[#4A5D4E] flex items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full bg-[#5E7162] rounded-[3rem] p-12 border border-red-500/20 shadow-2xl">
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full bg-white/5 backdrop-blur-xl rounded-[3rem] p-12 border border-red-500/20 shadow-2xl">
           <h2 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-red-500">Access Denied</h2>
           <p className="text-white/60 mb-10 text-lg font-bold">You do not have administrative privileges to access this panel.</p>
-          <Link to="/dashboard" className="inline-block bg-[#E6FF00] text-[#4A5D4E] px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all">
+          <Link to="/dashboard" className="inline-block bg-white text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all">
             Return to Dashboard
           </Link>
         </div>
@@ -188,8 +188,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
   const handleDownloadDescription = (project: Project, format: 'pdf' | 'txt') => {
     const content = `
-WebbyLaunch Project Details
-EST 2020
+QUICWEB Project Details
+EST 2026
 --------------------------------------------------
 
 1. PROJECT OVERVIEW (BUSINESS)
@@ -231,12 +231,12 @@ Generated on: ${new Date().toLocaleString()}
       
       // Header
       doc.setFontSize(22);
-      doc.setTextColor(74, 93, 78); // #4A5D4E
-      doc.text('WebbyLaunch Project Details', 20, 20);
+      doc.setTextColor(0, 0, 0);
+      doc.text('QUICWEB Project Details', 20, 20);
       doc.setFontSize(12);
-      doc.text('EST 2020', 20, 28);
+      doc.text('EST 2026', 20, 28);
       
-      doc.setDrawColor(230, 255, 0); // #E6FF00
+      doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(1);
       doc.line(20, 32, 190, 32);
 

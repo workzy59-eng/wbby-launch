@@ -52,7 +52,7 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <div className="min-h-screen bg-[#4A5D4E] font-sans text-white py-32 px-10">
+    <div className="min-h-screen bg-black font-sans text-white py-32 px-10">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
           <div className="space-y-4">

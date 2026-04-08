@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle } from 'lucide-react';
+import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2 } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import NavHeader from './ui/nav-header';
@@ -21,26 +21,33 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   if (isDashboard || isPortfolio) return <>{children}</>;
 
   const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Services', path: '/services' },
-    { name: 'Portfolio', path: '/#portfolio' },
-    { name: 'Pricing', path: '/pricing' },
-    { name: 'Blog', path: '/blog' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'Home', path: '/', icon: Menu },
+    { name: 'About', path: '/about', icon: Menu },
+    { name: 'Services', path: '/services', icon: Menu },
+    { name: 'Portfolio', path: '/#portfolio', icon: Menu },
+    { name: 'Pricing', path: '/pricing', icon: Menu },
+    { name: 'Blog', path: '/blog', icon: Menu },
+    { name: 'Contact', path: '/contact', icon: Menu },
+  ];
+
+  const bottomNavItems = [
+    { name: 'Home', path: '/dashboard', icon: Smartphone },
+    { name: 'Chat', path: '/dashboard?chat=true', icon: MessageCircle },
+    { name: 'Project', path: '/dashboard', icon: Briefcase },
+    { name: 'Settings', path: '/settings', icon: Settings2 },
   ];
 
   return (
-    <div className="min-h-screen bg-[#4A5D4E] text-white font-sans selection:bg-[#E6FF00] selection:text-black">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#E6FF00] selection:text-black">
       {/* Navbar */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#E6FF00] rounded-lg flex items-center justify-center">
-              <span className="text-black font-black text-xl italic tracking-tighter">W</span>
+            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
             </div>
-            <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
-              Webby<span className="text-[#E6FF00]">Launch</span>
+            <div className="text-2xl font-black tracking-tighter uppercase italic text-black">
+              QUIC<span className="text-gray-400">WEB</span>
             </div>
           </Link>
 
@@ -82,16 +89,32 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
       <main>{children}</main>
 
+      {/* Mobile Bottom Navigation */}
+      {user && (
+        <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 px-6 py-3 flex items-center justify-between z-50 pb-safe">
+          {bottomNavItems.map((item) => (
+            <Link 
+              key={item.name} 
+              to={item.path} 
+              className={`flex flex-col items-center gap-1 ${location.pathname === item.path ? 'text-black' : 'text-gray-400'}`}
+            >
+              <item.icon size={20} strokeWidth={location.pathname === item.path ? 2.5 : 2} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">{item.name}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
+
       {/* Footer */}
       <footer className="bg-black/40 backdrop-blur-3xl border-t border-white/5 pt-32 pb-16 px-10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20">
           <div className="space-y-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#E6FF00] rounded-lg flex items-center justify-center">
-                <span className="text-black font-black text-xl italic tracking-tighter">W</span>
+              <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+                <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
               </div>
               <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
-                Webby<span className="text-[#E6FF00]">Launch</span>
+                QUIC<span className="text-gray-400">WEB</span>
               </div>
             </div>
             <p className="text-white/40 text-sm font-medium leading-relaxed">
@@ -131,7 +154,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
                 <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
                   <Mail size={18} />
                 </div>
-                <span className="text-sm font-bold text-white/40 group-hover:text-white transition-colors">hello@webbylaunch.com</span>
+                <span className="text-sm font-bold text-white/40 group-hover:text-white transition-colors">contact@quicweb.com</span>
               </div>
               <div className="flex items-center gap-4 group cursor-pointer">
                 <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
@@ -145,7 +168,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
         <div className="max-w-7xl mx-auto mt-32 pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
-            © 2026 WebbyLaunch. Professional Website Development.
+            © 2026 QUICWEB. Premium Mobile-First Web Solutions.
           </p>
           <div className="flex items-center gap-8">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Made in India</span>

@@ -1,11 +1,11 @@
 {
-  "name": "WebbyLaunch",
-  "short_name": "WebbyLaunch",
+  "name": "QUICWEB",
+  "short_name": "QUICWEB",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#4A5D4E",
-  "theme_color": "#E6FF00",
-  "description": "Premium website development and maintenance platform.",
+  "background_color": "#000000",
+  "theme_color": "#ffffff",
+  "description": "Premium mobile-first website development platform.",
   "icons": [
     {
       "src": "/favicon.svg",
