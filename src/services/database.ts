@@ -368,6 +368,7 @@ export const sendMessage = async (projectId: string, messageData: any) => {
       ...messageData,
       projectId,
       createdAt: serverTimestamp(),
+      status: 'sent',
       seen: false,
       attachments: messageData.attachments || [],
     });
@@ -431,6 +432,7 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       ...messageData,
       conversationId,
       createdAt: serverTimestamp(),
+      status: 'sent',
       seen: false,
       attachments: messageData.attachments || [],
     });
@@ -476,17 +478,39 @@ export const markMessageAsSeen = async (messageId: string, conversationId?: stri
   try {
     if (conversationId) {
       await updateDoc(doc(db, 'conversations', conversationId, 'messages', messageId), {
+        status: 'seen',
         seen: true,
         seenTime: serverTimestamp()
       });
     } else if (projectId) {
       await updateDoc(doc(db, 'projects', projectId, 'messages', messageId), {
+        status: 'seen',
         seen: true,
         seenTime: serverTimestamp()
       });
     }
   } catch (error) {
     console.error('Error marking message as seen:', error);
+  }
+};
+
+export const markMessageAsDelivered = async (messageId: string, conversationId?: string, projectId?: string) => {
+  try {
+    if (conversationId) {
+      const msgRef = doc(db, 'conversations', conversationId, 'messages', messageId);
+      const msgDoc = await getDoc(msgRef);
+      if (msgDoc.exists() && msgDoc.data().status === 'sent') {
+        await updateDoc(msgRef, { status: 'delivered' });
+      }
+    } else if (projectId) {
+      const msgRef = doc(db, 'projects', projectId, 'messages', messageId);
+      const msgDoc = await getDoc(msgRef);
+      if (msgDoc.exists() && msgDoc.data().status === 'sent') {
+        await updateDoc(msgRef, { status: 'delivered' });
+      }
+    }
+  } catch (error) {
+    console.error('Error marking message as delivered:', error);
   }
 };
 

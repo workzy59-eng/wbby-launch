@@ -129,6 +129,7 @@ export interface Message {
   attachmentUrl?: string;
   fileData?: string; // Base64 string
   createdAt: string | Timestamp;
+  status: 'sent' | 'delivered' | 'seen';
   seen: boolean;
   seenTime?: string | Timestamp;
   isDeleted?: boolean;

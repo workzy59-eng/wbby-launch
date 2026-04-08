@@ -123,13 +123,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     if (!systemSettings) return [];
     const req = systemSettings.requiredFields;
 
-    const validatePhone = (p: string) => /^[6-9]\d{9}$/.test(p);
+    const validatePhone = (p: string) => /^\d{10}$/.test(p);
     const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     const invalid: string[] = [];
 
     switch (currentStep) {
       case 1: // Personal info
-        if (!formData.name) invalid.push('name');
+        if (!formData.name || formData.name.length < 3) invalid.push('name');
         if (!validateEmail(formData.email)) invalid.push('email');
         if (req.phone && !validatePhone(formData.phone)) invalid.push('phone');
         if (formData.username.length < 3) invalid.push('username');

@@ -52,9 +52,11 @@ import {
   getTypingStatus,
   uploadFile,
   markConversationAsSeen,
-  markProjectAsSeen
+  markProjectAsSeen,
+  markMessageAsDelivered,
+  markMessageAsSeen as markMsgSeen
 } from '../services/database';
-import { formatDate } from '../lib/utils';
+import { formatDate, isSameDay } from '../lib/utils';
 import ChatSystem from './ChatSystem';
 
 interface MessagesModuleProps {
@@ -88,6 +90,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [showUserList, setShowUserList] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -197,6 +201,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const unsubMessages = getDirectMessages(recipientId, (messagesData) => {
       const newMessages = messagesData as Message[];
       setMessages(newMessages);
+
+      // Mark as delivered if recipient receives it
+      newMessages.forEach(async (m) => {
+        if (m.senderId !== currentUser.uid && m.status === 'sent') {
+          await markMessageAsDelivered(m.id, activeConversation.id);
+        }
+      });
     });
 
     // Typing status listener
@@ -229,6 +240,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         senderId: currentUser.uid,
         senderName: currentUser.displayName || profile?.displayName || 'User',
         text: inputText,
+        status: 'sent',
       });
       setInputText('');
       // Clear typing status
@@ -296,6 +308,61 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     }
     return c.recipientProfile?.displayName.toLowerCase().includes(searchQuery.toLowerCase());
   });
+
+  const renderMessages = () => {
+    const filteredMessages = messageSearchQuery
+      ? messages.filter(m => m.text.toLowerCase().includes(messageSearchQuery.toLowerCase()))
+      : messages;
+
+    return filteredMessages.map((m, idx) => {
+      const isMe = m.senderId === currentUser.uid;
+      const showDate = idx === 0 || (m.createdAt && messages[idx - 1].createdAt && !isSameDay(m.createdAt, messages[idx - 1].createdAt));
+      
+      return (
+        <React.Fragment key={m.id}>
+          {showDate && (
+            <div className="flex justify-center my-6">
+              <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black text-white/60 uppercase tracking-widest border border-white/5 shadow-lg">
+                {formatDate(m.createdAt, 'separator')}
+              </span>
+            </div>
+          )}
+          <div className={`flex items-end gap-2 mb-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[70%]`}>
+              <div className={`relative p-3 rounded-2xl text-sm font-medium leading-relaxed shadow-xl ${
+                isMe 
+                  ? 'bg-[#005c4b] text-white rounded-tr-none' 
+                  : 'bg-[#202c33] text-white border border-white/5 rounded-tl-none'
+              }`}>
+                {!isMe && activeConversation.isProject && (
+                  <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mb-1">
+                    {m.senderName}
+                  </p>
+                )}
+                {m.text}
+                <div className={`flex items-center gap-1.5 mt-1 justify-end ${isMe ? 'opacity-60' : 'opacity-40'}`}>
+                  <span className="text-[9px] font-bold uppercase tracking-widest">
+                    {formatDate(m.createdAt, 'chat')}
+                  </span>
+                  {isMe && (
+                    <span>
+                      {m.status === 'seen' ? (
+                        <CheckCheck size={14} className="text-[#53bdeb]" />
+                      ) : m.status === 'delivered' ? (
+                        <CheckCheck size={14} className="text-white/60" />
+                      ) : (
+                        <Check size={14} className="text-white/40" />
+                      )}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </React.Fragment>
+      );
+    });
+  };
 
   const containerClasses = fullScreen 
     ? "fixed inset-0 z-[200] bg-[#020617] flex flex-col md:flex-row overflow-hidden font-sans"
@@ -498,6 +565,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </div>
 
               <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setShowSearch(!showSearch)}
+                  className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#E6FF00] text-black' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}
+                >
+                  <Search size={20} />
+                </button>
                 <button className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all">
                   <Phone size={20} />
                 </button>
@@ -513,6 +586,22 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </button>
               </div>
             </header>
+
+            {showSearch && (
+              <div className="p-4 bg-slate-900/40 border-b border-white/5 animate-in slide-in-from-top duration-300">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                  <input 
+                    type="text"
+                    placeholder="Search messages..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white outline-none focus:border-[#E6FF00]/30 transition-all"
+                    value={messageSearchQuery}
+                    onChange={(e) => setMessageSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Messages Area */}
             <div 
@@ -542,81 +631,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   </div>
                 </div>
               )}
-              {messages.map((m, idx) => {
-                const isMe = m.senderId === currentUser.uid;
-                const showAvatar = idx === 0 || messages[idx - 1].senderId !== m.senderId;
-                const showDate = idx === 0 || (m.createdAt && messages[idx - 1].createdAt && formatDate(m.createdAt, 'MMM d') !== formatDate(messages[idx - 1].createdAt, 'MMM d'));
-                
-                return (
-                  <React.Fragment key={m.id}>
-                    {showDate && (
-                      <div className="flex justify-center my-6">
-                        <span className="px-4 py-1.5 bg-white/5 backdrop-blur-md rounded-full text-[10px] font-black text-white/40 uppercase tracking-widest border border-white/5">
-                          {formatDate(m.createdAt, 'MMMM d, yyyy')}
-                        </span>
-                      </div>
-                    )}
-                    <div className={`flex items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[70%]`}>
-                        <div className={`relative p-3.5 rounded-2xl text-sm font-medium leading-relaxed shadow-xl ${
-                          isMe 
-                            ? 'bg-[#005c4b] text-white rounded-tr-none' 
-                            : 'bg-[#202c33] text-white border border-white/5 rounded-tl-none'
-                        }`}>
-                          {!isMe && activeConversation.isProject && (
-                            <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mb-1">
-                              {m.senderName}
-                            </p>
-                          )}
-                          {m.text}
-                          {m.imageUrl && (
-                            <div className="mt-2 rounded-xl overflow-hidden border border-white/10 bg-black/20">
-                              <img 
-                                src={m.imageUrl} 
-                                alt="Attachment" 
-                                className="max-w-full h-auto object-cover cursor-pointer hover:scale-105 transition-transform duration-500" 
-                                referrerPolicy="no-referrer"
-                                onClick={() => window.open(m.imageUrl, '_blank')}
-                              />
-                            </div>
-                          )}
-                          {m.attachmentUrl && (
-                            <a 
-                              href={m.attachmentUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="mt-2 flex items-center gap-3 p-3 bg-black/20 rounded-xl text-xs hover:bg-black/40 transition-all border border-white/5 group"
-                            >
-                              <div className="w-10 h-10 bg-[#E6FF00]/10 rounded-lg flex items-center justify-center text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
-                                <FileText size={20} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-black uppercase tracking-tighter truncate">Document</p>
-                                <p className="text-[10px] opacity-40 font-bold uppercase tracking-widest">Click to view</p>
-                              </div>
-                            </a>
-                          )}
-                          
-                          <div className="flex items-center justify-end gap-1.5 mt-1 opacity-60">
-                            <span className="text-[9px] font-bold uppercase tracking-widest">
-                              {m.createdAt ? formatDate(m.createdAt, 'h:mm a') : '...'}
-                            </span>
-                            {isMe && (
-                              <span>
-                                {m.seen ? (
-                                  <CheckCheck size={14} className="text-[#53bdeb]" />
-                                ) : (
-                                  <Check size={14} />
-                                )}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
+              {renderMessages()}
               {typingUsers.length > 0 && (
                 <div className="flex items-center gap-2 text-[10px] text-[#E6FF00] font-black uppercase tracking-widest italic animate-pulse">
                   <div className="flex gap-1">
@@ -632,82 +647,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             {/* Input Area */}
             <footer className="p-6 bg-white/5 border-t border-white/5">
               <form onSubmit={handleSendMessage} className="flex items-center gap-4 max-w-4xl mx-auto">
-                <div className="flex gap-2">
-                  <input 
-                    type="file" 
-                    id="direct-file-upload" 
-                    className="hidden" 
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file || !activeConversation) return;
-                      const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-                      if (!recipientId) return;
 
-                      setIsSending(true);
-                      try {
-                        const url = await uploadFile(file, 'attachments');
-                        
-                        await sendDirectMessage(recipientId, {
-                          senderId: currentUser.uid,
-                          senderName: currentUser.displayName || profile?.displayName || 'User',
-                          text: `Sent an attachment: ${file.name}`,
-                          attachmentUrl: url
-                        });
-                      } catch (error) {
-                        console.error('File upload failed:', error);
-                        alert('File upload failed. Please try again.');
-                      } finally {
-                        setIsSending(false);
-                      }
-                    }}
-                  />
-                  <label 
-                    htmlFor="direct-file-upload"
-                    className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all cursor-pointer"
-                  >
-                    <Paperclip size={20} />
-                  </label>
 
-                  <input 
-                    type="file" 
-                    id="direct-image-upload" 
-                    accept="image/*"
-                    className="hidden" 
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file || !activeConversation) return;
-                      if (!file.type.startsWith('image/')) {
-                        alert('Only image files are allowed');
-                        return;
-                      }
-                      const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-                      if (!recipientId) return;
 
-                      setIsSending(true);
-                      try {
-                        const url = await uploadFile(file, 'images');
-                        
-                        await sendDirectMessage(recipientId, {
-                          senderId: currentUser.uid,
-                          senderName: currentUser.displayName || profile?.displayName || 'User',
-                          text: 'Sent an image',
-                          imageUrl: url
-                        });
-                      } catch (error) {
-                        console.error('Image upload failed:', error);
-                        alert('Image upload failed. Please try again.');
-                      } finally {
-                        setIsSending(false);
-                      }
-                    }}
-                  />
-                  <label 
-                    htmlFor="direct-image-upload"
-                    className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all cursor-pointer"
-                  >
-                    <ImageIcon size={20} />
-                  </label>
-                </div>
                 <div className="flex-1 relative">
                   <input 
                     type="text"

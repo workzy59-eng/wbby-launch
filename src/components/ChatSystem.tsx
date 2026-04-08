@@ -646,37 +646,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           onSubmit={handleSendMessage}
           className="max-w-5xl mx-auto flex items-center gap-4"
         >
-          <div className="flex gap-2">
-            <input 
-              type="file" 
-              id="chat-file-upload" 
-              multiple
-              className="hidden" 
-              onChange={(e) => handleFileUpload(e.target.files, false)}
-            />
-            <label 
-              htmlFor="chat-file-upload"
-              className="p-3 text-white/40 hover:text-white transition-all cursor-pointer"
-            >
-              <Paperclip size={24} />
-            </label>
-
-            <input 
-              type="file" 
-              id="chat-image-upload" 
-              accept="image/*"
-              multiple
-              className="hidden" 
-              onChange={(e) => handleFileUpload(e.target.files, true)}
-            />
-            <label 
-              htmlFor="chat-image-upload"
-              className="p-3 text-white/40 hover:text-white transition-all cursor-pointer"
-            >
-              <ImageIcon size={24} />
-            </label>
-          </div>
-          
           <div className="flex-1 relative">
             <input 
               type="text" 

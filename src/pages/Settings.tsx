@@ -86,6 +86,14 @@ export default function Settings({ user, profile }: SettingsProps) {
   }, [isAdmin]);
 
   const handleSave = async () => {
+    if (formData.displayName.length < 3) {
+      alert('Name must be at least 3 characters');
+      return;
+    }
+    if (!/^\d{10}$/.test(formData.phone)) {
+      alert('Phone number must be exactly 10 digits');
+      return;
+    }
     setIsSaving(true);
     try {
       await updateProfile(user.uid, {
