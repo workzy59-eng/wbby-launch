@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
 import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper } from 'lucide-react';
@@ -16,6 +16,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, profile }: DashboardProps) {
+  const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isSuccess = searchParams.get('success') === 'true';

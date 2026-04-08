@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Check, Sparkles, CreditCard, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { APP_NAME } from '../constants';
+import { getSystemSettings } from '../services/database';
 
 export default function Pricing() {
+  const [baseCost, setBaseCost] = useState(1499);
+
+  useEffect(() => {
+    getSystemSettings().then(settings => {
+      if (settings?.baseWebsiteCost) {
+        setBaseCost(settings.baseWebsiteCost);
+      }
+    });
+  }, []);
+
   const plans = [
     {
       name: 'Basic',
-      price: '₹1,499/-',
+      price: `₹${baseCost.toLocaleString()}/-`,
       description: 'Hosting & maintenance, minor text/image updates, backups, email support.',
       features: [
         '5 Pages Website',
@@ -77,8 +88,10 @@ export default function Pricing() {
             transition={{ delay: 0.1 }}
             className="text-7xl md:text-9xl font-black tracking-tighter uppercase italic leading-[0.8]"
           >
-            Simple <br />
-            <span className="text-[#E6FF00]">Transparent</span>
+            <Link to="/auth" className="hover:text-[#E6FF00] transition-colors">
+              Simple <br />
+              <span className="text-[#E6FF00]">Affordable</span> Plans.
+            </Link>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}

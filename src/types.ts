@@ -19,6 +19,7 @@ export interface UserProfile {
   businessEmail?: string;
   businessPhone?: string;
   businessLocation?: string;
+  googleMapsLink?: string;
   // Developer specific fields
   experience?: number;
   devRole?: string;
@@ -90,7 +91,7 @@ export interface Project {
   domain?: string;
   domainPreferences?: string[];
   paymentOption?: 'full' | 'advance' | 'understanding';
-  plan?: 'starter' | 'business' | 'Basic' | 'Pro';
+  plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Pro';
   paymentStatus?: 'pending' | 'paid';
   status: ProjectStatus;
   progress: number;
@@ -157,6 +158,9 @@ export interface SystemSettings {
     newMessages: boolean;
     newProjects: boolean;
   };
+  maintenanceMode?: boolean;
+  allowNewRegistrations?: boolean;
+  baseWebsiteCost?: number;
 }
 
 export interface BlogPost {

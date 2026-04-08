@@ -143,6 +143,8 @@ export const getTypingStatus = (conversationId: string, callback: (typingUsers: 
   return onSnapshot(q, (snapshot) => {
     const typingUsers = snapshot.docs.map(doc => doc.id);
     callback(typingUsers);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
   });
 };
 
@@ -673,6 +675,9 @@ export const getSystemSettings = async () => {
           newMessages: true,
           newProjects: true,
         },
+        maintenanceMode: false,
+        allowNewRegistrations: true,
+        baseWebsiteCost: 1499,
       };
       await setDoc(doc(db, 'system_settings', 'default'), defaultSettings);
       return defaultSettings;

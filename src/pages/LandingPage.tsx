@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
+import { getSystemSettings } from '../services/database';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -24,6 +25,16 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ user, profile }: LandingPageProps) {
+  const [baseCost, setBaseCost] = useState(1499);
+
+  useEffect(() => {
+    getSystemSettings().then(settings => {
+      if (settings?.baseWebsiteCost) {
+        setBaseCost(settings.baseWebsiteCost);
+      }
+    });
+  }, []);
+
   const portfolios = [
     { 
       title: 'Car Business', 
@@ -402,9 +413,11 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-24">
             <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Pricing</h2>
-            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-              Simple <span className="text-[#E6FF00]">Affordable</span> Plans.
-            </h3>
+            <Link to="/auth">
+              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic hover:text-[#E6FF00] transition-colors cursor-pointer">
+                Simple <span className="text-[#E6FF00]">Affordable</span> Plans.
+              </h3>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
@@ -413,7 +426,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
                 <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹1,499/-</span>
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹{baseCost.toLocaleString()}/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">

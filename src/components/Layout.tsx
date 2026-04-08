@@ -46,7 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
             <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
               <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
             </div>
-            <div className="text-2xl font-black tracking-tighter uppercase italic text-black">
+            <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
               QUIC<span className="text-gray-400">WEB</span>
             </div>
           </Link>

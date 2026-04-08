@@ -251,6 +251,8 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               }
             }
           });
+        }, (error) => {
+          console.error("Error in conversations snapshot listener:", error);
         });
         
         const handleBeforeUnload = () => {
