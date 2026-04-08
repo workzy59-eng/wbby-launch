@@ -27,7 +27,7 @@ export default function Gym() {
         </div>
         <div className="flex items-center gap-4">
           <Link to="/" className="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-            Back to Hub
+            Back to Webby
           </Link>
           <button className="bg-[#FF4D00] text-black px-8 py-3 rounded-full font-black uppercase italic text-xs hover:scale-105 transition-all">Member Login</button>
         </div>

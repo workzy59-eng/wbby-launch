@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp, onSnapshot, doc } from './firebase';
+import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp, onSnapshot, doc, query, where } from './firebase';
+import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
@@ -18,6 +19,8 @@ import Services from './pages/Services';
 import Pricing from './pages/Pricing';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import Testimonials from './pages/Testimonials';
+import HowItWorks from './pages/HowItWorks';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Settings from './pages/Settings';
@@ -77,6 +80,11 @@ export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+  }, []);
 
   useEffect(() => {
     const seedBlogPosts = async () => {
@@ -121,15 +129,24 @@ With varying internet speeds across the country, a fast-loading site is crucial 
               content: `
 # Best website for small business 2026
 
-What makes a website "the best" for a small business in 2026? It's not just about looking pretty; it's about performance and trust.
+What makes a website "the best" for a small business in 2026? It's not just about looking pretty; it's about performance, trust, and real-time engagement.
 
-## Essential Features:
-- **Trust Signals:** Testimonials, certifications, and clear contact info.
-- **Fast Delivery:** Customers expect results quickly.
-- **Real-time Chat:** Instant communication builds trust.
-- **Clean UI:** Avoid clutter. Focus on the CTA (Call to Action).
+## 1. Real-Time Communication
+In 2026, customers expect instant answers. Integrating a real-time chat system like the one provided by **WebbyLaunch** ensures you never miss a lead. Our system allows you to chat directly with your customers, providing a seamless experience similar to WhatsApp.
 
-At **WebbyLaunch**, we incorporate all these features into our standard business launch plans.
+## 2. AI-Driven Personalization
+Websites that adapt to user behavior are seeing 40% higher conversion rates. From personalized product recommendations to dynamic content, AI is the future. We integrate Gemini AI to help you generate content and analyze user data.
+
+## 3. Ultra-Fast Performance
+With Google's Core Web Vitals being more important than ever, your site needs to load in under 1 second. We use advanced caching, global CDNs, and optimized images to achieve blazing-fast speeds.
+
+## 4. Trust and Security
+Clear testimonials, SSL certificates, and secure payment gateways are non-negotiable. We integrate Stripe for world-class payment security and provide a transparent review system.
+
+## 5. Mobile-First Design
+Your website must look and function perfectly on mobile devices. Our "Iron Pulse" and "Cargo Flow" UIs are designed mobile-first, ensuring a premium experience on every screen.
+
+At **WebbyLaunch**, we incorporate all these features into our standard business launch plans to ensure your success.
               `,
               author: "WebbyLaunch Team",
               date: serverTimestamp(),
@@ -206,6 +223,35 @@ Everyone often operates on tight budgets. However, skimping on your website can 
             updateUserStatus(firebaseUser.uid, 'away');
           }
         };
+
+        // Message Notifications Listener
+        const conversationsQuery = query(
+          collection(db, 'conversations'),
+          where('participants', 'array-contains', firebaseUser.uid)
+        );
+
+        const messagesUnsubscribe = onSnapshot(conversationsQuery, (snapshot) => {
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === 'modified') {
+              const data = change.doc.data();
+              const lastMessageAt = data.lastMessageAt?.toDate();
+              const now = new Date();
+              
+              // Only notify if message is recent (last 10 seconds) and not from self
+              if (lastMessageAt && (now.getTime() - lastMessageAt.getTime() < 10000) && data.lastSenderId !== firebaseUser.uid) {
+                // Check if unread count increased for current user
+                const unreadCount = data.unreadCount?.[firebaseUser.uid] || 0;
+                if (unreadCount > 0) {
+                  notificationSound.current?.play().catch(() => {});
+                  toast(`New message: ${data.lastMessage}`, {
+                    icon: '💬',
+                    duration: 4000
+                  });
+                }
+              }
+            }
+          });
+        });
         
         const handleBeforeUnload = () => {
           updateUserStatus(firebaseUser.uid, 'offline');
@@ -216,6 +262,7 @@ Everyone often operates on tight budgets. However, skimping on your website can 
         
         return () => {
           profileUnsubscribe();
+          messagesUnsubscribe();
           document.removeEventListener('visibilitychange', handleVisibilityChange);
           window.removeEventListener('beforeunload', handleBeforeUnload);
           updateUserStatus(firebaseUser.uid, 'offline');
@@ -243,6 +290,22 @@ Everyone often operates on tight budgets. However, skimping on your website can 
     <Router>
       <MobileRestriction>
         <Layout user={user} profile={profile}>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#4A5D4E',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '1rem',
+                fontSize: '12px',
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                fontStyle: 'italic'
+              },
+            }}
+          />
           <AnimatePresence mode="wait">
             <Routes>
               <Route 
@@ -264,6 +327,8 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               <Route path="/contact" element={<Contact />} />
               <Route path="/services" element={<Services />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/privacy-policy" element={<Privacy />} />

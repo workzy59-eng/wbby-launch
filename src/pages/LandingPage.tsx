@@ -149,11 +149,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-5xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full mb-8">
-              <span className="w-2 h-2 bg-[#E6FF00] rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Limited slots available today</span>
-            </div>
-
             <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter mb-8 leading-[0.85] text-white uppercase italic">
               Get Your Business Website<br />
               <span className="text-[#E6FF00]">in 24 Hours.</span>
@@ -267,15 +262,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <div className="flex flex-col gap-3">
                     <Link 
                       to={item.link} 
-                      className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
-                    >
-                      View Demo
-                    </Link>
-                    <Link 
-                      to="/auth" 
                       className="w-full py-4 bg-[#E6FF00] text-black rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
                     >
-                      Get This Website
+                      View Portfolio
                     </Link>
                   </div>
                 </div>
@@ -288,35 +277,40 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       {/* How It Works */}
       <section className="py-32 px-10">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-24">
-            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">The Process</h2>
-            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-              How It <span className="text-[#E6FF00]">Works.</span>
-            </h3>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
+            <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">The Process</h2>
+              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+                How It <span className="text-[#E6FF00]">Works.</span>
+              </h3>
+            </div>
+            <Link 
+              to="/how-it-works" 
+              className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+            >
+              View Full Process
+            </Link>
           </div>
 
-          <div className="relative">
-            <div className="hidden lg:block absolute top-1/2 left-0 w-full h-[1px] bg-white/10 -translate-y-1/2 z-0" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10">
-              {steps.map((step, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-xl space-y-6 text-center lg:text-left"
-                >
-                  <div className="w-16 h-16 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-2xl mx-auto lg:mx-0 shadow-[0_0_30px_rgba(230,255,0,0.2)]">
-                    {idx + 1}
-                  </div>
-                  <div className="space-y-3">
-                    <h4 className="text-xl font-black uppercase italic tracking-tighter">{step.title}</h4>
-                    <p className="text-white/40 text-xs font-medium leading-relaxed">{step.description}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {steps.map((step, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-8 group hover:border-[#E6FF00]/30 transition-all"
+              >
+                <div className="w-16 h-16 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-2xl shadow-[0_0_30px_rgba(230,255,0,0.2)] group-hover:scale-110 transition-transform">
+                  {idx + 1}
+                </div>
+                <div className="space-y-4">
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter">{step.title}</h4>
+                  <p className="text-white/40 text-xs font-medium leading-relaxed">{step.description}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -382,14 +376,22 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       {/* Testimonials */}
       <section className="py-32 px-10">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-24">
-            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Success Stories</h2>
-            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-              Trusted by <span className="text-[#E6FF00]">50+ Businesses.</span>
-            </h3>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
+            <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Success Stories</h2>
+              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+                Trusted by <span className="text-[#E6FF00]">50+ Businesses.</span>
+              </h3>
+            </div>
+            <Link 
+              to="/testimonials" 
+              className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+            >
+              Read All Stories
+            </Link>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center scale-110 md:scale-125 py-20">
             <TestimonialCarousel testimonials={testimonialCards} />
           </div>
         </div>
@@ -407,7 +409,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Starter Launch */}
-            <div className="bg-white/5 border border-white/10 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
+            <div className="bg-[#E6FF00]/5 border border-[#E6FF00]/20 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col shadow-[0_0_30px_rgba(230,255,0,0.05)]">
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
                 <div className="flex items-end justify-center gap-2">
@@ -440,14 +442,14 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </div>
 
             {/* Business Pro */}
-            <div className="bg-white/5 border-2 border-[#E6FF00]/30 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(230,255,0,0.1)] group hover:border-[#E6FF00]/50 transition-all flex flex-col">
-              <div className="absolute top-0 right-0 bg-[#E6FF00] text-black px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest">
+            <div className="bg-[#E6FF00] border-[#E6FF00] p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(230,255,0,0.3)] group hover:scale-[1.02] transition-all flex flex-col text-black">
+              <div className="absolute top-0 right-0 bg-black text-[#E6FF00] px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest border-l border-b border-[#E6FF00]/20">
                 Most Popular
               </div>
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
                 <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹3,499/-</span>
+                  <span className="text-6xl font-black tracking-tighter">₹3,499/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
@@ -461,8 +463,8 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   'Custom Email Setup',
                   'Performance Reports'
                 ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
-                    <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-black/70">
+                    <CheckCircle2 size={18} className="text-black" />
                     {feature}
                   </li>
                 ))}
@@ -471,14 +473,14 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 href="https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)] text-center"
+                className="block w-full py-6 bg-black text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl text-center"
               >
                 Start Pro Project
               </a>
             </div>
 
             {/* Enterprise Elite */}
-            <div className="bg-white/5 border border-white/10 p-12 rounded-[3rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
+            <div className="bg-[#E6FF00]/5 border border-[#E6FF00]/20 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col shadow-[0_0_30px_rgba(230,255,0,0.05)]">
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Enterprise Elite</h4>
                 <div className="flex items-end justify-center gap-2">

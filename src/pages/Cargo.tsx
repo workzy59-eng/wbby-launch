@@ -30,6 +30,9 @@ export default function Cargo() {
         </div>
 
         <div className="flex items-center gap-6">
+          <Link to="/" className="px-8 py-3 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+            Back to Webby
+          </Link>
           <button className="px-8 py-3 bg-[#f59e0b] text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl">
             Get a Quote
           </button>
@@ -166,8 +169,8 @@ export default function Cargo() {
               </div>
               <div className="absolute -right-10 -bottom-10 w-40 h-40 opacity-30 grayscale">
                 <img 
-                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400" 
-                  alt="Container"
+                  src="https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=400" 
+                  alt="Cargo Ship"
                   className="w-full h-full object-contain"
                 />
               </div>

@@ -141,13 +141,13 @@ export default function Clothing() {
         </div>
       </section>
 
-      {/* Back to Portfolio Link */}
+      {/* Back to Webby Link */}
       <div className="fixed bottom-10 left-10 z-50">
         <Link 
           to="/" 
           className="bg-black/5 backdrop-blur-xl border border-black/10 text-black/50 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:text-black hover:border-black/30 transition-all flex items-center gap-2"
         >
-          <ArrowLeft size={14} /> Back to Portfolio
+          <ArrowLeft size={14} /> Back to Webby
         </Link>
       </div>
     </div>

@@ -18,8 +18,10 @@ import {
   Briefcase,
   User as UserIcon,
   Circle,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -565,6 +567,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </div>
 
               <div className="flex items-center gap-2">
+                <Link 
+                  to="/" 
+                  className="p-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2 mr-2"
+                >
+                  <ArrowLeft size={14} /> Back to Webby
+                </Link>
                 <button 
                   onClick={() => setShowSearch(!showSearch)}
                   className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#E6FF00] text-black' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}

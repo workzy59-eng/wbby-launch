@@ -78,7 +78,7 @@ export default function Autos() {
           ))}
         </div>
         <Link to="/" className="px-8 py-3 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-          Back to Hub
+          Back to Webby
         </Link>
       </nav>
 
