@@ -83,11 +83,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           {[
             { id: 'dashboard', icon: LayoutDashboard },
             { id: 'messages', icon: MessageCircle },
-            { id: 'settings', icon: Settings },
+            { id: 'settings', icon: Settings, link: '/settings' },
           ].map((tab) => (
             <button 
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => tab.link ? navigate(tab.link) : setActiveTab(tab.id as any)}
               className={`p-4 rounded-2xl transition-all duration-300 ${
                 activeTab === tab.id 
                   ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] scale-110' 
@@ -228,33 +228,21 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   projects={projects}
                 />
               ) : activeTab === 'settings' ? (
-                <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl">
-                  <h2 className="text-5xl font-black tracking-tighter mb-12 uppercase italic text-[#E6FF00]">Settings</h2>
-                  <div className="space-y-8 max-w-xl">
-                    <div className="p-8 bg-white/5 rounded-[2rem] border border-white/5">
-                      <div className="flex items-center gap-6 mb-8">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E6FF00] to-green-400 flex items-center justify-center text-black text-3xl font-black italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
-                          {profile?.displayName?.[0] || 'U'}
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-black uppercase italic">{profile?.displayName}</h3>
-                          <p className="text-white/50 font-bold">{profile?.email}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center py-4 border-b border-white/5">
-                          <span className="text-white/50 font-bold uppercase tracking-widest text-xs">Role</span>
-                          <span className="font-black uppercase italic text-[#E6FF00]">{profile?.role}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-4 border-b border-white/5">
-                          <span className="text-white/50 font-bold uppercase tracking-widest text-xs">Member Since</span>
-                          <span className="font-black uppercase italic">{formatDate(profile?.createdAt)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <button onClick={() => logOut()} className="w-full bg-red-500/10 text-red-500 py-5 rounded-2xl font-black text-xl uppercase italic hover:bg-red-500 hover:text-white transition-all">
-                      Log Out
-                    </button>
+                <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl text-center space-y-8">
+                  <div className="w-24 h-24 bg-[#E6FF00] rounded-full flex items-center justify-center text-black mx-auto shadow-[0_0_50px_rgba(230,255,0,0.2)]">
+                    <Settings size={48} />
+                  </div>
+                  <div className="space-y-4">
+                    <h2 className="text-5xl font-black tracking-tighter uppercase italic text-[#E6FF00]">Professional Settings</h2>
+                    <p className="text-white/50 text-xl max-w-md mx-auto font-medium italic">Manage your profile, business details, and platform controls in our new dedicated settings portal.</p>
+                  </div>
+                  <div className="pt-8">
+                    <Link 
+                      to="/settings" 
+                      className="inline-block bg-[#E6FF00] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+                    >
+                      Open Settings Portal
+                    </Link>
                   </div>
                 </div>
               ) : (

@@ -28,7 +28,8 @@ import {
   Edit2,
   ChevronDown,
   ChevronUp,
-  ArrowRight
+  ArrowRight,
+  Settings
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
@@ -1043,6 +1044,13 @@ Generated on: ${new Date().toLocaleString()}
               {item.label}
             </button>
           ))}
+          <Link
+            to="/settings"
+            className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-white/40 hover:bg-white/5 hover:text-white transition-all"
+          >
+            <Settings size={18} />
+            Platform Settings
+          </Link>
           <Link
             to="/dashboard"
             className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-white/40 hover:bg-white/5 hover:text-white transition-all"
