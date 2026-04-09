@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc } from '../firebase';
+import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where } from '../firebase';
 import { UserProfile, Project, ProjectStatus } from '../types';
 import { Link } from 'react-router-dom';
 import { 
@@ -30,7 +30,10 @@ import {
   ChevronUp,
   ArrowRight,
   Settings,
-  Bell
+  Bell,
+  CheckCheck,
+  Camera,
+  MoreVertical
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
@@ -49,6 +52,7 @@ interface AdminPanelProps {
 export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [conversations, setConversations] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system'>('dashboard');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -126,6 +130,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     }, (error) => {
       console.error("Admin Users Snapshot Error:", error);
     });
+
+    const unsubscribeConversations = onSnapshot(
+      query(collection(db, 'conversations'), where('participants', 'array-contains', user.uid)),
+      (snapshot) => {
+        setConversations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }
+    );
     
     getSystemSettings().then(settings => {
       if (settings) setSystemSettings(settings);
@@ -134,6 +145,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     return () => {
       unsubscribeProjects();
       unsubscribeUsers();
+      unsubscribeConversations();
     };
   }, []);
 
@@ -859,47 +871,83 @@ Generated on: ${new Date().toLocaleString()}
   );
 
   const [userSearch, setUserSearch] = useState('');
+  const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'favourites'>('all');
 
   const renderMessages = () => {
-    const filteredUsers = users.filter(u => 
+    let filteredUsers = users.filter(u => 
       u.uid !== user.uid && 
       (u.displayName?.toLowerCase().includes(userSearch.toLowerCase()) || 
        u.email?.toLowerCase().includes(userSearch.toLowerCase()))
     );
 
+    // Apply filters
+    if (messageFilter === 'unread') {
+      filteredUsers = filteredUsers.filter(u => userUnreadCounts[u.uid] > 0);
+    }
+
+    // Sort by last message
+    const sortedUsers = [...filteredUsers].sort((a, b) => {
+      const convA = conversations.find(c => c.participants.includes(a.uid));
+      const convB = conversations.find(c => c.participants.includes(b.uid));
+      const timeA = convA?.lastMessageAt?.toMillis() || 0;
+      const timeB = convB?.lastMessageAt?.toMillis() || 0;
+      return timeB - timeA;
+    });
+
     return (
-      <div className="space-y-8 h-full flex flex-col">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/5 p-8 rounded-[3rem] border border-white/5">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-black text-[#E6FF00] uppercase tracking-[0.4em]">Communications</span>
-            <h2 className="text-5xl font-black tracking-tighter text-white uppercase italic">
-              Message Center {unreadTotal > 0 && <span className="text-[#E6FF00]">({unreadTotal})</span>}
-            </h2>
-          </div>
-          
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="relative flex-1 md:w-80">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-              <input 
-                type="text"
-                placeholder="Search chats..."
-                className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all font-medium"
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-              />
-            </div>
-            <button className="p-4 bg-[#E6FF00] text-black rounded-2xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]">
-              <Plus size={24} />
-            </button>
+      <div className="h-full flex flex-col bg-[#0B141A] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
+        {/* WhatsApp Header */}
+        <div className="p-6 flex items-center justify-between bg-[#202C33]">
+          <h2 className="text-2xl font-bold text-[#E9EDEF]">Chats</h2>
+          <div className="flex items-center gap-6 text-[#8696A0]">
+            <Plus className="cursor-pointer hover:text-white transition-colors" size={24} />
+            <MoreVertical className="cursor-pointer hover:text-white transition-colors" size={24} />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((u) => (
+        {/* Search Bar */}
+        <div className="p-3">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8696A0]" size={18} />
+            <input 
+              type="text"
+              placeholder="Search or start a new chat"
+              className="w-full bg-[#202C33] border-none rounded-xl py-2 pl-12 pr-4 text-sm text-[#E9EDEF] outline-none focus:ring-1 focus:ring-[#00A884] transition-all placeholder:text-[#8696A0]"
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="px-3 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'unread', label: unreadTotal > 0 ? `Unread ${unreadTotal}` : 'Unread' },
+            { id: 'favourites', label: 'Favourites' }
+          ].map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setMessageFilter(f.id as any)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                messageFilter === f.id 
+                  ? 'bg-[#00A884]/20 text-[#00A884]' 
+                  : 'bg-[#202C33] text-[#8696A0] hover:bg-[#2A3942]'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Chat List */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#0B141A]">
+          {sortedUsers.length > 0 ? (
+            sortedUsers.map((u) => (
               <UserCard 
                 key={u.uid} 
                 u={u} 
+                adminId={user.uid}
                 onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} 
                 onUnreadUpdate={(count) => updateUnreadCount(u.uid, count)}
               />
@@ -1944,19 +1992,20 @@ Generated on: ${new Date().toLocaleString()}
 
 interface UserCardProps {
   u: UserProfile;
+  adminId: string;
   onOpenChat: () => void;
   onUnreadUpdate: (count: number) => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat, onUnreadUpdate }) => {
+const UserCard: React.FC<UserCardProps> = ({ u, adminId, onOpenChat, onUnreadUpdate }) => {
   const [msgCount, setMsgCount] = useState(0);
   const [lastMessage, setLastMessage] = useState<any>(null);
 
   useEffect(() => {
-    const chatId = getConversationId('admin', u.uid);
+    const chatId = getConversationId(adminId, u.uid);
     const q = collection(db, 'conversations', chatId, 'messages');
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const unread = snapshot.docs.filter(d => d.data().senderId !== 'admin' && !d.data().seen).length;
+      const unread = snapshot.docs.filter(d => d.data().senderId !== adminId && !d.data().seen).length;
       setMsgCount(unread);
       onUnreadUpdate(unread);
       
@@ -1988,57 +2037,51 @@ const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat, onUnreadUpdate }) =>
     <div 
       onClick={onOpenChat}
       className={`
-        p-5 rounded-[2rem] border transition-all flex items-center gap-4 cursor-pointer group relative
-        ${msgCount > 0 
-          ? 'bg-[#E6FF00]/5 border-[#E6FF00]/20 hover:bg-[#E6FF00]/10' 
-          : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}
+        px-4 py-3 flex items-center gap-4 cursor-pointer transition-all border-b border-white/5
+        hover:bg-[#202C33] active:bg-[#2A3942]
       `}
     >
       <div className="relative shrink-0">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-black font-black text-2xl shadow-xl bg-gradient-to-br from-[#E6FF00] to-yellow-600`}>
-          {u.displayName?.[0] || 'U'}
+        <div className="w-14 h-14 rounded-full overflow-hidden bg-[#6A7175] flex items-center justify-center text-white font-bold text-xl">
+          {u.photoURL ? (
+            <img src={u.photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          ) : (
+            u.displayName?.[0] || 'U'
+          )}
         </div>
-        <div className={`absolute bottom-0 right-0 w-4 h-4 border-4 border-[#4A5D4E] rounded-full ${
-          u.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
-        }`}></div>
+        {u.status === 'online' && (
+          <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 border-2 border-[#0B141A] rounded-full bg-[#00A884]"></div>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start mb-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-black text-white truncate uppercase tracking-tight italic">
-              {u.displayName || 'User'}
-            </h3>
-            {u.role === 'admin' && (
-              <span className="px-2 py-0.5 bg-[#E6FF00] text-black text-[8px] font-black rounded-full uppercase tracking-widest">Admin</span>
-            )}
-          </div>
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${msgCount > 0 ? 'text-[#E6FF00]' : 'text-white/20'}`}>
+        <div className="flex justify-between items-center mb-0.5">
+          <h3 className="text-[17px] font-medium text-[#E9EDEF] truncate">
+            {u.displayName || 'User'}
+          </h3>
+          <span className={`text-xs ${msgCount > 0 ? 'text-[#00A884]' : 'text-[#8696A0]'}`}>
             {lastMessage ? formatTime(lastMessage.createdAt) : ''}
           </span>
         </div>
         
         <div className="flex items-center justify-between">
-          <p className={`text-sm truncate pr-4 ${msgCount > 0 ? 'text-white font-bold' : 'text-white/40 font-medium italic'}`}>
-            {lastMessage ? (
-              <>
-                {lastMessage.senderId === 'admin' && <span className="text-[#E6FF00] mr-1">You:</span>}
-                {lastMessage.text}
-              </>
-            ) : 'No messages yet...'}
-          </p>
+          <div className="flex items-center gap-1 min-w-0 flex-1">
+            {lastMessage?.senderId === adminId && (
+              <CheckCheck size={16} className={lastMessage.seen ? 'text-[#53BDEB]' : 'text-[#8696A0]'} />
+            )}
+            {lastMessage?.attachments?.length > 0 && (
+              <Camera size={14} className="text-[#8696A0] shrink-0" />
+            )}
+            <p className={`text-sm truncate ${msgCount > 0 ? 'text-[#E9EDEF] font-medium' : 'text-[#8696A0]'}`}>
+              {lastMessage ? lastMessage.text : 'No messages yet...'}
+            </p>
+          </div>
           
           {msgCount > 0 && (
-            <div className="bg-[#E6FF00] text-black text-[10px] font-black px-2.5 py-1 rounded-full shadow-[0_0_20px_rgba(230,255,0,0.3)] shrink-0 animate-bounce">
+            <div className="bg-[#00A884] text-[#0B141A] text-xs font-bold min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full shrink-0 ml-2">
               {msgCount}
             </div>
           )}
-        </div>
-      </div>
-
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-        <div className="w-10 h-10 bg-[#E6FF00] rounded-full flex items-center justify-center text-black shadow-xl">
-          <ArrowRight size={18} />
         </div>
       </div>
     </div>
