@@ -6,6 +6,15 @@
   --font-mono: "JetBrains Mono", monospace;
 }
 
+@keyframes rotate-glow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-rotate-glow {
+  animation: rotate-glow 4s linear infinite;
+}
+
 @layer base {
   body {
     @apply font-sans antialiased;

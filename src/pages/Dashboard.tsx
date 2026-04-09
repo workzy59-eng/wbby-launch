@@ -33,10 +33,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [totalUsersCount, setTotalUsersCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const fetchAdmin = async () => {
-      const { getProfiles, getDirectMessages } = await import('../services/database');
+      const { getProfiles, getDirectMessages, getConversations } = await import('../services/database');
       const profiles = await getProfiles();
       setTotalUsersCount(profiles.length);
       const admin = profiles.find(p => p.role === 'admin');
@@ -47,9 +48,34 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           setMessages(msgs);
         });
       }
+
+      // Fetch conversations for unread count
+      const unsubConvs = getConversations((convs) => {
+        let totalUnread = 0;
+        convs.forEach(conv => {
+          if (conv.unreadCount && conv.unreadCount[user.uid]) {
+            totalUnread += conv.unreadCount[user.uid];
+          }
+        });
+        
+        // Also check projects for unread counts
+        const unsubProjects = getProjects((projectsData) => {
+          let projectUnread = 0;
+          projectsData.forEach(p => {
+            if (p.unreadCount && p.unreadCount[user.uid]) {
+              projectUnread += p.unreadCount[user.uid];
+            }
+          });
+          setUnreadCount(totalUnread + projectUnread);
+        }, user.uid);
+
+        return () => unsubProjects();
+      });
+
+      return () => unsubConvs?.();
     };
     fetchAdmin();
-  }, []);
+  }, [user.uid]);
 
   useEffect(() => {
     const unsubscribe = getProjects((projectsData) => {
@@ -81,20 +107,26 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col gap-6">
           {[
-            { id: 'dashboard', icon: LayoutDashboard },
-            { id: 'messages', icon: MessageCircle },
-            { id: 'settings', icon: Settings, link: '/settings' },
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
+            { id: 'settings', icon: Settings, label: 'Settings', link: '/settings' },
           ].map((tab) => (
             <button 
               key={tab.id}
               onClick={() => tab.link ? navigate(tab.link) : setActiveTab(tab.id as any)}
-              className={`p-4 rounded-2xl transition-all duration-300 ${
+              className={`p-4 rounded-2xl transition-all duration-300 relative group ${
                 activeTab === tab.id 
                   ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] scale-110' 
                   : 'text-white/30 hover:text-white hover:bg-white/5'
               }`}
+              title={tab.label}
             >
               <tab.icon size={24} />
+              {tab.id === 'messages' && unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
             </button>
           ))}
           {profile?.role === 'admin' && (
@@ -153,19 +185,26 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-around items-center z-40">
         {[
           { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-          { id: 'messages', icon: MessageCircle, label: 'Chat' },
+          { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Chat (${unreadCount})` : 'Chat' },
           { id: 'settings', icon: Settings, label: 'Settings' },
         ].map((tab) => (
           <button 
             key={tab.id}
             onClick={() => tab.id === 'settings' ? navigate('/settings') : setActiveTab(tab.id as any)}
-            className={`flex flex-col items-center gap-1 transition-all ${
+            className={`flex flex-col items-center gap-1 transition-all relative ${
               activeTab === tab.id 
                 ? 'text-black' 
                 : 'text-gray-400'
             }`}
           >
-            <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
+            <div className="relative">
+              <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
+              {tab.id === 'messages' && unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
             <span className="text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
           </button>
         ))}

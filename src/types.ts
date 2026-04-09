@@ -161,6 +161,19 @@ export interface SystemSettings {
   maintenanceMode?: boolean;
   allowNewRegistrations?: boolean;
   baseWebsiteCost?: number;
+  pricing?: {
+    starter: number;
+    pro: number;
+    enterprise: number;
+  };
+  contactEmail?: string;
+  socialLinks?: {
+    instagram?: string;
+    twitter?: string;
+    linkedin?: string;
+    facebook?: string;
+  };
+  portfolioCategories?: string[];
 }
 
 export interface BlogPost {

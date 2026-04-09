@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { FirebaseUser } from '../firebase';
-import { UserProfile } from '../types';
+import { SystemSettings, UserProfile } from '../types';
 import { getSystemSettings } from '../services/database';
 import { 
   ArrowRight, 
@@ -14,10 +14,14 @@ import {
   Smartphone, 
   Search, 
   Layout as LayoutIcon,
-  MessageCircle
+  MessageCircle,
+  Eye,
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { TestimonialCarousel, type Testimonial } from '../components/ui/testimonial';
+import { ButtonColorful } from '../components/ui/button-colorful';
 
 interface LandingPageProps {
   user: FirebaseUser | null;
@@ -25,13 +29,11 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ user, profile }: LandingPageProps) {
-  const [baseCost, setBaseCost] = useState(1499);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
 
   useEffect(() => {
-    getSystemSettings().then(settings => {
-      if (settings?.baseWebsiteCost) {
-        setBaseCost(settings.baseWebsiteCost);
-      }
+    getSystemSettings().then(s => {
+      if (s) setSettings(s);
     });
   }, []);
 
@@ -147,13 +149,13 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       </a>
 
       {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
+      <section id="home" className="relative min-h-screen flex flex-col items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#E6FF00]/10 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#E6FF00]/5 rounded-full blur-[120px] animate-pulse delay-1000" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-10 w-full text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-10 w-full text-center mb-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -189,27 +191,216 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               )}
               <a 
                 href="#portfolio" 
-                className="px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest border border-white/10 hover:bg-white/5 transition-all flex items-center gap-3"
+                className="flex items-center justify-center"
               >
-                View Demo
+                <ButtonColorful label="View Demo" className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest" />
               </a>
             </div>
+          </motion.div>
+        </div>
 
-            <div className="mt-20 flex flex-wrap justify-center items-center gap-12 opacity-40 grayscale">
-              <div className="flex items-center gap-2">
-                <Users size={20} />
-                <span className="text-xs font-black uppercase tracking-widest">Trusted by 50+ Businesses</span>
+        {/* Floating Portfolio Preview - Start from first page */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-10 mt-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {portfolios.map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + idx * 0.1 }}
+                whileHover={{ 
+                  y: -10, 
+                  scale: 1.05,
+                  rotateX: 5,
+                  rotateY: 5,
+                  z: 50
+                }}
+                style={{ transformStyle: "preserve-3d" }}
+                className="relative group cursor-pointer"
+              >
+                <div className="absolute -inset-1 bg-gradient-to-r from-[#E6FF00] to-transparent rounded-[2rem] opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500" />
+                <div className="relative bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden backdrop-blur-sm">
+                  <div className="aspect-[16/10] overflow-hidden">
+                    <img 
+                      src={item.image} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="text-lg font-black text-white uppercase italic">{item.title}</h4>
+                        <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">{item.category}</p>
+                      </div>
+                      <div className="w-8 h-8 bg-[#E6FF00] rounded-full flex items-center justify-center text-black">
+                        <ArrowRight size={14} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Portfolio - Creative Addition */}
+      <section className="py-20 px-10 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">
+                <Sparkles size={12} /> Featured Showcase
               </div>
-              <div className="flex items-center gap-2">
-                <Star size={20} />
-                <span className="text-xs font-black uppercase tracking-widest">4.9/5 Rating</span>
+              <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-tight text-white">
+                Experience <span className="text-[#E6FF00]">Next-Gen</span> Web Design.
+              </h2>
+              <p className="text-white/50 text-lg font-medium italic">
+                Our portfolios aren't just templates; they are high-performance business engines designed to convert visitors into customers instantly.
+              </p>
+              <div className="flex gap-4">
+                <Link to="/portfolio/autos" className="px-8 py-4 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all">
+                  Explore Autos
+                </Link>
+                <Link to="/portfolio/gym" className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+                  View Fitness
+                </Link>
               </div>
-              <div className="flex items-center gap-2">
-                <Shield size={20} />
-                <span className="text-xs font-black uppercase tracking-widest">Secure & Fast</span>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative group"
+            >
+              <div className="absolute -inset-4 bg-[#E6FF00]/20 rounded-[3rem] blur-3xl group-hover:bg-[#E6FF00]/30 transition-all" />
+              <div className="relative aspect-video bg-slate-900 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=1200&auto=format&fit=crop" 
+                  alt="Featured Portfolio" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-2xl font-black text-white uppercase italic">Auto Speed UI</h4>
+                      <p className="text-[#E6FF00] text-[10px] font-black uppercase tracking-widest">Premium Car Dealership</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white">
+                        <Smartphone size={18} />
+                      </div>
+                      <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white">
+                        <Zap size={18} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+ 
+      {/* Portfolio Section */}
+      <section id="portfolio" className="py-32 px-10 bg-black/20 relative overflow-hidden">
+        {/* Crazy Background Effect */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-[#E6FF00]/20 rounded-full animate-rotate-glow" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#E6FF00]/10 rounded-full animate-rotate-glow [animation-direction:reverse]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+            <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">The Showcase</h2>
+              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+                Crazy <span className="text-[#E6FF00]">Portfolios.</span>
+              </h3>
+            </div>
+            <div className="max-w-md space-y-4">
+              <p className="text-white/40 text-sm font-medium leading-relaxed">
+                We don't just build websites; we build digital experiences that defy gravity. Check out our industry-leading designs.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-800 overflow-hidden">
+                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Joined by 500+ users</span>
               </div>
             </div>
-          </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {portfolios.map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ 
+                  scale: 1.02,
+                  rotateX: 2,
+                  rotateY: 2,
+                  z: 20
+                }}
+                style={{ transformStyle: "preserve-3d" }}
+                className="group relative bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden hover:border-[#E6FF00]/30 transition-all perspective-1000"
+              >
+                {/* Holographic Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#E6FF00]/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20" />
+                
+                <div className="aspect-[4/3] overflow-hidden relative">
+                  <img 
+                    src={item.image} 
+                    alt={item.title} 
+                    width="400"
+                    height="300"
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    referrerPolicy="no-referrer"
+                  />
+                  {/* Live Badge */}
+                  <div className="absolute top-6 right-6 bg-red-500 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 animate-pulse z-30">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                    Live Preview
+                  </div>
+                </div>
+                <div className="p-10 space-y-6 relative z-30">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00] mb-2 block">{item.category}</span>
+                    <h4 className="text-3xl font-black uppercase italic tracking-tighter">{item.title}</h4>
+                    <p className="text-white/40 text-xs font-medium mt-2">{item.description}</p>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <Link 
+                      to={item.link} 
+                      className="w-full py-4 bg-[#E6FF00] text-black rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(230,255,0,0.2)]"
+                    >
+                      <Eye size={14} /> Enter Experience
+                    </Link>
+                    <button className="w-full py-4 bg-white/5 text-white border border-white/10 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+                      <Sparkles size={14} /> AI Analysis
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -224,63 +415,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <span className="text-xl font-bold tracking-tighter">GLOBAL CARGO</span>
               <span className="text-xl font-bold tracking-tighter">TECH FLOW</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Portfolio Section */}
-      <section id="portfolio" className="py-32 px-10 bg-black/20">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
-            <div className="space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Our Portfolio</h2>
-              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-                Choose Your <span className="text-[#E6FF00]">Industry.</span>
-              </h3>
-            </div>
-            <p className="max-w-md text-white/40 text-sm font-medium leading-relaxed">
-              We specialize in high-conversion websites for specific niches. Select a template that fits your business.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {portfolios.map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="group relative bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden hover:border-[#E6FF00]/30 transition-all"
-              >
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
-                    width="400"
-                    height="300"
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                <div className="p-10 space-y-6">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00] mb-2 block">{item.category}</span>
-                    <h4 className="text-3xl font-black uppercase italic tracking-tighter">{item.title}</h4>
-                    <p className="text-white/40 text-xs font-medium mt-2">{item.description}</p>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <Link 
-                      to={item.link} 
-                      className="w-full py-4 bg-[#E6FF00] text-black rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
-                    >
-                      View Portfolio
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>
@@ -425,8 +559,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <div className="bg-white/5 border border-[#E6FF00]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/50 transition-all flex flex-col shadow-[0_0_40px_rgba(230,255,0,0.15)]">
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
-                <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹{baseCost.toLocaleString()}/-</span>
+                <div className="flex items-end justify-center gap-2 relative group/price">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">₹{(settings?.pricing?.starter || 1499).toLocaleString()}/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
@@ -461,8 +596,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               </div>
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
-                <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter">₹3,499/-</span>
+                <div className="flex items-end justify-center gap-2 relative group/price">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-black via-transparent to-black rounded-full opacity-0 blur-xl animate-rotate-glow group-hover/price:opacity-20 transition-opacity" />
+                  <span className="text-6xl font-black tracking-tighter relative z-10">₹{(settings?.pricing?.pro || 3499).toLocaleString()}/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
@@ -496,8 +632,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <div className="bg-white/5 border border-[#E6FF00]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/50 transition-all flex flex-col shadow-[0_0_40px_rgba(230,255,0,0.15)]">
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Enterprise Elite</h4>
-                <div className="flex items-end justify-center gap-2">
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">₹9,999/-</span>
+                <div className="flex items-end justify-center gap-2 relative group/price">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">₹{(settings?.pricing?.enterprise || 9999).toLocaleString()}/-</span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">

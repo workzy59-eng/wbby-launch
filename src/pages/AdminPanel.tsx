@@ -29,11 +29,12 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
-  Settings
+  Settings,
+  Bell
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import Papa from 'papaparse';
@@ -64,11 +65,27 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projectSearch, setProjectSearch] = useState('');
   const [unreadTotal, setUnreadTotal] = useState(0);
   const [userUnreadCounts, setUserUnreadCounts] = useState<Record<string, number>>({});
+  const [projectUnreadCounts, setProjectUnreadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const total = Object.values(userUnreadCounts).reduce((acc, count) => acc + count, 0);
-    setUnreadTotal(total);
-  }, [userUnreadCounts]);
+    const directTotal = Object.values(userUnreadCounts).reduce((acc, count) => acc + count, 0);
+    const projectTotal = Object.values(projectUnreadCounts).reduce((acc, count) => acc + count, 0);
+    setUnreadTotal(directTotal + projectTotal);
+  }, [userUnreadCounts, projectUnreadCounts]);
+
+  useEffect(() => {
+    // Listen to all projects for unread counts
+    const unsub = getProjects((projectsData) => {
+      const counts: Record<string, number> = {};
+      projectsData.forEach(p => {
+        if (p.unreadCount && p.unreadCount['admin']) {
+          counts[p.id] = p.unreadCount['admin'];
+        }
+      });
+      setProjectUnreadCounts(counts);
+    });
+    return () => unsub();
+  }, []);
 
   const updateUnreadCount = (userId: string, count: number) => {
     setUserUnreadCounts(prev => ({ ...prev, [userId]: count }));
@@ -841,30 +858,64 @@ Generated on: ${new Date().toLocaleString()}
     </div>
   );
 
-  const renderMessages = () => (
-    <div className="space-y-12">
-      <div className="flex justify-between items-end">
-        <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Communications</span>
-          <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">
-            Message Center {unreadTotal > 0 && `(${unreadTotal})`}
-          </h2>
-          <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2 italic">Manage all incoming project communications efficiently.</p>
+  const [userSearch, setUserSearch] = useState('');
+
+  const renderMessages = () => {
+    const filteredUsers = users.filter(u => 
+      u.uid !== user.uid && 
+      (u.displayName?.toLowerCase().includes(userSearch.toLowerCase()) || 
+       u.email?.toLowerCase().includes(userSearch.toLowerCase()))
+    );
+
+    return (
+      <div className="space-y-8 h-full flex flex-col">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/5 p-8 rounded-[3rem] border border-white/5">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-black text-[#E6FF00] uppercase tracking-[0.4em]">Communications</span>
+            <h2 className="text-5xl font-black tracking-tighter text-white uppercase italic">
+              Message Center {unreadTotal > 0 && <span className="text-[#E6FF00]">({unreadTotal})</span>}
+            </h2>
+          </div>
+          
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+              <input 
+                type="text"
+                placeholder="Search chats..."
+                className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all font-medium"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+              />
+            </div>
+            <button className="p-4 bg-[#E6FF00] text-black rounded-2xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]">
+              <Plus size={24} />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((u) => (
+              <UserCard 
+                key={u.uid} 
+                u={u} 
+                onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} 
+                onUnreadUpdate={(count) => updateUnreadCount(u.uid, count)}
+              />
+            ))
+          ) : (
+            <div className="py-20 text-center space-y-4">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                <MessageCircle className="text-white/10" size={40} />
+              </div>
+              <p className="text-white/40 text-sm font-bold uppercase tracking-widest">No conversations found</p>
+            </div>
+          )}
         </div>
       </div>
-
-      <div className="space-y-4">
-        {users.filter(u => u.uid !== user.uid).map((u) => (
-          <UserCard 
-            key={u.uid} 
-            u={u} 
-            onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} 
-            onUnreadUpdate={(count) => updateUnreadCount(u.uid, count)}
-          />
-        ))}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const handleResetDatabase = async () => {
     setIsResetting(true);
@@ -943,40 +994,141 @@ Generated on: ${new Date().toLocaleString()}
   };
 
   const renderSystem = () => (
-    <div className="space-y-12">
+    <div className="space-y-12 pb-20">
       <div className="flex flex-col gap-2">
         <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Configuration</span>
-        <h2 className="text-6xl font-bold tracking-tighter text-white">SYSTEM SETTINGS</h2>
+        <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">SYSTEM SETTINGS</h2>
+        <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2 italic">Global platform configuration and pricing management.</p>
       </div>
-
+ 
       {systemSettings && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
-            <h3 className="text-2xl font-bold text-white tracking-tight mb-8">Required Registration Fields</h3>
-            <div className="space-y-4">
-              {Object.entries(systemSettings.requiredFields).map(([field, isRequired]) => (
-                <div key={field} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <span className="text-xs font-bold text-white/60 uppercase tracking-widest">{field.replace(/([A-Z])/g, ' $1')}</span>
-                  <button 
-                    onClick={() => handleUpdateSettings({
-                      requiredFields: { ...systemSettings.requiredFields, [field as keyof SystemSettings['requiredFields']]: !isRequired }
-                    })}
-                    className={`w-12 h-6 rounded-full transition-all relative ${isRequired ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
-                  >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${isRequired ? 'right-1' : 'left-1'}`} />
-                  </button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Left Column */}
+          <div className="space-y-12">
+            {/* Pricing Section */}
+            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                  <TrendingUp size={24} />
                 </div>
-              ))}
+                <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Pricing Configuration</h3>
+              </div>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Starter Launch Price</label>
+                  <div className="relative">
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E6FF00] font-black">$</span>
+                    <input 
+                      type="number"
+                      value={systemSettings.pricing?.starter || 1499}
+                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, starter: parseInt(e.target.value) } })}
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-black text-xl"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Pro Growth Price</label>
+                  <div className="relative">
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E6FF00] font-black">$</span>
+                    <input 
+                      type="number"
+                      value={systemSettings.pricing?.pro || 2999}
+                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, pro: parseInt(e.target.value) } })}
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-black text-xl"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Enterprise Price</label>
+                  <div className="relative">
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E6FF00] font-black">$</span>
+                    <input 
+                      type="number"
+                      value={systemSettings.pricing?.enterprise || 9999}
+                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, enterprise: parseInt(e.target.value) } })}
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-black text-xl"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Required Fields */}
+            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                  <FileText size={24} />
+                </div>
+                <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Registration Fields</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {Object.entries(systemSettings.requiredFields).map(([field, isRequired]) => (
+                  <div key={field} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">{field.replace(/([A-Z])/g, ' $1')}</span>
+                    <button 
+                      onClick={() => handleUpdateSettings({
+                        requiredFields: { ...systemSettings.requiredFields, [field as keyof SystemSettings['requiredFields']]: !isRequired }
+                      })}
+                      className={`w-12 h-6 rounded-full transition-all relative ${isRequired ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${isRequired ? 'right-1' : 'left-1'}`} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-
-          <div className="space-y-8">
+ 
+          {/* Right Column */}
+          <div className="space-y-12">
+            {/* Global Switches */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
-              <h3 className="text-2xl font-bold text-white tracking-tight mb-8">Notifications</h3>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                  <Settings size={24} />
+                </div>
+                <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Platform Controls</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5">
+                  <div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">Maintenance Mode</span>
+                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Locks the platform for all non-admin users.</p>
+                  </div>
+                  <button 
+                    onClick={() => handleUpdateSettings({ maintenanceMode: !systemSettings.maintenanceMode })}
+                    className={`w-14 h-7 rounded-full transition-all relative ${systemSettings.maintenanceMode ? 'bg-red-500' : 'bg-white/10'}`}
+                  >
+                    <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all ${systemSettings.maintenanceMode ? 'right-1' : 'left-1'}`} />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5">
+                  <div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">New Registrations</span>
+                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Allow or block new user signups.</p>
+                  </div>
+                  <button 
+                    onClick={() => handleUpdateSettings({ allowNewRegistrations: !systemSettings.allowNewRegistrations })}
+                    className={`w-14 h-7 rounded-full transition-all relative ${systemSettings.allowNewRegistrations ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                  >
+                    <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all ${systemSettings.allowNewRegistrations ? 'right-1' : 'left-1'}`} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                  <Bell size={24} />
+                </div>
+                <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Admin Notifications</h3>
+              </div>
               <div className="space-y-4">
                 {Object.entries(systemSettings.notifications).map(([key, enabled]) => (
                   <div key={key} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                    <span className="text-xs font-bold text-white/60 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1')}</span>
+                    <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1')}</span>
                     <button 
                       onClick={() => handleUpdateSettings({
                         notifications: { ...systemSettings.notifications, [key as keyof SystemSettings['notifications']]: !enabled }
@@ -989,17 +1141,22 @@ Generated on: ${new Date().toLocaleString()}
                 ))}
               </div>
             </div>
-
+ 
+            {/* Danger Zone */}
             <div className="bg-red-500/10 backdrop-blur-md p-10 rounded-[3rem] border border-red-500/20">
-              <h3 className="text-2xl font-bold text-white tracking-tight mb-4">Danger Zone</h3>
-              <div className="space-y-4">
-                <button 
-                  onClick={() => setShowResetModal(true)}
-                  className="w-full py-5 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
-                >
-                  Wipe All Data
-                </button>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center text-red-500">
+                  <Trash2 size={24} />
+                </div>
+                <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Danger Zone</h3>
               </div>
+              <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-8 italic">Actions here are permanent and cannot be undone. Use with extreme caution.</p>
+              <button 
+                onClick={() => setShowResetModal(true)}
+                className="w-full py-6 bg-red-600 text-white rounded-full font-black uppercase italic tracking-[0.2em] hover:bg-red-700 transition-all shadow-2xl shadow-red-600/20"
+              >
+                Wipe All Platform Data
+              </button>
             </div>
           </div>
         </div>
@@ -1028,8 +1185,8 @@ Generated on: ${new Date().toLocaleString()}
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+            { id: 'system', label: 'System Settings', icon: Settings },
             { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
-            { id: 'system', label: 'System', icon: TrendingUp },
           ].map((item) => (
             <button
               key={item.id}
@@ -1051,6 +1208,23 @@ Generated on: ${new Date().toLocaleString()}
             <Settings size={18} />
             Platform Settings
           </Link>
+          {[
+            { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
+            { id: 'system', label: 'System', icon: TrendingUp },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as any)}
+              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${
+                activeTab === item.id 
+                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)]' 
+                  : 'text-white/40 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <item.icon size={18} />
+              {item.label}
+            </button>
+          ))}
           <Link
             to="/dashboard"
             className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-white/40 hover:bg-white/5 hover:text-white transition-all"
@@ -1281,14 +1455,26 @@ Generated on: ${new Date().toLocaleString()}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xl bg-[#4A5D4E] h-full shadow-2xl flex flex-col border-l border-white/5"
+              className="relative w-full max-w-xl bg-[#0F172A] h-full shadow-2xl flex flex-col border-l border-white/5"
             >
-              <div className="p-10 border-b border-white/5 flex justify-between items-center">
-                <div>
-                  <h2 className="text-4xl font-bold tracking-tighter text-white">DIRECT CHAT</h2>
-                  <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">{selectedUser.displayName}</div>
+              <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-lg">
+                      {selectedUser.displayName?.[0] || 'U'}
+                    </div>
+                    <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#0F172A] rounded-full ${
+                      selectedUser.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
+                    }`}></div>
+                  </div>
+                  <div>
+                    <h3 className="font-black text-white uppercase tracking-tight">{selectedUser.displayName}</h3>
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${selectedUser.status === 'online' ? 'text-green-400' : 'text-white/30'}`}>
+                      {selectedUser.status === 'online' ? 'Active Now' : 'Offline'}
+                    </p>
+                  </div>
                 </div>
-                <button onClick={() => setShowDirectChat(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
+                <button onClick={() => setShowDirectChat(false)} className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all">
                   <X size={24} />
                 </button>
               </div>
@@ -1786,59 +1972,73 @@ const UserCard: React.FC<UserCardProps> = ({ u, onOpenChat, onUnreadUpdate }) =>
     return () => unsubscribe();
   }, [u.uid]);
 
-  const isSideOcean = u.displayName?.toLowerCase().includes('side ocean');
-  let displayName = u.displayName || 'User';
-  
-  if (isSideOcean) {
-    if (msgCount > 1) {
-      displayName = `side ocean (${msgCount - 1})`;
-    } else {
-      displayName = `side ocean`;
-    }
-  }
-
   const formatTime = (timestamp: any) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
   return (
     <div 
       onClick={onOpenChat}
-      className="bg-[#5E7162]/30 backdrop-blur-md p-6 rounded-3xl border border-white/5 group hover:border-[#E6FF00]/30 transition-all flex items-center justify-between cursor-pointer"
+      className={`
+        p-5 rounded-[2rem] border transition-all flex items-center gap-4 cursor-pointer group relative
+        ${msgCount > 0 
+          ? 'bg-[#E6FF00]/5 border-[#E6FF00]/20 hover:bg-[#E6FF00]/10' 
+          : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}
+      `}
     >
-      <div className="flex items-center gap-6">
-        <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white/40 text-xl font-bold border border-white/5 group-hover:border-[#E6FF00]/30 group-hover:text-[#E6FF00] transition-all">
+      <div className="relative shrink-0">
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-black font-black text-2xl shadow-xl bg-gradient-to-br from-[#E6FF00] to-yellow-600`}>
           {u.displayName?.[0] || 'U'}
         </div>
-        <div className="flex flex-col">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-bold text-white tracking-tight uppercase italic">{displayName}</h3>
-            <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest">{u.email}</span>
-          </div>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-[10px] font-medium text-white/40 line-clamp-1 max-w-[300px]">
-              {lastMessage ? lastMessage.text : 'No messages yet...'}
-            </p>
-            {lastMessage && (
-              <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest">• {formatTime(lastMessage.createdAt)}</span>
+        <div className={`absolute bottom-0 right-0 w-4 h-4 border-4 border-[#4A5D4E] rounded-full ${
+          u.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
+        }`}></div>
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-start mb-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-black text-white truncate uppercase tracking-tight italic">
+              {u.displayName || 'User'}
+            </h3>
+            {u.role === 'admin' && (
+              <span className="px-2 py-0.5 bg-[#E6FF00] text-black text-[8px] font-black rounded-full uppercase tracking-widest">Admin</span>
             )}
           </div>
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${msgCount > 0 ? 'text-[#E6FF00]' : 'text-white/20'}`}>
+            {lastMessage ? formatTime(lastMessage.createdAt) : ''}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <p className={`text-sm truncate pr-4 ${msgCount > 0 ? 'text-white font-bold' : 'text-white/40 font-medium italic'}`}>
+            {lastMessage ? (
+              <>
+                {lastMessage.senderId === 'admin' && <span className="text-[#E6FF00] mr-1">You:</span>}
+                {lastMessage.text}
+              </>
+            ) : 'No messages yet...'}
+          </p>
+          
+          {msgCount > 0 && (
+            <div className="bg-[#E6FF00] text-black text-[10px] font-black px-2.5 py-1 rounded-full shadow-[0_0_20px_rgba(230,255,0,0.3)] shrink-0 animate-bounce">
+              {msgCount}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
-        {msgCount > 0 && (
-          <div className="flex items-center gap-3">
-            <span className="text-[8px] font-black text-[#E6FF00] uppercase tracking-[0.2em]">NEW MESSAGE</span>
-            <div className="w-6 h-6 rounded-full bg-[#E6FF00] flex items-center justify-center text-black text-[10px] font-black shadow-[0_0_15px_rgba(230,255,0,0.3)]">
-              {msgCount}
-            </div>
-          </div>
-        )}
-        <div className="p-3 bg-white/5 rounded-full text-white/20 group-hover:text-[#E6FF00] group-hover:bg-[#E6FF00]/10 transition-all">
-          <ArrowRight size={16} />
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+        <div className="w-10 h-10 bg-[#E6FF00] rounded-full flex items-center justify-center text-black shadow-xl">
+          <ArrowRight size={18} />
         </div>
       </div>
     </div>

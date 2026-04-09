@@ -121,8 +121,11 @@ export default function Pricing() {
 
               <div className="mb-10">
                 <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-black' : 'text-white'}`}>{plan.name}</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-6xl font-black tracking-tighter ${plan.popular ? 'text-black' : 'text-[#E6FF00]'}`}>{plan.price}</span>
+                <div className="flex items-baseline gap-2 relative group/price">
+                  {plan.name !== 'Standard' && (
+                    <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
+                  )}
+                  <span className={`text-6xl font-black tracking-tighter relative z-10 ${plan.popular ? 'text-black' : 'text-[#E6FF00]'}`}>{plan.price}</span>
                 </div>
                 <p className={`mt-6 text-sm font-medium italic leading-relaxed ${plan.popular ? 'text-black/60' : 'text-white/50'}`}>
                   {plan.description}

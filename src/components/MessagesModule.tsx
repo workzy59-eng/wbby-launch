@@ -19,7 +19,8 @@ import {
   User as UserIcon,
   Circle,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -201,7 +202,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (!recipientId) return;
 
     const unsubMessages = getDirectMessages(recipientId, (messagesData) => {
-      const newMessages = messagesData as Message[];
+      const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
       setMessages(newMessages);
 
       // Mark as delivered if recipient receives it
@@ -336,12 +337,21 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   ? 'bg-[#005c4b] text-white rounded-tr-none' 
                   : 'bg-[#202c33] text-white border border-white/5 rounded-tl-none'
               }`}>
-                {!isMe && activeConversation.isProject && (
-                  <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mb-1">
-                    {m.senderName}
+                {m.isDeleted ? (
+                  <p className="text-[10px] italic text-white/40 flex items-center gap-2">
+                    <Trash2 size={12} />
+                    This message was deleted
                   </p>
+                ) : (
+                  <>
+                    {!isMe && activeConversation.isProject && (
+                      <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mb-1">
+                        {m.senderName}
+                      </p>
+                    )}
+                    {m.text}
+                  </>
                 )}
-                {m.text}
                 <div className={`flex items-center gap-1.5 mt-1 justify-end ${isMe ? 'opacity-60' : 'opacity-40'}`}>
                   <span className="text-[9px] font-bold uppercase tracking-widest">
                     {formatDate(m.createdAt, 'chat')}

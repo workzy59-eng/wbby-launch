@@ -426,7 +426,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         : 'bg-[#202c33] text-white rounded-tl-none border border-white/5'
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
-                    {m.fileData && (
+                    {!m.isDeleted && m.fileData && (
                       <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
                         <img src={m.fileData} alt="Shared file" className="w-full h-auto max-h-64 object-cover" />
                         <button 
@@ -438,7 +438,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       </div>
                     )}
 
-                    {m.imageUrl && (
+                    {!m.isDeleted && m.imageUrl && (
                       <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
                         <img src={m.imageUrl} alt="AI Visualization" className="w-full h-auto max-h-64 object-cover" />
                         <button 
@@ -450,7 +450,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       </div>
                     )}
 
-                    {m.attachments && m.attachments.length > 0 && (
+                    {!m.isDeleted && m.attachments && m.attachments.length > 0 && (
                       <div className="space-y-2 mb-3">
                         {m.attachments.map((att, idx) => {
                           const isImg = att.type.startsWith('image/');
@@ -492,7 +492,10 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       </div>
                     )}
 
-                    <p className="whitespace-pre-wrap">{m.text}</p>
+                    <p className={`whitespace-pre-wrap ${m.isDeleted ? 'text-white/40 italic flex items-center gap-2' : ''}`}>
+                      {m.isDeleted && <Trash2 size={12} />}
+                      {m.text}
+                    </p>
                     
                     {!m.imageUrl && !isMe && !m.isDeleted && (
                       <button 

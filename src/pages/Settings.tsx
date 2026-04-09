@@ -29,6 +29,7 @@ import { updateProfile, getSystemSettings, updateSystemSettings, getProfiles } f
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { ADMIN_EMAIL, APP_NAME } from '../constants';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 interface SettingsProps {
   user: FirebaseUser;
@@ -40,6 +41,8 @@ type SettingTab =
   | 'business' 
   | 'security' 
   | 'subscription' 
+  | 'notifications'
+  | 'preferences'
   | 'controls' 
   | 'pricing' 
   | 'users';
@@ -64,18 +67,30 @@ export default function Settings({ user, profile }: SettingsProps) {
     businessType: profile?.businessType || '',
     googleMapsLink: profile?.googleMapsLink || '',
     photoURL: profile?.photoURL || '',
+    notifications: {
+      email: true,
+      push: true,
+      sms: false,
+      updates: true
+    },
+    preferences: {
+      language: 'English',
+      timezone: 'Asia/Kolkata',
+      theme: 'System'
+    }
   });
 
   useEffect(() => {
     if (profile) {
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         displayName: profile.displayName || '',
         phone: profile.phone || '',
         businessName: profile.businessName || '',
         businessType: profile.businessType || '',
         googleMapsLink: profile.googleMapsLink || '',
         photoURL: profile.photoURL || '',
-      });
+      }));
     }
   }, [profile]);
 
@@ -136,11 +151,75 @@ export default function Settings({ user, profile }: SettingsProps) {
     }
   };
 
+  const handleDownloadInvoice = () => {
+    if (!activeProject) {
+      toast.error('No active project found to generate invoice.');
+      return;
+    }
+    const invoiceId = `INV-${Math.floor(100000 + Math.random() * 900000)}`;
+    const date = new Date().toLocaleDateString();
+    
+    const planName = activeProject.plan || 'Starter Launch';
+    const amount = planName.toLowerCase().includes('enterprise') || planName.toLowerCase().includes('elite') ? (systemSettings?.pricing?.enterprise || 9999).toLocaleString() : 
+                   planName.toLowerCase().includes('pro') || planName.toLowerCase().includes('business') ? (systemSettings?.pricing?.pro || 3499).toLocaleString() : 
+                   (systemSettings?.pricing?.starter || 1499).toLocaleString();
+
+    const content = `
+=========================================
+          ${APP_NAME} OFFICIAL INVOICE
+=========================================
+
+Invoice ID: ${invoiceId}
+Date:       ${date}
+Status:     PAID
+
+-----------------------------------------
+CUSTOMER DETAILS
+-----------------------------------------
+Name:       ${formData.displayName || 'Valued Customer'}
+Business:   ${formData.businessName || 'N/A'}
+Phone:      ${formData.phone || 'N/A'}
+
+-----------------------------------------
+SUBSCRIPTION DETAILS
+-----------------------------------------
+Plan:       ${planName}
+Duration:   1 Year (Annual)
+Amount:     ₹${amount}/-
+
+-----------------------------------------
+PAYMENT INFORMATION
+-----------------------------------------
+Method:     Stripe Secure Payment
+Tax:        Included (GST)
+Total:      ₹${amount}/-
+
+=========================================
+   Thank you for choosing ${APP_NAME}!
+   Your business is now in high gear.
+=========================================
+    `;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Invoice_${invoiceId}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success('Invoice downloaded successfully!');
+  };
+
   const clientTabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'business', label: 'Business Details', icon: Briefcase },
     { id: 'security', label: 'Account Security', icon: Shield },
     { id: 'subscription', label: 'Subscription', icon: CreditCard },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'preferences', label: 'Preferences', icon: Globe },
   ];
 
   const adminTabs = [
@@ -429,7 +508,10 @@ export default function Settings({ user, profile }: SettingsProps) {
                           <button className="flex-1 py-4 bg-white text-[#1e3a8a] rounded-2xl font-black uppercase tracking-widest hover:bg-[#facc15] transition-all">
                             Upgrade Plan
                           </button>
-                          <button className="flex-1 py-4 bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20">
+                          <button 
+                            onClick={handleDownloadInvoice}
+                            className="flex-1 py-4 bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 active:scale-95"
+                          >
                             Download Invoice
                           </button>
                         </div>
@@ -447,6 +529,96 @@ export default function Settings({ user, profile }: SettingsProps) {
                       </button>
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTab === 'notifications' && (
+                <div className="space-y-8">
+                  <header>
+                    <h2 className="text-3xl font-black text-[#1e3a8a] uppercase italic">Notifications</h2>
+                    <p className="text-gray-500 font-medium">Control how you receive updates.</p>
+                  </header>
+
+                  <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
+                    {[
+                      { id: 'email', label: 'Email Notifications', desc: 'Receive project updates via email' },
+                      { id: 'push', label: 'Push Notifications', desc: 'Get instant alerts on your device' },
+                      { id: 'sms', label: 'SMS Alerts', desc: 'Critical updates via text message' },
+                      { id: 'updates', label: 'Marketing Updates', desc: 'News about new features and offers' }
+                    ].map((item) => (
+                      <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div>
+                          <h4 className="font-bold text-[#1e3a8a]">{item.label}</h4>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{item.desc}</p>
+                        </div>
+                        <button 
+                          onClick={() => setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [item.id]: !formData.notifications[item.id as keyof typeof formData.notifications] }
+                          })}
+                          className={`w-14 h-8 rounded-full transition-all relative ${formData.notifications[item.id as keyof typeof formData.notifications] ? 'bg-[#1e3a8a]' : 'bg-gray-200'}`}
+                        >
+                          <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-sm ${formData.notifications[item.id as keyof typeof formData.notifications] ? 'left-7' : 'left-1'}`} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="pt-6 border-t border-gray-50 flex justify-end">
+                      <button 
+                        onClick={handleSaveProfile}
+                        className="px-10 py-4 bg-[#1e3a8a] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#1e3a8a]/90 active:scale-95 transition-all"
+                      >
+                        Save Preferences
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'preferences' && (
+                <div className="space-y-8">
+                  <header>
+                    <h2 className="text-3xl font-black text-[#1e3a8a] uppercase italic">Preferences</h2>
+                    <p className="text-gray-500 font-medium">Customize your platform experience.</p>
+                  </header>
+
+                  <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-[#1e3a8a] uppercase tracking-widest">Language</label>
+                        <select 
+                          value={formData.preferences.language}
+                          onChange={(e) => setFormData({ ...formData, preferences: { ...formData.preferences, language: e.target.value } })}
+                          className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-[#1e3a8a] transition-all font-bold appearance-none"
+                        >
+                          <option>English</option>
+                          <option>Hindi</option>
+                          <option>Spanish</option>
+                          <option>French</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-[#1e3a8a] uppercase tracking-widest">Timezone</label>
+                        <select 
+                          value={formData.preferences.timezone}
+                          onChange={(e) => setFormData({ ...formData, preferences: { ...formData.preferences, timezone: e.target.value } })}
+                          className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-[#1e3a8a] transition-all font-bold appearance-none"
+                        >
+                          <option>Asia/Kolkata (GMT+5:30)</option>
+                          <option>UTC (GMT+0:00)</option>
+                          <option>America/New_York (GMT-5:00)</option>
+                          <option>Europe/London (GMT+0:00)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="pt-6 border-t border-gray-50 flex justify-end">
+                      <button 
+                        onClick={handleSaveProfile}
+                        className="px-10 py-4 bg-[#1e3a8a] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#1e3a8a]/90 active:scale-95 transition-all"
+                      >
+                        Save Preferences
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -495,15 +667,39 @@ export default function Settings({ user, profile }: SettingsProps) {
                   </header>
 
                   <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="space-y-2">
-                        <label className="text-xs font-black text-[#1e3a8a] uppercase tracking-widest">Base Website Cost (₹)</label>
+                        <label className="text-xs font-black text-[#1e3a8a] uppercase tracking-widest">Starter Price (₹)</label>
                         <div className="relative">
                           <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                           <input 
                             type="number" 
-                            value={systemSettings?.baseWebsiteCost || 1499}
-                            onChange={(e) => handleUpdateSystemSettings({ baseWebsiteCost: parseInt(e.target.value) })}
+                            value={systemSettings?.pricing?.starter || 1499}
+                            onChange={(e) => setSystemSettings(prev => prev ? { ...prev, pricing: { ...prev.pricing!, starter: parseInt(e.target.value) } } : null)}
+                            className="w-full pl-14 pr-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-[#1e3a8a] transition-all font-bold"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-[#1e3a8a] uppercase tracking-widest">Pro Price (₹)</label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          <input 
+                            type="number" 
+                            value={systemSettings?.pricing?.pro || 3499}
+                            onChange={(e) => setSystemSettings(prev => prev ? { ...prev, pricing: { ...prev.pricing!, pro: parseInt(e.target.value) } } : null)}
+                            className="w-full pl-14 pr-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-[#1e3a8a] transition-all font-bold"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-[#1e3a8a] uppercase tracking-widest">Enterprise Price (₹)</label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          <input 
+                            type="number" 
+                            value={systemSettings?.pricing?.enterprise || 9999}
+                            onChange={(e) => setSystemSettings(prev => prev ? { ...prev, pricing: { ...prev.pricing!, enterprise: parseInt(e.target.value) } } : null)}
                             className="w-full pl-14 pr-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-[#1e3a8a] transition-all font-bold"
                           />
                         </div>
@@ -513,16 +709,17 @@ export default function Settings({ user, profile }: SettingsProps) {
                     <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex gap-4">
                       <AlertCircle className="text-[#1e3a8a] shrink-0" size={24} />
                       <p className="text-sm text-[#1e3a8a] font-bold">
-                        Changing this value will immediately update the pricing cards on the landing page and onboarding flow.
+                        Changing these values will immediately update the pricing cards on the landing page and onboarding flow.
                       </p>
                     </div>
 
                     <div className="pt-6 border-t border-gray-50 flex justify-end">
                       <button 
+                        onClick={() => handleUpdateSystemSettings({ pricing: systemSettings?.pricing })}
                         disabled={isSaving}
-                        className="px-10 py-4 bg-[#1e3a8a] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#1e3a8a]/90 transition-all flex items-center gap-3"
+                        className="px-10 py-4 bg-[#1e3a8a] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#1e3a8a]/90 active:scale-95 transition-all flex items-center gap-3"
                       >
-                        {isSaving ? <RefreshCw className="animate-spin" size={20} /> : 'Update Global Pricing'}
+                        {isSaving ? <RefreshCw className="animate-spin" size={20} /> : (saveSuccess ? <Check size={20} /> : 'Update Global Pricing')}
                       </button>
                     </div>
                   </div>
