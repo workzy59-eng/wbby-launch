@@ -9,31 +9,26 @@ const TESTIMONIAL_DATA: Testimonial[] = [
   {
     id: 1,
     name: "Sai Roshan",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop",
     description: "WebbyLaunch transformed our digital presence. The speed and quality of their work is unmatched in the industry."
   },
   {
     id: 2,
     name: "Ananya Sharma",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop",
     description: "The admin panel they built for us is a game-changer. Clean, intuitive, and incredibly powerful. Highly recommended!"
   },
   {
     id: 3,
     name: "Vikram Singh",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1000&auto=format&fit=crop",
     description: "Exceptional design sense. They understood our brand vision perfectly and delivered a website that truly stands out."
   },
   {
     id: 4,
     name: "Sneha Reddy",
-    avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1000&auto=format&fit=crop",
     description: "My online boutique took off after WebbyLaunch built my site. The payment integration is flawless and secure."
   },
   {
     id: 5,
     name: "Rajesh Kumar",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop",
     description: "Clean, professional, and exactly what I needed for my legal consultancy firm. The appointment booking feature is great."
   }
 ];

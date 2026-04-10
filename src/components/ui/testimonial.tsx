@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils"
 interface Testimonial {
   id: number | string
   name: string
-  avatar: string
   description: string
 }
 

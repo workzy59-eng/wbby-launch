@@ -320,6 +320,14 @@ export const createProject = async (projectData: any) => {
           status: 'sent',
           seen: false
         });
+
+        // Send welcome notification
+        await sendNotification({
+          userId: clientUid,
+          title: 'Welcome to Webbylaunch! 🎉',
+          description: 'Your project has been received. We are excited to start building your website!',
+          type: 'welcome'
+        });
       }
     } catch (msgError) {
       console.error("Error sending automated message:", msgError);
@@ -334,7 +342,20 @@ export const createProject = async (projectData: any) => {
 export const updateProject = async (projectId: string, updateData: any) => {
   const path = `projects/${projectId}`;
   try {
+    const projectDoc = await getDoc(doc(db, 'projects', projectId));
+    const oldData = projectDoc.data();
+    
     await updateDoc(doc(db, 'projects', projectId), updateData);
+
+    // Send progress notification if progress increased
+    if (updateData.progress !== undefined && oldData && updateData.progress > (oldData.progress || 0)) {
+      await sendNotification({
+        userId: oldData.userId,
+        title: 'Project Progress Update! 🚀',
+        description: `Congratulations! Your project progress has increased to ${updateData.progress}%.`,
+        type: 'progress'
+      });
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -395,6 +416,59 @@ export const getBlogPostBySlug = async (slug: string) => {
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
   }
+};
+
+// Notification Operations
+export const sendNotification = async (notificationData: any) => {
+  const path = 'notifications';
+  try {
+    const docRef = await addDoc(collection(db, 'notifications'), {
+      ...notificationData,
+      createdAt: serverTimestamp(),
+      read: false
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
+};
+
+export const markNotificationAsRead = async (notificationId: string) => {
+  const path = `notifications/${notificationId}`;
+  try {
+    await updateDoc(doc(db, 'notifications', notificationId), {
+      read: true
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+export const markAllNotificationsAsRead = async (userId: string) => {
+  const path = 'notifications';
+  try {
+    const q = query(collection(db, 'notifications'), where('userId', '==', userId), where('read', '==', false));
+    const snapshot = await getDocs(q);
+    const promises = snapshot.docs.map(d => updateDoc(doc(db, 'notifications', d.id), { read: true }));
+    await Promise.all(promises);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+export const getNotifications = (userId: string, callback: (notifications: any[]) => void) => {
+  const q = query(
+    collection(db, 'notifications'),
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  );
+  return onSnapshot(q, (snapshot) => {
+    const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(notifications);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, 'notifications');
+  });
 };
 
 // Message Operations

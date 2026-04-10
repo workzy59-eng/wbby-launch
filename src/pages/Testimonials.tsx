@@ -8,7 +8,6 @@ const ALL_TESTIMONIALS = [
     id: 1, 
     name: 'Rahul Sharma', 
     role: 'Gym Owner',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop', 
     description: 'Got my gym website in 2 days. Super smooth! The design is top-notch and my clients love it. The integration with our booking system was flawless.',
     rating: 5
   },
@@ -16,7 +15,6 @@ const ALL_TESTIMONIALS = [
     id: 2, 
     name: 'Priya Patel', 
     role: 'Logistics Manager',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop', 
     description: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer for our clients. Highly recommend their services.',
     rating: 5
   },
@@ -24,7 +22,6 @@ const ALL_TESTIMONIALS = [
     id: 3, 
     name: 'Amit Verma', 
     role: 'Car Dealer',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop', 
     description: 'The Auto Speed UI is exactly what I needed for my showroom. Fast, clean, and mobile responsive. It has significantly increased our online inquiries.',
     rating: 5
   },
@@ -32,7 +29,6 @@ const ALL_TESTIMONIALS = [
     id: 4, 
     name: 'Sneha Reddy', 
     role: 'Boutique Owner',
-    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=200&auto=format&fit=crop', 
     description: 'My online boutique took off after WebbyLaunch built my site. The payment integration is flawless and secure. The team was very helpful throughout.',
     rating: 5
   },
@@ -40,7 +36,6 @@ const ALL_TESTIMONIALS = [
     id: 5, 
     name: 'Vikram Singh', 
     role: 'Real Estate Agent',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop', 
     description: 'Professional and fast. I can now showcase my real estate properties with high-quality galleries that load instantly. Great value for money.',
     rating: 4
   },
@@ -48,7 +43,6 @@ const ALL_TESTIMONIALS = [
     id: 6, 
     name: 'Ananya Gupta', 
     role: 'Restaurant Owner',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop', 
     description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend WebbyLaunch for any food business.',
     rating: 5
   }
@@ -98,12 +92,6 @@ export default function Testimonials() {
               <Quote className="absolute top-12 right-12 text-[#E6FF00]/10 group-hover:text-[#E6FF00]/20 transition-all" size={80} />
               
               <div className="flex items-center gap-8 mb-10 relative z-10">
-                <img 
-                  src={t.avatar} 
-                  alt={t.name} 
-                  className="w-24 h-24 rounded-3xl object-cover border-2 border-[#E6FF00]/20 group-hover:border-[#E6FF00]/50 transition-all"
-                  referrerPolicy="no-referrer"
-                />
                 <div>
                   <h4 className="text-3xl font-black uppercase italic tracking-tighter">{t.name}</h4>
                   <p className="text-xs font-black uppercase tracking-widest text-[#E6FF00]">{t.role}</p>

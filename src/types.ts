@@ -188,3 +188,13 @@ export interface BlogPost {
   tags: string[];
   category: string;
 }
+
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  type: 'progress' | 'welcome' | 'system' | 'admin';
+  createdAt: string | Timestamp;
+  read: boolean;
+}

@@ -65,64 +65,60 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { 
       id: 1, 
       name: 'Rahul Sharma', 
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop', 
       description: 'Got my gym website in 2 days. Super smooth! The design is top-notch and my clients love it.' 
     },
     { 
       id: 2, 
       name: 'Priya Patel', 
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop', 
       description: 'QUICWEB made our logistics portal look professional. The tracking feature is a game changer.' 
     },
     { 
       id: 3, 
       name: 'Amit Verma', 
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop', 
       description: 'The Auto Speed UI is exactly what I needed for my showroom. Fast, clean, and mobile responsive.' 
     },
     { 
       id: 4, 
       name: 'Sneha Reddy', 
-      avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=200&auto=format&fit=crop', 
       description: 'My online boutique took off after QUICWEB built my site. The payment integration is flawless and secure.' 
     },
     { 
       id: 5, 
       name: 'Vikram Singh', 
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop', 
       description: 'Professional and fast. I can now showcase my real estate properties with high-quality galleries that load instantly.' 
     },
     { 
       id: 6, 
       name: 'Ananya Gupta', 
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop', 
       description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend QUICWEB!' 
     },
     { 
       id: 7, 
       name: 'Rajesh Kumar', 
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop', 
       description: 'Clean, professional, and exactly what I needed for my legal consultancy firm. The appointment booking feature is great.' 
     },
     { 
       id: 8, 
       name: 'Meera Iyer', 
-      avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop', 
       description: 'As a tutor, I needed a platform to share resources. QUICWEB delivered a perfect portal in record time.' 
     },
     { 
       id: 9, 
       name: 'Karan Malhotra', 
-      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=200&auto=format&fit=crop', 
       description: 'My photography portfolio looks stunning. The dark theme really makes my photos pop. Great work by the team!' 
     },
     { 
       id: 10, 
       name: 'Pooja Sharma', 
-      avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?q=80&w=200&auto=format&fit=crop', 
       description: 'The booking system for my salon is so intuitive. My clients find it very easy to schedule their appointments now.' 
     }
   ];
+
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
 
   const steps = [
     { title: 'Submit Request', description: 'Tell us about your business and requirements.' },
@@ -304,7 +300,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       </section>
 
       {/* How It Works */}
-      <section className="py-32 px-10">
+      <section id="how-it-works" className="py-32 px-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
             <div className="space-y-4">
@@ -423,6 +419,34 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           <div className="flex justify-center scale-110 md:scale-125 py-20">
             <TestimonialCarousel testimonials={testimonialCards} />
           </div>
+
+          {/* Ready to be next success story */}
+          <motion.div 
+            onMouseMove={handleMouseMove}
+            className="mt-32 p-20 rounded-[4rem] bg-white/5 border border-white/10 relative overflow-hidden group text-center"
+          >
+            <div 
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+              style={{
+                background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(230,255,0,0.15), transparent 40%)`
+              }}
+            />
+            <div className="relative z-10 space-y-8">
+              <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+                Ready to be our <br />
+                <span className="text-[#E6FF00]">Next Success Story?</span>
+              </h2>
+              <p className="text-xl text-white/40 font-medium italic max-w-2xl mx-auto">
+                Join hundreds of businesses that have transformed their digital presence with Webbylaunch.
+              </p>
+              <Link 
+                to="/auth"
+                className="inline-flex px-12 py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.2)]"
+              >
+                Start Your Journey
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -546,6 +570,44 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               </a>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Ready to be our Next Success Story? */}
+      <section 
+        className="py-32 px-10 relative overflow-hidden bg-black group"
+        onMouseMove={handleMouseMove}
+      >
+        <div 
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+          style={{
+            background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(230, 255, 0, 0.15), transparent 40%)`
+          }}
+        />
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-8"
+          >
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Your Turn</h2>
+            <h3 className="text-5xl md:text-8xl font-black tracking-tighter uppercase italic text-white">
+              Ready to be our <br />
+              <span className="text-[#E6FF00]">Next Success Story?</span>
+            </h3>
+            <p className="text-white/60 text-xl max-w-2xl mx-auto font-medium italic">
+              Join 500+ businesses that launched their professional digital presence with QUICWEB in record time.
+            </p>
+            <div className="pt-8">
+              <Link 
+                to="/onboarding"
+                className="inline-block bg-[#E6FF00] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)]"
+              >
+                Start Your Journey
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 

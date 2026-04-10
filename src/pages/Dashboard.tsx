@@ -9,6 +9,7 @@ import MessagesModule from '../components/MessagesModule';
 import { getProjects, updateProject } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
+import { NotificationBell } from '../components/NotificationBell';
 
 interface DashboardProps {
   user: FirebaseUser;
@@ -175,9 +176,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </div>
             <div className="text-xl font-black tracking-tighter uppercase italic">{APP_NAME}</div>
           </div>
-          <button onClick={() => logOut()} className="text-white/50 hover:text-red-400 transition-all">
-            <LogOut size={24} />
-          </button>
+          <div className="flex items-center gap-4">
+            <NotificationBell />
+            <button onClick={() => logOut()} className="text-white/50 hover:text-red-400 transition-all">
+              <LogOut size={24} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -230,6 +234,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </div>
             <div className="flex flex-col items-end gap-4">
               <div className="flex items-center gap-4">
+                <NotificationBell />
                 {adminProfile && (
                   <button 
                     onClick={() => setShowDirectChat(true)}

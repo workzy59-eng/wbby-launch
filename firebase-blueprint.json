@@ -125,6 +125,21 @@
         "category": { "type": "string" }
       },
       "required": ["title", "slug", "content", "date"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["progress", "welcome", "system", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["userId", "title", "description", "createdAt"]
     }
   },
   "firestore": {
@@ -159,6 +174,10 @@
     "/blog_posts/{postId}": {
       "schema": "BlogPost",
       "description": "Blog articles."
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications."
     }
   }
 }
