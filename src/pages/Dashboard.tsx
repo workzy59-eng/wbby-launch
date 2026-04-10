@@ -10,6 +10,7 @@ import { getProjects, updateProject } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { NotificationBell } from '../components/NotificationBell';
+import InvoiceSystem from '../components/InvoiceSystem';
 
 interface DashboardProps {
   user: FirebaseUser;
@@ -30,11 +31,20 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const [showDirectChat, setShowDirectChat] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
   const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
   const [expandedBox, setExpandedBox] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const statusSteps = selectedProject?.status === 'Rejected' 
+    ? ["Waiting for Review", "Under Review", "Declined", "Development Started", "Completed"]
+    : ["Waiting for Review", "Under Review", "Accepted", "Development Started", "Completed"];
+  
+  const currentStepIndex = selectedProject 
+    ? statusSteps.indexOf(selectedProject.status === 'Rejected' ? 'Declined' : selectedProject.status) 
+    : -1;
 
   useEffect(() => {
     const fetchAdmin = async () => {
@@ -96,8 +106,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     }
   };
 
-  const statusSteps = ["Waiting for Review", "Under Review", "Accepted", "Development Started", "Completed"];
-  const currentStepIndex = selectedProject ? statusSteps.indexOf(selectedProject.status) : -1;
+  // Removed old statusSteps and currentStepIndex from here
 
   return (
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black">
@@ -292,11 +301,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               ) : (
                 <div className="space-y-10">
                   {/* Stats Grid - 4 Boxes */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
                       { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
                       { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
                       { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
+                      { id: 'price', label: 'Plan Price', value: '1499/-', icon: PartyPopper, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10', items: ['Starter Launch Plan'] },
                     ].map((stat, i) => (
                       <div key={stat.id} className="relative">
                         <motion.button 
@@ -412,6 +422,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   <span>{selectedProject.businessPhone || selectedProject.businessNumber}</span>
                                   <span>{selectedProject.city}, {selectedProject.state} • {selectedProject.pincode}</span>
                                 </div>
+                                <div className="mt-6">
+                                  <button 
+                                    onClick={() => setShowInvoice(true)}
+                                    className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-all group"
+                                  >
+                                    <FileText size={16} className="group-hover:scale-110 transition-transform" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">View Invoice</span>
+                                  </button>
+                                </div>
                               </div>
                               <button 
                                 onClick={() => setShowChat(true)}
@@ -494,14 +513,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 {statusSteps.map((step, i) => (
                                   <div key={step} className="flex flex-col items-center min-w-[120px] text-center gap-4">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                                      i <= currentStepIndex 
+                                      i < currentStepIndex 
                                         ? 'bg-[#E6FF00] border-[#E6FF00] text-black' 
-                                        : 'bg-transparent border-white/20 text-white/20'
+                                        : i === currentStepIndex
+                                          ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#E6FF00] border-[#E6FF00] text-black'
+                                          : 'bg-transparent border-white/20 text-white/20'
                                     }`}>
-                                      {i < currentStepIndex ? <Check size={24} /> : <span className="font-black text-lg">{i + 1}</span>}
+                                      {i < currentStepIndex ? <Check size={24} /> : step === 'Declined' ? <X size={24} /> : <span className="font-black text-lg">{i + 1}</span>}
                                     </div>
                                     <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                      i <= currentStepIndex ? 'text-[#E6FF00]' : 'text-white/20'
+                                      i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#E6FF00]' : 'text-white/20'
                                     }`}>
                                       {step}
                                     </span>
@@ -625,6 +646,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             profile={profile}
             currentUser={user}
             onClose={() => setShowDirectChat(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showInvoice && selectedProject && (
+          <InvoiceSystem 
+            project={selectedProject}
+            profile={profile}
+            onClose={() => setShowInvoice(false)}
           />
         )}
       </AnimatePresence>
