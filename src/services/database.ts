@@ -1,5 +1,5 @@
 import { 
-  db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp,
+  db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit,
   ref, uploadBytes, getDownloadURL, storage
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
@@ -286,6 +286,45 @@ export const createProject = async (projectData: any) => {
       isDeleted: false,
       isLocked: true, // Default to locked
     });
+
+    // Send automated message from admin to client
+    try {
+      const q = query(collection(db, 'users'), where('role', '==', 'admin'), limit(1));
+      const adminSnap = await getDocs(q);
+      if (!adminSnap.empty) {
+        const adminUid = adminSnap.docs[0].id;
+        const clientUid = projectData.userId;
+        const clientName = projectData.userName || 'Client';
+        const conversationId = getConversationId(adminUid, clientUid);
+        
+        const welcomeMessage = `Hi ${clientName},\n\nGreat news! 🎉 Your project has been received by our team.\nWe’re excited to start building your website and will keep you updated throughout the process.\nWe can chat here \nIf you have any additional details, feel free to reply anytime.\n\n– Team Webbylaunch`;
+
+        // Create/Update conversation metadata
+        await setDoc(doc(db, 'conversations', conversationId), {
+          participants: [adminUid, clientUid],
+          lastMessage: welcomeMessage,
+          lastMessageAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          unreadCount: {
+            [clientUid]: 1
+          }
+        }, { merge: true });
+
+        // Add the actual message
+        await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
+          text: welcomeMessage,
+          senderId: adminUid,
+          senderName: 'Team Webbylaunch',
+          conversationId,
+          createdAt: serverTimestamp(),
+          status: 'sent',
+          seen: false
+        });
+      }
+    } catch (msgError) {
+      console.error("Error sending automated message:", msgError);
+    }
+
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);

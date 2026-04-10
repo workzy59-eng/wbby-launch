@@ -15,6 +15,35 @@
   animation: rotate-glow 4s linear infinite;
 }
 
+.pricing-glow-card {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.pricing-glow-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 150deg,
+    #E6FF00 180deg,
+    #00ffff 210deg,
+    #E6FF00 240deg,
+    transparent 270deg,
+    transparent 360deg
+  );
+  animation: rotate-glow 3s linear infinite;
+  z-index: -1;
+  filter: blur(35px);
+  opacity: 0.8;
+}
+
 @layer base {
   body {
     @apply font-sans antialiased;

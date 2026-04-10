@@ -103,7 +103,7 @@ export default function Pricing() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
@@ -111,50 +111,49 @@ export default function Pricing() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              className={`relative p-12 rounded-[3.5rem] border flex flex-col h-full transition-all duration-500 hover:scale-[1.02] ${plan.color}`}
+              className={`relative p-1 rounded-[3.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col h-full pricing-glow-card`}
             >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-black text-[#E6FF00] rounded-full text-[10px] font-black uppercase tracking-widest italic shadow-xl border border-[#E6FF00]/20">
-                  Most Popular
-                </div>
-              )}
-
-              <div className="mb-10">
-                <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-black' : 'text-white'}`}>{plan.name}</h3>
-                <div className="flex items-baseline gap-2 relative group/price">
-                  {plan.name !== 'Standard' && (
-                    <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
-                  )}
-                  <span className={`text-6xl font-black tracking-tighter relative z-10 ${plan.popular ? 'text-black' : 'text-[#E6FF00]'}`}>{plan.price}</span>
-                </div>
-                <p className={`mt-6 text-sm font-medium italic leading-relaxed ${plan.popular ? 'text-black/60' : 'text-white/50'}`}>
-                  {plan.description}
-                </p>
-              </div>
-
-              <div className="space-y-4 flex-1 mb-12">
-                {plan.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-4 group">
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${plan.popular ? 'bg-black/10 text-black' : 'bg-[#E6FF00]/10 text-[#E6FF00]'}`}>
-                      <Check size={14} />
-                    </div>
-                    <span className={`text-xs font-bold uppercase tracking-widest group-hover:brightness-125 transition-all ${plan.popular ? 'text-black/70' : 'text-white/70'}`}>
-                      {feature}
-                    </span>
+              <div className={`pricing-glow-card-inner p-12 rounded-[3.5rem] border flex flex-col h-full bg-[#0B0B0B] ${plan.popular ? 'border-[#E6FF00]' : 'border-white/10'}`}>
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#E6FF00] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic shadow-[0_0_20px_rgba(230,255,0,0.5)] z-20">
+                    Most Popular
                   </div>
-                ))}
-              </div>
+                )}
 
-              <button 
-                onClick={() => handleSubscribe(plan.stripeLink)}
-                className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
-                  plan.popular 
-                    ? 'bg-black text-white shadow-2xl hover:scale-[1.05]' 
-                    : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
-                }`}
-              >
-                Subscribe Now <ArrowRight size={24} />
-              </button>
+                <div className="mb-10">
+                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#E6FF00]' : 'text-white'}`}>{plan.name}</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-6xl font-black tracking-tighter relative z-10 ${plan.popular ? 'text-white' : 'text-[#E6FF00]'}`}>{plan.price}</span>
+                  </div>
+                  <p className={`mt-6 text-sm font-medium italic leading-relaxed text-white/50`}>
+                    {plan.description}
+                  </p>
+                </div>
+
+                <div className="space-y-4 flex-1 mb-12">
+                  {plan.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-4 group">
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-[#E6FF00]/10 text-[#E6FF00]`}>
+                        <Check size={14} />
+                      </div>
+                      <span className={`text-xs font-bold uppercase tracking-widest group-hover:brightness-125 transition-all text-white/70`}>
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => handleSubscribe(plan.stripeLink)}
+                  className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
+                    plan.popular 
+                      ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.3)] hover:scale-[1.05]' 
+                      : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  Subscribe Now <ArrowRight size={24} />
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>

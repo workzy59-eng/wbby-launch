@@ -264,11 +264,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     referrerPolicy="no-referrer"
                   />
-                  {/* Live Badge */}
-                  <div className="absolute top-6 right-6 bg-red-500 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 animate-pulse z-30">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                    Live Preview
-                  </div>
+                  {/* Live Badge removed as requested */}
                 </div>
                 <div className="p-10 space-y-6 relative z-30">
                   <div>
@@ -283,9 +279,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     >
                       <Eye size={14} /> Enter Experience
                     </Link>
-                    <button className="w-full py-4 bg-white/5 text-white border border-white/10 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                      <Sparkles size={14} /> AI Analysis
-                    </button>
+                    {/* AI Analysis button removed as requested */}
                   </div>
                 </div>
               </motion.div>
@@ -319,15 +313,15 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 How It <span className="text-[#E6FF00]">Works.</span>
               </h3>
             </div>
-            <Link 
-              to="/how-it-works" 
+            <a 
+              href="#process-steps" 
               className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
             >
               View Full Process
-            </Link>
+            </a>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div id="process-steps" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, idx) => (
               <motion.div
                 key={idx}

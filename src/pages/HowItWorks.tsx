@@ -80,7 +80,7 @@ export default function HowItWorks() {
           </Link>
         </div>
 
-        <div className="space-y-32">
+        <div id="process-steps" className="space-y-32">
           {STEPS.map((step, i) => (
             <motion.div
               key={i}

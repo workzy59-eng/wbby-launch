@@ -871,23 +871,27 @@ Generated on: ${new Date().toLocaleString()}
   const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'favourites'>('all');
 
   const renderMessages = () => {
-    let filteredUsers = users.filter(u => 
-      u.uid !== user.uid && 
-      (u.displayName?.toLowerCase().includes(userSearch.toLowerCase()) || 
-       u.email?.toLowerCase().includes(userSearch.toLowerCase()))
-    );
+    // Filter conversations based on user search
+    const filteredConversations = conversations.filter(conv => {
+      const otherParticipantId = conv.participants.find((id: string) => id !== user.uid);
+      const otherUser = users.find(u => u.uid === otherParticipantId);
+      
+      const searchMatch = !userSearch || (
+        otherUser?.displayName?.toLowerCase().includes(userSearch.toLowerCase()) || 
+        otherUser?.email?.toLowerCase().includes(userSearch.toLowerCase())
+      );
 
-    // Apply filters
-    if (messageFilter === 'unread') {
-      filteredUsers = filteredUsers.filter(u => userUnreadCounts[u.uid] > 0);
-    }
+      if (messageFilter === 'unread') {
+        return searchMatch && (conv.unreadCount?.[user.uid] > 0);
+      }
 
-    // Sort by last message
-    const sortedUsers = [...filteredUsers].sort((a, b) => {
-      const convA = conversations.find(c => c.participants.includes(a.uid));
-      const convB = conversations.find(c => c.participants.includes(b.uid));
-      const timeA = convA?.lastMessageAt?.toMillis() || 0;
-      const timeB = convB?.lastMessageAt?.toMillis() || 0;
+      return searchMatch;
+    });
+
+    // Sort by last message time
+    const sortedConversations = [...filteredConversations].sort((a, b) => {
+      const timeA = a.lastMessageAt?.toMillis() || 0;
+      const timeB = b.lastMessageAt?.toMillis() || 0;
       return timeB - timeA;
     });
 
@@ -939,16 +943,24 @@ Generated on: ${new Date().toLocaleString()}
 
         {/* Chat List */}
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#0B141A]">
-          {sortedUsers.length > 0 ? (
-            sortedUsers.map((u) => (
-              <UserCard 
-                key={u.uid} 
-                u={u} 
-                adminId={user.uid}
-                onOpenChat={() => { setSelectedUser(u); setShowDirectChat(true); }} 
-                onUnreadUpdate={(count) => updateUnreadCount(u.uid, count)}
-              />
-            ))
+          {sortedConversations.length > 0 ? (
+            sortedConversations.map((conv) => {
+              const otherParticipantId = conv.participants.find((id: string) => id !== user.uid);
+              const otherUser = users.find(u => u.uid === otherParticipantId);
+              
+              if (!otherUser) return null;
+
+              return (
+                <UserCard 
+                  key={conv.id} 
+                  u={otherUser} 
+                  adminId={user.uid}
+                  conversation={conv}
+                  onOpenChat={() => { setSelectedUser(otherUser); setShowDirectChat(true); }} 
+                  onUnreadUpdate={(count) => updateUnreadCount(otherUser.uid, count)}
+                />
+              );
+            })
           ) : (
             <div className="py-20 text-center space-y-4">
               <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto">
@@ -1990,33 +2002,24 @@ Generated on: ${new Date().toLocaleString()}
 interface UserCardProps {
   u: UserProfile;
   adminId: string;
+  conversation: any;
   onOpenChat: () => void;
   onUnreadUpdate: (count: number) => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ u, adminId, onOpenChat, onUnreadUpdate }) => {
-  const [msgCount, setMsgCount] = useState(0);
-  const [lastMessage, setLastMessage] = useState<any>(null);
+const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenChat, onUnreadUpdate }) => {
+  const msgCount = conversation.unreadCount?.[adminId] || 0;
+  const lastMessage = {
+    text: conversation.lastMessage,
+    createdAt: conversation.lastMessageAt,
+    senderId: conversation.lastSenderId,
+    seen: msgCount === 0,
+    attachments: conversation.lastMessage?.includes('attachment') || conversation.lastMessage?.includes('image') ? [1] : []
+  };
 
   useEffect(() => {
-    const chatId = getConversationId(adminId, u.uid);
-    const q = collection(db, 'conversations', chatId, 'messages');
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const unread = snapshot.docs.filter(d => d.data().senderId !== adminId && !d.data().seen).length;
-      setMsgCount(unread);
-      onUnreadUpdate(unread);
-      
-      if (!snapshot.empty) {
-        const sorted = snapshot.docs.sort((a, b) => {
-          const timeA = a.data().createdAt?.toMillis() || 0;
-          const timeB = b.data().createdAt?.toMillis() || 0;
-          return timeB - timeA;
-        });
-        setLastMessage(sorted[0].data());
-      }
-    });
-    return () => unsubscribe();
-  }, [u.uid, adminId]);
+    onUnreadUpdate(msgCount);
+  }, [msgCount]);
 
   const formatTime = (timestamp: any) => {
     if (!timestamp) return '';
