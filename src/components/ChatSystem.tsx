@@ -51,7 +51,10 @@ import {
   getTypingStatus,
   getUserProfile,
   markMessageAsSeen,
-  deleteMessageForEveryone
+  deleteMessageForEveryone,
+  getConversationId,
+  markConversationAsSeen,
+  markProjectAsSeen
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { HYPHENATED_NAME } from '../constants';
@@ -95,17 +98,20 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     let unsubscribe: () => void;
     let unsubTyping: () => void;
 
-    const chatId = isDirect && recipientUser ? (currentUser.uid < recipientUser.uid ? `${currentUser.uid}_${recipientUser.uid}` : `${recipientUser.uid}_${currentUser.uid}`) : projectId;
+    const chatId = isDirect && recipientUser ? getConversationId(currentUser.uid, recipientUser.uid) : projectId;
 
     if (isDirect && recipientUser) {
       // Fetch recipient profile for status
       getUserProfile(recipientUser.uid).then(p => setRecipientProfile(p as UserProfile));
 
-      unsubscribe = getDirectMessages(recipientUser.uid, (messagesData) => {
+      unsubscribe = getDirectMessages(currentUser.uid, recipientUser.uid, (messagesData) => {
         const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
         setMessages(filtered as Message[]);
         
-        // Mark as seen
+        // Mark conversation as seen
+        if (chatId) markConversationAsSeen(chatId, currentUser.uid);
+        
+        // Mark individual messages as seen
         messagesData.forEach(async (m) => {
           if (m.senderId !== currentUser.uid && !m.seen) {
             await markMessageAsSeen(m.id, chatId);
@@ -124,7 +130,10 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         const filtered = (messagesData as any[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
         setMessages(filtered as Message[]);
         
-        // Mark as seen
+        // Mark project as seen
+        markProjectAsSeen(projectId, currentUser.uid);
+        
+        // Mark individual messages as seen
         messagesData.forEach(async (m) => {
           if (m.senderId !== currentUser.uid && !m.seen) {
             await updateMessage(projectId, m.id, { seen: true });

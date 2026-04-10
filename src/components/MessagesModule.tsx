@@ -122,7 +122,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
     fetchProfiles();
 
-    const unsubConversations = getConversations(async (convs) => {
+    const unsubConversations = getConversations(currentUser.uid, async (convs) => {
       try {
         const enrichedConvs = await Promise.all(convs.map(async (conv) => {
           const recipientId = conv.participants.find((id: string) => id !== currentUser.uid);
@@ -201,7 +201,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
 
-    const unsubMessages = getDirectMessages(recipientId, (messagesData) => {
+    const unsubMessages = getDirectMessages(currentUser.uid, recipientId, (messagesData) => {
       const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
       setMessages(newMessages);
 

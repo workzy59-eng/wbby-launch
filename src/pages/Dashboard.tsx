@@ -44,13 +44,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       if (admin) {
         setAdminProfile(admin);
         // Also fetch messages for the unread count
-        getDirectMessages(admin.uid, (msgs) => {
+        getDirectMessages(user.uid, admin.uid, (msgs) => {
           setMessages(msgs);
         });
       }
 
       // Fetch conversations for unread count
-      const unsubConvs = getConversations((convs) => {
+      const unsubConvs = getConversations(user.uid, (convs) => {
         let totalUnread = 0;
         convs.forEach(conv => {
           if (conv.unreadCount && conv.unreadCount[user.uid]) {

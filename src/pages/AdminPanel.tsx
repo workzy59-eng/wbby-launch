@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import Papa from 'papaparse';
@@ -131,12 +131,9 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       console.error("Admin Users Snapshot Error:", error);
     });
 
-    const unsubscribeConversations = onSnapshot(
-      query(collection(db, 'conversations'), where('participants', 'array-contains', user.uid)),
-      (snapshot) => {
-        setConversations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      }
-    );
+    const unsubscribeConversations = getConversations(user.uid, (convs) => {
+      setConversations(convs);
+    });
     
     getSystemSettings().then(settings => {
       if (settings) setSystemSettings(settings);
@@ -147,7 +144,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       unsubscribeUsers();
       unsubscribeConversations();
     };
-  }, []);
+  }, [user.uid]);
 
   const handleAccept = async (projectId: string) => {
     try {
@@ -2019,7 +2016,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, onOpenChat, onUnreadUpd
       }
     });
     return () => unsubscribe();
-  }, [u.uid]);
+  }, [u.uid, adminId]);
 
   const formatTime = (timestamp: any) => {
     if (!timestamp) return '';

@@ -411,20 +411,6 @@ export const sendMessage = async (projectId: string, messageData: any) => {
   }
 };
 
-export const markProjectAsSeen = async (projectId: string, userId: string) => {
-  const path = `projects/${projectId}`;
-  try {
-    const projectDoc = await getDoc(doc(db, 'projects', projectId));
-    if (projectDoc.exists()) {
-      const unreadCount = projectDoc.data().unreadCount || {};
-      unreadCount[userId] = 0;
-      await updateDoc(doc(db, 'projects', projectId), { unreadCount });
-    }
-  } catch (error) {
-    console.error('Error marking project as seen:', error);
-  }
-};
-
 export const sendDirectMessage = async (recipientId: string, messageData: any) => {
   if (!auth.currentUser) return;
   const conversationId = getConversationId(auth.currentUser.uid, recipientId);
@@ -469,10 +455,30 @@ export const markConversationAsSeen = async (conversationId: string, userId: str
     if (convDoc.exists()) {
       const unreadCount = convDoc.data().unreadCount || {};
       unreadCount[userId] = 0;
-      await updateDoc(doc(db, 'conversations', conversationId), { unreadCount });
+      await updateDoc(doc(db, 'conversations', conversationId), { 
+        unreadCount,
+        updatedAt: serverTimestamp()
+      });
     }
   } catch (error) {
-    console.error('Error marking conversation as seen:', error);
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+export const markProjectAsSeen = async (projectId: string, userId: string) => {
+  const path = `projects/${projectId}`;
+  try {
+    const projectDoc = await getDoc(doc(db, 'projects', projectId));
+    if (projectDoc.exists()) {
+      const unreadCount = projectDoc.data().unreadCount || {};
+      unreadCount[userId] = 0;
+      await updateDoc(doc(db, 'projects', projectId), { 
+        unreadCount,
+        updatedAt: serverTimestamp()
+      });
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
   }
 };
 
@@ -617,9 +623,8 @@ export const getMessages = (projectId: string, callback: (messages: any[]) => vo
   });
 };
 
-export const getDirectMessages = (recipientId: string, callback: (messages: any[]) => void) => {
-  if (!auth.currentUser) return () => {};
-  const conversationId = getConversationId(auth.currentUser.uid, recipientId);
+export const getDirectMessages = (currentUserUid: string, recipientId: string, callback: (messages: any[]) => void) => {
+  const conversationId = getConversationId(currentUserUid, recipientId);
   const path = `conversations/${conversationId}/messages`;
   const q = query(collection(db, 'conversations', conversationId, 'messages'), orderBy('createdAt', 'asc'));
 
@@ -631,12 +636,11 @@ export const getDirectMessages = (recipientId: string, callback: (messages: any[
   });
 };
 
-export const getConversations = (callback: (conversations: any[]) => void) => {
-  if (!auth.currentUser) return () => {};
+export const getConversations = (userId: string, callback: (conversations: any[]) => void) => {
   const path = 'conversations';
   const q = query(
     collection(db, 'conversations'), 
-    where('participants', 'array-contains', auth.currentUser.uid)
+    where('participants', 'array-contains', userId)
   );
 
   return onSnapshot(q, (snapshot) => {
