@@ -612,12 +612,18 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none">Need help with<br />your plan?</h3>
                             <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 mb-8">Our experts are ready to assist you in building the perfect web presence.</p>
                           </div>
-                          <button 
-                            onClick={() => setShowDirectChat(true)}
-                            className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
-                          >
-                            <MessageCircle size={20} /> Chat with Admin
-                          </button>
+                          {selectedProject && (selectedProject.status === 'Accepted' || selectedProject.status === 'Development Started') ? (
+                            <button 
+                              onClick={() => setShowDirectChat(true)}
+                              className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+                            >
+                              <MessageCircle size={20} /> Chat with Admin
+                            </button>
+                          ) : (
+                            <div className="bg-black/20 p-6 rounded-2xl text-center">
+                              <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Chat will be enabled once your project is accepted.</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

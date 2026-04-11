@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where } from '../firebase';
 import { UserProfile, Project, ProjectStatus } from '../types';
 import { Link } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 import { 
   LogOut, 
   User, 
@@ -34,7 +35,8 @@ import {
   CheckCheck,
   Camera,
   MoreVertical,
-  Video
+  Video,
+  Download
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
@@ -520,12 +522,6 @@ Generated on: ${new Date().toLocaleString()}
                   title="View Details"
                 >
                   <ArrowRight size={20} />
-                </button>
-                <button 
-                  onClick={() => { setSelectedProject(p); setShowChat(true); }}
-                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#E6FF00] hover:text-black transition-all"
-                >
-                  <MessageCircle size={20} />
                 </button>
               </div>
             </div>
@@ -1270,30 +1266,6 @@ Generated on: ${new Date().toLocaleString()}
             <Settings size={18} />
             Platform Settings
           </Link>
-          {[
-            { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
-            { id: 'system', label: 'System', icon: TrendingUp },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${
-                activeTab === item.id 
-                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)]' 
-                  : 'text-white/40 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <item.icon size={18} />
-              {item.label}
-            </button>
-          ))}
-          <Link
-            to="/dashboard"
-            className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-white/40 hover:bg-white/5 hover:text-white transition-all"
-          >
-            <Layout size={18} />
-            User Dashboard
-          </Link>
         </nav>
         <div className="p-6 border-t border-white/5">
           <button onClick={() => logOut()} className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-red-400 hover:bg-red-400/10 transition-all">
@@ -1585,9 +1557,38 @@ Generated on: ${new Date().toLocaleString()}
                   <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{viewingProject.businessName}</h3>
                   <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">Project Details</div>
                 </div>
-                <button onClick={() => setShowProjectDetailModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
-                  <X size={24} />
-                </button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => {
+                      const details = `
+Project: ${viewingProject.businessName}
+Client: ${viewingProject.userName}
+Email: ${viewingProject.userEmail}
+Phone: ${viewingProject.userPhone || 'N/A'}
+Type: ${viewingProject.businessType}
+Plan: ${viewingProject.plan || 'N/A'}
+Status: ${viewingProject.status}
+Description: ${viewingProject.description}
+Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingProject.domain || 'N/A'}
+                      `;
+                      const blob = new Blob([details], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `${viewingProject.businessName}_details.txt`;
+                      link.click();
+                      toast.success('Project details downloaded');
+                    }}
+                    className="p-4 bg-[#E6FF00] text-black rounded-full hover:scale-110 transition-all flex items-center gap-2"
+                    title="Download All Details"
+                  >
+                    <Download size={20} />
+                    <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Download Details</span>
+                  </button>
+                  <button onClick={() => setShowProjectDetailModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
+                    <X size={24} />
+                  </button>
+                </div>
               </div>
 
               {/* Tab Switcher */}

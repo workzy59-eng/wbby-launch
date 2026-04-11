@@ -13,7 +13,62 @@ export interface UserProfile {
   createdAt: string | Timestamp;
   updatedAt?: string | Timestamp;
   isApproved?: boolean; // For manual approval
-  // Business details for clients
+  
+  // Settings & Preferences
+  notificationPreferences?: {
+    email: boolean;
+    meetingReminders: boolean;
+    paymentAlerts: boolean;
+    messages: boolean;
+  };
+  theme?: 'light' | 'dark';
+  
+  // Admin specific
+  businessInfo?: {
+    name: string;
+    email: string;
+    phone: string;
+    website: string;
+    logo?: string;
+  };
+  paymentDetails?: {
+    upiId: string;
+    bankDetails: {
+      accountName: string;
+      accountNumber: string;
+      ifscCode: string;
+    };
+  };
+  invoiceSettings?: {
+    prefix: string;
+    taxPercentage?: number;
+    currency: string;
+  };
+  adminMeetingSettings?: {
+    defaultDuration: number;
+    allowRescheduling: boolean;
+    reminders: {
+      oneHour: boolean;
+      tenMinutes: boolean;
+    };
+    allowClientRequests: boolean;
+    autoApprove: boolean;
+  };
+
+  // Client specific
+  companyName?: string;
+  meetingPreferences?: {
+    preferredTimeSlot?: string;
+    enableReminders: boolean;
+  };
+  communicationPreferences?: {
+    whatsapp: boolean;
+    emailUpdates: boolean;
+  };
+  plan?: 'Basic' | 'Standard' | 'Premium';
+  lastLogin?: string | Timestamp;
+
+  // Business details for clients (Legacy/Duplicate - keeping for compatibility but preferring structured fields above)
   businessName?: string;
   businessType?: string;
   businessEmail?: string;

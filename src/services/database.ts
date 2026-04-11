@@ -124,6 +124,18 @@ export const updateUserStatus = async (uid: string, status: 'online' | 'offline'
   }
 };
 
+export const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
+  const path = `users/${uid}`;
+  try {
+    await updateDoc(doc(db, 'users', uid), {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
 export const setUserTyping = async (conversationId: string, userId: string, isTyping: boolean) => {
   const path = `conversations/${conversationId}/typing/${userId}`;
   try {
