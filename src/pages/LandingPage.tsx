@@ -20,7 +20,9 @@ import {
   Sparkles,
   Plus,
   Minus,
-  MapPin
+  MapPin,
+  Video,
+  X
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { TestimonialCarousel, type Testimonial } from '../components/ui/testimonial';
@@ -174,6 +176,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
   ];
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [roiCustomers, setRoiCustomers] = useState(5);
+  const [roiProfitPerCustomer, setRoiProfitPerCustomer] = useState(10000);
 
   const locations = [
     { name: 'Hyderabad', slug: 'hyderabad' },
@@ -202,12 +207,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             className="max-w-5xl mx-auto"
           >
             <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter mb-8 leading-[0.85] text-white uppercase italic">
-              Launch Your Business<br />
-              <span className="text-[#E6FF00]">in 24 Hours.</span>
+              Get Your Business<br />
+              <span className="text-[#E6FF00]">Online in 24 Hours.</span>
             </h1>
 
             <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-medium text-white/60 leading-relaxed">
-              WebbyLaunch builds premium, mobile-first websites for modern businesses. No coding. No stress. We build it for you while you focus on growth.
+              Stop losing customers to competitors with better websites. We build your premium, high-converting site in record time so you can start selling immediately.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -224,30 +229,164 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   to="/auth" 
                   className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
                 >
-                  Start Now
+                  Start Project
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               )}
-              <ButtonColorful 
-                label="View Full Process" 
-                className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest"
+              <button 
                 onClick={() => {
-                  const el = document.getElementById('how-it-works');
+                  const el = document.getElementById('pricing');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-              />
-              <ButtonColorful 
-                label="View Demo" 
-                className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest"
-                onClick={() => {
-                  const el = document.getElementById('portfolio');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-              />
+                className="group relative bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
+              >
+                Book Call
+                <Video size={18} className="text-[#E6FF00]" />
+              </button>
             </div>
           </motion.div>
         </div>
 
+      </section>
+
+      {/* Logo Cloud Section */}
+      <section className="py-20 bg-black border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-10">
+          <div className="text-center mb-12">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Trusted by Industry Leaders</span>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+            {['FITNESS FIRST', 'AUTO HUB', 'GLOBAL CARGO', 'TECH FLOW', 'ZENITH RETAIL', 'NEXUS APPS'].map((logo, i) => (
+              <span key={i} className="text-2xl font-black italic tracking-tighter uppercase text-white hover:text-[#E6FF00] transition-colors cursor-default">
+                {logo}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Live Demo / Preview Section */}
+      <section id="demo" className="py-32 px-10 bg-white/5 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-[#E6FF00]/20 rounded-[3rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative aspect-video bg-slate-900 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-transparent z-10" />
+                <img 
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" 
+                  alt="Live Demo" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <div className="w-20 h-20 bg-[#E6FF00] rounded-full flex items-center justify-center text-black shadow-[0_0_50px_rgba(230,255,0,0.4)] group-hover:scale-110 transition-transform cursor-pointer">
+                    <Zap size={32} fill="currentColor" />
+                  </div>
+                </div>
+                <div className="absolute bottom-8 left-8 z-20 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white">Live Experience</span>
+                  </div>
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white">Interactive Dashboard UI</h4>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">The Experience</h2>
+                <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white leading-tight">
+                  Interactive <br />
+                  <span className="text-[#E6FF00]">Live Demos.</span>
+                </h3>
+              </div>
+              <p className="text-white/40 text-lg font-medium italic leading-relaxed">
+                Don't just take our word for it. Experience the speed, smoothness, and premium feel of our websites yourself. We build for the future.
+              </p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-2">
+                  <h5 className="text-[#E6FF00] font-black italic tracking-tighter">99.9%</h5>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Uptime Guaranteed</p>
+                </div>
+                <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-2">
+                  <h5 className="text-[#E6FF00] font-black italic tracking-tighter">&lt; 1s</h5>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Load Time</p>
+                </div>
+              </div>
+              <button className="px-10 py-5 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic tracking-widest hover:scale-105 transition-all flex items-center gap-3 shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+                Explore All Demos <ArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Meeting System Highlight */}
+      <section className="py-32 px-10 bg-black relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-white/5 to-transparent p-16 md:p-24 rounded-[4rem] border border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#E6FF00]/5 rounded-full blur-[100px]" />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Collaboration</h2>
+                  <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white leading-tight">
+                    Professional <br />
+                    <span className="text-[#E6FF00]">Meeting System.</span>
+                  </h3>
+                </div>
+                <p className="text-white/40 text-lg font-medium italic leading-relaxed">
+                  Stay connected with our built-in scheduling system. Book calls, join Zoom/Google Meet sessions, and track project progress in real-time.
+                </p>
+                <div className="space-y-4">
+                  {[
+                    "One-click Zoom/Google Meet integration",
+                    "Real-time countdown to next meeting",
+                    "Instant rescheduling & notifications",
+                    "Direct chat with your dedicated admin"
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                      <span className="text-sm font-bold text-white/60 italic">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="bg-black/40 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 shadow-2xl space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Upcoming Meeting</div>
+                      <h4 className="text-2xl font-black uppercase italic tracking-tighter">Project Kickoff</h4>
+                    </div>
+                    <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                      <Video size={24} />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-6 bg-white/5 rounded-2xl border border-white/5 text-center">
+                      <div className="text-3xl font-black italic tracking-tighter">14:20</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/30">Time Left</div>
+                    </div>
+                    <div className="p-6 bg-white/5 rounded-2xl border border-white/5 text-center">
+                      <div className="text-3xl font-black italic tracking-tighter">Today</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/30">Date</div>
+                    </div>
+                  </div>
+
+                  <button className="w-full py-5 bg-[#E6FF00] text-black rounded-2xl font-black uppercase italic tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+                    Join Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Portfolio Section */}
@@ -333,6 +472,63 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Problem -> Solution Section */}
+      <section className="py-32 px-10 bg-black relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="space-y-12">
+              <div className="space-y-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-red-500">The Problem</h2>
+                <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white">
+                  Traditional Agency <br />
+                  <span className="text-red-500/50">Slows You Down.</span>
+                </h3>
+              </div>
+              <div className="space-y-6">
+                {[
+                  { icon: X, text: "Wait 3 months for a simple landing page", color: "text-red-500" },
+                  { icon: X, text: "Pay ₹50,000+ upfront with zero guarantee", color: "text-red-500" },
+                  { icon: X, text: "Complex tech talk that confuses you", color: "text-red-500" },
+                  { icon: X, text: "No support after the site goes live", color: "text-red-500" }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/5">
+                    <div className={`w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center ${item.color}`}>
+                      <item.icon size={20} />
+                    </div>
+                    <span className="text-lg font-bold text-white/60 italic">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-12">
+              <div className="space-y-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">The Webby Solution</h2>
+                <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white">
+                  We Build. <br />
+                  <span className="text-[#E6FF00]">You Grow.</span>
+                </h3>
+              </div>
+              <div className="space-y-6">
+                {[
+                  { icon: CheckCircle2, text: "Your site live in just 24-48 hours", color: "text-[#E6FF00]" },
+                  { icon: CheckCircle2, text: "Transparent monthly plans with no risk", color: "text-[#E6FF00]" },
+                  { icon: CheckCircle2, text: "Zero tech knowledge required from you", color: "text-[#E6FF00]" },
+                  { icon: CheckCircle2, text: "Lifetime maintenance and expert support", color: "text-[#E6FF00]" }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 bg-[#E6FF00]/5 p-6 rounded-2xl border border-[#E6FF00]/10">
+                    <div className={`w-10 h-10 rounded-full bg-[#E6FF00]/10 flex items-center justify-center ${item.color}`}>
+                      <item.icon size={20} />
+                    </div>
+                    <span className="text-lg font-black text-white italic">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -503,39 +699,136 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         </div>
       </section>
 
+      {/* ROI Calculator */}
+      <section className="py-32 px-10 bg-white/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">ROI Calculator</h2>
+                <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white">
+                  See Your <br />
+                  <span className="text-[#E6FF00]">Profit Potential.</span>
+                </h3>
+              </div>
+              <p className="text-white/40 text-lg font-medium italic">
+                Calculate how much your new professional website can earn for your business. Most of our clients see a 300% ROI in the first 3 months.
+              </p>
+              
+              <div className="space-y-10 pt-8">
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm font-black uppercase tracking-widest">
+                    <span className="text-white/60">New Customers / Month</span>
+                    <span className="text-[#E6FF00]">{roiCustomers}</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="50" 
+                    value={roiCustomers}
+                    onChange={(e) => setRoiCustomers(parseInt(e.target.value))}
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#E6FF00]"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm font-black uppercase tracking-widest">
+                    <span className="text-white/60">Profit Per Customer (₹)</span>
+                    <span className="text-[#E6FF00]">₹{roiProfitPerCustomer.toLocaleString()}</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="1000" 
+                    max="100000" 
+                    step="1000"
+                    value={roiProfitPerCustomer}
+                    onChange={(e) => setRoiProfitPerCustomer(parseInt(e.target.value))}
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#E6FF00]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#E6FF00] p-16 rounded-[4rem] text-black space-y-8 shadow-[0_0_100px_rgba(230,255,0,0.2)]">
+              <div className="space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Estimated Monthly Profit</span>
+                <div className="text-7xl md:text-8xl font-black tracking-tighter italic leading-none">
+                  ₹{(roiCustomers * roiProfitPerCustomer).toLocaleString()}
+                </div>
+              </div>
+              <div className="h-px bg-black/10 w-full" />
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 size={20} />
+                  <span className="font-black uppercase italic tracking-tighter">Pays for itself in days</span>
+                </div>
+                <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 leading-relaxed">
+                  Based on your inputs, a WebbyLaunch website could generate ₹{(roiCustomers * roiProfitPerCustomer * 12).toLocaleString()} in annual profit.
+                </p>
+              </div>
+              <Link 
+                to="/auth"
+                className="block w-full py-6 bg-black text-white rounded-2xl text-center font-black uppercase italic tracking-widest hover:scale-[1.02] transition-all"
+              >
+                Claim Your Profit Now
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="py-32 px-10 bg-black/20">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-24">
-            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Pricing</h2>
-            <Link to="/auth">
-              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic hover:text-[#E6FF00] transition-colors cursor-pointer">
+          <div className="text-center space-y-8 mb-24">
+            <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Pricing</h2>
+              <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
                 Simple <span className="text-[#E6FF00]">Affordable</span> Plans.
               </h3>
-            </Link>
+            </div>
+
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-4">
+              <span className={`text-xs font-black uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'text-white' : 'text-white/40'}`}>Monthly</span>
+              <button 
+                onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                className="w-16 h-8 bg-white/10 rounded-full p-1 relative transition-all"
+              >
+                <div className={`w-6 h-6 bg-[#E6FF00] rounded-full transition-all ${billingCycle === 'yearly' ? 'translate-x-8' : 'translate-x-0'}`} />
+              </button>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-black uppercase tracking-widest transition-colors ${billingCycle === 'yearly' ? 'text-white' : 'text-white/40'}`}>Yearly</span>
+                <span className="bg-[#E6FF00] text-black text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest animate-pulse">Save 20%</span>
+              </div>
+            </div>
+            
+            <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">
+              No hidden costs. Domain included for first year. Transparent pricing.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Starter Launch */}
-            <div className="bg-white/5 border border-[#E6FF00]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/50 transition-all flex flex-col shadow-[0_0_40px_rgba(230,255,0,0.15)]">
+            <div className="bg-white/5 border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
               <div className="space-y-4">
-                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
-                <div className="flex items-end justify-center gap-2 relative group/price">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">
-                    ₹{(settings?.pricing?.starter || 1499).toLocaleString()}/-
-                    <span className="text-xl font-black text-[#E6FF00] ml-2">/month</span>
-                  </span>
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Basic</h4>
+                <div className="space-y-1">
+                  <div className="text-5xl font-black tracking-tighter text-[#E6FF00]">
+                    ₹{billingCycle === 'monthly' ? '1,499' : '1,199'}
+                    <span className="text-sm font-black text-white/40 ml-2">/month</span>
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹1,999 setup cost</div>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
                 {[
-                  'Custom Domain Setup',
-                  'Fast 48h Delivery',
-                  'Mobile Responsive Design',
-                  'Basic SEO Optimization',
-                  'Real-time Chat Support',
-                  'Project Dashboard Access'
+                  '1–3 Pages Website',
+                  'Basic Design',
+                  'Mobile Responsive',
+                  'Hosting Included',
+                  'Basic Support',
+                  'Domain (1st Year Free)'
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
                     <CheckCircle2 size={18} className="text-[#E6FF00]" />
@@ -543,14 +836,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   </li>
                 ))}
               </ul>
-              <a 
-                href="https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07" 
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link 
+                to="/auth"
                 className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
               >
                 Get Started
-              </a>
+              </Link>
             </div>
 
             {/* Business Pro */}
@@ -559,25 +850,24 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 Most Popular
               </div>
               <div className="space-y-4">
-                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
-                <div className="flex items-end justify-center gap-2 relative group/price">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-black via-transparent to-black rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
-                  <span className="text-6xl font-black tracking-tighter relative z-10">
-                    ₹{(settings?.pricing?.pro || 3499).toLocaleString()}/-
-                    <span className="text-xl font-black text-black ml-2">/month</span>
-                  </span>
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Standard</h4>
+                <div className="space-y-1">
+                  <div className="text-5xl font-black tracking-tighter">
+                    ₹{billingCycle === 'monthly' ? '3,499' : '2,799'}
+                    <span className="text-sm font-black opacity-40 ml-2">/month</span>
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest opacity-40">+ ₹2,999 setup cost</div>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
                 {[
-                  'Custom Domain Setup',
-                  'Priority 24h Delivery',
-                  'Mobile Responsive Design',
-                  'Advanced SEO Optimization',
-                  'Real-time Chat Support',
-                  'Project Dashboard Access',
-                  'Custom Email Setup',
-                  'Performance Reports'
+                  '5–7 Pages Website',
+                  'Premium Design',
+                  'Basic SEO',
+                  'Meeting System',
+                  'Priority Support',
+                  'Domain (1st Year Free)',
+                  'Custom Email Setup'
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-4 text-sm font-bold text-black/70">
                     <CheckCircle2 size={18} className="text-black" />
@@ -585,36 +875,35 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   </li>
                 ))}
               </ul>
-              <a 
-                href="https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08" 
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link 
+                to="/auth"
                 className="block w-full py-6 bg-black text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl text-center"
               >
-                Start Pro Project
-              </a>
+                Start Standard
+              </Link>
             </div>
 
             {/* Enterprise Elite */}
-            <div className="bg-white/5 border border-[#E6FF00]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/50 transition-all flex flex-col shadow-[0_0_40px_rgba(230,255,0,0.15)]">
+            <div className="bg-white/5 border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
               <div className="space-y-4">
-                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Enterprise Elite</h4>
-                <div className="flex items-end justify-center gap-2 relative group/price">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">
-                    ₹{(settings?.pricing?.enterprise || 9999).toLocaleString()}/-
-                    <span className="text-xl font-black text-[#E6FF00] ml-2">/month</span>
-                  </span>
+                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Pro</h4>
+                <div className="space-y-1">
+                  <div className="text-5xl font-black tracking-tighter text-[#E6FF00]">
+                    ₹{billingCycle === 'monthly' ? '6,999' : '5,599'}
+                    <span className="text-sm font-black text-white/40 ml-2">/month</span>
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹3,999 setup cost</div>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
                 {[
-                  'Everything in Business Pro',
-                  'Custom Web App Features',
-                  'E-commerce Integration',
-                  'Dedicated Account Manager',
-                  '1 Year Free Maintenance',
-                  'Premium Hosting Included'
+                  'Full Custom Website',
+                  'Admin Dashboard',
+                  'Meetings + Chat System',
+                  'SEO Optimization',
+                  'Fast Support',
+                  'Domain (1st Year Free)',
+                  'Advanced Analytics'
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
                     <CheckCircle2 size={18} className="text-[#E6FF00]" />
@@ -622,15 +911,62 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   </li>
                 ))}
               </ul>
-              <a 
-                href="https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09" 
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link 
+                to="/auth"
                 className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
               >
-                Go Elite
-              </a>
+                Go Pro
+              </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Comparison Table */}
+      <section className="py-32 px-10 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h3 className="text-4xl font-black uppercase italic tracking-tighter">Compare <span className="text-[#E6FF00]">Features.</span></h3>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="py-8 px-6 text-[10px] font-black uppercase tracking-widest text-white/40">Feature</th>
+                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/40">Basic</th>
+                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Standard</th>
+                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/40">Pro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { name: "Website Pages", basic: "1–3", standard: "5–7", pro: "Unlimited" },
+                  { name: "Custom Design", basic: "Basic", standard: "Premium", pro: "Elite Custom" },
+                  { name: "Mobile Responsive", basic: true, standard: true, pro: true },
+                  { name: "SEO Optimization", basic: "Basic", standard: "Advanced", pro: "Full Strategy" },
+                  { name: "Meeting System", basic: false, standard: true, pro: true },
+                  { name: "Direct Chat Support", basic: true, standard: true, pro: true },
+                  { name: "Custom Email", basic: false, standard: "2 Accounts", pro: "Unlimited" },
+                  { name: "Admin Dashboard", basic: false, standard: false, pro: true },
+                  { name: "E-commerce", basic: false, standard: false, pro: "Optional" },
+                  { name: "Maintenance", basic: "Monthly", standard: "Priority", pro: "24/7 Dedicated" }
+                ].map((row, i) => (
+                  <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td className="py-6 px-6 text-sm font-bold text-white/60 italic">{row.name}</td>
+                    <td className="py-6 px-6 text-center">
+                      {typeof row.basic === 'boolean' ? (row.basic ? <CheckCircle2 size={16} className="mx-auto text-[#E6FF00]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.basic}</span>}
+                    </td>
+                    <td className="py-6 px-6 text-center bg-[#E6FF00]/5">
+                      {typeof row.standard === 'boolean' ? (row.standard ? <CheckCircle2 size={16} className="mx-auto text-[#E6FF00]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-[#E6FF00]">{row.standard}</span>}
+                    </td>
+                    <td className="py-6 px-6 text-center">
+                      {typeof row.pro === 'boolean' ? (row.pro ? <CheckCircle2 size={16} className="mx-auto text-[#E6FF00]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.pro}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

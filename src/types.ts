@@ -148,6 +148,8 @@ export interface Project {
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Pro';
   paymentStatus?: 'pending' | 'paid';
+  subscriptionStatus?: 'active' | 'past_due' | 'suspended' | 'canceled';
+  nextBillingDate?: string | Timestamp;
   status: ProjectStatus;
   progress: number;
   startDate?: string | Timestamp;

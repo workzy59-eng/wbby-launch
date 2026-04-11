@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper, Video } from 'lucide-react';
+import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper, Video, CreditCard, ShieldCheck } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -27,7 +27,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings' | 'meetings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showChat, setShowChat] = useState(false);
@@ -133,6 +133,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
             { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
             { id: 'meetings', icon: Video, label: 'Meetings' },
+            { id: 'payments', icon: CreditCard, label: 'Payments' },
             { id: 'settings', icon: Settings, label: 'Settings', link: '/settings' },
           ].map((tab) => (
             <button 
@@ -239,6 +240,57 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
       <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 space-y-10">
+          {/* Subscription Warning */}
+          {selectedProject?.subscriptionStatus === 'suspended' && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-500 text-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-white/20 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-black/10 rounded-full blur-3xl -mr-32 -mt-32" />
+              <div className="flex items-center gap-8 text-center md:text-left relative z-10">
+                <div className="w-20 h-20 bg-black/10 rounded-3xl flex items-center justify-center shrink-0">
+                  <AlertCircle size={40} className="animate-pulse" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black uppercase italic tracking-tighter">Account Suspended</h3>
+                  <p className="text-white/70 text-sm font-medium italic max-w-xl">Your website has been temporarily paused due to non-payment. Please update your payment to restore service immediately.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveTab('payments')}
+                className="bg-white text-black px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.05] transition-all shrink-0 relative z-10 shadow-xl"
+              >
+                Pay Now
+              </button>
+            </motion.div>
+          )}
+
+          {selectedProject?.subscriptionStatus === 'past_due' && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-yellow-500 text-black p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-black/10 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full blur-3xl -mr-32 -mt-32" />
+              <div className="flex items-center gap-8 text-center md:text-left relative z-10">
+                <div className="w-20 h-20 bg-black/10 rounded-3xl flex items-center justify-center shrink-0">
+                  <Clock size={40} className="animate-bounce" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black uppercase italic tracking-tighter">Payment Overdue</h3>
+                  <p className="text-black/60 text-sm font-medium italic max-w-xl">Your payment is overdue. Please pay within 48 hours to avoid service interruption and potential suspension.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveTab('payments')}
+                className="bg-black text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.05] transition-all shrink-0 relative z-10 shadow-xl"
+              >
+                Resolve Now
+              </button>
+            </motion.div>
+          )}
+
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
@@ -317,6 +369,112 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     >
                       Open Settings Portal
                     </Link>
+                  </div>
+                </div>
+              ) : activeTab === 'payments' ? (
+                <div className="space-y-10">
+                  <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+                    <div className="space-y-4">
+                      <h2 className="text-xs font-black text-[#E6FF00] uppercase tracking-[0.4em]">Billing & Subscription</h2>
+                      <h3 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Payments</h3>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Active Plan Card */}
+                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#E6FF00]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#E6FF00]/10 transition-all" />
+                      
+                      <div className="flex justify-between items-start relative z-10">
+                        <div className="space-y-1">
+                          <div className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Current Plan</div>
+                          <h4 className="text-3xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
+                        </div>
+                        <div className="px-4 py-1.5 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">
+                          Active
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 relative z-10">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-white/40 font-bold uppercase tracking-widest">Monthly Cost</span>
+                          <span className="text-white font-black italic">₹1,499/-</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-white/40 font-bold uppercase tracking-widest">Next Billing Date</span>
+                          <span className="text-white font-black italic">May 15, 2026</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 relative z-10">
+                        <button 
+                          onClick={() => selectedProject && setShowInvoice(true)}
+                          disabled={!selectedProject}
+                          className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                        >
+                          <FileText size={16} />
+                          View Latest Invoice
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Payment Status Card */}
+                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 flex flex-col justify-center text-center">
+                      <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto">
+                        <ShieldCheck size={40} />
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="text-2xl font-black uppercase italic tracking-tighter">Payment Verified</h4>
+                        <p className="text-white/40 text-xs font-medium italic">Your subscription is in good standing. No action required.</p>
+                      </div>
+                      <div className="pt-4">
+                        <button className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:underline">
+                          Update Payment Method
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Transaction History */}
+                  <div className="bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden">
+                    <div className="p-8 border-b border-white/5">
+                      <h4 className="text-xs font-black uppercase tracking-widest text-white/40">Transaction History</h4>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-white/20 border-b border-white/5">
+                            <th className="px-8 py-6">Date</th>
+                            <th className="px-8 py-6">Description</th>
+                            <th className="px-8 py-6">Amount</th>
+                            <th className="px-8 py-6">Status</th>
+                            <th className="px-8 py-6">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {[
+                            { date: 'Apr 15, 2026', desc: 'Starter Launch - Monthly Subscription', amount: '₹1,499', status: 'Paid' },
+                            { date: 'Mar 15, 2026', desc: 'Starter Launch - Setup Fee + 1st Month', amount: '₹3,499', status: 'Paid' },
+                          ].map((tx, i) => (
+                            <tr key={i} className="group hover:bg-white/5 transition-all">
+                              <td className="px-8 py-6 text-xs font-bold text-white/60">{tx.date}</td>
+                              <td className="px-8 py-6 text-xs font-black uppercase italic tracking-tighter">{tx.desc}</td>
+                              <td className="px-8 py-6 text-xs font-black text-[#E6FF00] italic">{tx.amount}</td>
+                              <td className="px-8 py-6">
+                                <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-500/20">
+                                  {tx.status}
+                                </span>
+                              </td>
+                              <td className="px-8 py-6">
+                                <button className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all">
+                                  <Download size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               ) : (
