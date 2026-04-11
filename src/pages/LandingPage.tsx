@@ -185,6 +185,15 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               )}
+              <button 
+                onClick={() => {
+                  const el = document.getElementById('how-it-works');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="flex items-center justify-center"
+              >
+                <ButtonColorful label="View Full Process" className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest" />
+              </button>
               <a 
                 href="#portfolio" 
                 className="flex items-center justify-center"
@@ -221,7 +230,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-800 overflow-hidden">
-                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="" className="w-full h-full object-cover" />
+                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="" className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     </div>
                   ))}
                 </div>
@@ -469,7 +478,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
                 <div className="flex items-end justify-center gap-2 relative group/price">
                   <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">₹{(settings?.pricing?.starter || 1499).toLocaleString()}/-</span>
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">
+                    ₹{(settings?.pricing?.starter || 1499).toLocaleString()}/-
+                    <span className="text-xl font-black text-[#E6FF00] ml-2">/month</span>
+                  </span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
@@ -506,7 +518,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
                 <div className="flex items-end justify-center gap-2 relative group/price">
                   <div className="absolute -inset-4 bg-gradient-to-r from-black via-transparent to-black rounded-full opacity-0 blur-xl animate-rotate-glow group-hover/price:opacity-20 transition-opacity" />
-                  <span className="text-6xl font-black tracking-tighter relative z-10">₹{(settings?.pricing?.pro || 3499).toLocaleString()}/-</span>
+                  <span className="text-6xl font-black tracking-tighter relative z-10">
+                    ₹{(settings?.pricing?.pro || 3499).toLocaleString()}
+                    <span className="text-xl font-black text-black ml-2">/month</span>
+                  </span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">
@@ -542,7 +557,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Enterprise Elite</h4>
                 <div className="flex items-end justify-center gap-2 relative group/price">
                   <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
-                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">₹{(settings?.pricing?.enterprise || 9999).toLocaleString()}/-</span>
+                  <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">
+                    ₹{(settings?.pricing?.enterprise || 9999).toLocaleString()}
+                    <span className="text-xl font-black text-[#E6FF00] ml-2">/month</span>
+                  </span>
                 </div>
               </div>
               <ul className="space-y-6 text-left flex-1">

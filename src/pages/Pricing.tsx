@@ -19,7 +19,7 @@ export default function Pricing() {
   const plans = [
     {
       name: 'Basic',
-      price: `₹${baseCost.toLocaleString()}/-`,
+      price: `₹${baseCost.toLocaleString()}/month`,
       description: 'Hosting & maintenance, minor text/image updates, backups, email support.',
       features: [
         '5 Pages Website',
@@ -35,7 +35,7 @@ export default function Pricing() {
     },
     {
       name: 'Standard',
-      price: '₹3,499/-',
+      price: '₹3,499/month',
       description: 'Everything in Basic + SEO optimization, blog/content updates, analytics reports, faster support.',
       features: [
         'Everything in Basic',
@@ -51,7 +51,7 @@ export default function Pricing() {
     },
     {
       name: 'Premium',
-      price: '₹9,999/-',
+      price: '₹9,999/month',
       description: 'Everything in Standard + E-commerce support, AI features integration, priority support, monthly performance review.',
       features: [
         'Everything in Standard',

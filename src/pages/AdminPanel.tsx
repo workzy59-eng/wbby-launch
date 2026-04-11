@@ -37,9 +37,8 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, sendNotification } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
-import { NotificationBell } from '../components/NotificationBell';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import Papa from 'papaparse';
 
@@ -54,93 +53,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'notifications' | 'recycle' | 'system'>('dashboard');
-  const [notificationTitle, setNotificationTitle] = useState('');
-  const [notificationDesc, setNotificationDesc] = useState('');
-  const [isSendingNotification, setIsSendingNotification] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system'>('dashboard');
 
-  const handleSendNotification = async (targetUserId: string) => {
-    if (!notificationTitle || !notificationDesc) {
-      alert('Please enter title and description');
-      return;
-    }
-    setIsSendingNotification(true);
-    try {
-      await sendNotification({
-        userId: targetUserId,
-        title: notificationTitle,
-        description: notificationDesc,
-        type: 'admin'
-      });
-      setNotificationTitle('');
-      setNotificationDesc('');
-      alert('Notification sent successfully!');
-    } catch (error) {
-      console.error('Error sending notification:', error);
-    } finally {
-      setIsSendingNotification(false);
-    }
-  };
-
-  const renderNotifications = () => {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-5xl font-black tracking-tighter uppercase italic">Send Notifications</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 gap-6">
-          <div className="bg-white/5 backdrop-blur-xl rounded-[3rem] p-10 border border-white/10">
-            <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-8">All Users</h3>
-            <div className="space-y-4">
-              {users.map(u => (
-                <div key={u.uid} className="flex items-center justify-between p-6 bg-black/20 rounded-3xl border border-white/5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10">
-                      {u.photoURL ? <img src={u.photoURL} alt="" className="w-full h-full object-cover" /> : <User className="w-full h-full p-2" />}
-                    </div>
-                    <div>
-                      <p className="font-bold">{u.displayName || 'Anonymous'}</p>
-                      <p className="text-xs text-white/40">{u.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 items-center">
-                    <input 
-                      type="text" 
-                      placeholder="Title" 
-                      className="bg-black/40 border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-[#E6FF00]/50 text-white"
-                      value={selectedUser?.uid === u.uid ? notificationTitle : ''}
-                      onChange={(e) => {
-                        setSelectedUser(u);
-                        setNotificationTitle(e.target.value);
-                      }}
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="Description" 
-                      className="bg-black/40 border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-[#E6FF00]/50 text-white"
-                      value={selectedUser?.uid === u.uid ? notificationDesc : ''}
-                      onChange={(e) => {
-                        setSelectedUser(u);
-                        setNotificationDesc(e.target.value);
-                      }}
-                    />
-                    <button 
-                      onClick={() => handleSendNotification(u.uid)}
-                      disabled={isSendingNotification}
-                      className="bg-[#E6FF00] text-black px-6 py-2 rounded-xl font-black uppercase italic text-xs hover:scale-105 transition-all disabled:opacity-50"
-                    >
-                      Send
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -1321,7 +1235,6 @@ Generated on: ${new Date().toLocaleString()}
             </div>
             <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
           </div>
-          <NotificationBell />
         </div>
         <nav className="flex-1 p-6 space-y-3">
           {[
@@ -1330,7 +1243,6 @@ Generated on: ${new Date().toLocaleString()}
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
-            { id: 'notifications', label: 'Notifications', icon: Bell },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'system', label: 'System Settings', icon: Settings },
             { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },

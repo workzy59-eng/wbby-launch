@@ -5,7 +5,6 @@ import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, 
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import NavHeader from './ui/nav-header';
-import { NotificationBell } from './NotificationBell';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -57,7 +56,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="flex items-center gap-6">
-            {user && <NotificationBell />}
             {user ? (
               <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#E6FF00] transition-all">Dashboard</Link>
             ) : (

@@ -6,10 +6,9 @@ import { UserProfile, Project } from '../types';
 import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
-import { getProjects, updateProject } from '../services/database';
+import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
-import { NotificationBell } from '../components/NotificationBell';
 import InvoiceSystem from '../components/InvoiceSystem';
 
 interface DashboardProps {
@@ -186,7 +185,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             <div className="text-xl font-black tracking-tighter uppercase italic">{APP_NAME}</div>
           </div>
           <div className="flex items-center gap-4">
-            <NotificationBell />
             <button onClick={() => logOut()} className="text-white/50 hover:text-red-400 transition-all">
               <LogOut size={24} />
             </button>
@@ -243,7 +241,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </div>
             <div className="flex flex-col items-end gap-4">
               <div className="flex items-center gap-4">
-                <NotificationBell />
                 {adminProfile && (
                   <button 
                     onClick={() => setShowDirectChat(true)}
@@ -306,7 +303,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
                       { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
                       { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
-                      { id: 'price', label: 'Plan Price', value: '1499/-', icon: PartyPopper, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10', items: ['Starter Launch Plan'] },
+                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10', items: ['Starter Launch Plan'] },
                     ].map((stat, i) => (
                       <div key={stat.id} className="relative">
                         <motion.button 
@@ -422,13 +419,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   <span>{selectedProject.businessPhone || selectedProject.businessNumber}</span>
                                   <span>{selectedProject.city}, {selectedProject.state} • {selectedProject.pincode}</span>
                                 </div>
-                                <div className="mt-6">
+                                <div className="mt-6 flex flex-wrap gap-4">
                                   <button 
-                                    onClick={() => setShowInvoice(true)}
-                                    className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-all group"
+                                    onClick={() => {
+                                      const el = document.getElementById('dev-phase');
+                                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="flex items-center gap-2 bg-[#E6FF00]/10 border border-[#E6FF00]/20 px-6 py-3 rounded-xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all group"
                                   >
-                                    <FileText size={16} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">View Invoice</span>
+                                    <Clock size={16} className="group-hover:scale-110 transition-transform" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">View Full Process</span>
                                   </button>
                                 </div>
                               </div>
@@ -562,8 +562,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         )}
                       </div>
 
-                      {/* Planning / Resources Section */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+                      <div id="dev-phase" className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
                         <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5">
                           <h3 className="text-xl font-black uppercase italic tracking-tighter mb-6">Development Phase</h3>
                           <div className="space-y-6">

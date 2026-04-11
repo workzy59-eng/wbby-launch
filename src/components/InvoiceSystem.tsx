@@ -21,7 +21,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
     'food-court': { name: 'Business Pro', price: 3499, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
     'autos': { name: 'Business Pro', price: 3499, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
     'clothing': { name: 'Business Pro', price: 3499, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
-    'ai-custom': { name: 'Enterprise Elite', price: 7999, features: ['Full custom website', 'Admin panel', 'Priority support'] },
+    'ai-custom': { name: 'Enterprise Elite', price: 9999, features: ['Full custom website', 'Admin panel', 'Priority support'] },
   };
 
   const selectedPlan = plans[project.templateId as keyof typeof plans] || plans['starter'];
