@@ -112,7 +112,7 @@ service cloud.firestore {
     }
 
     function isValidMeeting(data) {
-      let allowedFields = ['id', 'title', 'clientId', 'adminId', 'date', 'time', 'meetingLink', 'platform', 'notes', 'status', 'rescheduleMessage', 'createdAt', 'updatedAt'];
+      let allowedFields = ['id', 'title', 'clientId', 'adminId', 'date', 'time', 'meetingLink', 'platform', 'notes', 'status', 'rescheduleMessage', 'preferredDate', 'preferredTime', 'createdAt', 'updatedAt'];
       return hasOnlyAllowedFields(allowedFields) &&
              data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
              data.clientId is string &&
@@ -121,6 +121,15 @@ service cloud.firestore {
              data.time is string &&
              data.meetingLink is string &&
              data.status in ['Pending', 'Accepted', 'Rejected', 'Reschedule Requested', 'Completed', 'Missed'];
+    }
+
+    function isValidMeetingRequest(data) {
+      let allowedFields = ['id', 'clientId', 'preferredDate', 'preferredTime', 'message', 'status', 'adminResponse', 'suggestedDate', 'suggestedTime', 'createdAt', 'updatedAt'];
+      return hasOnlyAllowedFields(allowedFields) &&
+             data.clientId is string &&
+             data.preferredDate is string &&
+             data.preferredTime is string &&
+             data.status in ['pending', 'accepted', 'rejected', 'suggested'];
     }
 
     // ===============================================================
@@ -197,8 +206,18 @@ service cloud.firestore {
       allow create: if isAdmin() && isValidMeeting(request.resource.data);
       allow update: if (isAdmin() && isValidMeeting(request.resource.data)) || 
                        (isAuthenticated() && resource.data.clientId == request.auth.uid && 
-                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'rescheduleMessage', 'updatedAt']) &&
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'rescheduleMessage', 'preferredDate', 'preferredTime', 'updatedAt']) &&
                         isValidMeeting(request.resource.data));
+      allow delete: if isAdmin();
+    }
+
+    match /meeting_requests/{requestId} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.clientId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.clientId == request.auth.uid && isValidMeetingRequest(request.resource.data);
+      allow update: if (isAdmin() && isValidMeetingRequest(request.resource.data)) || 
+                       (isAuthenticated() && resource.data.clientId == request.auth.uid && 
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['preferredDate', 'preferredTime', 'message', 'updatedAt']) &&
+                        isValidMeetingRequest(request.resource.data));
       allow delete: if isAdmin();
     }
   }

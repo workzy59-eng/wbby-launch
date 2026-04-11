@@ -12,9 +12,10 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Meeting, MeetingStatus } from '../types';
+import { Meeting, MeetingStatus, MeetingRequest } from '../types';
 
 const COLLECTION_NAME = 'meetings';
+const REQUESTS_COLLECTION = 'meeting_requests';
 
 export const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'createdAt' | 'updatedAt'>) => {
   return await addDoc(collection(db, COLLECTION_NAME), {
@@ -35,6 +36,49 @@ export const updateMeeting = async (meetingId: string, updates: Partial<Meeting>
 export const deleteMeeting = async (meetingId: string) => {
   const meetingRef = doc(db, COLLECTION_NAME, meetingId);
   return await deleteDoc(meetingRef);
+};
+
+export const createMeetingRequest = async (requestData: Omit<MeetingRequest, 'id' | 'createdAt' | 'updatedAt'>) => {
+  return await addDoc(collection(db, REQUESTS_COLLECTION), {
+    ...requestData,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const updateMeetingRequest = async (requestId: string, updates: Partial<MeetingRequest>) => {
+  const requestRef = doc(db, REQUESTS_COLLECTION, requestId);
+  return await updateDoc(requestRef, {
+    ...updates,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const subscribeToMeetingRequests = (
+  role: 'admin' | 'client',
+  userId: string,
+  callback: (requests: MeetingRequest[]) => void
+) => {
+  let q;
+  if (role === 'admin') {
+    q = query(collection(db, REQUESTS_COLLECTION), orderBy('createdAt', 'desc'));
+  } else {
+    q = query(
+      collection(db, REQUESTS_COLLECTION), 
+      where('clientId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+  }
+
+  return onSnapshot(q, (snapshot) => {
+    const requests = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as MeetingRequest[];
+    callback(requests);
+  }, (error) => {
+    console.error("Error subscribing to meeting requests:", error);
+  });
 };
 
 export const subscribeToMeetings = (

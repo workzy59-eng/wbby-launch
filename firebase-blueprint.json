@@ -142,10 +142,31 @@
         "notes": { "type": "string" },
         "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected", "Reschedule Requested", "Completed", "Missed"] },
         "rescheduleMessage": { "type": "string" },
+        "preferredDate": { "type": "string" },
+        "preferredTime": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "clientId", "adminId", "date", "time", "meetingLink", "status"]
+    },
+    "MeetingRequest": {
+      "title": "Meeting Request",
+      "description": "Client-initiated meeting requests.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "preferredDate": { "type": "string" },
+        "preferredTime": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected", "suggested"] },
+        "adminResponse": { "type": "string" },
+        "suggestedDate": { "type": "string" },
+        "suggestedTime": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "preferredDate", "preferredTime", "status"]
     }
   },
   "firestore": {
@@ -184,6 +205,10 @@
     "/meetings/{meetingId}": {
       "schema": "Meeting",
       "description": "Meeting records."
+    },
+    "/meeting_requests/{requestId}": {
+      "schema": "MeetingRequest",
+      "description": "Client meeting requests."
     }
   }
 }

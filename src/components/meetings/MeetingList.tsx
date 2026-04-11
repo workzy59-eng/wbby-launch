@@ -14,14 +14,17 @@ import {
   RefreshCw,
   History
 } from 'lucide-react';
-import { Meeting, MeetingStatus, UserProfile } from '../../types';
+import { Meeting, MeetingStatus, UserProfile, MeetingRequest } from '../../types';
 import { MeetingCard } from './MeetingCard';
 import { MeetingForm } from './MeetingForm';
+import { RequestMeetingForm } from './RequestMeetingForm';
 import { 
   subscribeToMeetings, 
   createMeeting, 
   updateMeeting, 
-  deleteMeeting 
+  deleteMeeting,
+  subscribeToMeetingRequests,
+  updateMeetingRequest
 } from '../../services/meetingService';
 import { toast } from 'react-hot-toast';
 import { isAfter, isBefore, parseISO, startOfDay, endOfDay, format } from 'date-fns';
@@ -34,22 +37,31 @@ interface MeetingListProps {
 
 export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClients = [] }) => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [requests, setRequests] = useState<MeetingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showRequestForm, setShowRequestForm] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<Meeting | undefined>();
   const [filter, setFilter] = useState<MeetingStatus | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [view, setView] = useState<'upcoming' | 'past'>('upcoming');
+  const [view, setView] = useState<'upcoming' | 'past' | 'requests'>('upcoming');
 
   const isAdmin = profile.role === 'admin';
 
   useEffect(() => {
-    const unsubscribe = subscribeToMeetings(profile.role as 'admin' | 'client', user.uid, (data) => {
+    const unsubMeetings = subscribeToMeetings(profile.role as 'admin' | 'client', user.uid, (data) => {
       setMeetings(data);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    const unsubRequests = subscribeToMeetingRequests(profile.role as 'admin' | 'client', user.uid, (data) => {
+      setRequests(data);
+    });
+
+    return () => {
+      unsubMeetings();
+      unsubRequests();
+    };
   }, [user.uid, profile.role]);
 
   const handleCreateMeeting = async (data: any) => {
@@ -72,16 +84,53 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: MeetingStatus, message?: string) => {
+  const handleStatusUpdate = async (id: string, status: MeetingStatus, message?: string, preferredDate?: string, preferredTime?: string) => {
     try {
       await updateMeeting(id, { 
         status, 
-        ...(message && { rescheduleMessage: message }) 
+        ...(message && { rescheduleMessage: message }),
+        ...(preferredDate && { preferredDate }),
+        ...(preferredTime && { preferredTime })
       });
       toast.success(`Meeting ${status.toLowerCase()}`);
     } catch (error) {
       console.error(error);
       toast.error('Failed to update status');
+    }
+  };
+
+  const handleRequestAction = async (request: MeetingRequest, action: 'accept' | 'reject' | 'suggest', response?: string, date?: string, time?: string) => {
+    try {
+      if (action === 'accept') {
+        // Create actual meeting
+        await createMeeting({
+          title: 'Consultation Call',
+          clientId: request.clientId,
+          adminId: user.uid,
+          date: date || request.preferredDate,
+          time: time || request.preferredTime,
+          meetingLink: 'https://meet.google.com/new', // Placeholder, admin should edit
+          platform: 'Google Meet',
+          status: 'Accepted',
+          notes: request.message
+        });
+        await updateMeetingRequest(request.id, { status: 'accepted', adminResponse: 'Accepted and scheduled.' });
+        toast.success('Request accepted and meeting scheduled!');
+      } else if (action === 'reject') {
+        await updateMeetingRequest(request.id, { status: 'rejected', adminResponse: response });
+        toast.success('Request rejected');
+      } else {
+        await updateMeetingRequest(request.id, { 
+          status: 'suggested', 
+          adminResponse: response,
+          suggestedDate: date,
+          suggestedTime: time
+        });
+        toast.success('New time suggested');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to process request');
     }
   };
 
@@ -153,6 +202,19 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           >
             Past
           </button>
+          <button 
+            onClick={() => setView('requests')}
+            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${
+              view === 'requests' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'
+            }`}
+          >
+            Requests
+            {requests.filter(r => r.status === 'pending').length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] flex items-center justify-center rounded-full animate-pulse">
+                {requests.filter(r => r.status === 'pending').length}
+              </span>
+            )}
+          </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -178,6 +240,16 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
             <option value="Reschedule Requested" className="bg-[#0A0A0A]">Reschedule</option>
             <option value="Completed" className="bg-[#0A0A0A]">Completed</option>
           </select>
+
+          {!isAdmin && (
+            <button 
+              onClick={() => setShowRequestForm(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+            >
+              <Plus size={16} />
+              Request Meeting
+            </button>
+          )}
 
           {isAdmin && (
             <button 
@@ -245,42 +317,134 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
       )}
 
       {/* Meetings Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredMeetings.length > 0 ? (
-            filteredMeetings.map(meeting => (
-              <div key={meeting.id} id={`meeting-${meeting.id}`}>
-                <MeetingCard 
-                  meeting={meeting}
-                  isAdmin={isAdmin}
-                  onStatusUpdate={handleStatusUpdate}
-                  onEdit={(m) => {
-                    setEditingMeeting(m);
-                    setShowForm(true);
-                  }}
-                  onDelete={handleDelete}
-                />
+      {view !== 'requests' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AnimatePresence mode="popLayout">
+            {filteredMeetings.length > 0 ? (
+              filteredMeetings.map(meeting => (
+                <div key={meeting.id} id={`meeting-${meeting.id}`}>
+                  <MeetingCard 
+                    meeting={meeting}
+                    isAdmin={isAdmin}
+                    onStatusUpdate={handleStatusUpdate}
+                    onEdit={(m) => {
+                      setEditingMeeting(m);
+                      setShowForm(true);
+                    }}
+                    onDelete={handleDelete}
+                  />
+                </div>
+              ))
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="col-span-full py-20 text-center space-y-4 bg-white/5 border border-white/10 rounded-[2.5rem]"
+              >
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-white/20">
+                  <Calendar size={32} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xl font-black uppercase italic tracking-tighter">No meetings found</p>
+                  <p className="text-white/40 text-sm italic">
+                    {view === 'upcoming' ? 'You have no upcoming meetings scheduled.' : 'No past meetings found.'}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AnimatePresence mode="popLayout">
+            {requests.length > 0 ? (
+              requests.map(request => (
+                <motion.div
+                  key={request.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 hover:border-[#E6FF00]/30 transition-all group"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                        request.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' :
+                        request.status === 'accepted' ? 'bg-green-500/10 text-green-500' :
+                        request.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
+                        'bg-blue-500/10 text-blue-500'
+                      }`}>
+                        {request.status}
+                      </span>
+                      <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Meeting Request</h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Requested On</p>
+                      <p className="text-sm font-black text-white italic tracking-tighter">
+                        {format(new Date(request.preferredDate), 'MMM dd')} @ {request.preferredTime}
+                      </p>
+                    </div>
+                  </div>
+
+                  {request.message && (
+                    <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
+                      <p className="text-white/60 text-xs leading-relaxed italic">"{request.message}"</p>
+                    </div>
+                  )}
+
+                  {request.adminResponse && (
+                    <div className="bg-[#E6FF00]/5 rounded-2xl p-4 border border-[#E6FF00]/10">
+                      <p className="text-[#E6FF00] text-[10px] font-black uppercase tracking-widest mb-1">Admin Response</p>
+                      <p className="text-white/80 text-xs leading-relaxed">{request.adminResponse}</p>
+                      {request.status === 'suggested' && (
+                        <p className="text-[#E6FF00] text-xs font-black mt-2">
+                          Suggested: {format(new Date(request.suggestedDate!), 'MMM dd')} @ {request.suggestedTime}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {isAdmin && request.status === 'pending' && (
+                    <div className="flex items-center gap-3 pt-4">
+                      <button
+                        onClick={() => handleRequestAction(request, 'accept')}
+                        className="flex-1 bg-[#E6FF00] text-black py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => {
+                          const reason = prompt('Reason for rejection:');
+                          if (reason) handleRequestAction(request, 'reject', reason);
+                        }}
+                        className="flex-1 bg-red-500/10 text-red-500 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => {
+                          const date = prompt('Suggested Date (YYYY-MM-DD):');
+                          const time = prompt('Suggested Time (HH:mm):');
+                          const msg = prompt('Message:');
+                          if (date && time) handleRequestAction(request, 'suggest', msg || '', date, time);
+                        }}
+                        className="flex-1 bg-white/5 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                      >
+                        Suggest
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center text-white/20">
+                <p className="text-xs font-black uppercase tracking-widest">No meeting requests yet</p>
               </div>
-            ))
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="col-span-full py-20 text-center space-y-4 bg-white/5 border border-white/10 rounded-[2.5rem]"
-            >
-              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-white/20">
-                <Calendar size={32} />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xl font-black uppercase italic tracking-tighter">No meetings found</p>
-                <p className="text-white/40 text-sm italic">
-                  {view === 'upcoming' ? 'You have no upcoming meetings scheduled.' : 'No past meetings found.'}
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Form Modal */}
       <AnimatePresence>
@@ -296,6 +460,12 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           />
         )}
       </AnimatePresence>
+
+      <RequestMeetingForm
+        isOpen={showRequestForm}
+        onClose={() => setShowRequestForm(false)}
+        clientId={user.uid}
+      />
     </div>
   );
 };

@@ -7,6 +7,9 @@ import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
+import { MeetingReminder } from '../components/meetings/MeetingReminder';
+import { subscribeToMeetings } from '../services/meetingService';
+import { Meeting } from '../types';
 import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
@@ -37,6 +40,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
 
   const statusSteps = selectedProject?.status === 'Rejected' 
     ? ["Waiting for Review", "Under Review", "Declined", "Development Started", "Completed"]
@@ -98,6 +102,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     return () => unsubscribe();
   }, [user.uid]);
 
+  useEffect(() => {
+    if (!profile) return;
+    const unsubscribe = subscribeToMeetings(profile.role as 'admin' | 'client', user.uid, (data) => {
+      setMeetings(data);
+    });
+    return () => unsubscribe();
+  }, [user.uid, profile?.role]);
+
   const handleCancelProject = async () => {
     if (selectedProject) {
       await updateProject(selectedProject.id, { isDeleted: true });
@@ -110,6 +122,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   return (
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black">
+      <MeetingReminder meetings={meetings} />
       {/* Sidebar Navigation */}
       <aside className="fixed left-0 top-0 bottom-0 w-24 bg-black/20 backdrop-blur-3xl border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
         <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-xl">

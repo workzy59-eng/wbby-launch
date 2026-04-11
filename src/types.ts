@@ -203,6 +203,22 @@ export interface Meeting {
   notes?: string;
   status: MeetingStatus;
   rescheduleMessage?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
+}
+
+export interface MeetingRequest {
+  id: string;
+  clientId: string;
+  preferredDate: string;
+  preferredTime: string;
+  message?: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'suggested';
+  adminResponse?: string;
+  suggestedDate?: string;
+  suggestedTime?: string;
   createdAt: string | Timestamp;
   updatedAt: string | Timestamp;
 }

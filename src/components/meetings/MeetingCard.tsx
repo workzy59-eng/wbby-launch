@@ -19,7 +19,7 @@ import { format, isAfter, isBefore, addMinutes, differenceInSeconds } from 'date
 interface MeetingCardProps {
   meeting: Meeting;
   isAdmin: boolean;
-  onStatusUpdate?: (id: string, status: MeetingStatus, message?: string) => void;
+  onStatusUpdate?: (id: string, status: MeetingStatus, message?: string, preferredDate?: string, preferredTime?: string) => void;
   onEdit?: (meeting: Meeting) => void;
   onDelete?: (id: string) => void;
 }
@@ -35,6 +35,8 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
   const [isJoinable, setIsJoinable] = useState(false);
   const [showRescheduleInput, setShowRescheduleInput] = useState(false);
   const [rescheduleMsg, setRescheduleMsg] = useState('');
+  const [rescheduleDate, setRescheduleDate] = useState(meeting.date);
+  const [rescheduleTime, setRescheduleTime] = useState(meeting.time);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -53,10 +55,11 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
         } else if (hours > 0) {
           setTimeLeft(`${hours}h ${mins}m left`);
         } else {
-          setTimeLeft(`${mins}m ${secs}s left`);
+          // Stopwatch style MM:SS
+          setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
         }
       } else {
-        setTimeLeft('Started');
+        setTimeLeft('00:00');
       }
 
       // Joinable 10 mins before and up to 1 hour after
@@ -149,7 +152,14 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
 
       {meeting.rescheduleMessage && (
         <div className="bg-purple-500/10 border border-purple-500/20 p-4 rounded-2xl space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-purple-400">Reschedule Request Message:</p>
+          <div className="flex justify-between items-center">
+            <p className="text-[10px] font-black uppercase tracking-widest text-purple-400">Reschedule Request:</p>
+            {meeting.preferredDate && (
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                Suggested: {format(new Date(meeting.preferredDate), 'MMM dd')} @ {meeting.preferredTime}
+              </p>
+            )}
+          </div>
           <p className="text-white/60 text-sm italic">{meeting.rescheduleMessage}</p>
         </div>
       )}
@@ -198,21 +208,44 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
             )}
 
             {showRescheduleInput && (
-              <div className="w-full space-y-4">
-                <textarea 
-                  value={rescheduleMsg}
-                  onChange={(e) => setRescheduleMsg(e.target.value)}
-                  placeholder="Why do you want to reschedule?"
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all resize-none"
-                  rows={3}
-                />
+              <div className="w-full space-y-4 bg-black/40 border border-white/10 rounded-3xl p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Preferred Date</label>
+                    <input 
+                      type="date"
+                      value={rescheduleDate}
+                      onChange={(e) => setRescheduleDate(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Preferred Time</label>
+                    <input 
+                      type="time"
+                      value={rescheduleTime}
+                      onChange={(e) => setRescheduleTime(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Message</label>
+                  <textarea 
+                    value={rescheduleMsg}
+                    onChange={(e) => setRescheduleMsg(e.target.value)}
+                    placeholder="Why do you want to reschedule?"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all resize-none"
+                    rows={3}
+                  />
+                </div>
                 <div className="flex gap-2">
                   <button 
                     onClick={() => {
-                      onStatusUpdate?.(meeting.id, 'Reschedule Requested', rescheduleMsg);
+                      onStatusUpdate?.(meeting.id, 'Reschedule Requested', rescheduleMsg, rescheduleDate, rescheduleTime);
                       setShowRescheduleInput(false);
                     }}
-                    disabled={!rescheduleMsg.trim()}
+                    disabled={!rescheduleMsg.trim() || !rescheduleDate || !rescheduleTime}
                     className="flex-1 py-3 bg-purple-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
                   >
                     Send Request
