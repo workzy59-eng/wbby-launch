@@ -1,93 +1,323 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Zap, Smartphone, Search, Layout as LayoutIcon, Shield, Globe, MessageSquare, BarChart3 } from 'lucide-react';
+import { 
+  Code2, 
+  LayoutDashboard, 
+  ShoppingBag, 
+  TrendingUp, 
+  LifeBuoy, 
+  CheckCircle2, 
+  Store, 
+  Rocket, 
+  User, 
+  GraduationCap, 
+  Zap, 
+  IndianRupee, 
+  MessageSquare, 
+  ArrowRight,
+  ShieldCheck,
+  MousePointer2
+} from 'lucide-react';
 import SEO from '../components/SEO';
 import { Link } from 'react-router-dom';
 
 export default function Services() {
   const services = [
     { 
-      icon: LayoutIcon, 
-      title: 'Custom Web Design', 
-      desc: 'Unique, high-conversion designs tailored to your specific business niche and brand identity.' 
+      icon: Code2, 
+      title: 'Website Development', 
+      desc: 'Custom websites for businesses, portfolios, and startups. Fast, responsive, and modern.',
+      featured: false
     },
     { 
-      icon: Smartphone, 
-      title: 'Mobile Responsive', 
-      desc: 'Your website will look and function perfectly on all devices, from smartphones to desktops.' 
+      icon: LayoutDashboard, 
+      title: 'Custom Dashboards', 
+      desc: 'Admin panels, client dashboards, and user management systems built for real business use.',
+      featured: true,
+      badge: 'Most Powerful'
     },
     { 
-      icon: Search, 
-      title: 'SEO Optimization', 
-      desc: 'Built-in SEO best practices to help your business rank higher on Google search results.' 
+      icon: ShoppingBag, 
+      title: 'E-Commerce Solutions', 
+      desc: 'Online stores with product management, payments, and order tracking.',
+      featured: false
     },
     { 
-      icon: Zap, 
-      title: 'Fast Performance', 
-      desc: 'Lightning-fast load times to ensure your visitors stay engaged and convert into customers.' 
+      icon: TrendingUp, 
+      title: 'SEO & Optimization', 
+      desc: 'Optimize your website for Google ranking, speed, and performance.',
+      featured: false
     },
     { 
-      icon: Shield, 
-      title: 'Secure Hosting', 
-      desc: 'Reliable and secure hosting solutions to keep your business data and website safe.' 
-    },
-    { 
-      icon: MessageSquare, 
-      title: 'Real-time Chat', 
-      desc: 'Integrated chat systems to help you communicate with your customers instantly.' 
-    },
-    { 
-      icon: BarChart3, 
-      title: 'Analytics Ready', 
-      desc: 'Track your website performance and visitor behavior with built-in analytics tools.' 
-    },
-    { 
-      icon: Globe, 
-      title: 'Domain Setup', 
-      desc: 'We handle the technical side of domain registration and DNS configuration for you.' 
+      icon: LifeBuoy, 
+      title: 'Maintenance & Support', 
+      desc: 'Monthly updates, bug fixes, and ongoing technical support.',
+      featured: false
     }
   ];
 
+  const whatYouGet = [
+    'Mobile Responsive Design',
+    'Fast Loading Speed',
+    'SEO Ready Structure',
+    'Secure Hosting',
+    'Ongoing Support'
+  ];
+
+  const whoIsThisFor = [
+    { icon: Store, title: 'Small Businesses' },
+    { icon: Rocket, title: 'Startups' },
+    { icon: User, title: 'Freelancers' },
+    { icon: GraduationCap, title: 'Students' }
+  ];
+
+  const whyChooseUs = [
+    { icon: Zap, title: 'Fast Delivery', desc: '3–10 days' },
+    { icon: IndianRupee, title: 'Affordable Pricing', desc: 'Starting ₹1,499' },
+    { icon: MessageSquare, title: 'Direct Communication', desc: '24/7 Support' },
+    { icon: LayoutDashboard, title: 'Smart Dashboard Systems', desc: 'Built-in' }
+  ];
+
   return (
-    <div className="pt-40 pb-20 px-10">
-      <SEO title="Our Services – Premium Mobile-First Web Solutions by WebbyLaunch" />
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center space-y-6 mb-24">
-          <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter">
-            Our <span className="text-[#E6FF00]">Services.</span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-white/60 text-lg font-medium leading-relaxed">
-            We provide end-to-end web development solutions designed to help your business grow and succeed in the digital landscape.
-          </p>
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black overflow-x-hidden">
+      <SEO title="Our Services – Premium Web Solutions by WebbyLaunch" />
+
+      {/* Sticky CTA */}
+      <motion.div 
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="fixed bottom-8 right-8 z-50 hidden md:block"
+      >
+        <Link 
+          to="/contact" 
+          className="bg-[#E6FF00] text-black px-8 py-4 rounded-2xl font-black uppercase italic text-xs flex items-center gap-3 shadow-[0_0_30px_rgba(230,255,0,0.3)] hover:scale-105 transition-all"
+        >
+          <MousePointer2 size={18} />
+          Start Your Project
+        </Link>
+      </motion.div>
+
+      {/* Hero Section */}
+      <section className="relative pt-48 pb-32 px-10 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[#E6FF00]/5 rounded-full blur-[120px]" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32">
-          {services.map((service, idx) => (
-            <div key={idx} className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] space-y-6 hover:border-[#E6FF00]/30 transition-all group">
-              <div className="w-14 h-14 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
-                <service.icon size={28} />
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8"
+          >
+            <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+              We Build Websites That <br />
+              <span className="text-[#E6FF00]">Bring You Clients</span>, <br />
+              Not Just Design
+            </h1>
+            <p className="max-w-2xl mx-auto text-white/60 text-lg md:text-xl font-medium leading-relaxed italic">
+              Modern, fast, and scalable websites with powerful dashboards and support.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
+              <Link 
+                to="/pricing" 
+                className="w-full sm:w-auto bg-white/5 border border-white/10 text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 hover:border-[#E6FF00]/30 transition-all group"
+              >
+                View Pricing
+              </Link>
+              <Link 
+                to="/contact" 
+                className="w-full sm:w-auto bg-[#E6FF00] text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+              >
+                Book a Free Meeting
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Services Grid */}
+      <section className="py-32 px-10 relative">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className={`group relative p-10 rounded-[3rem] border transition-all duration-500 flex flex-col h-full ${
+                  service.featured 
+                    ? 'bg-white/10 border-[#E6FF00]/30 shadow-[0_0_50px_rgba(230,255,0,0.1)]' 
+                    : 'bg-white/5 border-white/10 hover:border-[#E6FF00]/30'
+                }`}
+              >
+                {service.featured && (
+                  <div className="absolute -top-4 left-10 bg-[#E6FF00] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest italic">
+                    {service.badge}
+                  </div>
+                )}
+
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 ${
+                  service.featured ? 'bg-[#E6FF00] text-black' : 'bg-[#E6FF00]/10 text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black'
+                }`}>
+                  <service.icon size={32} />
+                </div>
+
+                <div className="flex-1 space-y-4">
+                  <h3 className="text-2xl font-black uppercase italic tracking-tighter">{service.title}</h3>
+                  <p className="text-white/40 text-sm font-medium leading-relaxed italic">{service.desc}</p>
+                </div>
+
+                <div className="pt-10">
+                  <Link 
+                    to="/contact"
+                    className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                      service.featured 
+                        ? 'bg-[#E6FF00] text-black hover:scale-[1.02]' 
+                        : 'bg-white/5 text-white hover:bg-white/10'
+                    }`}
+                  >
+                    Get Started <ArrowRight size={14} />
+                  </Link>
+                </div>
+
+                {service.featured && (
+                  <div className="absolute inset-0 rounded-[3rem] bg-[#E6FF00]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blur-2xl" />
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What You Get Section */}
+      <section className="py-32 px-10 bg-white/5 relative overflow-hidden">
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[#E6FF00]/5 rounded-full blur-[100px] -ml-48" />
+        
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
+          <div className="space-y-8">
+            <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
+              What You Get With <br />
+              <span className="text-[#E6FF00]">Every Project</span>
+            </h2>
+            <p className="text-white/40 text-lg font-medium italic leading-relaxed max-w-lg">
+              We don't just build websites; we build business tools. Every project comes with these standard features to ensure your success.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {whatYouGet.map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center gap-4 p-6 bg-black/40 border border-white/5 rounded-2xl hover:border-[#E6FF00]/30 transition-all group"
+              >
+                <div className="text-[#E6FF00] group-hover:scale-110 transition-transform">
+                  <CheckCircle2 size={24} />
+                </div>
+                <span className="text-sm font-black uppercase italic tracking-tighter">{item}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Who Is This For */}
+      <section className="py-32 px-10">
+        <div className="max-w-7xl mx-auto text-center space-y-20">
+          <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">
+            Who Is This <span className="text-[#E6FF00]">For?</span>
+          </h2>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {whoIsThisFor.map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-6 hover:bg-white/10 transition-all group cursor-default"
+              >
+                <div className="w-20 h-20 bg-[#E6FF00]/10 rounded-full flex items-center justify-center text-[#E6FF00] mx-auto group-hover:scale-110 transition-transform">
+                  <item.icon size={40} />
+                </div>
+                <h3 className="text-xl font-black uppercase italic tracking-tighter">{item.title}</h3>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
+      <section className="py-32 px-10 relative">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/5 border border-white/10 rounded-[4rem] p-12 md:p-24 relative overflow-hidden">
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#E6FF00]/5 rounded-full blur-[100px] -mr-48 -mb-48" />
+            
+            <div className="relative z-10 space-y-20">
+              <div className="text-center space-y-4">
+                <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">
+                  Why Choose <span className="text-[#E6FF00]">WebbyLaunch?</span>
+                </h2>
+                <p className="text-white/40 font-medium italic">The difference is in the details.</p>
               </div>
-              <div className="space-y-3">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter">{service.title}</h3>
-                <p className="text-white/40 text-xs font-medium leading-relaxed">{service.desc}</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                {whyChooseUs.map((item, idx) => (
+                  <div key={idx} className="space-y-4 text-center">
+                    <div className="text-[#E6FF00] flex justify-center">
+                      <item.icon size={48} strokeWidth={1.5} />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-lg font-black uppercase italic tracking-tighter">{item.title}</h4>
+                      <p className="text-[#E6FF00] text-xs font-black uppercase tracking-widest">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          </div>
         </div>
+      </section>
 
-        <div className="bg-white/5 border border-white/10 rounded-[4rem] p-12 md:p-24 text-center space-y-12">
-          <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-tight">
-            Need a custom solution?<br />
-            <span className="text-[#E6FF00]">Let's talk about it.</span>
-          </h2>
-          <Link 
-            to="/contact" 
-            className="inline-block bg-[#E6FF00] text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
-          >
-            Get a Free Quote
-          </Link>
+      {/* Bottom CTA */}
+      <section className="py-32 px-10">
+        <div className="max-w-5xl mx-auto relative">
+          <div className="bg-[#E6FF00] rounded-[4rem] p-16 md:p-24 text-center space-y-12 relative overflow-hidden shadow-[0_0_100px_rgba(230,255,0,0.15)]">
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent)]" />
+            
+            <div className="relative z-10 space-y-8">
+              <h2 className="text-5xl md:text-7xl font-black text-black uppercase italic tracking-tighter leading-none">
+                Have a project in mind? <br />
+                Let's build something amazing.
+              </h2>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
+                <Link 
+                  to="/contact" 
+                  className="w-full sm:w-auto bg-black text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl"
+                >
+                  Book a Free Meeting
+                </Link>
+                <Link 
+                  to="/auth" 
+                  className="w-full sm:w-auto bg-white text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+                >
+                  Get Started Now
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer Space */}
+      <div className="h-20" />
     </div>
   );
 }

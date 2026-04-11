@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper, Video, CreditCard, ShieldCheck } from 'lucide-react';
+import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper, Video, CreditCard, ShieldCheck, AlertCircle } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -485,7 +485,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
                       { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
                       { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
-                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10', items: ['Starter Launch Plan'] },
+                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10', items: ['Basic Plan'] },
                     ].map((stat, i) => (
                       <div key={stat.id} className="relative">
                         <motion.button 

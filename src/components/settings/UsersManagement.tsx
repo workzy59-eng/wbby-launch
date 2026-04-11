@@ -124,7 +124,7 @@ export const UsersManagement: React.FC = () => {
   };
 
   const totalRevenue = users.reduce((acc, u) => {
-    const planPrices = { 'Basic': 4999, 'Standard': 9999, 'Premium': 19999 };
+    const planPrices = { 'Basic': 1499, 'Standard': 3499, 'Premium': 9999 };
     return acc + (planPrices[u.plan || 'Standard'] || 0);
   }, 0);
 

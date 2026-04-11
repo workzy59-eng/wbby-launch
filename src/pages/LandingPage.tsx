@@ -810,114 +810,146 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Starter Launch */}
-            <div className="bg-white/5 border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
-              <div className="space-y-4">
-                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Basic</h4>
-                <div className="space-y-1">
-                  <div className="text-5xl font-black tracking-tighter text-[#E6FF00]">
-                    ₹{billingCycle === 'monthly' ? '1,499' : '1,199'}
-                    <span className="text-sm font-black text-white/40 ml-2">/month</span>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="pricing-glow-card p-1 rounded-[3.5rem]"
+            >
+              <div className="bg-[#0B0B0B] border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col h-full">
+                <div className="space-y-4">
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter">Basic</h4>
+                  <div className="space-y-1">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xl font-black italic text-[#E6FF00]/60">₹</span>
+                    <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">
+                      {billingCycle === 'monthly' ? '1,499' : '1,199'}
+                    </span>
+                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">/mo</span>
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹1,999 setup cost</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹1,999 setup cost</div>
+                  </div>
                 </div>
+                <ul className="space-y-6 text-left flex-1">
+                  {[
+                    '1–3 Pages Website',
+                    'Basic Design',
+                    'Mobile Responsive',
+                    'Hosting Included',
+                    'Basic Support',
+                    'Domain (1st Year Free)'
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
+                      <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link 
+                  to="/auth"
+                  className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
+                >
+                  Get Started
+                </Link>
               </div>
-              <ul className="space-y-6 text-left flex-1">
-                {[
-                  '1–3 Pages Website',
-                  'Basic Design',
-                  'Mobile Responsive',
-                  'Hosting Included',
-                  'Basic Support',
-                  'Domain (1st Year Free)'
-                ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
-                    <CheckCircle2 size={18} className="text-[#E6FF00]" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link 
-                to="/auth"
-                className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
-              >
-                Get Started
-              </Link>
-            </div>
+            </motion.div>
 
             {/* Business Pro */}
-            <div className="bg-[#E6FF00] border-[#E6FF00] p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(230,255,0,0.3)] group hover:scale-[1.02] transition-all flex flex-col text-black">
-              <div className="absolute top-0 right-0 bg-black text-[#E6FF00] px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest border-l border-b border-[#E6FF00]/20">
-                Most Popular
-              </div>
-              <div className="space-y-4">
-                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Standard</h4>
-                <div className="space-y-1">
-                  <div className="text-5xl font-black tracking-tighter">
-                    ₹{billingCycle === 'monthly' ? '3,499' : '2,799'}
-                    <span className="text-sm font-black opacity-40 ml-2">/month</span>
-                  </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest opacity-40">+ ₹2,999 setup cost</div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="pricing-glow-card p-1 rounded-[3.5rem]"
+            >
+              <div className="bg-[#E6FF00] border-[#E6FF00] p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(230,255,0,0.3)] group hover:scale-[1.02] transition-all flex flex-col h-full text-black">
+                <div className="absolute top-0 right-0 bg-black text-[#E6FF00] px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest border-l border-b border-[#E6FF00]/20">
+                  Most Popular
                 </div>
+                <div className="space-y-4">
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter">Standard</h4>
+                  <div className="space-y-1">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xl font-black italic text-black/40">₹</span>
+                    <span className="text-6xl font-black tracking-tighter text-black">
+                      {billingCycle === 'monthly' ? '3,499' : '2,799'}
+                    </span>
+                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-black/40">/mo</span>
+                  </div>
+                    <div className="text-[10px] font-black uppercase tracking-widest opacity-40">+ ₹2,999 setup cost</div>
+                  </div>
+                </div>
+                <ul className="space-y-6 text-left flex-1">
+                  {[
+                    '5–7 Pages Website',
+                    'Premium Design',
+                    'Basic SEO',
+                    'Meeting System',
+                    'Priority Support',
+                    'Domain (1st Year Free)',
+                    'Custom Email Setup'
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-4 text-sm font-bold text-black/70">
+                      <CheckCircle2 size={18} className="text-black" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link 
+                  to="/auth"
+                  className="block w-full py-6 bg-black text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl text-center"
+                >
+                  Start Standard
+                </Link>
               </div>
-              <ul className="space-y-6 text-left flex-1">
-                {[
-                  '5–7 Pages Website',
-                  'Premium Design',
-                  'Basic SEO',
-                  'Meeting System',
-                  'Priority Support',
-                  'Domain (1st Year Free)',
-                  'Custom Email Setup'
-                ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-black/70">
-                    <CheckCircle2 size={18} className="text-black" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link 
-                to="/auth"
-                className="block w-full py-6 bg-black text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl text-center"
-              >
-                Start Standard
-              </Link>
-            </div>
+            </motion.div>
 
             {/* Enterprise Elite */}
-            <div className="bg-white/5 border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col">
-              <div className="space-y-4">
-                <h4 className="text-2xl font-black uppercase italic tracking-tighter">Pro</h4>
-                <div className="space-y-1">
-                  <div className="text-5xl font-black tracking-tighter text-[#E6FF00]">
-                    ₹{billingCycle === 'monthly' ? '6,999' : '5,599'}
-                    <span className="text-sm font-black text-white/40 ml-2">/month</span>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="pricing-glow-card p-1 rounded-[3.5rem]"
+            >
+              <div className="bg-[#0B0B0B] border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col h-full">
+                <div className="space-y-4">
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter">Pro</h4>
+                  <div className="space-y-1">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xl font-black italic text-[#E6FF00]/60">₹</span>
+                    <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">
+                      {billingCycle === 'monthly' ? '9,999' : '7,999'}
+                    </span>
+                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">/mo</span>
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹3,999 setup cost</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹3,999 setup cost</div>
+                  </div>
                 </div>
+                <ul className="space-y-6 text-left flex-1">
+                  {[
+                    'Full Custom Website',
+                    'Admin Dashboard',
+                    'Meetings + Chat System',
+                    'SEO Optimization',
+                    'Fast Support',
+                    'Domain (1st Year Free)',
+                    'Advanced Analytics'
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
+                      <CheckCircle2 size={18} className="text-[#E6FF00]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link 
+                  to="/auth"
+                  className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
+                >
+                  Go Pro
+                </Link>
               </div>
-              <ul className="space-y-6 text-left flex-1">
-                {[
-                  'Full Custom Website',
-                  'Admin Dashboard',
-                  'Meetings + Chat System',
-                  'SEO Optimization',
-                  'Fast Support',
-                  'Domain (1st Year Free)',
-                  'Advanced Analytics'
-                ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
-                    <CheckCircle2 size={18} className="text-[#E6FF00]" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link 
-                to="/auth"
-                className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
-              >
-                Go Pro
-              </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

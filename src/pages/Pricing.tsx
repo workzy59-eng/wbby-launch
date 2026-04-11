@@ -7,6 +7,7 @@ import { getSystemSettings } from '../services/database';
 
 export default function Pricing() {
   const [baseCost, setBaseCost] = useState(1499);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     getSystemSettings().then(settings => {
@@ -101,6 +102,32 @@ export default function Pricing() {
           >
             WebbyLaunch offers simple, transparent pricing for every business size. Secure payments powered by Stripe. Subscription renews monthly. Cancel anytime.
           </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-col items-center gap-6 pt-10"
+          >
+            <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
+              <button 
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingCycle === 'monthly' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+              >
+                Monthly
+              </button>
+              <button 
+                onClick={() => setBillingCycle('yearly')}
+                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingCycle === 'yearly' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+              >
+                Yearly
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="bg-[#E6FF00] text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">Save 20%</span>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">on yearly billing</p>
+            </div>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
@@ -122,8 +149,15 @@ export default function Pricing() {
 
                 <div className="mb-10">
                   <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#E6FF00]' : 'text-white'}`}>{plan.name}</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className={`text-6xl font-black tracking-tighter relative z-10 ${plan.popular ? 'text-white' : 'text-[#E6FF00]'}`}>{plan.price}</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className={`text-2xl font-black italic ${plan.popular ? 'text-black/40' : 'text-[#E6FF00]/60'}`}>₹</span>
+                    <span className={`text-7xl font-black tracking-tighter relative z-10 ${plan.popular ? 'text-black' : 'text-[#E6FF00]'}`}>
+                      {billingCycle === 'monthly' 
+                        ? (plan.name === 'Basic' ? '1,499' : plan.name === 'Standard' ? '3,499' : '9,999')
+                        : (plan.name === 'Basic' ? '1,199' : plan.name === 'Standard' ? '2,799' : '7,999')
+                      }
+                    </span>
+                    <span className={`text-sm font-black uppercase tracking-widest ml-2 ${plan.popular ? 'text-black/40' : 'text-white/40'}`}>/mo</span>
                   </div>
                   <p className={`mt-6 text-sm font-medium italic leading-relaxed text-white/50`}>
                     {plan.description}
