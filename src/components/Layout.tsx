@@ -5,6 +5,7 @@ import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, 
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import NavHeader from './ui/nav-header';
+import { APP_NAME, PROFESSIONAL_EMAIL } from '../constants';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -44,10 +45,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
+              <span className="text-white font-black text-xl italic tracking-tighter">{APP_NAME[0]}</span>
             </div>
             <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
-              QUIC<span className="text-gray-400">WEB</span>
+              {APP_NAME}
             </div>
           </Link>
 
@@ -111,10 +112,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           <div className="space-y-8">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
+                <span className="text-white font-black text-xl italic tracking-tighter">{APP_NAME[0]}</span>
               </div>
               <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
-                QUIC<span className="text-gray-400">WEB</span>
+                {APP_NAME}
               </div>
             </div>
             <p className="text-white/40 text-sm font-medium leading-relaxed">
@@ -154,13 +155,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
                 <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
                   <Mail size={18} />
                 </div>
-                <span className="text-sm font-bold text-white/40 group-hover:text-white transition-colors">contact@quicweb.com</span>
-              </div>
-              <div className="flex items-center gap-4 group cursor-pointer">
-                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
-                  <Phone size={18} />
-                </div>
-                <span className="text-sm font-bold text-white/40 group-hover:text-white transition-colors">+91 98765 43210</span>
+                <span className="text-sm font-bold text-white/40 group-hover:text-white transition-colors">{PROFESSIONAL_EMAIL}</span>
               </div>
             </div>
           </div>
@@ -168,7 +163,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
         <div className="max-w-7xl mx-auto mt-32 pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
-            © 2026 QUICWEB. Premium Mobile-First Web Solutions.
+            © 2026 {APP_NAME}. Premium Mobile-First Web Solutions.
           </p>
           <div className="flex items-center gap-8">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Made in India</span>

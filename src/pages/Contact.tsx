@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Phone, MapPin, Send, MessageCircle } from 'lucide-react';
 import SEO from '../components/SEO';
+import { PROFESSIONAL_EMAIL } from '../constants';
 
 export default function Contact() {
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
@@ -30,7 +31,7 @@ export default function Contact() {
             <div className="space-y-8">
               <h2 className="text-4xl font-black uppercase italic tracking-tighter">Get in Touch</h2>
               <p className="text-white/40 leading-relaxed max-w-md">
-                Fill out the form or reach out directly via WhatsApp or Email. We typically respond within 2 hours.
+                Fill out the form or reach out directly via Email. We typically respond within 2 hours.
               </p>
             </div>
 
@@ -41,27 +42,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-widest text-white/20 mb-1">Email Us</h4>
-                  <p className="text-xl font-black uppercase italic tracking-tighter">hello@quicweb.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 group">
-                <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
-                  <Phone size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-white/20 mb-1">Call Us</h4>
-                  <p className="text-xl font-black uppercase italic tracking-tighter">+91 98765 43210</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 group">
-                <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
-                  <MessageCircle size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-white/20 mb-1">WhatsApp</h4>
-                  <p className="text-xl font-black uppercase italic tracking-tighter">Chat Instantly</p>
+                  <p className="text-xl font-black uppercase italic tracking-tighter">{PROFESSIONAL_EMAIL}</p>
                 </div>
               </div>
             </div>

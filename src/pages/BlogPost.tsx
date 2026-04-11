@@ -108,7 +108,7 @@ export default function BlogPost() {
             <div className="space-y-6">
               <h4 className="text-xs font-black uppercase tracking-widest text-white/20">Share Article</h4>
               <div className="flex flex-col gap-4">
-                {['Twitter', 'LinkedIn', 'WhatsApp'].map((platform) => (
+                {['Twitter', 'LinkedIn'].map((platform) => (
                   <button key={platform} className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E6FF00] hover:text-black hover:border-transparent transition-all flex items-center justify-center gap-2">
                     <Share2 size={12} /> {platform}
                   </button>

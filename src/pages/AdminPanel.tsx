@@ -898,7 +898,7 @@ Generated on: ${new Date().toLocaleString()}
 
     return (
       <div className="h-full flex flex-col bg-[#0B141A] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
-        {/* WhatsApp Header */}
+        {/* Chat Header */}
         <div className="p-6 flex items-center justify-between bg-[#202C33]">
           <h2 className="text-2xl font-bold text-[#E9EDEF]">Chats</h2>
           <div className="flex items-center gap-6 text-[#8696A0]">
@@ -1316,7 +1316,6 @@ Generated on: ${new Date().toLocaleString()}
             {activeTab === 'projects' && renderProjectDetails()}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
-            {activeTab === 'notifications' && renderNotifications()}
             {activeTab === 'recycle' && renderRecycleBin()}
             {activeTab === 'system' && renderSystem()}
           </motion.div>

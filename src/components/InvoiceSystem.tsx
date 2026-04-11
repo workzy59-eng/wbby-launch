@@ -51,11 +51,6 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
     pdf.save(`${invoiceNumber}.pdf`);
   };
 
-  const shareWhatsApp = () => {
-    const text = `Hi, here is the invoice for ${project.businessName}. Plan: ${selectedPlan.name}. Total: ₹${totalAmount.toLocaleString()}. Please check details here: ${window.location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
-
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-10">
       <motion.div 
@@ -85,15 +80,8 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
           </div>
           <div className="flex items-center gap-3">
             <button 
-              onClick={shareWhatsApp}
-              className="p-3 bg-white/5 hover:bg-green-500/20 text-white/70 hover:text-green-400 rounded-xl transition-all"
-              title="Share via WhatsApp"
-            >
-              <Share2 size={20} />
-            </button>
-            <button 
               onClick={downloadPDF}
-              className="flex items-center gap-2 bg-[#E6FF00] text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]"
+              className="flex items-center gap-2 bg-[#E6FF00] text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]"
             >
               <Download size={18} />
               <span className="hidden sm:inline">Download PDF</span>
@@ -119,8 +107,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
                 <h1 className="text-4xl font-black tracking-tighter uppercase italic text-white">{APP_NAME}</h1>
               </div>
               <div className="text-xs font-bold text-white/40 uppercase tracking-widest space-y-1">
-                <p>support@webbylaunch.com</p>
-                <p>+91 98765 43210</p>
+                <p>webbylaunch@gmail.com</p>
                 <p>webbylaunch.vercel.app</p>
               </div>
             </div>

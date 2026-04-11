@@ -131,19 +131,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     <div className="bg-black">
       <SEO />
       
-      {/* WhatsApp Floating Button */}
-      <a 
-        href="https://wa.me/919876543210" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="fixed bottom-8 right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all group"
-      >
-        <MessageCircle size={32} className="fill-white text-[#25D366]" />
-        <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-xl">
-          Chat with us on WhatsApp
-        </span>
-      </a>
-
       {/* Hero Section */}
       <section id="home" className="relative min-h-screen flex flex-col items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -185,21 +172,22 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               )}
-              <button 
+              <ButtonColorful 
+                label="View Full Process" 
+                className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest"
                 onClick={() => {
                   const el = document.getElementById('how-it-works');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="flex items-center justify-center"
-              >
-                <ButtonColorful label="View Full Process" className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest" />
-              </button>
-              <a 
-                href="#portfolio" 
-                className="flex items-center justify-center"
-              >
-                <ButtonColorful label="View Demo" className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest" />
-              </a>
+              />
+              <ButtonColorful 
+                label="View Demo" 
+                className="h-14 px-10 rounded-2xl text-sm font-black uppercase tracking-widest"
+                onClick={() => {
+                  const el = document.getElementById('portfolio');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+              />
             </div>
           </motion.div>
         </div>

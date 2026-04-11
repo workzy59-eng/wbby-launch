@@ -32,7 +32,6 @@ const Terms = React.lazy(() => import('./pages/Terms'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const ComponentShowcase = React.lazy(() => import('./pages/ComponentShowcase'));
 const Layout = React.lazy(() => import('./components/Layout'));
-const WhatsAppButton = React.lazy(() => import('./components/WhatsAppButton'));
 
 function MobileRestriction({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -133,7 +132,7 @@ With varying internet speeds across the country, a fast-loading site is crucial 
 What makes a website "the best" for a small business in 2026? It's not just about looking pretty; it's about performance, trust, and real-time engagement.
 
 ## 1. Real-Time Communication
-In 2026, customers expect instant answers. Integrating a real-time chat system like the one provided by **QUICWEB** ensures you never miss a lead. Our system allows you to chat directly with your customers, providing a seamless experience similar to WhatsApp.
+In 2026, customers expect instant answers. Integrating a real-time chat system like the one provided by **QUICWEB** ensures you never miss a lead. Our system allows you to chat directly with your customers, providing a seamless experience.
 
 ## 2. AI-Driven Personalization
 Websites that adapt to user behavior are seeing 40% higher conversion rates. From personalized product recommendations to dynamic content, AI is the future. We integrate Gemini AI to help you generate content and analyze user data.
@@ -386,7 +385,6 @@ Everyone often operates on tight budgets. However, skimping on your website can 
               </Routes>
             </AnimatePresence>
           </Layout>
-          <WhatsAppButton />
         </React.Suspense>
       </MobileRestriction>
     </Router>
