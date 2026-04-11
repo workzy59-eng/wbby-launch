@@ -189,6 +189,24 @@ export interface BlogPost {
   category: string;
 }
 
+export type MeetingStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Reschedule Requested' | 'Completed' | 'Missed';
+
+export interface Meeting {
+  id: string;
+  title: string;
+  clientId: string;
+  adminId: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  meetingLink: string;
+  platform: 'Google Meet' | 'Zoom';
+  notes?: string;
+  status: MeetingStatus;
+  rescheduleMessage?: string;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
+}
+
 export interface Notification {
   id: string;
   userId: string;

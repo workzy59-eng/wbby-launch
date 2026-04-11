@@ -125,6 +125,27 @@
         "category": { "type": "string" }
       },
       "required": ["title", "slug", "content", "date"]
+    },
+    "Meeting": {
+      "title": "Meeting",
+      "description": "Meeting scheduling and management.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "clientId": { "type": "string" },
+        "adminId": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "meetingLink": { "type": "string" },
+        "platform": { "type": "string", "enum": ["Google Meet", "Zoom"] },
+        "notes": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected", "Reschedule Requested", "Completed", "Missed"] },
+        "rescheduleMessage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "clientId", "adminId", "date", "time", "meetingLink", "status"]
     }
   },
   "firestore": {
@@ -159,6 +180,10 @@
     "/blog_posts/{postId}": {
       "schema": "BlogPost",
       "description": "Blog articles."
+    },
+    "/meetings/{meetingId}": {
+      "schema": "Meeting",
+      "description": "Meeting records."
     }
   }
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { FirebaseUser } from '../firebase';
 import { SystemSettings, UserProfile } from '../types';
 import { getSystemSettings } from '../services/database';
@@ -17,7 +17,10 @@ import {
   MessageCircle,
   Eye,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Plus,
+  Minus,
+  MapPin
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { TestimonialCarousel, type Testimonial } from '../components/ui/testimonial';
@@ -70,7 +73,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { 
       id: 2, 
       name: 'Priya Patel', 
-      description: 'QUICWEB made our logistics portal look professional. The tracking feature is a game changer.' 
+      description: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer.' 
     },
     { 
       id: 3, 
@@ -80,7 +83,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { 
       id: 4, 
       name: 'Sneha Reddy', 
-      description: 'My online boutique took off after QUICWEB built my site. The payment integration is flawless and secure.' 
+      description: 'My online boutique took off after WebbyLaunch built my site. The payment integration is flawless and secure.' 
     },
     { 
       id: 5, 
@@ -90,7 +93,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { 
       id: 6, 
       name: 'Ananya Gupta', 
-      description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend QUICWEB!' 
+      description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend WebbyLaunch!' 
     },
     { 
       id: 7, 
@@ -100,7 +103,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { 
       id: 8, 
       name: 'Meera Iyer', 
-      description: 'As a tutor, I needed a platform to share resources. QUICWEB delivered a perfect portal in record time.' 
+      description: 'As a tutor, I needed a platform to share resources. WebbyLaunch delivered a perfect portal in record time.' 
     },
     { 
       id: 9, 
@@ -127,6 +130,59 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     { title: 'Get Access', description: 'Launch your professional website to the world.' }
   ];
 
+  const faqs = [
+    {
+      question: "What services do you offer?",
+      answer: "We provide complete website solutions including design, development, hosting setup, and basic SEO to help your business grow online."
+    },
+    {
+      question: "How long does it take to build a website?",
+      answer: "Most websites are completed within 5–10 days, depending on features and how quickly you provide content."
+    },
+    {
+      question: "Do I need to pay in advance?",
+      answer: "Yes. We require an advance payment to start the project. This ensures commitment and allows us to begin work immediately."
+    },
+    {
+      question: "What is included in the monthly subscription?",
+      answer: "Our plans include website maintenance, hosting support, updates, and technical assistance so you don’t have to worry about anything."
+    },
+    {
+      question: "Can I upgrade or change my plan later?",
+      answer: "Absolutely! You can upgrade or switch plans anytime based on your business needs."
+    },
+    {
+      question: "Will my website be mobile-friendly?",
+      answer: "Yes, all websites we build are fully responsive and work perfectly on mobile, tablet, and desktop."
+    },
+    {
+      question: "Do you provide SEO services?",
+      answer: "Yes, we include basic SEO setup to help your website get indexed on search engines and improve visibility."
+    },
+    {
+      question: "What if I need changes after the website is completed?",
+      answer: "We offer revisions and ongoing updates as part of your subscription. Extra custom features may have additional charges."
+    },
+    {
+      question: "What happens if I miss a monthly payment?",
+      answer: "If payment is delayed, your website services may be temporarily paused until the payment is completed."
+    },
+    {
+      question: "Why should I choose your service?",
+      answer: "We provide affordable pricing, fast delivery, modern designs, and ongoing support—making it easy for any business to go online without hassle."
+    }
+  ];
+
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const locations = [
+    { name: 'Hyderabad', slug: 'hyderabad' },
+    { name: 'Bangalore', slug: 'bangalore' },
+    { name: 'Mumbai', slug: 'mumbai' },
+    { name: 'Delhi', slug: 'delhi' },
+    { name: 'Chennai', slug: 'chennai' }
+  ];
+
   return (
     <div className="bg-black">
       <SEO />
@@ -151,7 +207,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </h1>
 
             <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-medium text-white/60 leading-relaxed">
-              QUICWEB builds premium, mobile-first websites for modern businesses. No coding. No stress. We build it for you while you focus on growth.
+              WebbyLaunch builds premium, mobile-first websites for modern businesses. No coding. No stress. We build it for you while you focus on growth.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -505,9 +561,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <div className="space-y-4">
                 <h4 className="text-2xl font-black uppercase italic tracking-tighter">Business Pro</h4>
                 <div className="flex items-end justify-center gap-2 relative group/price">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-black via-transparent to-black rounded-full opacity-0 blur-xl animate-rotate-glow group-hover/price:opacity-20 transition-opacity" />
+                  <div className="absolute -inset-4 bg-gradient-to-r from-black via-transparent to-black rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
                   <span className="text-6xl font-black tracking-tighter relative z-10">
-                    ₹{(settings?.pricing?.pro || 3499).toLocaleString()}
+                    ₹{(settings?.pricing?.pro || 3499).toLocaleString()}/-
                     <span className="text-xl font-black text-black ml-2">/month</span>
                   </span>
                 </div>
@@ -546,7 +602,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <div className="flex items-end justify-center gap-2 relative group/price">
                   <div className="absolute -inset-4 bg-gradient-to-r from-[#E6FF00] via-transparent to-[#E6FF00] rounded-full opacity-20 blur-xl animate-rotate-glow group-hover/price:opacity-40 transition-opacity" />
                   <span className="text-6xl font-black tracking-tighter text-[#E6FF00] relative z-10">
-                    ₹{(settings?.pricing?.enterprise || 9999).toLocaleString()}
+                    ₹{(settings?.pricing?.enterprise || 9999).toLocaleString()}/-
                     <span className="text-xl font-black text-[#E6FF00] ml-2">/month</span>
                   </span>
                 </div>
@@ -603,7 +659,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <span className="text-[#E6FF00]">Next Success Story?</span>
             </h3>
             <p className="text-white/60 text-xl max-w-2xl mx-auto font-medium italic">
-              Join 500+ businesses that launched their professional digital presence with QUICWEB in record time.
+              Join 500+ businesses that launched their professional digital presence with WebbyLaunch in record time.
             </p>
             <div className="pt-8">
               <Link 
@@ -617,29 +673,100 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-40 px-10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#E6FF00] z-0" />
-        <div className="relative z-10 max-w-5xl mx-auto text-center space-y-12">
-          <h2 className="text-6xl md:text-9xl font-black tracking-tighter text-black uppercase italic leading-[0.85]">
-            Ready to launch<br />your website?
-          </h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link 
-              to="/auth" 
-              className="bg-black text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl"
-            >
-              Start Now
-            </Link>
-            <Link 
-              to="/contact" 
-              className="bg-white/20 backdrop-blur-md text-black border border-black/10 px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/30 transition-all"
-            >
-              Contact Us
-            </Link>
+      {/* Why Webby Launch Section */}
+      <section className="py-32 px-10 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-20">
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">The Advantage</h2>
+            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+              Why <span className="text-[#E6FF00]">Webby Launch?</span>
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { title: "Affordable Plans", value: "Starting from ₹1499/month", desc: "Premium quality at startup-friendly prices." },
+              { title: "Fast Delivery", value: "2–5 Days", desc: "Get your business online in record time." },
+              { title: "Mobile-First", value: "80% Mobile Users", desc: "Optimized for the devices your customers use most." },
+              { title: "SEO-Ready", value: "Day 1 Optimization", desc: "Built-in structure to rank higher on Google." },
+              { title: "Google Indexing", value: "Search Console", desc: "We ensure your site is found by search engines." },
+              { title: "Ongoing Support", value: "Updates & Help", desc: "We're here for you even after the launch." }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] space-y-4 hover:border-[#E6FF00]/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-[#E6FF00] rounded-full" />
+                  <h4 className="text-xl font-black uppercase italic tracking-tighter">{item.title}</h4>
+                </div>
+                <p className="text-2xl font-black text-[#E6FF00] tracking-tighter uppercase italic">{item.value}</p>
+                <p className="text-white/40 text-sm font-medium italic">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <section className="py-32 px-10 bg-white/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center space-y-4 mb-20">
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Questions</h2>
+            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
+              Common <span className="text-[#E6FF00]">FAQs.</span>
+            </h3>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <div 
+                key={idx} 
+                className="bg-black/40 border border-white/10 rounded-3xl overflow-hidden transition-all"
+              >
+                <button 
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-lg font-black uppercase italic tracking-tighter">{faq.question}</span>
+                  {openFaq === idx ? <Minus className="text-[#E6FF00]" /> : <Plus className="text-[#E6FF00]" />}
+                </button>
+                <AnimatePresence>
+                  {openFaq === idx && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="px-8 pb-6"
+                    >
+                      <p className="text-white/60 font-medium italic leading-relaxed">
+                        {faq.answer}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Local SEO Section */}
+      <section className="py-20 px-10 border-t border-white/5">
+        <div className="max-w-7xl mx-auto text-center space-y-8">
+          <h4 className="text-xs font-black uppercase tracking-[0.4em] text-white/30">Serving Businesses Across India</h4>
+          <div className="flex flex-wrap justify-center gap-6">
+            {locations.map((loc) => (
+              <Link 
+                key={loc.slug} 
+                to={`/web-development-${loc.slug}`}
+                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#E6FF00] hover:text-black transition-all"
+              >
+                <MapPin size={12} />
+                {loc.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }

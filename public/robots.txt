@@ -1,4 +1,4 @@
-# Optimized robots.txt for QUICWEB
+# Optimized robots.txt for WebbyLaunch
 User-agent: *
 Allow: /
 

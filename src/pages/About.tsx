@@ -6,14 +6,14 @@ import SEO from '../components/SEO';
 export default function About() {
   return (
     <div className="pt-40 pb-20 px-10">
-      <SEO title="About QUICWEB – Premium Mobile-First Web Solutions" />
+      <SEO title="About WebbyLaunch – Premium Mobile-First Web Solutions" />
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-20">
           <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter">
             We Build <span className="text-[#E6FF00]">Digital Success.</span>
           </h1>
           <p className="max-w-2xl mx-auto text-white/60 text-lg font-medium leading-relaxed">
-            QUICWEB is a premium web development agency dedicated to helping businesses establish a powerful, mobile-first online presence in record time.
+            WebbyLaunch is a premium web development agency dedicated to helping businesses establish a powerful, mobile-first online presence in record time.
           </p>
         </div>
 

@@ -155,7 +155,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
 
   const handleDownloadDescription = (project: Project, format: 'pdf' | 'txt') => {
     const content = `
-QUICWEB Project Details
+WebbyLaunch Project Details
 EST 2026
 --------------------------------------------------
 
@@ -198,7 +198,7 @@ Generated on: ${new Date().toLocaleString()}
       // Header
       doc.setFontSize(22);
       doc.setTextColor(0, 0, 0);
-      doc.text('QUICWEB Project Details', 20, 20);
+      doc.text('WebbyLaunch Project Details', 20, 20);
       doc.setFontSize(12);
       doc.text('EST 2026', 20, 28);
       

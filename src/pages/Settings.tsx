@@ -194,7 +194,7 @@ export default function Settings({ user, profile }: SettingsProps) {
           <div className="mb-12 hidden md:block">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center border border-white/10">
-                <span className="text-white font-black text-sm italic">Q</span>
+                <span className="text-white font-black text-sm italic">W</span>
               </div>
               <h1 className="text-2xl font-black tracking-tighter text-white uppercase italic">{APP_NAME}</h1>
             </div>
@@ -294,7 +294,7 @@ export default function Settings({ user, profile }: SettingsProps) {
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             className="w-full px-6 py-5 bg-black/20 border border-white/5 rounded-2xl focus:outline-none focus:border-[#E6FF00]/50 transition-all font-black uppercase italic tracking-tighter text-xl"
-                            placeholder="+91 00000 00000"
+                            placeholder="00000 00000"
                           />
                         </div>
                         <div className="space-y-3 md:col-span-2">

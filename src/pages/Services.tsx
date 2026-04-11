@@ -50,7 +50,7 @@ export default function Services() {
 
   return (
     <div className="pt-40 pb-20 px-10">
-      <SEO title="Our Services – Premium Mobile-First Web Solutions by QUICWEB" />
+      <SEO title="Our Services – Premium Mobile-First Web Solutions by WebbyLaunch" />
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-24">
           <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter">

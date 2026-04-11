@@ -8,7 +8,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-[#0B141A] text-[#E9EDEF] font-sans">
       <SEO 
-        title="Blog | Why Mobile-First Design Matters in 2026 – QUICWEB"
+        title="Blog | Why Mobile-First Design Matters in 2026 – WebbyLaunch"
         description="Explore why mobile-first design is the standard for business success in 2026. Learn about SEO, speed, and user experience."
         canonical="https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/blog"
       />
@@ -20,7 +20,7 @@ export default function Blog() {
             <span>Back to Home</span>
           </Link>
           <div className="text-xs font-black uppercase tracking-widest text-white/40">
-            QUICWEB Blog
+            WebbyLaunch Blog
           </div>
         </div>
       </header>
@@ -84,7 +84,7 @@ export default function Blog() {
               Speed and Core Web Vitals
             </h3>
             <p>
-              Speed is the new currency of SEO. Mobile users expect instant gratification. At <Link to="/" className="text-[#00A884] underline decoration-2 underline-offset-4 hover:text-white transition-colors">QUICWEB</Link>, we prioritize performance metrics that directly impact your Google ranking.
+              Speed is the new currency of SEO. Mobile users expect instant gratification. At <Link to="/" className="text-[#00A884] underline decoration-2 underline-offset-4 hover:text-white transition-colors">WebbyLaunch</Link>, we prioritize performance metrics that directly impact your Google ranking.
             </p>
 
             <div className="bg-[#202C33] p-8 rounded-[2rem] border border-white/5 my-12">
@@ -135,7 +135,7 @@ export default function Blog() {
 
       <footer className="py-12 border-t border-white/5 text-center">
         <p className="text-[#8696A0] text-xs font-black uppercase tracking-[0.3em]">
-          &copy; 2026 QUICWEB. All Rights Reserved.
+          &copy; 2026 WebbyLaunch. All Rights Reserved.
         </p>
       </footer>
     </div>

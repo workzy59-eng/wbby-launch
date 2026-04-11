@@ -223,7 +223,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
             <div className="flex flex-col items-center justify-center p-8 bg-white/5 rounded-[2.5rem] border border-white/5 text-center space-y-4">
               <div className="w-32 h-32 bg-white p-2 rounded-2xl">
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=quicweb@upi&pn=QUICWEB&am=${totalAmount}&cu=INR`} 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=webbylaunch@upi&pn=WebbyLaunch&am=${totalAmount}&cu=INR`} 
                   alt="Payment QR" 
                   className="w-full h-full"
                 />

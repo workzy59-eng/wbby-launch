@@ -33,13 +33,15 @@ import {
   Bell,
   CheckCheck,
   Camera,
-  MoreVertical
+  MoreVertical,
+  Video
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
 import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
+import { MeetingList } from '../components/meetings/MeetingList';
 import Papa from 'papaparse';
 
 import { ADMIN_EMAIL } from '../constants';
@@ -53,7 +55,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings'>('dashboard');
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -216,7 +218,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
   const handleDownloadDescription = (project: Project, format: 'pdf' | 'txt') => {
     const content = `
-QUICWEB Project Details
+WebbyLaunch Project Details
 EST 2026
 --------------------------------------------------
 
@@ -260,7 +262,7 @@ Generated on: ${new Date().toLocaleString()}
       // Header
       doc.setFontSize(22);
       doc.setTextColor(0, 0, 0);
-      doc.text('QUICWEB Project Details', 20, 20);
+      doc.text('WebbyLaunch Project Details', 20, 20);
       doc.setFontSize(12);
       doc.text('EST 2026', 20, 28);
       
@@ -1243,6 +1245,7 @@ Generated on: ${new Date().toLocaleString()}
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
+            { id: 'meetings', label: 'Meetings', icon: Video },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'system', label: 'System Settings', icon: Settings },
             { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
@@ -1318,6 +1321,15 @@ Generated on: ${new Date().toLocaleString()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'recycle' && renderRecycleBin()}
             {activeTab === 'system' && renderSystem()}
+            {activeTab === 'meetings' && (
+              <div className="space-y-12">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Scheduling</span>
+                  <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Meeting Manager</h2>
+                </div>
+                <MeetingList user={user} profile={profile!} allClients={users.filter(u => u.role === 'client')} />
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </main>

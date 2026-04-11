@@ -99,7 +99,7 @@ export default function Pricing() {
             transition={{ delay: 0.2 }}
             className="text-xl text-white/40 max-w-2xl mx-auto font-medium italic"
           >
-            QUICWEB offers simple, transparent pricing for every business size. Secure payments powered by Stripe. Subscription renews monthly. Cancel anytime.
+            WebbyLaunch offers simple, transparent pricing for every business size. Secure payments powered by Stripe. Subscription renews monthly. Cancel anytime.
           </motion.p>
         </div>
 

@@ -291,7 +291,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     // Header
     doc.setFontSize(22);
     doc.setTextColor(0, 0, 0);
-    doc.text('QUICWEB Project Summary', 20, 20);
+    doc.text('WebbyLaunch Project Summary', 20, 20);
     
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
@@ -325,7 +325,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     const splitDesc = doc.splitTextToSize(formData.description || 'No description provided.', 160);
     doc.text(splitDesc, 20, y);
     
-    doc.save(`QUICWEB_Project_Summary.pdf`);
+    doc.save(`WebbyLaunch_Project_Summary.pdf`);
   };
 
   const [domainData, setDomainData] = useState({

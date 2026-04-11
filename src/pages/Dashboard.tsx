@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper } from 'lucide-react';
+import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper, Video } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
+import { MeetingList } from '../components/meetings/MeetingList';
 import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
@@ -23,7 +24,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings' | 'meetings'>('dashboard');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showChat, setShowChat] = useState(false);
@@ -118,6 +119,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
             { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
+            { id: 'meetings', icon: Video, label: 'Meetings' },
             { id: 'settings', icon: Settings, label: 'Settings', link: '/settings' },
           ].map((tab) => (
             <button 
@@ -197,6 +199,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         {[
           { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
           { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Chat (${unreadCount})` : 'Chat' },
+          { id: 'meetings', icon: Video, label: 'Meetings' },
           { id: 'settings', icon: Settings, label: 'Settings' },
         ].map((tab) => (
           <button 
@@ -277,6 +280,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   fullScreen={false}
                   projects={projects}
                 />
+              ) : activeTab === 'meetings' ? (
+                <div className="space-y-12">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E6FF00]">Scheduling</span>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Meetings</h2>
+                  </div>
+                  <MeetingList user={user} profile={profile!} />
+                </div>
               ) : activeTab === 'settings' ? (
                 <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl text-center space-y-8">
                   <div className="w-24 h-24 bg-[#E6FF00] rounded-full flex items-center justify-center text-black mx-auto shadow-[0_0_50px_rgba(230,255,0,0.2)]">
