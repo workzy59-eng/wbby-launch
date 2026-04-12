@@ -5,7 +5,7 @@ export interface UserProfile {
   email: string;
   displayName: string;
   photoURL: string;
-  role: 'admin' | 'client' | 'developer';
+  role: 'admin' | 'client' | 'developer' | 'sales';
   phone?: string;
   username?: string;
   status: 'online' | 'offline' | 'away' | 'active' | 'inactive' | RequestStatus;
@@ -13,6 +13,7 @@ export interface UserProfile {
   createdAt: string | Timestamp;
   updatedAt?: string | Timestamp;
   isApproved?: boolean; // For manual approval
+  commissionEarned?: number;
   
   // Settings & Preferences
   notificationPreferences?: {
@@ -80,6 +81,70 @@ export interface UserProfile {
   devRole?: string;
   joiningDate?: string | Timestamp;
   absences?: number;
+}
+
+export interface Lead {
+  id: string;
+  businessName: string;
+  phone: string;
+  businessType?: string;
+  location?: string;
+  status: 'Not Called' | 'Called' | 'Interested' | 'Not Interested' | 'Follow-up' | 'Closed';
+  notes?: string;
+  followUpDate?: Timestamp;
+  assignedSalesId: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface Commission {
+  id: string;
+  salesId: string;
+  paymentId: string;
+  amount: number;
+  status: 'pending' | 'paid';
+  createdAt: Timestamp;
+}
+
+export interface DeveloperApplication {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  skills: string;
+  experience: string;
+  portfolio: string;
+  availability: string;
+  maxProjectsPerWeek: number;
+  expectedEarnings: string;
+  message?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: Timestamp;
+}
+
+export interface SalesApplication {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  experience: string;
+  languages: string;
+  availability: string;
+  message?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: Timestamp;
+}
+
+export interface Payment {
+  id: string;
+  userId: string;
+  planId: string;
+  planName: string;
+  amount: number;
+  type: 'one-time' | 'subscription';
+  status: 'pending' | 'completed';
+  stripeSessionId?: string;
+  createdAt: Timestamp;
 }
 
 export interface LeaveRequest {

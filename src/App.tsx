@@ -15,6 +15,7 @@ const OnboardingFlow = React.lazy(() => import('./pages/OnboardingFlow'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
+const SalesDashboard = React.lazy(() => import('./pages/SalesDashboard'));
 const GlobalAutos = React.lazy(() => import('./pages/GlobalAutos'));
 const Gym = React.lazy(() => import('./pages/Gym'));
 const Cargo = React.lazy(() => import('./pages/Cargo'));
@@ -27,6 +28,8 @@ const Blog = React.lazy(() => import('./pages/Blog'));
 const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const Testimonials = React.lazy(() => import('./pages/Testimonials'));
 const HowItWorks = React.lazy(() => import('./pages/HowItWorks'));
+const JoinDeveloper = React.lazy(() => import('./pages/JoinDeveloper'));
+const JoinSales = React.lazy(() => import('./pages/JoinSales'));
 const Privacy = React.lazy(() => import('./pages/Privacy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const Settings = React.lazy(() => import('./pages/Settings'));
@@ -333,6 +336,8 @@ Everyone often operates on tight budgets. However, skimping on your website can 
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/join-developer" element={<JoinDeveloper />} />
+                <Route path="/join-sales" element={<JoinSales />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/privacy-policy" element={<Privacy />} />
@@ -355,6 +360,8 @@ Everyone often operates on tight budgets. However, skimping on your website can 
                         <AdminPanel user={user} profile={profile} />
                       ) : profile?.role === 'developer' ? (
                         <DeveloperDashboard user={user} profile={profile} />
+                      ) : profile?.role === 'sales' ? (
+                        <SalesDashboard user={user} profile={profile} />
                       ) : (
                         <Dashboard user={user} profile={profile} />
                       )

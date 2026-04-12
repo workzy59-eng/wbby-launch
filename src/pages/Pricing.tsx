@@ -1,72 +1,107 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Check, Sparkles, CreditCard, ArrowRight } from 'lucide-react';
+import { Check, Sparkles, ArrowRight, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { APP_NAME } from '../constants';
-import { getSystemSettings } from '../services/database';
 
 export default function Pricing() {
-  const [baseCost, setBaseCost] = useState(1499);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
 
-  useEffect(() => {
-    getSystemSettings().then(settings => {
-      if (settings?.baseWebsiteCost) {
-        setBaseCost(settings.baseWebsiteCost);
-      }
-    });
-  }, []);
-
-  const plans = [
+  const oneTimePlans = [
     {
       name: 'Basic',
-      price: `₹${baseCost.toLocaleString()}/month`,
-      description: 'Hosting & maintenance, minor text/image updates, backups, email support.',
+      price: '₹5,000',
+      period: 'One-Time',
+      description: '1–3 pages website. Perfect for small businesses starting their digital journey.',
       features: [
-        '5 Pages Website',
-        'Basic SEO',
+        '1–3 Pages Website',
+        'Simple Design',
         'Mobile Responsive',
-        'Free Hosting',
-        'Minor text/image updates',
-        'Backups',
-        'Email Support'
+        'Contact Form',
+        '7 Days Support'
       ],
-      color: 'bg-white/5 border-[#E6FF00]/30 rounded-[3.5rem] shadow-[0_0_40px_rgba(230,255,0,0.15)]',
       stripeLink: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07'
     },
     {
       name: 'Standard',
-      price: '₹3,499/month',
-      description: 'Everything in Basic + SEO optimization, blog/content updates, analytics reports, faster support.',
+      price: '₹15,000',
+      period: 'One-Time',
+      description: '4–7 pages website. Modern UI/UX and better performance for growing brands.',
+      features: [
+        '4–7 Pages Website',
+        'Modern UI/UX',
+        'Mobile Responsive',
+        'Basic SEO',
+        'Fast Performance',
+        'WhatsApp Integration',
+        '7 Days Support'
+      ],
+      popular: true,
+      stripeLink: 'https://buy.stripe.com/test_6oU6oGdOY8zi7Deb9JbAs0b'
+    },
+    {
+      name: 'Pro',
+      price: '₹30,000',
+      period: 'One-Time',
+      description: 'Full custom website. Advanced UI/UX and full optimization for established businesses.',
+      features: [
+        'Full Custom Website',
+        'Advanced UI/UX',
+        'Mobile Responsive',
+        'SEO Optimization',
+        'Basic Admin Dashboard',
+        'Priority Delivery',
+        '7 Days Support'
+      ],
+      stripeLink: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c'
+    }
+  ];
+
+  const subscriptionPlans = [
+    {
+      name: 'Basic',
+      price: '₹999',
+      period: '/mo',
+      description: 'Hosting and basic support to keep your website running smoothly.',
+      features: [
+        'Hosting Included',
+        'Basic Support',
+        'Security Updates',
+        'Monthly Backups'
+      ],
+      stripeLink: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07'
+    },
+    {
+      name: 'Standard',
+      price: '₹5,999',
+      period: '/mo',
+      description: 'Maintenance, updates, and priority support for active businesses.',
       features: [
         'Everything in Basic',
-        'SEO optimization',
-        'Blog/content updates',
-        'Analytics reports',
-        'Faster support',
-        'Custom Design'
+        'Ongoing Maintenance',
+        'Content Updates',
+        'Priority Support',
+        'Performance Optimization'
       ],
-      color: 'bg-[#E6FF00] border-[#E6FF00] shadow-[0_0_50px_rgba(230,255,0,0.3)] text-black',
       popular: true,
       stripeLink: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08'
     },
     {
       name: 'Premium',
-      price: '₹9,999/month',
-      description: 'Everything in Standard + E-commerce support, AI features integration, priority support, monthly performance review.',
+      price: '₹9,999',
+      period: '/mo',
+      description: 'Full support and priority updates for enterprise-level needs.',
       features: [
         'Everything in Standard',
-        'Unlimited Pages',
-        'Advanced SEO',
-        'E-commerce support',
-        'AI features integration',
-        'Priority support',
-        'Monthly performance review'
+        'Full Support',
+        'Priority Updates',
+        'Monthly Performance Review',
+        'Dedicated Manager'
       ],
-      color: 'bg-white/5 border-[#E6FF00]/30 rounded-[3.5rem] shadow-[0_0_40px_rgba(230,255,0,0.15)]',
       stripeLink: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09'
     }
   ];
+
+  const plans = billingType === 'one-time' ? oneTimePlans : subscriptionPlans;
 
   const handleSubscribe = (link: string) => {
     window.location.href = link;
@@ -89,19 +124,19 @@ export default function Pricing() {
             transition={{ delay: 0.1 }}
             className="text-7xl md:text-9xl font-black tracking-tighter uppercase italic leading-[0.8]"
           >
-            <Link to="/auth" className="hover:text-[#E6FF00] transition-colors">
-              Simple <br />
-              <span className="text-[#E6FF00]">Affordable</span> Plans.
-            </Link>
+            Simple <br />
+            <span className="text-[#E6FF00]">Affordable</span> Plans.
           </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl text-white/40 max-w-2xl mx-auto font-medium italic"
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center justify-center gap-2 pt-6"
           >
-            WebbyLaunch offers simple, transparent pricing for every business size. Secure payments powered by Stripe. Subscription renews monthly. Cancel anytime.
-          </motion.p>
+            <Shield size={14} className="text-[#E6FF00]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">100% Money Back Guarantee</span>
+          </motion.div>
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -109,23 +144,24 @@ export default function Pricing() {
             transition={{ delay: 0.3 }}
             className="flex flex-col items-center gap-6 pt-10"
           >
+            <div className="flex items-center gap-3 px-6 py-2 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-full">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Only 5 project slots left this month</span>
+            </div>
+            
             <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
               <button 
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingCycle === 'monthly' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                onClick={() => setBillingType('one-time')}
+                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
               >
-                Monthly
+                One-Time
               </button>
               <button 
-                onClick={() => setBillingCycle('yearly')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingCycle === 'yearly' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                onClick={() => setBillingType('subscription')}
+                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
               >
-                Yearly
+                Subscription
               </button>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="bg-[#E6FF00] text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">Save 20%</span>
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">on yearly billing</p>
             </div>
           </motion.div>
         </div>
@@ -148,16 +184,15 @@ export default function Pricing() {
                 )}
 
                 <div className="mb-10">
-                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#E6FF00]' : 'text-white'}`}>{plan.name}</h3>
+                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#E6FF00]' : 'text-white'}`}>{plan.name} Website</h3>
                   <div className="flex items-baseline gap-1">
                     <span className={`text-2xl font-black italic ${plan.popular ? 'text-black/40' : 'text-[#E6FF00]/60'}`}>₹</span>
                     <span className={`text-7xl font-black tracking-tighter relative z-10 ${plan.popular ? 'text-black' : 'text-[#E6FF00]'}`}>
-                      {billingCycle === 'monthly' 
-                        ? (plan.name === 'Basic' ? '1,499' : plan.name === 'Standard' ? '3,499' : '9,999')
-                        : (plan.name === 'Basic' ? '1,199' : plan.name === 'Standard' ? '2,799' : '7,999')
-                      }
+                      {plan.price.replace('₹', '')}
                     </span>
-                    <span className={`text-sm font-black uppercase tracking-widest ml-2 ${plan.popular ? 'text-black/40' : 'text-white/40'}`}>/mo</span>
+                    {plan.period && (
+                      <span className={`text-sm font-black uppercase tracking-widest ml-2 ${plan.popular ? 'text-black/40' : 'text-white/40'}`}>{plan.period}</span>
+                    )}
                   </div>
                   <p className={`mt-6 text-sm font-medium italic leading-relaxed text-white/50`}>
                     {plan.description}
@@ -177,34 +212,61 @@ export default function Pricing() {
                   ))}
                 </div>
 
-                <button 
-                  onClick={() => handleSubscribe(plan.stripeLink)}
-                  className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
-                    plan.popular 
-                      ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.3)] hover:scale-[1.05]' 
-                      : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  Subscribe Now <ArrowRight size={24} />
-                </button>
+                <div className="space-y-6">
+                  <div className="flex flex-col gap-2 text-center">
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/30">
+                      <Shield size={12} /> Secure Payment via Stripe
+                    </div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">Instant confirmation</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">We will contact you within 24 hours</div>
+                  </div>
+
+                  <button 
+                    onClick={() => handleSubscribe(plan.stripeLink)}
+                    className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
+                      plan.popular 
+                        ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.3)] hover:scale-[1.05]' 
+                        : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    {billingType === 'one-time' ? 'Pay Now' : 'Subscribe'} <ArrowRight size={24} />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
 
+        <div className="mt-20 text-center max-w-2xl mx-auto">
+          <p className="text-white/40 text-sm font-medium italic leading-relaxed">
+            {billingType === 'one-time' 
+              ? "This is a one-time website development service. 7 days of free support is included after delivery. Any further updates or maintenance require a separate support plan."
+              : "One-time plans include only website development with limited support. Subscription plans include ongoing maintenance and updates."
+            }
+          </p>
+        </div>
+
         <div className="mt-32 text-center">
           <div className="p-12 bg-black/20 backdrop-blur-3xl rounded-[4rem] border border-white/5 max-w-4xl mx-auto relative overflow-hidden">
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#E6FF00] rounded-full blur-[120px] opacity-10"></div>
-            <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6">Need a custom solution?</h2>
+            <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6">Need help choosing a plan?</h2>
             <p className="text-white/50 mb-10 max-w-xl mx-auto font-medium italic">
               If your project requires specialized features or enterprise-level infrastructure, let's talk.
             </p>
-            <Link 
-              to="/dashboard?chat=true"
-              className="px-12 py-5 bg-white/5 border border-white/10 rounded-full font-black text-xl uppercase italic text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all inline-flex items-center gap-4"
-            >
-              Contact Support <Sparkles size={24} />
-            </Link>
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link 
+                to="/contact"
+                className="px-12 py-5 bg-white/5 border border-white/10 rounded-full font-black text-xl uppercase italic text-white hover:bg-white/10 transition-all inline-flex items-center gap-4"
+              >
+                Contact Us
+              </Link>
+              <Link 
+                to="/dashboard?chat=true"
+                className="px-12 py-5 bg-[#E6FF00] text-black rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all inline-flex items-center gap-4"
+              >
+                Book a Free Call <Sparkles size={24} />
+              </Link>
+            </div>
           </div>
         </div>
       </div>

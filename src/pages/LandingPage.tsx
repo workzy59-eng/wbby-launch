@@ -22,7 +22,9 @@ import {
   Minus,
   MapPin,
   Video,
-  X
+  X,
+  Code,
+  Phone
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { TestimonialCarousel, type Testimonial } from '../components/ui/testimonial';
@@ -786,6 +788,15 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
                 Simple <span className="text-[#E6FF00]">Affordable</span> Plans.
               </h3>
+              <div className="flex flex-col items-center gap-4 pt-6">
+                <div className="flex items-center gap-3 px-6 py-2 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-full">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Only 5 project slots left this month</span>
+                </div>
+                <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">
+                  Launch Offer: Free Meeting + Free SEO Setup included in all plans
+                </p>
+              </div>
             </div>
 
             {/* Billing Toggle */}
@@ -806,6 +817,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">
               No hidden costs. Domain included for first year. Transparent pricing.
             </p>
+            <div className="flex items-center justify-center gap-2 pt-4">
+              <Shield size={14} className="text-[#E6FF00]" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/60">100% Money Back Guarantee</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
@@ -830,13 +845,13 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹1,999 setup cost</div>
                   </div>
                 </div>
-                <ul className="space-y-6 text-left flex-1">
+                  <ul className="space-y-6 text-left flex-1">
                   {[
                     '1–3 Pages Website',
                     'Basic Design',
                     'Mobile Responsive',
                     'Hosting Included',
-                    'Basic Support',
+                    'Free SEO Setup',
                     'Domain (1st Year Free)'
                   ].map((feature, i) => (
                     <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
@@ -879,11 +894,11 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     <div className="text-[10px] font-black uppercase tracking-widest opacity-40">+ ₹2,999 setup cost</div>
                   </div>
                 </div>
-                <ul className="space-y-6 text-left flex-1">
+                  <ul className="space-y-6 text-left flex-1">
                   {[
                     '5–7 Pages Website',
                     'Premium Design',
-                    'Basic SEO',
+                    'Free SEO Setup',
                     'Meeting System',
                     'Priority Support',
                     'Domain (1st Year Free)',
@@ -926,12 +941,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹3,999 setup cost</div>
                   </div>
                 </div>
-                <ul className="space-y-6 text-left flex-1">
+                  <ul className="space-y-6 text-left flex-1">
                   {[
                     'Full Custom Website',
                     'Admin Dashboard',
+                    'Free SEO Setup',
                     'Meetings + Chat System',
-                    'SEO Optimization',
                     'Fast Support',
                     'Domain (1st Year Free)',
                     'Advanced Analytics'
@@ -1023,11 +1038,11 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           >
             <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">Your Turn</h2>
             <h3 className="text-5xl md:text-8xl font-black tracking-tighter uppercase italic text-white">
-              Ready to be our <br />
-              <span className="text-[#E6FF00]">Next Success Story?</span>
+              Get Your Business <br />
+              <span className="text-[#E6FF00]">Online in 24 Hours.</span>
             </h3>
             <p className="text-white/60 text-xl max-w-2xl mx-auto font-medium italic">
-              Join 500+ businesses that launched their professional digital presence with WebbyLaunch in record time.
+              Modern, fast, and scalable websites with powerful dashboards. Delivered in 3–7 days with zero hassle.
             </p>
             <div className="pt-8">
               <Link 
@@ -1054,10 +1069,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { title: "Affordable Plans", value: "Starting from ₹1499/month", desc: "Premium quality at startup-friendly prices." },
-              { title: "Fast Delivery", value: "2–5 Days", desc: "Get your business online in record time." },
+              { title: "Fast Delivery", value: "3–7 Days", desc: "Get your business online in record time." },
               { title: "Mobile-First", value: "80% Mobile Users", desc: "Optimized for the devices your customers use most." },
               { title: "SEO-Ready", value: "Day 1 Optimization", desc: "Built-in structure to rank higher on Google." },
-              { title: "Google Indexing", value: "Search Console", desc: "We ensure your site is found by search engines." },
+              { title: "Trust Backed", value: "Money Back Guarantee", desc: "Not satisfied? We'll refund your setup cost." },
               { title: "Ongoing Support", value: "Updates & Help", desc: "We're here for you even after the launch." }
             ].map((item, idx) => (
               <div key={idx} className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] space-y-4 hover:border-[#E6FF00]/30 transition-all">
@@ -1069,6 +1084,74 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <p className="text-white/40 text-sm font-medium italic">{item.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+        {/* Join Our Team Section */}
+        <section className="py-32 px-10 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white/5 border border-white/10 rounded-[4rem] p-12 md:p-24 relative overflow-hidden">
+              <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#E6FF00] rounded-full blur-[120px] opacity-10"></div>
+              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-blue-500 rounded-full blur-[120px] opacity-10"></div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <div className="space-y-8">
+                  <div className="inline-block px-6 py-2 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-full text-[10px] font-black uppercase tracking-[0.4em] text-[#E6FF00] italic">
+                    Careers
+                  </div>
+                  <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.8]">
+                    Build the <br />
+                    <span className="text-[#E6FF00]">Future</span> of Web.
+                  </h2>
+                  <p className="text-xl text-white/40 font-medium italic leading-relaxed">
+                    We're looking for talented developers and sales experts to join our mission of putting every Indian business online.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <Link 
+                    to="/join-developer"
+                    className="group bg-white/5 border border-white/10 p-10 rounded-[2.5rem] hover:bg-[#E6FF00] transition-all duration-500"
+                  >
+                    <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-xl flex items-center justify-center text-[#E6FF00] group-hover:bg-black/10 group-hover:text-black mb-6 transition-all">
+                      <Code size={24} />
+                    </div>
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter group-hover:text-black transition-all">Join as Developer</h3>
+                    <p className="text-white/40 text-sm font-medium italic mt-2 group-hover:text-black/60 transition-all">Build premium UIs</p>
+                  </Link>
+                  
+                  <Link 
+                    to="/join-sales"
+                    className="group bg-white/5 border border-white/10 p-10 rounded-[2.5rem] hover:bg-[#E6FF00] transition-all duration-500"
+                  >
+                    <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-xl flex items-center justify-center text-[#E6FF00] group-hover:bg-black/10 group-hover:text-black mb-6 transition-all">
+                      <Phone size={24} />
+                    </div>
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter group-hover:text-black transition-all">Join as Sales</h3>
+                    <p className="text-white/40 text-sm font-medium italic mt-2 group-hover:text-black/60 transition-all">Earn high commissions</p>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      {/* Founder's Message */}
+      <section className="py-32 px-10 bg-black relative overflow-hidden">
+        <div className="max-w-4xl mx-auto text-center space-y-12 relative z-10">
+          <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 mx-auto overflow-hidden">
+            <img src="https://picsum.photos/seed/founder/200/200" alt="Founder" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          </div>
+          <div className="space-y-6">
+            <h3 className="text-3xl font-black uppercase italic tracking-tighter text-[#E6FF00]">A Message from the Founder</h3>
+            <p className="text-xl text-white/60 font-medium italic leading-relaxed">
+              "I started WebbyLaunch because I saw too many small businesses getting overcharged for slow, outdated websites. Our mission is simple: high-converting, premium digital presences delivered in days, not months. We don't just build websites; we build growth engines."
+            </p>
+            <div className="pt-4">
+              <p className="text-sm font-black uppercase tracking-widest text-white">Pranjal Soni</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Founder, WebbyLaunch</p>
+            </div>
           </div>
         </div>
       </section>

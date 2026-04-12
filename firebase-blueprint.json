@@ -9,7 +9,7 @@
         "email": { "type": "string", "format": "email" },
         "displayName": { "type": "string" },
         "photoURL": { "type": "string" },
-        "role": { "type": "string", "enum": ["admin", "client", "developer"] },
+        "role": { "type": "string", "enum": ["admin", "client", "developer", "sales"] },
         "createdAt": { "type": "string", "format": "date-time" },
         "phone": { "type": "string" },
         "experience": { "type": "number" },
@@ -17,9 +17,98 @@
         "status": { "type": "string", "enum": ["pending", "accepted", "declined", "approved"] },
         "joiningDate": { "type": "string", "format": "date-time" },
         "absences": { "type": "number" },
-        "isApproved": { "type": "boolean" }
+        "isApproved": { "type": "boolean" },
+        "commissionEarned": { "type": "number" }
       },
       "required": ["uid", "email", "role"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Sales lead information.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessName": { "type": "string" },
+        "phone": { "type": "string" },
+        "businessType": { "type": "string" },
+        "location": { "type": "string" },
+        "status": { "type": "string", "enum": ["Not Called", "Called", "Interested", "Not Interested", "Follow-up", "Closed"] },
+        "notes": { "type": "string" },
+        "followUpDate": { "type": "string", "format": "date-time" },
+        "assignedSalesId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessName", "phone", "status", "createdAt"]
+    },
+    "DeveloperApplication": {
+      "title": "Developer Application",
+      "description": "Application to join as a developer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "skills": { "type": "string" },
+        "experience": { "type": "string" },
+        "portfolio": { "type": "string" },
+        "availability": { "type": "string" },
+        "maxProjectsPerWeek": { "type": "number" },
+        "expectedEarnings": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "phone", "status", "createdAt"]
+    },
+    "SalesApplication": {
+      "title": "Sales Application",
+      "description": "Application to join as a sales person.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "experience": { "type": "string" },
+        "languages": { "type": "string" },
+        "availability": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "phone", "status", "createdAt"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Payment record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "planId": { "type": "string" },
+        "planName": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["one-time", "subscription"] },
+        "status": { "type": "string", "enum": ["pending", "completed"] },
+        "stripeSessionId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "amount", "type", "status", "createdAt"]
+    },
+    "Commission": {
+      "title": "Commission",
+      "description": "Sales commission record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "salesId": { "type": "string" },
+        "paymentId": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "paid"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["salesId", "paymentId", "amount", "status", "createdAt"]
     },
     "Project": {
       "title": "Project",
@@ -209,6 +298,26 @@
     "/meeting_requests/{requestId}": {
       "schema": "MeetingRequest",
       "description": "Client meeting requests."
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Sales leads."
+    },
+    "/developer_applications/{applicationId}": {
+      "schema": "DeveloperApplication",
+      "description": "Developer applications."
+    },
+    "/sales_applications/{applicationId}": {
+      "schema": "SalesApplication",
+      "description": "Sales applications."
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Payment records."
+    },
+    "/commissions/{commissionId}": {
+      "schema": "Commission",
+      "description": "Sales commissions."
     }
   }
 }

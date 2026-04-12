@@ -56,7 +56,16 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-             (request.auth.token.get('email', '') == "workzy59@gmail.com" && request.auth.token.email_verified == true);
+             (request.auth.token.get('email', '') == "workzy59@gmail.com" && request.auth.token.email_verified == true || 
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    function isSales() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'sales';
+    }
+
+    function isDeveloper() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer';
     }
 
     function isValidEmail(email) {
@@ -82,12 +91,49 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen', 'businessName', 'businessType', 'businessEmail', 'businessPhone', 'businessLocation', 'onboardingCompleted', 'lastLogin', 'providerId', 'emailVerified', 'unreadCount', 'lastMessage', 'lastMessageAt', 'lastSenderId'];
+      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen', 'businessName', 'businessType', 'businessEmail', 'businessPhone', 'businessLocation', 'onboardingCompleted', 'lastLogin', 'providerId', 'emailVerified', 'unreadCount', 'lastMessage', 'lastMessageAt', 'lastSenderId', 'commissionEarned'];
       return hasOnlyAllowedFields(allowedFields) &&
              (data.get('email', '') == '' || isValidEmail(data.get('email', ''))) &&
-             data.get('role', 'client') in ['admin', 'client', 'developer'] &&
+             data.get('role', 'client') in ['admin', 'client', 'developer', 'sales'] &&
              isValidString('displayName', 100) &&
              isValidString('photoURL', 500);
+    }
+
+    function isValidLead(data) {
+      let allowedFields = ['id', 'businessName', 'phone', 'businessType', 'location', 'status', 'notes', 'followUpDate', 'assignedSalesId', 'createdAt', 'updatedAt'];
+      return hasOnlyAllowedFields(allowedFields) &&
+             data.businessName is string && data.businessName.size() > 0 &&
+             data.phone is string &&
+             data.status in ["Not Called", "Called", "Interested", "Not Interested", "Follow-up", "Closed"];
+    }
+
+    function isValidDeveloperApplication(data) {
+      let allowedFields = ['id', 'name', 'email', 'phone', 'skills', 'experience', 'portfolio', 'availability', 'maxProjectsPerWeek', 'expectedEarnings', 'message', 'status', 'createdAt', 'updatedAt'];
+      return hasOnlyAllowedFields(allowedFields) &&
+             data.name is string && data.email is string && isValidEmail(data.email) &&
+             data.status in ["pending", "approved", "rejected"];
+    }
+
+    function isValidSalesApplication(data) {
+      let allowedFields = ['id', 'name', 'email', 'phone', 'experience', 'languages', 'availability', 'message', 'status', 'createdAt', 'updatedAt'];
+      return hasOnlyAllowedFields(allowedFields) &&
+             data.name is string && data.email is string && isValidEmail(data.email) &&
+             data.status in ["pending", "approved", "rejected"];
+    }
+
+    function isValidPayment(data) {
+      let allowedFields = ['id', 'userId', 'planId', 'planName', 'amount', 'type', 'status', 'stripeSessionId', 'createdAt', 'updatedAt'];
+      return hasOnlyAllowedFields(allowedFields) &&
+             data.userId is string && data.amount is number &&
+             data.type in ["one-time", "subscription"] &&
+             data.status in ["pending", "completed"];
+    }
+
+    function isValidCommission(data) {
+      let allowedFields = ['id', 'salesId', 'paymentId', 'amount', 'status', 'createdAt', 'updatedAt'];
+      return hasOnlyAllowedFields(allowedFields) &&
+             data.salesId is string && data.paymentId is string && data.amount is number &&
+             data.status in ["pending", "paid"];
     }
 
     function isValidProject(data) {
@@ -219,6 +265,37 @@ service cloud.firestore {
                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['preferredDate', 'preferredTime', 'message', 'updatedAt']) &&
                         isValidMeetingRequest(request.resource.data));
       allow delete: if isAdmin();
+    }
+
+    match /leads/{leadId} {
+      allow read, list: if isAdmin() || (isSales() && resource.data.assignedSalesId == request.auth.uid);
+      allow create: if isAdmin() && isValidLead(request.resource.data);
+      allow update: if isAdmin() || (isSales() && resource.data.assignedSalesId == request.auth.uid && isValidLead(request.resource.data));
+      allow delete: if isAdmin();
+    }
+
+    match /developer_applications/{applicationId} {
+      allow read, list: if isAdmin();
+      allow create: if isValidDeveloperApplication(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+
+    match /sales_applications/{applicationId} {
+      allow read, list: if isAdmin();
+      allow create: if isValidSalesApplication(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read, list: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin() || (isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidPayment(request.resource.data));
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /commissions/{commissionId} {
+      allow read, list: if isAdmin() || (isSales() && resource.data.salesId == request.auth.uid);
+      allow create, update, delete: if isAdmin();
     }
   }
 }
