@@ -160,7 +160,7 @@ export default function BlogPost() {
             <img 
               src={post.image} 
               alt={post.title} 
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
+              className="w-full h-full object-cover transition-all duration-1000"
               referrerPolicy="no-referrer"
             />
           </div>
@@ -218,7 +218,7 @@ export default function BlogPost() {
                   className="group bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden cursor-pointer hover:border-[#E6FF00]/30 transition-all flex flex-col h-full"
                 >
                   <div className="relative h-56 overflow-hidden">
-                    <img src={p.image} alt={p.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" referrerPolicy="no-referrer" />
+                    <img src={p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" referrerPolicy="no-referrer" />
                   </div>
                   <div className="p-10 space-y-6 flex-1 flex flex-col">
                     <span className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">{p.category}</span>

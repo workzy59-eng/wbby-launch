@@ -134,7 +134,7 @@ export default function Blog() {
                   <img 
                     src={featuredPost.image} 
                     alt={featuredPost.title}
-                    className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent lg:hidden" />
@@ -217,7 +217,7 @@ export default function Blog() {
                     <img 
                       src={post.image} 
                       alt={post.title}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute top-8 left-8">

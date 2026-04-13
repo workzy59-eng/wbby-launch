@@ -565,6 +565,59 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 />
               </div>
 
+              {/* Logo and Documents Upload */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Logo</label>
+                  <div className="relative group">
+                    <div className="w-full h-32 rounded-2xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 group-hover:border-[#E6FF00]/50 transition-all overflow-hidden">
+                      {logoPreview ? (
+                        <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain p-4" />
+                      ) : (
+                        <>
+                          <ImageIcon className="w-8 h-8 text-white/20" />
+                          <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Upload Logo</span>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setLogoFile(file);
+                          setLogoPreview(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">Business Documents</label>
+                  <div className="relative group">
+                    <div className="w-full h-32 rounded-2xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 group-hover:border-[#E6FF00]/50 transition-all">
+                      <FileText className="w-8 h-8 text-white/20" />
+                      <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">
+                        {docFiles.length > 0 ? `${docFiles.length} Files Selected` : 'Upload Documents'}
+                      </span>
+                    </div>
+                    <input
+                      type="file"
+                      multiple
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          setDocFiles(Array.from(e.target.files));
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-white/30 uppercase tracking-[0.3em] ml-4">City <span className="text-red-500">*</span></label>
@@ -813,7 +866,22 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">Terms & Conditions</h3>
             </div>
 
-            <div className="bg-white/5 rounded-[2rem] p-10 space-y-8 border border-white/10 max-h-[60vh] overflow-y-auto scrollbar-hide">
+            <div className="flex gap-4">
+              <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
+              <button 
+                onClick={handleNext} 
+                disabled={!agreedToTerms}
+                className={`flex-1 py-6 rounded-full font-black text-xl uppercase italic transition-all ${
+                  agreedToTerms 
+                    ? 'bg-[#E6FF00] text-[#4A5D4E] hover:scale-[1.02] active:scale-[0.98]' 
+                    : 'bg-white/5 text-white/20 cursor-not-allowed'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+
+            <div className="bg-white/5 rounded-[2rem] p-10 space-y-8 border border-white/10 max-h-[40vh] overflow-y-auto scrollbar-hide">
               <div className="space-y-8 text-white/70 font-medium leading-relaxed">
                 <section className="space-y-4">
                   <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">1. Services</h4>
@@ -867,21 +935,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <p className="text-xs font-bold text-white/60 uppercase tracking-widest leading-relaxed">
                 I have read and agree to the <span className="text-[#E6FF00]">Terms & Conditions</span>
               </p>
-            </div>
-
-            <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-[#E6FF00] text-[#E6FF00] py-6 rounded-full font-black text-xl uppercase italic hover:bg-[#E6FF00] hover:text-[#4A5D4E] transition-all">Back</button>
-              <button 
-                onClick={handleNext} 
-                disabled={!agreedToTerms}
-                className={`flex-1 py-6 rounded-full font-black text-xl uppercase italic transition-all ${
-                  agreedToTerms 
-                    ? 'bg-[#E6FF00] text-[#4A5D4E] hover:scale-[1.02] active:scale-[0.98]' 
-                    : 'bg-white/5 text-white/20 cursor-not-allowed'
-                }`}
-              >
-                Next
-              </button>
             </div>
           </motion.div>
         );

@@ -562,13 +562,19 @@ export const markMessageAsDelivered = async (messageId: string, conversationId?:
       const msgRef = doc(db, 'conversations', conversationId, 'messages', messageId);
       const msgDoc = await getDoc(msgRef);
       if (msgDoc.exists() && msgDoc.data().status === 'sent') {
-        await updateDoc(msgRef, { status: 'delivered' });
+        await updateDoc(msgRef, {
+          status: 'delivered',
+          deliveredTime: serverTimestamp()
+        });
       }
     } else if (projectId) {
       const msgRef = doc(db, 'projects', projectId, 'messages', messageId);
       const msgDoc = await getDoc(msgRef);
       if (msgDoc.exists() && msgDoc.data().status === 'sent') {
-        await updateDoc(msgRef, { status: 'delivered' });
+        await updateDoc(msgRef, {
+          status: 'delivered',
+          deliveredTime: serverTimestamp()
+        });
       }
     }
   } catch (error) {

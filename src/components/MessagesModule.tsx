@@ -19,7 +19,9 @@ import {
   Sparkles,
   ArrowLeft,
   Trash2,
-  ShieldCheck
+  ShieldCheck,
+  CornerUpLeft,
+  Edit
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -56,7 +58,8 @@ import {
   markConversationAsSeen,
   markProjectAsSeen,
   markMessageAsDelivered,
-  markMessageAsSeen as markMsgSeen
+  markMessageAsSeen,
+  deleteDirectMessage
 } from '../services/database';
 import { formatDate, isSameDay } from '../lib/utils';
 import ChatSystem from './ChatSystem';
@@ -100,6 +103,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [showActions, setShowActions] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -213,10 +219,15 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
       setMessages(newMessages);
 
-      // Mark as delivered if recipient receives it
+      // Mark as delivered or seen if recipient receives it
       newMessages.forEach(async (m) => {
-        if (m.senderId !== currentUser.uid && m.status === 'sent') {
-          await markMessageAsDelivered(m.id, activeConversation.id);
+        if (m.senderId !== currentUser.uid) {
+          if (m.status === 'sent') {
+            await markMessageAsDelivered(m.id, activeConversation.id);
+          }
+          if (m.status !== 'seen') {
+            await markMessageAsSeen(m.id, activeConversation.id);
+          }
         }
       });
     });
@@ -240,19 +251,38 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !activeConversation || isSending || activeConversation.isProject) return;
+    if ((!inputText.trim() && Object.keys(uploadProgress).length === 0) || !activeConversation || isSending || activeConversation.isProject) return;
 
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
 
     setIsSending(true);
+    const messageText = inputText.trim();
+    const currentReplyingTo = replyingTo;
+    const currentEditingMessage = editingMessage;
+    
     try {
-      await sendDirectMessage(recipientId, {
-        senderId: currentUser.uid,
-        senderName: currentUser.displayName || profile?.displayName || 'User',
-        text: inputText,
-        status: 'sent',
-      });
+      if (currentEditingMessage) {
+        await updateDirectMessage(recipientId, currentEditingMessage.id, {
+          text: messageText,
+          edited: true,
+          updatedAt: new Date()
+        });
+        setEditingMessage(null);
+      } else {
+        await sendDirectMessage(recipientId, {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
+          text: messageText,
+          status: 'sent',
+          replyTo: currentReplyingTo ? {
+            id: currentReplyingTo.id,
+            text: currentReplyingTo.text,
+            senderName: currentReplyingTo.senderName
+          } : null
+        });
+        setReplyingTo(null);
+      }
       setInputText('');
       // Clear typing status
       if (activeConversation.id !== 'new') {
@@ -397,6 +427,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     return filteredMessages.map((m, idx) => {
       const isMe = m.senderId === currentUser.uid;
       const showDate = idx === 0 || (m.createdAt && messages[idx - 1].createdAt && !isSameDay(m.createdAt, messages[idx - 1].createdAt));
+      const isActionsVisible = showActions === m.id;
       
       return (
         <React.Fragment key={m.id}>
@@ -407,8 +438,57 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </span>
             </div>
           )}
-          <div className={`flex items-end gap-2 mb-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[70%]`}>
+          <div 
+            className={`flex items-end gap-2 mb-1 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
+            onMouseEnter={() => setShowActions(m.id)}
+            onMouseLeave={() => setShowActions(null)}
+          >
+            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[70%] relative`}>
+              {/* Message Actions Dropdown */}
+              <AnimatePresence>
+                {isActionsVisible && !m.isDeleted && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[#233138] p-1 rounded-xl border border-white/10 shadow-2xl`}
+                  >
+                    <button 
+                      onClick={() => setReplyingTo(m)}
+                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#E6FF00] transition-all"
+                      title="Reply"
+                    >
+                      <CornerUpLeft size={16} />
+                    </button>
+                    {isMe && (
+                      <button 
+                        onClick={() => {
+                          setEditingMessage(m);
+                          setInputText(m.text);
+                        }}
+                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#E6FF00] transition-all"
+                        title="Edit"
+                      >
+                        <Edit size={16} />
+                      </button>
+                    )}
+                    <button 
+                      onClick={async () => {
+                        const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+                        if (recipientId) {
+                          const forEveryone = isMe;
+                          await deleteDirectMessage(recipientId, m.id, forEveryone, currentUser.uid);
+                        }
+                      }}
+                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-red-400 transition-all"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className={`relative p-3 rounded-2xl text-sm font-medium leading-relaxed shadow-xl ${
                 isMe 
                   ? 'bg-[#005c4b] text-white rounded-tr-none' 
@@ -421,12 +501,29 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   </p>
                 ) : (
                   <>
+                    {m.replyTo && (
+                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#E6FF00]' : 'border-blue-500'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
+                          {m.replyTo.senderName}
+                        </p>
+                        <p className="text-[10px] text-white/40 truncate italic">
+                          {m.replyTo.text}
+                        </p>
+                      </div>
+                    )}
                     {!isMe && activeConversation.isProject && (
                       <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mb-1">
                         {m.senderName}
                       </p>
                     )}
-                    {m.text}
+                    <p className="whitespace-pre-wrap break-words">
+                      {m.text}
+                    </p>
+                    {m.edited && (
+                      <span className="text-[8px] text-white/20 font-black uppercase tracking-widest ml-2 italic">
+                        (edited)
+                      </span>
+                    )}
                   </>
                 )}
                 <div className={`flex items-center gap-1.5 mt-1 justify-end ${isMe ? 'opacity-60' : 'opacity-40'}`}>
@@ -740,7 +837,41 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             </div>
 
             {/* Input Area */}
-            <footer className="p-6 bg-white/5 border-t border-white/5">
+            <footer className="p-6 bg-white/5 border-t border-white/5 relative">
+              {/* Reply/Edit Preview */}
+              <AnimatePresence>
+                {(replyingTo || editingMessage) && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute bottom-full left-0 right-0 p-4 bg-[#1e293b] border-t border-white/10 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className={`w-1 h-10 rounded-full ${editingMessage ? 'bg-[#E6FF00]' : 'bg-blue-500'}`} />
+                      <div className="overflow-hidden">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">
+                          {editingMessage ? 'Editing Message' : `Replying to ${replyingTo?.senderName}`}
+                        </p>
+                        <p className="text-xs text-white/60 truncate italic">
+                          {editingMessage ? editingMessage.text : replyingTo?.text}
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setEditingMessage(null);
+                        if (editingMessage) setInputText('');
+                      }}
+                      className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white"
+                    >
+                      <X size={16} />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-4xl mx-auto">
                 <input 
                   type="file" 

@@ -17,7 +17,9 @@ import {
   File,
   ExternalLink,
   ShieldCheck,
-  Clock
+  Clock,
+  CornerUpLeft,
+  Edit
 } from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
@@ -53,6 +55,7 @@ import {
   getTypingStatus,
   getUserProfile,
   markMessageAsSeen,
+  markMessageAsDelivered,
   deleteMessageForEveryone,
   getConversationId,
   markConversationAsSeen,
@@ -88,6 +91,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [recipientProfile, setRecipientProfile] = useState<UserProfile | null>(null);
   const [showInfoId, setShowInfoId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [showActions, setShowActions] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -114,11 +120,16 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         // Mark conversation as seen
         if (chatId) markConversationAsSeen(chatId, currentUser.uid);
         
-        // Mark individual messages as seen
+        // Mark individual messages as delivered and seen
         messagesData.forEach(async (m) => {
-          if (m.senderId !== currentUser.uid && !m.seen) {
-            await markMessageAsSeen(m.id, chatId);
-            notificationSound.current?.play().catch(() => {});
+          if (m.senderId !== currentUser.uid) {
+            if (m.status === 'sent') {
+              await markMessageAsDelivered(m.id, chatId);
+            }
+            if (m.status !== 'seen') {
+              await markMessageAsSeen(m.id, chatId);
+              notificationSound.current?.play().catch(() => {});
+            }
           }
         });
       });
@@ -136,11 +147,16 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         // Mark project as seen
         markProjectAsSeen(projectId, currentUser.uid);
         
-        // Mark individual messages as seen
+        // Mark individual messages as delivered and seen
         messagesData.forEach(async (m) => {
-          if (m.senderId !== currentUser.uid && !m.seen) {
-            await markMessageAsSeen(m.id, undefined, projectId);
-            notificationSound.current?.play().catch(() => {});
+          if (m.senderId !== currentUser.uid) {
+            if (m.status === 'sent') {
+              await markMessageAsDelivered(m.id, undefined, projectId);
+            }
+            if (m.status !== 'seen') {
+              await markMessageAsSeen(m.id, undefined, projectId);
+              notificationSound.current?.play().catch(() => {});
+            }
           }
         });
       });
@@ -164,24 +180,59 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || isSending) return;
+    if ((!inputText.trim() && Object.keys(uploadProgress).length === 0) || isSending) return;
 
     setIsSending(true);
+    const messageText = inputText.trim();
+    const currentReplyingTo = replyingTo;
+    const currentEditingMessage = editingMessage;
     const chatId = isDirect && recipientUser ? (currentUser.uid < recipientUser.uid ? `${currentUser.uid}_${recipientUser.uid}` : `${recipientUser.uid}_${currentUser.uid}`) : projectId;
 
     try {
       if (isDirect && recipientUser) {
-        await sendDirectMessage(recipientUser.uid, {
-          senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
-          text: inputText,
-        });
+        if (currentEditingMessage) {
+          await updateDirectMessage(recipientUser.uid, currentEditingMessage.id, {
+            text: messageText,
+            edited: true,
+            updatedAt: new Date()
+          });
+          setEditingMessage(null);
+        } else {
+          await sendDirectMessage(recipientUser.uid, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: messageText,
+            status: 'sent',
+            replyTo: currentReplyingTo ? {
+              id: currentReplyingTo.id,
+              text: currentReplyingTo.text,
+              senderName: currentReplyingTo.senderName
+            } : null
+          });
+          setReplyingTo(null);
+        }
       } else if (projectId) {
-        await sendMessage(projectId, {
-          senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
-          text: inputText,
-        });
+        if (currentEditingMessage) {
+          await updateMessage(projectId, currentEditingMessage.id, {
+            text: messageText,
+            edited: true,
+            updatedAt: new Date()
+          });
+          setEditingMessage(null);
+        } else {
+          await sendMessage(projectId, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: messageText,
+            status: 'sent',
+            replyTo: currentReplyingTo ? {
+              id: currentReplyingTo.id,
+              text: currentReplyingTo.text,
+              senderName: currentReplyingTo.senderName
+            } : null
+          });
+          setReplyingTo(null);
+        }
       }
       setInputText('');
       if (chatId) {
@@ -441,27 +492,62 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         : 'bg-[#202c33] text-white rounded-tl-none border border-white/5'
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
-                    {!m.isDeleted && isMe && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedMessage(m);
-                        }}
-                        className="absolute -left-10 top-1/2 -translate-y-1/2 p-2 text-white/20 hover:text-white opacity-0 group-hover/msg-container:opacity-100 transition-all"
-                      >
-                        <MoreVertical size={16} />
-                      </button>
-                    )}
-                    {!m.isDeleted && !isMe && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedMessage(m);
-                        }}
-                        className="absolute -right-10 top-1/2 -translate-y-1/2 p-2 text-white/20 hover:text-white opacity-0 group-hover/msg-container:opacity-100 transition-all"
-                      >
-                        <MoreVertical size={16} />
-                      </button>
+                    {/* Message Actions Dropdown */}
+                    <AnimatePresence>
+                      {showActions === m.id && !m.isDeleted && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[#233138] p-1 rounded-xl border border-white/10 shadow-2xl`}
+                        >
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setReplyingTo(m); }}
+                            className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#E6FF00] transition-all"
+                            title="Reply"
+                          >
+                            <CornerUpLeft size={16} />
+                          </button>
+                          {isMe && (
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingMessage(m);
+                                setInputText(m.text);
+                              }}
+                              className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#E6FF00] transition-all"
+                              title="Edit"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          )}
+                          <button 
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (isDirect && recipientUser) {
+                                await deleteDirectMessage(recipientUser.uid, m.id, isMe, currentUser.uid);
+                              } else if (projectId) {
+                                await deleteMessage(projectId, m.id, isMe, currentUser.uid);
+                              }
+                            }}
+                            className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-red-400 transition-all"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {m.replyTo && (
+                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#E6FF00]' : 'border-blue-500'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
+                          {m.replyTo.senderName}
+                        </p>
+                        <p className="text-[10px] text-white/40 truncate italic">
+                          {m.replyTo.text}
+                        </p>
+                      </div>
                     )}
 
                     {!m.isDeleted && m.fileData && (
@@ -533,25 +619,14 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                     <p className={`whitespace-pre-wrap ${m.isDeleted ? 'text-white/40 italic flex items-center gap-2' : ''}`}>
                       {m.isDeleted && <Trash2 size={12} />}
                       {m.text}
+                      {!m.isDeleted && m.edited && (
+                        <span className="text-[8px] text-white/20 font-black uppercase tracking-widest ml-2 italic">
+                          (edited)
+                        </span>
+                      )}
                     </p>
                     
-                    {!m.imageUrl && !isMe && !m.isDeleted && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleGenerateAI(m);
-                        }}
-                        disabled={isGenerating === m.id}
-                        className="mt-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:opacity-80 transition-all"
-                      >
-                        {isGenerating === m.id ? (
-                          <Loader color="white" />
-                        ) : (
-                          <Sparkles size={12} />
-                        )}
-                        {isGenerating === m.id ? 'Generating...' : 'Visualize with AI'}
-                      </button>
-                    )}
+                    {/* AI Visualization button removed */}
 
                     <div className="flex items-center justify-end gap-1 mt-1 text-white/40">
                       <span className="text-[9px] font-bold uppercase tracking-tighter">
@@ -702,7 +777,41 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       </AnimatePresence>
 
       {/* Input Area */}
-      <footer className="px-6 py-6 border-t border-white/10 bg-[#202c33]">
+      <footer className="px-6 py-6 border-t border-white/10 bg-[#202c33] relative">
+        {/* Reply/Edit Preview */}
+        <AnimatePresence>
+          {(replyingTo || editingMessage) && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute bottom-full left-0 right-0 p-4 bg-[#1e293b] border-t border-white/10 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className={`w-1 h-10 rounded-full ${editingMessage ? 'bg-[#E6FF00]' : 'bg-blue-500'}`} />
+                <div className="overflow-hidden">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">
+                    {editingMessage ? 'Editing Message' : `Replying to ${replyingTo?.senderName}`}
+                  </p>
+                  <p className="text-xs text-white/60 truncate italic">
+                    {editingMessage ? editingMessage.text : replyingTo?.text}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setReplyingTo(null);
+                  setEditingMessage(null);
+                  if (editingMessage) setInputText('');
+                }}
+                className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white"
+              >
+                <X size={16} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <form 
           onSubmit={handleSendMessage}
           className="max-w-5xl mx-auto flex items-center gap-2"

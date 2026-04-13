@@ -39,49 +39,6 @@ const LocationPage = React.lazy(() => import('./pages/LocationPage'));
 const Careers = React.lazy(() => import('./pages/Careers'));
 const Docs = React.lazy(() => import('./pages/Docs'));
 
-function MobileRestriction({ children }: { children: React.ReactNode }) {
-  const [isMobile, setIsMobile] = useState(false);
-  const location = useLocation();
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-      const mobileRegex = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-      setIsMobile(mobileRegex.test(userAgent.toLowerCase()));
-    };
-    checkMobile();
-  }, []);
-
-  // Allow Public Pages
-  const publicPaths = ['/', '/auth', '/about', '/contact', '/services', '/pricing', '/blog', '/privacy-policy', '/terms', '/settings', '/careers', '/docs'];
-  const isPublicPage = publicPaths.includes(location.pathname) || location.pathname.startsWith('/portfolio') || location.pathname.startsWith('/blog/');
-
-  if (isMobile && !isPublicPage) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-10 text-center font-sans">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 p-12 rounded-[3rem] max-w-md shadow-2xl"
-        >
-          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 text-black shadow-xl">
-            <Smartphone size={48} />
-          </div>
-          <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic mb-4">Mobile Optimized</h1>
-          <p className="text-white/60 font-medium mb-10 leading-relaxed">
-            WebbyLaunch is best experienced on our mobile app or desktop. Some dashboard features are restricted on mobile browsers.
-          </p>
-          <button onClick={() => window.location.href = '/'} className="w-full bg-white text-black py-5 rounded-2xl font-black uppercase italic text-lg flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl">
-            Back to Home
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
-}
-
 export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -219,6 +176,13 @@ Scaling a SaaS business requires a mix of product excellence, aggressive marketi
           }
         };
 
+        const handleBeforeUnload = () => {
+          updateUserStatus(firebaseUser.uid, 'offline');
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
         // Message Notifications Listener
         const conversationsQuery = query(
           collection(db, 'conversations'),
@@ -250,13 +214,6 @@ Scaling a SaaS business requires a mix of product excellence, aggressive marketi
           console.error("Error in conversations snapshot listener:", error);
         });
         
-        const handleBeforeUnload = () => {
-          updateUserStatus(firebaseUser.uid, 'offline');
-        };
-        
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        
         return () => {
           profileUnsubscribe();
           messagesUnsubscribe();
@@ -285,8 +242,7 @@ Scaling a SaaS business requires a mix of product excellence, aggressive marketi
 
   return (
     <Router>
-      <MobileRestriction>
-        <React.Suspense fallback={<div className="flex items-center justify-center h-screen bg-black"><Loader size={48} /></div>}>
+      <React.Suspense fallback={<div className="flex items-center justify-center h-screen bg-black"><Loader size={48} /></div>}>
           <Layout user={user} profile={profile}>
             <Toaster 
               position="top-right"
@@ -388,7 +344,6 @@ Scaling a SaaS business requires a mix of product excellence, aggressive marketi
             </AnimatePresence>
           </Layout>
         </React.Suspense>
-      </MobileRestriction>
     </Router>
   );
 }

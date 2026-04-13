@@ -45,6 +45,8 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
+  const [showTerms, setShowTerms] = useState(false);
+
   const handleGoogleSignIn = async () => {
     if (loading) return;
     
@@ -165,41 +167,57 @@ export default function AuthPage() {
           </div>
         </div>
         
-        {!isMobile ? (
-          <button 
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-4 bg-[#E6FF00] text-black py-5 rounded-2xl font-black uppercase italic text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)] disabled:opacity-50 disabled:cursor-not-allowed group"
-          >
-            {loading ? (
-              <Loader />
-            ) : (
-              <>
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-                <span>Continue with Google</span>
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
-        ) : (
-          <div className="space-y-4">
-            <div className="p-8 bg-white/5 border border-white/10 rounded-2xl text-white/40 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed italic">
-              Sorry, you can't use the webapp on your device's browser. Please download the app.
-            </div>
-            <button 
-              onClick={() => setIsMobile(false)}
-              className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase italic text-[10px] hover:text-white transition-all"
-            >
-              Continue in Browser (Not Recommended)
-            </button>
-          </div>
-        )}
+        <button 
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-4 bg-[#E6FF00] text-black py-5 rounded-2xl font-black uppercase italic text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.3)] disabled:opacity-50 disabled:cursor-not-allowed group"
+        >
+          {loading ? (
+            <Loader />
+          ) : (
+            <>
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
+              <span>Continue with Google</span>
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
+        </button>
 
         <div className="mt-12 pt-8 border-t border-white/5">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 leading-relaxed">
             By continuing, you agree to our <br />
-            <a href="#" className="text-white/40 hover:text-[#E6FF00] transition-colors">Terms of Service</a> & <a href="#" className="text-white/40 hover:text-[#E6FF00] transition-colors">Privacy Policy</a>
+            <button 
+              onClick={() => setShowTerms(!showTerms)}
+              className="text-white/40 hover:text-[#E6FF00] transition-colors uppercase font-black"
+            >
+              Terms of Service
+            </button> & <button 
+              onClick={() => setShowTerms(!showTerms)}
+              className="text-white/40 hover:text-[#E6FF00] transition-colors uppercase font-black"
+            >
+              Privacy Policy
+            </button>
           </p>
+          
+          <AnimatePresence>
+            {showTerms && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-6 text-left space-y-4 overflow-hidden"
+              >
+                <div className="p-6 bg-white/5 rounded-2xl border border-white/10 max-h-40 overflow-y-auto scrollbar-hide text-[10px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
+                  <h4 className="text-white font-black mb-2">Terms & Conditions</h4>
+                  <p>1. We provide website development services based on the information submitted by the client.</p>
+                  <p>2. All projects are subject to review and approval by the admin.</p>
+                  <p>3. Advance payment is required to start the project and is non-refundable.</p>
+                  <p>4. Final payment must be completed before project delivery.</p>
+                  <p>5. Estimated delivery time will be provided after project approval.</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </div>

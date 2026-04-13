@@ -258,6 +258,12 @@ export interface Message {
   isDeleted?: boolean;
   hiddenFor?: string[];
   deletedForEveryone?: boolean;
+  edited?: boolean;
+  replyTo?: {
+    id: string;
+    text: string;
+    senderName: string;
+  };
 }
 
 export interface SystemSettings {

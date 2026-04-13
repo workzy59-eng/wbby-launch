@@ -10,8 +10,7 @@ import {
   Settings, 
   CheckCircle2, 
   XCircle, 
-  Clock, 
-  AlertTriangle,
+  Clock,
   User,
   ChevronRight,
   Search,
@@ -35,7 +34,6 @@ import {
   getAllAttendance,
   sendDirectMessage
 } from '../services/database';
-import { generateDeveloperWarning } from '../services/geminiService';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 
@@ -249,27 +247,6 @@ Generated on: ${new Date().toLocaleString()}
       doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 280);
 
       doc.save(`Project_${project.id}_Description.pdf`);
-    }
-  };
-
-  const handleGenerateWarning = async (dev: UserProfile) => {
-    if (!dev.absences || dev.absences < 1) return;
-    
-    setIsGeneratingWarning(dev.uid);
-    try {
-      const warningText = await generateDeveloperWarning(dev.displayName || 'Developer', dev.absences);
-      if (warningText) {
-        await sendDirectMessage(dev.uid, {
-          senderId: user?.uid || '',
-          senderName: 'System Admin',
-          text: `⚠️ OFFICIAL WARNING: ${warningText}`,
-        });
-        alert(`Warning sent to ${dev.displayName}`);
-      }
-    } catch (error) {
-      console.error('Error sending warning:', error);
-    } finally {
-      setIsGeneratingWarning(null);
     }
   };
 
@@ -534,16 +511,6 @@ Generated on: ${new Date().toLocaleString()}
                     >
                       <Mail size={16} />
                     </button>
-                    {dev.absences && dev.absences > 0 && (
-                      <button 
-                        onClick={() => handleGenerateWarning(dev)}
-                        disabled={isGeneratingWarning === dev.uid}
-                        className="p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
-                        title="Generate AI Warning"
-                      >
-                        <AlertTriangle size={16} className={isGeneratingWarning === dev.uid ? 'animate-pulse' : ''} />
-                      </button>
-                    )}
                   </div>
                 </div>
               ))}
