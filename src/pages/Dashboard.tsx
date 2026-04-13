@@ -28,6 +28,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
+  const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showChat, setShowChat] = useState(false);
@@ -42,8 +43,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
 
+  const hasAcceptedProject = projects.some(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status));
+
   const statusSteps = selectedProject?.status === 'Rejected' 
-    ? ["Waiting for Review", "Under Review", "Declined", "Development Started", "Completed"]
+    ? ["Waiting for Review", "Under Review", "Declined"]
     : ["Waiting for Review", "Under Review", "Accepted", "Development Started", "Completed"];
   
   const currentStepIndex = selectedProject 
@@ -131,11 +134,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <nav className="flex-1 flex flex-col gap-6">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
+            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages', hidden: !hasAcceptedProject },
             { id: 'meetings', icon: Video, label: 'Meetings' },
             { id: 'payments', icon: CreditCard, label: 'Payments' },
             { id: 'settings', icon: Settings, label: 'Settings', link: '/settings' },
-          ].map((tab) => (
+          ].filter(tab => !tab.hidden).map((tab) => (
             <button 
               key={tab.id}
               onClick={() => tab.link ? navigate(tab.link) : setActiveTab(tab.id as any)}
@@ -212,10 +215,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-around items-center z-40">
         {[
           { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-          { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Chat (${unreadCount})` : 'Chat' },
+          { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Chat (${unreadCount})` : 'Chat', hidden: !hasAcceptedProject },
           { id: 'meetings', icon: Video, label: 'Meetings' },
           { id: 'settings', icon: Settings, label: 'Settings' },
-        ].map((tab) => (
+        ].filter(tab => !tab.hidden).map((tab) => (
           <button 
             key={tab.id}
             onClick={() => tab.id === 'settings' ? navigate('/settings') : setActiveTab(tab.id as any)}
@@ -378,6 +381,22 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       <h2 className="text-xs font-black text-[#E6FF00] uppercase tracking-[0.4em]">Billing & Subscription</h2>
                       <h3 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Payments</h3>
                     </div>
+                    
+                    {/* Billing Toggle */}
+                    <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
+                      <button 
+                        onClick={() => setBillingType('one-time')}
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                      >
+                        One-Time
+                      </button>
+                      <button 
+                        onClick={() => setBillingType('subscription')}
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                      >
+                        Monthly
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -388,7 +407,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       <div className="flex justify-between items-start relative z-10">
                         <div className="space-y-1">
                           <div className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Current Plan</div>
-                          <h4 className="text-3xl font-black uppercase italic tracking-tighter">Starter Launch</h4>
+                          <h4 className="text-3xl font-black uppercase italic tracking-tighter">
+                            {selectedProject?.plan || 'Basic'} {billingType === 'one-time' ? '(One-Time)' : '(Subscription)'}
+                          </h4>
                         </div>
                         <div className="px-4 py-1.5 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">
                           Active
@@ -397,13 +418,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
                       <div className="space-y-4 relative z-10">
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-white/40 font-bold uppercase tracking-widest">Monthly Cost</span>
-                          <span className="text-white font-black italic">₹1,499/-</span>
+                          <span className="text-white/40 font-bold uppercase tracking-widest">
+                            {billingType === 'one-time' ? 'Total Cost' : 'Monthly Cost'}
+                          </span>
+                          <span className="text-white font-black italic">
+                            {billingType === 'one-time' ? (
+                              selectedProject?.plan === 'Standard' ? '₹15,000' : selectedProject?.plan === 'Pro' ? '₹30,000' : '₹5,000'
+                            ) : (
+                              selectedProject?.plan === 'Standard' ? '₹5,999' : selectedProject?.plan === 'Premium' ? '₹9,999' : '₹999'
+                            )}/-
+                          </span>
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-white/40 font-bold uppercase tracking-widest">Next Billing Date</span>
-                          <span className="text-white font-black italic">May 15, 2026</span>
-                        </div>
+                        {billingType === 'subscription' && (
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-white/40 font-bold uppercase tracking-widest">Next Billing Date</span>
+                            <span className="text-white font-black italic">May 15, 2026</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="pt-4 relative z-10">
@@ -453,8 +484,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                           {[
-                            { date: 'Apr 15, 2026', desc: 'Starter Launch - Monthly Subscription', amount: '₹1,499', status: 'Paid' },
-                            { date: 'Mar 15, 2026', desc: 'Starter Launch - Setup Fee + 1st Month', amount: '₹3,499', status: 'Paid' },
+                            { date: 'Apr 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Monthly Subscription`, amount: `₹${selectedProject?.plan === 'Standard' ? '5,999' : selectedProject?.plan === 'Premium' ? '9,999' : '999'}`, status: 'Paid' },
+                            { date: 'Mar 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Setup Fee + 1st Month`, amount: `₹${selectedProject?.plan === 'Standard' ? '8,998' : selectedProject?.plan === 'Premium' ? '14,998' : '2,998'}`, status: 'Paid' },
                           ].map((tx, i) => (
                             <tr key={i} className="group hover:bg-white/5 transition-all">
                               <td className="px-8 py-6 text-xs font-bold text-white/60">{tx.date}</td>
@@ -614,12 +645,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   </button>
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => setShowChat(true)}
-                                className="bg-[#E6FF00] text-black p-6 rounded-full hover:scale-[1.1] active:scale-[0.9] transition-all shadow-xl"
-                              >
-                                <MessageCircle size={32} />
-                              </button>
+
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16 relative z-10">
@@ -634,7 +660,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                        selectedProject.templateId === 'ai-custom' ? 'AI Custom Design' : 'Standard Template'}
                                     </div>
                                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">
-                                      {selectedProject.templateId === 'ai-custom' ? 'Generated by Gemini' : 'Premium Theme'}
+                                      {selectedProject.templateId === 'ai-custom' ? 'Custom Solution' : 'Premium Theme'}
                                     </p>
                                   </div>
                                   {['food-court', 'autos', 'clothing'].includes(selectedProject.templateId) && (
@@ -770,17 +796,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none">Need help with<br />your plan?</h3>
                             <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 mb-8">Our experts are ready to assist you in building the perfect web presence.</p>
                           </div>
-                          {selectedProject && (selectedProject.status === 'Accepted' || selectedProject.status === 'Development Started') ? (
+                          {selectedProject && (selectedProject.status === 'Accepted' || selectedProject.status === 'Development Started') && (
                             <button 
                               onClick={() => setShowDirectChat(true)}
                               className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
                             >
                               <MessageCircle size={20} /> Chat with Admin
                             </button>
-                          ) : (
-                            <div className="bg-black/20 p-6 rounded-2xl text-center">
-                              <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Chat will be enabled once your project is accepted.</p>
-                            </div>
                           )}
                         </div>
                       </div>
@@ -793,37 +815,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
       </main>
 
-      {/* Chat Sidebar */}
-      <AnimatePresence>
-        {showChat && selectedProject && (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md" 
-              onClick={() => setShowChat(false)} 
-            />
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xl bg-black h-full shadow-2xl flex flex-col border-l border-white/10"
-            >
-              <div className="px-10 py-10 border-b border-white/5 flex justify-between items-center">
-                <h2 className="text-3xl font-black tracking-tighter uppercase italic text-[#E6FF00]">Project Chat</h2>
-                <button onClick={() => setShowChat(false)} className="p-4 hover:bg-white/5 rounded-full transition-all text-white/50 hover:text-white">
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <ChatSystem projectId={selectedProject.id} user={user} profile={profile} currentUser={user} />
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
 
       <AnimatePresence>
         {showDirectChat && adminProfile && (

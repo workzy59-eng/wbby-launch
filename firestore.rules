@@ -56,8 +56,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-             (request.auth.token.get('email', '') == "workzy59@gmail.com" && request.auth.token.email_verified == true || 
-              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+             (request.auth.token.email == "workzy59@gmail.com" && request.auth.token.email_verified == true || 
+              (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
     function isSales() {
@@ -91,12 +92,20 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt', 'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 'absences', 'isApproved', 'lastSeen', 'businessName', 'businessType', 'businessEmail', 'businessPhone', 'businessLocation', 'onboardingCompleted', 'lastLogin', 'providerId', 'emailVerified', 'unreadCount', 'lastMessage', 'lastMessageAt', 'lastSenderId', 'commissionEarned'];
+      let allowedFields = [
+        'uid', 'email', 'displayName', 'photoURL', 'photoUrl', 'role', 'createdAt', 'updatedAt', 
+        'phone', 'username', 'experience', 'devRole', 'status', 'joiningDate', 
+        'absences', 'isApproved', 'lastSeen', 'businessName', 'businessType', 
+        'businessEmail', 'businessPhone', 'businessLocation', 'onboardingCompleted', 
+        'lastLogin', 'providerId', 'emailVerified', 'unreadCount', 'lastMessage', 
+        'lastMessageAt', 'lastSenderId', 'commissionEarned', 'notificationPreferences',
+        'theme', 'businessInfo', 'paymentDetails', 'invoiceSettings', 'adminMeetingSettings',
+        'companyName', 'meetingPreferences', 'communicationPreferences', 'plan', 'googleMapsLink',
+        'skills', 'portfolio', 'availability', 'maxProjectsPerWeek', 'expectedEarnings', 'message', 'languages'
+      ];
       return hasOnlyAllowedFields(allowedFields) &&
              (data.get('email', '') == '' || isValidEmail(data.get('email', ''))) &&
-             data.get('role', 'client') in ['admin', 'client', 'developer', 'sales'] &&
-             isValidString('displayName', 100) &&
-             isValidString('photoURL', 500);
+             data.get('role', 'client') in ['admin', 'client', 'developer', 'sales'];
     }
 
     function isValidLead(data) {
@@ -108,16 +117,12 @@ service cloud.firestore {
     }
 
     function isValidDeveloperApplication(data) {
-      let allowedFields = ['id', 'name', 'email', 'phone', 'skills', 'experience', 'portfolio', 'availability', 'maxProjectsPerWeek', 'expectedEarnings', 'message', 'status', 'createdAt', 'updatedAt'];
-      return hasOnlyAllowedFields(allowedFields) &&
-             data.name is string && data.email is string && isValidEmail(data.email) &&
+      return data.name is string && data.email is string && 
              data.status in ["pending", "approved", "rejected"];
     }
 
     function isValidSalesApplication(data) {
-      let allowedFields = ['id', 'name', 'email', 'phone', 'experience', 'languages', 'availability', 'message', 'status', 'createdAt', 'updatedAt'];
-      return hasOnlyAllowedFields(allowedFields) &&
-             data.name is string && data.email is string && isValidEmail(data.email) &&
+      return data.name is string && data.email is string && 
              data.status in ["pending", "approved", "rejected"];
     }
 
@@ -137,7 +142,18 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      let allowedFields = ['id', 'userId', 'userName', 'userEmail', 'userPhone', 'businessName', 'businessType', 'businessNumber', 'businessLocation', 'businessEmail', 'businessPhone', 'gstNumber', 'addressLine', 'city', 'state', 'pincode', 'country', 'description', 'websiteName', 'primaryColor', 'secondaryColor', 'logoUrl', 'documentsUrl', 'referenceWebsite', 'templateId', 'domain', 'domainPreferences', 'paymentOption', 'plan', 'paymentStatus', 'status', 'progress', 'startDate', 'deadline', 'internalNotes', 'estimatedCompletion', 'createdAt', 'updatedAt', 'rejectionReason', 'isDeleted', 'isLocked', 'previewUrl', 'lastMessage', 'lastMessageAt', 'lastSenderId', 'developerId', 'unreadCount'];
+      let allowedFields = [
+        'id', 'userId', 'userName', 'userEmail', 'userPhone', 'businessName', 
+        'businessType', 'businessNumber', 'businessLocation', 'businessEmail', 
+        'businessPhone', 'gstNumber', 'addressLine', 'city', 'state', 'pincode', 
+        'country', 'description', 'websiteName', 'primaryColor', 'secondaryColor', 
+        'logoUrl', 'documentsUrl', 'referenceWebsite', 'templateId', 'domain', 
+        'domainPreferences', 'paymentOption', 'plan', 'paymentStatus', 'status', 
+        'progress', 'startDate', 'deadline', 'internalNotes', 'estimatedCompletion', 
+        'createdAt', 'updatedAt', 'rejectionReason', 'isDeleted', 'isLocked', 
+        'previewUrl', 'lastMessage', 'lastMessageAt', 'lastSenderId', 'developerId', 
+        'unreadCount', 'subscriptionStatus', 'nextBillingDate'
+      ];
       return hasOnlyAllowedFields(allowedFields) &&
              data.userId is string && 
              data.businessName is string && data.businessName.size() > 0 && data.businessName.size() <= 200;
@@ -188,8 +204,9 @@ service cloud.firestore {
       // Allow listing users (needed for admin panel and chat search)
       allow list: if isAuthenticated();
       
-      allow create: if isOwner(userId) && isValidUser(request.resource.data);
-      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
+      allow create: if isOwner(userId);
+      allow update: if (isOwner(userId) || isAdmin()) && 
+                    (!('role' in request.resource.data) || request.resource.data.role == resource.data.role || isAdmin());
     }
 
     match /projects/{projectId} {

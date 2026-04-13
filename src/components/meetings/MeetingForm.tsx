@@ -224,7 +224,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
             <button 
               type="submit"
-              disabled={!validation.isValid || !formData.clientId || !formData.title || !formData.date || !formData.time}
+              disabled={!validation.isValid || !formData.meetingLink || !formData.clientId || !formData.title || !formData.date || !formData.time}
               className="w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3"
             >
               <Video size={18} />

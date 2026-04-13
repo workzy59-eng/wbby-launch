@@ -211,7 +211,7 @@ export interface Project {
   domain?: string;
   domainPreferences?: string[];
   paymentOption?: 'full' | 'advance' | 'understanding';
-  plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Pro';
+  plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Standard' | 'Premium' | 'Pro';
   paymentStatus?: 'pending' | 'paid';
   subscriptionStatus?: 'active' | 'past_due' | 'suspended' | 'canceled';
   nextBillingDate?: string | Timestamp;

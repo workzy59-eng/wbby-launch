@@ -25,6 +25,8 @@ function NavHeader({ className }: { className?: string }) {
       <Tab setPosition={setPosition} href="/services">Services</Tab>
       <Tab setPosition={setPosition} href="/pricing">Pricing</Tab>
       <Tab setPosition={setPosition} href="/blog">Blog</Tab>
+      <Tab setPosition={setPosition} href="/careers">Careers</Tab>
+      <Tab setPosition={setPosition} href="/docs">Docs</Tab>
 
       <Cursor position={position} />
     </ul>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Check, Sparkles, ArrowRight, Shield } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { PROFESSIONAL_EMAIL } from '../constants';
 
 export default function Pricing() {
   const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
@@ -32,7 +33,6 @@ export default function Pricing() {
         'Mobile Responsive',
         'Basic SEO',
         'Fast Performance',
-        'WhatsApp Integration',
         '7 Days Support'
       ],
       popular: true,
@@ -103,12 +103,19 @@ export default function Pricing() {
 
   const plans = billingType === 'one-time' ? oneTimePlans : subscriptionPlans;
 
-  const handleSubscribe = (link: string) => {
-    window.location.href = link;
+  const navigate = useNavigate();
+
+  const handleSubscribe = () => {
+    navigate('/auth');
   };
 
   return (
-    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black py-20 px-6">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black py-20 px-6"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-20">
           <motion.div 
@@ -186,12 +193,12 @@ export default function Pricing() {
                 <div className="mb-10">
                   <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#E6FF00]' : 'text-white'}`}>{plan.name} Website</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-2xl font-black italic ${plan.popular ? 'text-black/40' : 'text-[#E6FF00]/60'}`}>₹</span>
-                    <span className={`text-7xl font-black tracking-tighter relative z-10 ${plan.popular ? 'text-black' : 'text-[#E6FF00]'}`}>
+                    <span className="text-2xl font-black italic text-[#E6FF00]">₹</span>
+                    <span className={`text-7xl font-black tracking-tighter relative z-10 text-[#E6FF00] ${plan.price.includes('15,000') ? 'drop-shadow-[0_0_15px_rgba(230,255,0,0.5)]' : ''}`}>
                       {plan.price.replace('₹', '')}
                     </span>
                     {plan.period && (
-                      <span className={`text-sm font-black uppercase tracking-widest ml-2 ${plan.popular ? 'text-black/40' : 'text-white/40'}`}>{plan.period}</span>
+                      <span className={`text-sm font-black uppercase tracking-widest ml-2 ${plan.popular ? 'text-white/40' : 'text-white/40'}`}>{plan.period}</span>
                     )}
                   </div>
                   <p className={`mt-6 text-sm font-medium italic leading-relaxed text-white/50`}>
@@ -222,14 +229,14 @@ export default function Pricing() {
                   </div>
 
                   <button 
-                    onClick={() => handleSubscribe(plan.stripeLink)}
+                    onClick={handleSubscribe}
                     className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
                       plan.popular 
                         ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.3)] hover:scale-[1.05]' 
                         : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
                     }`}
                   >
-                    {billingType === 'one-time' ? 'Pay Now' : 'Subscribe'} <ArrowRight size={24} />
+                    Get Started <ArrowRight size={24} />
                   </button>
                 </div>
               </div>
@@ -254,22 +261,16 @@ export default function Pricing() {
               If your project requires specialized features or enterprise-level infrastructure, let's talk.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
-              <Link 
-                to="/contact"
-                className="px-12 py-5 bg-white/5 border border-white/10 rounded-full font-black text-xl uppercase italic text-white hover:bg-white/10 transition-all inline-flex items-center gap-4"
-              >
-                Contact Us
-              </Link>
-              <Link 
-                to="/dashboard?chat=true"
+              <a 
+                href={`mailto:${PROFESSIONAL_EMAIL}`}
                 className="px-12 py-5 bg-[#E6FF00] text-black rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all inline-flex items-center gap-4"
               >
-                Book a Free Call <Sparkles size={24} />
-              </Link>
+                Email Us <Sparkles size={24} />
+              </a>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

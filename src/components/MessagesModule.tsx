@@ -8,8 +8,6 @@ import {
   Image as ImageIcon, 
   Paperclip, 
   Search,
-  Phone,
-  Video,
   MessageCircle,
   MoreVertical,
   Smile,
@@ -20,7 +18,8 @@ import {
   Circle,
   Sparkles,
   ArrowLeft,
-  Trash2
+  Trash2,
+  ShieldCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -42,7 +41,7 @@ const Loader = ({ color = "white" }: { color?: string }) => (
   </div>
 );
 import { FirebaseUser } from '../firebase';
-import { UserProfile, Message, Project } from '../types';
+import { UserProfile, Message, Project, Attachment } from '../types';
 import { 
   sendDirectMessage, 
   getDirectMessages, 
@@ -61,6 +60,7 @@ import {
 } from '../services/database';
 import { formatDate, isSameDay } from '../lib/utils';
 import ChatSystem from './ChatSystem';
+import imageCompression from 'browser-image-compression';
 
 interface MessagesModuleProps {
   currentUser: FirebaseUser;
@@ -82,6 +82,10 @@ interface Conversation {
   project?: Project;
 }
 
+interface UploadProgress {
+  [fileName: string]: number;
+}
+
 export default function MessagesModule({ currentUser, profile, onClose, fullScreen = true, projects = [] }: MessagesModuleProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -95,6 +99,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -137,7 +142,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin' || c.participants.includes(currentUser.uid));
         }
         
-        // Add project conversations
+        // Add project conversations (REMOVED)
+        const projectConvs: Conversation[] = [];
+        /*
         const projectConvs: Conversation[] = projects.map(p => ({
           id: p.id,
           lastMessage: p.lastMessage || 'Project Chat',
@@ -148,6 +155,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           project: p,
           unreadCount: p.unreadCount
         }));
+        */
 
         // Sort by date
         const allConvs = [...projectConvs, ...finalConvs].sort((a, b) => {
@@ -267,6 +275,75 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       typingTimeoutRef.current = setTimeout(() => {
         setUserTyping(activeConversation.id, currentUser.uid, false);
       }, 3000);
+    }
+  };
+
+  const handleFileUpload = async (files: FileList | null, isImage: boolean) => {
+    if (!files || files.length === 0 || !activeConversation || isSending || activeConversation.isProject) return;
+    
+    const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+    if (!recipientId) return;
+
+    setIsSending(true);
+    const attachments: Attachment[] = [];
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        
+        // Validate size
+        const maxSize = isImage ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+          alert(`File ${file.name} is too large. Max size is ${isImage ? '5MB' : '10MB'}.`);
+          continue;
+        }
+
+        // Compress image if needed
+        if (isImage) {
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true
+          };
+          try {
+            file = await imageCompression(file as any, options) as any;
+          } catch (error) {
+            console.error('Compression failed:', error);
+          }
+        }
+
+        setUploadProgress(prev => ({ ...prev, [file.name]: 50 }));
+        
+        try {
+          const fileData = await uploadFile(file, isImage ? 'images' : 'attachments');
+          attachments.push({
+            name: file.name,
+            type: file.type,
+            url: fileData,
+            size: file.size
+          });
+          setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+        } catch (error) {
+          console.error(`Failed to upload ${file.name}:`, error);
+        }
+      }
+
+      if (attachments.length > 0) {
+        await sendDirectMessage(recipientId, {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
+          text: isImage ? 'Sent images' : 'Sent attachments',
+          fileData: attachments[0].url,
+          attachments,
+          status: 'sent'
+        });
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setIsSending(false);
+      setTimeout(() => setUploadProgress({}), 1000);
     }
   };
 
@@ -448,9 +525,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <div className={`w-14 h-14 rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg ${
                     conv.isProject 
                       ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
-                      : 'bg-gradient-to-br from-[#E6FF00] to-yellow-600'
+                      : conv.recipientProfile?.displayName === 'SAI ROSHAN'
+                        ? 'bg-transparent border border-[#E6FF00]/30 text-[#E6FF00]'
+                        : 'bg-gradient-to-br from-[#E6FF00] to-yellow-600'
                   }`}>
-                    {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U')}
+                    {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U'))}
                   </div>
                   {!conv.isProject && (
                     <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-[#020617] rounded-full ${
@@ -545,8 +624,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <ChevronLeft size={24} />
                 </button>
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-lg">
-                    {activeConversation.recipientProfile?.displayName?.[0] || 'U'}
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-black font-black text-lg ${
+                    activeConversation.recipientProfile?.displayName === 'SAI ROSHAN'
+                      ? 'bg-transparent border border-[#E6FF00]/30 text-[#E6FF00]'
+                      : 'bg-gradient-to-br from-[#E6FF00] to-yellow-600'
+                  }`}>
+                    {activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} /> : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
                   <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#020617] rounded-full ${
                     activeConversation.recipientProfile?.status === 'online' ? 'bg-green-500' : 
@@ -588,12 +671,6 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#E6FF00] text-black' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}
                 >
                   <Search size={20} />
-                </button>
-                <button className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all">
-                  <Phone size={20} />
-                </button>
-                <button className="p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all">
-                  <Video size={20} />
                 </button>
                 <div className="w-[1px] h-8 bg-white/5 mx-2"></div>
                 <button 
@@ -664,9 +741,40 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
             {/* Input Area */}
             <footer className="p-6 bg-white/5 border-t border-white/5">
-              <form onSubmit={handleSendMessage} className="flex items-center gap-4 max-w-4xl mx-auto">
-
-
+              <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-4xl mx-auto">
+                <input 
+                  type="file" 
+                  id="direct-image-upload" 
+                  className="hidden" 
+                  accept="image/*" 
+                  multiple 
+                  onChange={(e) => handleFileUpload(e.target.files, true)}
+                />
+                <input 
+                  type="file" 
+                  id="direct-file-upload" 
+                  className="hidden" 
+                  multiple 
+                  onChange={(e) => handleFileUpload(e.target.files, false)}
+                />
+                
+                <button 
+                  type="button"
+                  onClick={() => document.getElementById('direct-image-upload')?.click()}
+                  className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+                  title="Upload Image"
+                >
+                  <ImageIcon size={24} />
+                </button>
+                
+                <button 
+                  type="button"
+                  onClick={() => document.getElementById('direct-file-upload')?.click()}
+                  className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+                  title="Upload File"
+                >
+                  <Paperclip size={24} />
+                </button>
 
                 <div className="flex-1 relative">
                   <input 
@@ -694,6 +802,42 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </div>
               </form>
             </footer>
+
+            {/* Upload Progress Overlay */}
+            <AnimatePresence>
+              {Object.keys(uploadProgress).length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="absolute bottom-32 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-[120]"
+                >
+                  <div className="bg-[#1e293b] p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading...</h4>
+                      <div className="w-4 h-4 border-2 border-[#E6FF00] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                    <div className="space-y-3">
+                      {Object.entries(uploadProgress).map(([name, progress]) => (
+                        <div key={name} className="space-y-1">
+                          <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase tracking-widest">
+                            <span className="truncate max-w-[200px]">{name}</span>
+                            <span>{progress.toFixed(0)}%</span>
+                          </div>
+                          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progress}%` }}
+                              className="h-full bg-[#E6FF00]"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             </>
           )
         ) : (

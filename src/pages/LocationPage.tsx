@@ -114,12 +114,12 @@ export default function LocationPage() {
           <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-black uppercase italic leading-none">
             Ready to grow your <br /> business in {cityName}?
           </h2>
-          <Link 
-            to="/contact"
+          <a 
+            href={`mailto:workzy59@gmail.com`}
             className="inline-block bg-black text-white px-12 py-6 rounded-2xl font-black uppercase italic tracking-widest hover:scale-105 transition-all shadow-2xl"
           >
-            Contact Us Today
-          </Link>
+            Email Us Today
+          </a>
         </div>
       </section>
     </div>

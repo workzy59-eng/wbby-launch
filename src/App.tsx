@@ -36,6 +36,8 @@ const Settings = React.lazy(() => import('./pages/Settings'));
 const ComponentShowcase = React.lazy(() => import('./pages/ComponentShowcase'));
 const Layout = React.lazy(() => import('./components/Layout'));
 const LocationPage = React.lazy(() => import('./pages/LocationPage'));
+const Careers = React.lazy(() => import('./pages/Careers'));
+const Docs = React.lazy(() => import('./pages/Docs'));
 
 function MobileRestriction({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -51,7 +53,7 @@ function MobileRestriction({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Allow Public Pages
-  const publicPaths = ['/', '/auth', '/about', '/contact', '/services', '/pricing', '/blog', '/privacy-policy', '/terms', '/settings'];
+  const publicPaths = ['/', '/auth', '/about', '/contact', '/services', '/pricing', '/blog', '/privacy-policy', '/terms', '/settings', '/careers', '/docs'];
   const isPublicPage = publicPaths.includes(location.pathname) || location.pathname.startsWith('/portfolio') || location.pathname.startsWith('/blog/');
 
   if (isMobile && !isPublicPage) {
@@ -97,88 +99,77 @@ export default function App() {
         if (snapshot.empty) {
           const posts = [
             {
-              title: "How to create a business website in India",
-              slug: "how-to-create-business-website-india",
-              excerpt: "Learn the step-by-step process of launching a professional business website in India, from domain registration to SEO optimization.",
+              title: "Why Mobile-First Design is the Standard in 2026",
+              slug: "mobile-first-design-2026",
+              excerpt: "Explore why mobile-first design is no longer an option but a necessity for business success in the modern digital era.",
               content: `
-# How to create a business website in India
+# The Shift to Mobile Dominance
 
-In 2026, having a digital presence is no longer optional for businesses in India. Whether you're a local gym owner, a car dealer, or a logistics provider, your customers are searching for you online.
+In the rapidly evolving digital landscape of 2026, the way users interact with the web has shifted fundamentally. Mobile devices are no longer just an alternative; they are the primary gateway to the internet.
 
-## 1. Define Your Goals
-Before you start, decide what your website needs to do. Is it for lead generation, showcasing a portfolio, or direct sales?
+## Why Mobile-First?
 
-## 2. Choose the Right Platform
-While DIY builders exist, professional services like **WebbyLaunch** offer custom designs that are optimized for the Indian market.
+Statistically, over 85% of global web traffic now originates from mobile devices. Google's mobile-first indexing is no longer a suggestion—it's the absolute standard. If your website isn't optimized for the palm of a hand, it effectively doesn't exist in search results.
 
-## 3. Focus on Mobile
-Over 80% of Indian users access the web via smartphones. Your site must be mobile-responsive.
+### Key Benefits:
+1. **Better SEO Ranking**: Google prioritizes mobile-friendly sites.
+2. **Improved User Experience**: Faster load times and touch-friendly interfaces.
+3. **Higher Conversion Rates**: Users are more likely to buy on a seamless mobile site.
 
-## 4. SEO is Key
-Use local keywords like "best gym in Mumbai" or "car showroom in Delhi" to attract local traffic.
+> "Design is not just what it looks like and feels like. Design is how it works." - Steve Jobs
 
-## 5. Fast Loading
-With varying internet speeds across the country, a fast-loading site is crucial for retaining visitors.
+At WebbyLaunch, we build every site with a mobile-first philosophy, ensuring your business looks premium on every screen size.
               `,
-              author: "WebbyLaunch Team",
+              author: "Sarah Chen",
               date: serverTimestamp(),
-              image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426",
+              image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=1200&h=600",
+              category: "Website",
+              tags: ["Featured", "Design", "Mobile"]
+            },
+            {
+              title: "10 SEO Strategies to Double Your Traffic",
+              slug: "seo-strategies-2026",
+              excerpt: "Master the latest SEO techniques that actually work in 2026. From AI-driven content to technical optimization.",
+              content: `
+# SEO in the Age of AI
+
+Search Engine Optimization has changed. It's no longer just about keywords; it's about intent, authority, and user satisfaction.
+
+## Our Top 10 Strategies
+
+1. **Focus on User Intent**: Answer the questions your users are actually asking.
+2. **Optimize for Core Web Vitals**: Speed, stability, and responsiveness are key.
+3. **Leverage AI Content Wisely**: Use AI for research, but keep the human touch for authority.
+4. **Build High-Quality Backlinks**: Quality always beats quantity.
+
+... and much more.
+              `,
+              author: "Alex Rivera",
+              date: serverTimestamp(),
+              image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200&h=600",
+              category: "SEO",
+              tags: ["SEO", "Growth", "Marketing"]
+            },
+            {
+              title: "How to Scale Your SaaS Business Fast",
+              slug: "scale-saas-business",
+              excerpt: "Learn the proven frameworks for scaling your software business from zero to hero in record time.",
+              content: `
+# Scaling Your SaaS
+
+Scaling a SaaS business requires a mix of product excellence, aggressive marketing, and operational efficiency.
+
+## The Growth Framework
+
+- **Product-Led Growth**: Let your product do the talking.
+- **Customer Success**: Happy customers are your best advocates.
+- **Data-Driven Decisions**: Use analytics to guide your next move.
+              `,
+              author: "James Wilson",
+              date: serverTimestamp(),
+              image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200&h=600",
               category: "Business",
-              tags: ["India", "Business", "Web Design"]
-            },
-            {
-              title: "Best website for small business 2026",
-              slug: "best-website-small-business-2026",
-              excerpt: "Discover the top website features and designs that are driving growth for small businesses this year.",
-              content: `
-# Best website for small business 2026
-
-What makes a website "the best" for a small business in 2026? It's not just about looking pretty; it's about performance, trust, and real-time engagement.
-
-## 1. Real-Time Communication
-In 2026, customers expect instant answers. Integrating a real-time chat system like the one provided by **WebbyLaunch** ensures you never miss a lead. Our system allows you to chat directly with your customers, providing a seamless experience.
-
-## 2. AI-Driven Personalization
-Websites that adapt to user behavior are seeing 40% higher conversion rates. From personalized product recommendations to dynamic content, AI is the future. We integrate Gemini AI to help you generate content and analyze user data.
-
-## 3. Ultra-Fast Performance
-With Google's Core Web Vitals being more important than ever, your site needs to load in under 1 second. We use advanced caching, global CDNs, and optimized images to achieve blazing-fast speeds.
-
-## 4. Trust and Security
-Clear testimonials, SSL certificates, and secure payment gateways are non-negotiable. We integrate Stripe for world-class payment security and provide a transparent review system.
-
-## 5. Mobile-First Design
-Your website must look and function perfectly on mobile devices. Our "Iron Pulse" and "Cargo Flow" UIs are designed mobile-first, ensuring a premium experience on every screen.
-
-At **WebbyLaunch**, we incorporate all these features into our standard business launch plans to ensure your success.
-              `,
-              author: "WebbyLaunch Team",
-              date: serverTimestamp(),
-              image: "https://images.unsplash.com/photo-1454165833767-0274b0596d33?q=80&w=2340",
-              category: "Design",
-              tags: ["Small Business", "2026", "Trends"]
-            },
-            {
-              title: "Affordable website design for everyone",
-              slug: "affordable-website-design-everyone",
-              excerpt: "Everyone needs high-quality design without the high-quality price tag. Here is how to get it.",
-              content: `
-# Affordable website design for everyone
-
-Everyone often operates on tight budgets. However, skimping on your website can cost you more in the long run through lost customers.
-
-## How to Save Costs:
-1. **Use Templates:** Don't reinvent the wheel. Use high-quality industry templates.
-2. **Focus on MVP:** Start with the essential pages (Home, About, Services, Contact).
-3. **Subscription Models:** Instead of a huge upfront cost, look for affordable monthly plans.
-
-**WebbyLaunch** offers plans starting from just ₹1,499/-, making it the perfect choice for everyone in India.
-              `,
-              author: "WebbyLaunch Team",
-              date: serverTimestamp(),
-              image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2340",
-              category: "Everyone",
-              tags: ["Affordable", "Everyone", "Web Design"]
+              tags: ["Business", "SaaS", "Scaling"]
             }
           ];
 
@@ -334,6 +325,8 @@ Everyone often operates on tight budgets. However, skimping on your website can 
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/pricing" element={<Pricing />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/docs" element={<Docs />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/join-developer" element={<JoinDeveloper />} />

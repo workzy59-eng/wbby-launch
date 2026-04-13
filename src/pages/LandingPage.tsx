@@ -23,8 +23,11 @@ import {
   MapPin,
   Video,
   X,
+  ShieldCheck,
   Code,
-  Phone
+  Phone,
+  Briefcase,
+  User
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { TestimonialCarousel, type Testimonial } from '../components/ui/testimonial';
@@ -178,9 +181,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
   ];
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [roiCustomers, setRoiCustomers] = useState(5);
-  const [roiProfitPerCustomer, setRoiProfitPerCustomer] = useState(10000);
+  const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
 
   const locations = [
     { name: 'Hyderabad', slug: 'hyderabad' },
@@ -191,7 +192,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
   ];
 
   return (
-    <div className="bg-black">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="bg-black"
+    >
       <SEO />
       
       {/* Hero Section */}
@@ -218,33 +224,27 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              {user ? (
-                <Link 
-                  to="/dashboard" 
-                  className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
-                >
-                  Go to Dashboard
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <Link 
-                  to="/auth" 
-                  className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
-                >
-                  Start Project
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-              )}
-              <button 
-                onClick={() => {
-                  const el = document.getElementById('pricing');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
+              <Link 
+                to={user ? "/onboarding" : "/auth"} 
+                className="group relative bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(230,255,0,0.3)] flex items-center gap-3"
+              >
+                Get Started
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link 
+                to="/join-developer" 
                 className="group relative bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
               >
-                Book Call
-                <Video size={18} className="text-[#E6FF00]" />
-              </button>
+                Join as Dev
+                <Briefcase size={18} className="text-[#E6FF00]" />
+              </Link>
+              <Link 
+                to="/join-sales" 
+                className="group relative bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
+              >
+                Join as Sales
+                <User size={18} className="text-[#E6FF00]" />
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -341,7 +341,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   </h3>
                 </div>
                 <p className="text-white/40 text-lg font-medium italic leading-relaxed">
-                  Stay connected with our built-in scheduling system. Book calls, join Zoom/Google Meet sessions, and track project progress in real-time.
+                  Stay connected with our built-in scheduling system. Join Zoom/Google Meet sessions, and track project progress in real-time.
                 </p>
                 <div className="space-y-4">
                   {[
@@ -701,84 +701,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         </div>
       </section>
 
-      {/* ROI Calculator */}
-      <section className="py-32 px-10 bg-white/5">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#E6FF00]">ROI Calculator</h2>
-                <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white">
-                  See Your <br />
-                  <span className="text-[#E6FF00]">Profit Potential.</span>
-                </h3>
-              </div>
-              <p className="text-white/40 text-lg font-medium italic">
-                Calculate how much your new professional website can earn for your business. Most of our clients see a 300% ROI in the first 3 months.
-              </p>
-              
-              <div className="space-y-10 pt-8">
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm font-black uppercase tracking-widest">
-                    <span className="text-white/60">New Customers / Month</span>
-                    <span className="text-[#E6FF00]">{roiCustomers}</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="50" 
-                    value={roiCustomers}
-                    onChange={(e) => setRoiCustomers(parseInt(e.target.value))}
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#E6FF00]"
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm font-black uppercase tracking-widest">
-                    <span className="text-white/60">Profit Per Customer (₹)</span>
-                    <span className="text-[#E6FF00]">₹{roiProfitPerCustomer.toLocaleString()}</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="1000" 
-                    max="100000" 
-                    step="1000"
-                    value={roiProfitPerCustomer}
-                    onChange={(e) => setRoiProfitPerCustomer(parseInt(e.target.value))}
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#E6FF00]"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#E6FF00] p-16 rounded-[4rem] text-black space-y-8 shadow-[0_0_100px_rgba(230,255,0,0.2)]">
-              <div className="space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Estimated Monthly Profit</span>
-                <div className="text-7xl md:text-8xl font-black tracking-tighter italic leading-none">
-                  ₹{(roiCustomers * roiProfitPerCustomer).toLocaleString()}
-                </div>
-              </div>
-              <div className="h-px bg-black/10 w-full" />
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 size={20} />
-                  <span className="font-black uppercase italic tracking-tighter">Pays for itself in days</span>
-                </div>
-                <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 leading-relaxed">
-                  Based on your inputs, a WebbyLaunch website could generate ₹{(roiCustomers * roiProfitPerCustomer * 12).toLocaleString()} in annual profit.
-                </p>
-              </div>
-              <Link 
-                to="/auth"
-                className="block w-full py-6 bg-black text-white rounded-2xl text-center font-black uppercase italic tracking-widest hover:scale-[1.02] transition-all"
-              >
-                Claim Your Profit Now
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Section */}
       <section id="pricing" className="py-32 px-10 bg-black/20">
         <div className="max-w-7xl mx-auto">
@@ -801,17 +723,14 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
             {/* Billing Toggle */}
             <div className="flex items-center justify-center gap-4">
-              <span className={`text-xs font-black uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'text-white' : 'text-white/40'}`}>Monthly</span>
+              <span className={`text-xs font-black uppercase tracking-widest transition-colors ${billingType === 'one-time' ? 'text-white' : 'text-white/40'}`}>One-Time</span>
               <button 
-                onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                onClick={() => setBillingType(billingType === 'one-time' ? 'subscription' : 'one-time')}
                 className="w-16 h-8 bg-white/10 rounded-full p-1 relative transition-all"
               >
-                <div className={`w-6 h-6 bg-[#E6FF00] rounded-full transition-all ${billingCycle === 'yearly' ? 'translate-x-8' : 'translate-x-0'}`} />
+                <div className={`w-6 h-6 bg-[#E6FF00] rounded-full transition-all ${billingType === 'subscription' ? 'translate-x-8' : 'translate-x-0'}`} />
               </button>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-black uppercase tracking-widest transition-colors ${billingCycle === 'yearly' ? 'text-white' : 'text-white/40'}`}>Yearly</span>
-                <span className="bg-[#E6FF00] text-black text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest animate-pulse">Save 20%</span>
-              </div>
+              <span className={`text-xs font-black uppercase tracking-widest transition-colors ${billingType === 'subscription' ? 'text-white' : 'text-white/40'}`}>Subscription</span>
             </div>
             
             <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -838,9 +757,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-xl font-black italic text-[#E6FF00]/60">₹</span>
                     <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">
-                      {billingCycle === 'monthly' ? '1,499' : '1,199'}
+                      {billingType === 'one-time' ? '5,000' : '999'}
                     </span>
-                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">/mo</span>
+                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">{billingType === 'one-time' ? 'Once' : '/mo'}</span>
                   </div>
                     <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹1,999 setup cost</div>
                   </div>
@@ -861,7 +780,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   ))}
                 </ul>
                 <Link 
-                  to="/auth"
+                  to={user ? "/onboarding" : "/auth"}
                   className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
                 >
                   Get Started
@@ -887,9 +806,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-xl font-black italic text-black/40">₹</span>
                     <span className="text-6xl font-black tracking-tighter text-black">
-                      {billingCycle === 'monthly' ? '3,499' : '2,799'}
+                      {billingType === 'one-time' ? '15,000' : '5,999'}
                     </span>
-                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-black/40">/mo</span>
+                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-black/40">{billingType === 'one-time' ? 'Once' : '/mo'}</span>
                   </div>
                     <div className="text-[10px] font-black uppercase tracking-widest opacity-40">+ ₹2,999 setup cost</div>
                   </div>
@@ -911,10 +830,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   ))}
                 </ul>
                 <Link 
-                  to="/auth"
+                  to={user ? "/onboarding" : "/auth"}
                   className="block w-full py-6 bg-black text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl text-center"
                 >
-                  Start Standard
+                  Get Started
                 </Link>
               </div>
             </motion.div>
@@ -927,18 +846,18 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               transition={{ delay: 0.2 }}
               className="pricing-glow-card p-1 rounded-[3.5rem]"
             >
-              <div className="bg-[#0B0B0B] border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00]/30 transition-all flex flex-col h-full">
+              <div className="bg-[#0B0B0B] border border-[#E6FF00]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#E6FF00] transition-all flex flex-col h-full">
                 <div className="space-y-4">
-                  <h4 className="text-2xl font-black uppercase italic tracking-tighter">Pro</h4>
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter text-[#E6FF00]">Custom Pro</h4>
                   <div className="space-y-1">
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-xl font-black italic text-[#E6FF00]/60">₹</span>
                     <span className="text-6xl font-black tracking-tighter text-[#E6FF00]">
-                      {billingCycle === 'monthly' ? '9,999' : '7,999'}
+                      {billingType === 'one-time' ? '30,000' : '9,999'}
                     </span>
-                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">/mo</span>
+                    <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">{billingType === 'one-time' ? 'Once' : '/mo'}</span>
                   </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹3,999 setup cost</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">+ ₹4,999 setup cost</div>
                   </div>
                 </div>
                   <ul className="space-y-6 text-left flex-1">
@@ -958,10 +877,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   ))}
                 </ul>
                 <Link 
-                  to="/auth"
-                  className="block w-full py-6 bg-white/5 text-white border border-white/10 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-center"
+                  to={user ? "/onboarding" : "/auth"}
+                  className="block w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all text-center shadow-[0_0_30px_rgba(230,255,0,0.2)]"
                 >
-                  Go Pro
+                  Get Started
                 </Link>
               </div>
             </motion.div>
@@ -1140,8 +1059,8 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       {/* Founder's Message */}
       <section className="py-32 px-10 bg-black relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center space-y-12 relative z-10">
-          <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 mx-auto overflow-hidden">
-            <img src="https://picsum.photos/seed/founder/200/200" alt="Founder" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <div className="w-24 h-24 rounded-full bg-[#E6FF00]/10 border border-[#E6FF00]/20 mx-auto flex items-center justify-center text-[#E6FF00]">
+            <ShieldCheck size={48} />
           </div>
           <div className="space-y-6">
             <h3 className="text-3xl font-black uppercase italic tracking-tighter text-[#E6FF00]">A Message from the Founder</h3>
@@ -1149,7 +1068,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               "I started WebbyLaunch because I saw too many small businesses getting overcharged for slow, outdated websites. Our mission is simple: high-converting, premium digital presences delivered in days, not months. We don't just build websites; we build growth engines."
             </p>
             <div className="pt-4">
-              <p className="text-sm font-black uppercase tracking-widest text-white">Pranjal Soni</p>
+              <p className="text-sm font-black uppercase tracking-widest text-white">SAI ROSHAN</p>
               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Founder, WebbyLaunch</p>
             </div>
           </div>
@@ -1218,6 +1137,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         </div>
       </section>
 
-    </div>
+    </motion.div>
   );
 }

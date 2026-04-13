@@ -24,7 +24,8 @@ import {
   updateMeeting, 
   deleteMeeting,
   subscribeToMeetingRequests,
-  updateMeetingRequest
+  updateMeetingRequest,
+  detectPlatform
 } from '../../services/meetingService';
 import { toast } from 'react-hot-toast';
 import { isAfter, isBefore, parseISO, startOfDay, endOfDay, format } from 'date-fns';
@@ -102,6 +103,12 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
   const handleRequestAction = async (request: MeetingRequest, action: 'accept' | 'reject' | 'suggest', response?: string, date?: string, time?: string) => {
     try {
       if (action === 'accept') {
+        const meetingLink = prompt('Enter Meeting Link (Google Meet/Zoom):', 'https://meet.google.com/new');
+        if (!meetingLink || !meetingLink.startsWith('http')) {
+          toast.error('A valid meeting link is required to schedule a meeting.');
+          return;
+        }
+
         // Create actual meeting
         await createMeeting({
           title: 'Consultation Call',
@@ -109,8 +116,8 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           adminId: user.uid,
           date: date || request.preferredDate,
           time: time || request.preferredTime,
-          meetingLink: 'https://meet.google.com/new', // Placeholder, admin should edit
-          platform: 'Google Meet',
+          meetingLink: meetingLink,
+          platform: detectPlatform(meetingLink) || 'Google Meet',
           status: 'Accepted',
           notes: request.message
         });

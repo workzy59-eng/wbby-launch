@@ -27,6 +27,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
     { name: 'Services', path: '/services', icon: Menu },
     { name: 'Pricing', path: '/pricing', icon: Menu },
     { name: 'Blog', path: '/blog', icon: Menu },
+    { name: 'Careers', path: '/careers', icon: Menu },
+    { name: 'Docs', path: '/docs', icon: Menu },
   ];
 
   const bottomNavItems = [
@@ -90,17 +92,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
       {/* Floating Contact Buttons */}
       <div className="fixed bottom-8 right-8 z-[60] flex flex-col gap-4">
-        <a 
-          href="https://wa.me/91XXXXXXXXXX" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all group relative"
-        >
-          <MessageCircle size={28} />
-          <span className="absolute right-full mr-4 px-4 py-2 bg-black/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            WhatsApp Us
-          </span>
-        </a>
         <Link 
           to="/dashboard?chat=true"
           className="w-14 h-14 bg-[#E6FF00] text-black rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all group relative"
@@ -155,7 +146,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           <div className="space-y-8">
             <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#E6FF00]">Quick Links</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
-              {navItems.slice(0, 5).map((item) => (
+              {navItems.slice(0, 6).map((item) => (
                 <Link key={item.name} to={item.path} className="hover:text-white transition-colors">{item.name}</Link>
               ))}
             </div>
@@ -172,6 +163,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           <div className="space-y-8">
             <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#E6FF00]">Careers</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
+              <Link to="/careers" className="hover:text-white transition-colors">Careers Home</Link>
               <Link to="/join-developer" className="hover:text-white transition-colors">Join as Developer</Link>
               <Link to="/join-sales" className="hover:text-white transition-colors">Join as Sales</Link>
             </div>

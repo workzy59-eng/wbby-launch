@@ -26,107 +26,42 @@ export default function Contact() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
-          <div className="space-y-12">
-            <div className="space-y-8">
-              <h2 className="text-4xl font-black uppercase italic tracking-tighter">Get in Touch</h2>
-              <p className="text-white/40 leading-relaxed max-w-md">
-                Fill out the form or reach out directly via Email. We typically respond within 2 hours.
-              </p>
-            </div>
-
-            <div className="space-y-8">
-              <div className="flex items-center gap-6 group">
-                <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#E6FF00] group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
-                  <Mail size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-white/20 mb-1">Email Us</h4>
-                  <p className="text-xl font-black uppercase italic tracking-tighter">{PROFESSIONAL_EMAIL}</p>
-                </div>
-              </div>
-            </div>
+        <div className="max-w-4xl mx-auto text-center space-y-12">
+          <div className="space-y-8">
+            <h2 className="text-4xl font-black uppercase italic tracking-tighter">Get in Touch</h2>
+            <p className="text-white/40 leading-relaxed mx-auto max-w-md">
+              Reach out directly via Email. We typically respond within 2 hours.
+            </p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 p-12 rounded-[3rem] backdrop-blur-xl">
-            {formStatus === 'sent' ? (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="h-full flex flex-col items-center justify-center text-center space-y-6 py-20"
+          <div className="flex flex-col items-center gap-8">
+            <div className="w-24 h-24 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-3xl flex items-center justify-center text-[#E6FF00] shadow-[0_0_50px_rgba(230,255,0,0.1)]">
+              <Mail size={40} />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-xs font-black uppercase tracking-widest text-white/20">Email Us</h4>
+              <a 
+                href={`mailto:${PROFESSIONAL_EMAIL}`}
+                className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-white hover:text-[#E6FF00] transition-colors"
               >
-                <div className="w-20 h-20 bg-[#E6FF00] rounded-full flex items-center justify-center text-black shadow-[0_0_50px_rgba(230,255,0,0.3)]">
-                  <Send size={32} />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-3xl font-black uppercase italic tracking-tighter">Thank You!</h3>
-                  <p className="text-white/60 font-medium italic">Your message has been sent successfully. We'll get back to you within 2 hours.</p>
-                </div>
-                <button 
-                  onClick={() => setFormStatus('idle')}
-                  className="px-8 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
-                >
-                  Send Another Message
-                </button>
-              </motion.div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Full Name</label>
-                    <input 
-                      type="text" 
-                      required 
-                      placeholder="John Doe" 
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Email Address</label>
-                    <input 
-                      type="email" 
-                      required 
-                      placeholder="john@example.com" 
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Subject</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all appearance-none">
-                    <option className="bg-[#4A5D4E]">General Inquiry</option>
-                    <option className="bg-[#4A5D4E]">New Website Project</option>
-                    <option className="bg-[#4A5D4E]">Support Request</option>
-                    <option className="bg-[#4A5D4E]">Partnership</option>
-                  </select>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Message</label>
-                  <textarea 
-                    required 
-                    rows={5} 
-                    placeholder="Tell us about your project..." 
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all resize-none"
-                  />
-                </div>
-
-                <button 
-                  type="submit" 
-                  disabled={formStatus !== 'idle'}
-                  className="w-full py-6 bg-[#E6FF00] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)] flex items-center justify-center gap-3"
-                >
-                  {formStatus === 'idle' && (
-                    <>
-                      Send Message
-                      <Send size={18} />
-                    </>
-                  )}
-                  {formStatus === 'sending' && 'Sending...'}
-                </button>
-              </form>
-            )}
+                {PROFESSIONAL_EMAIL}
+              </a>
+            </div>
+            
+            <div className="pt-12 grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+              <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-4">
+                <h5 className="text-[#E6FF00] font-black uppercase italic tracking-tighter">Fast Response</h5>
+                <p className="text-white/40 text-xs font-medium italic">We reply to all inquiries within 2 hours during business hours.</p>
+              </div>
+              <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-4">
+                <h5 className="text-[#E6FF00] font-black uppercase italic tracking-tighter">Expert Support</h5>
+                <p className="text-white/40 text-xs font-medium italic">Direct access to our development and design team.</p>
+              </div>
+              <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-4">
+                <h5 className="text-[#E6FF00] font-black uppercase italic tracking-tighter">Global Reach</h5>
+                <p className="text-white/40 text-xs font-medium italic">Serving businesses across India and beyond.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

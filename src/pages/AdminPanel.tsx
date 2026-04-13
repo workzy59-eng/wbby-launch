@@ -57,7 +57,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'leads' | 'applications'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'leads' | 'applications' | 'clients'>('dashboard');
 
   const [leads, setLeads] = useState<any[]>([]);
   const [developerApps, setDeveloperApps] = useState<any[]>([]);
@@ -282,7 +282,9 @@ Generated on: ${new Date().toLocaleString()}
       const link = document.createElement('a');
       link.href = url;
       link.download = `Project_${project.id}_Description.txt`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } else {
       const doc = new jsPDF();
@@ -354,7 +356,15 @@ Generated on: ${new Date().toLocaleString()}
       doc.setTextColor(150, 150, 150);
       doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 280);
 
-      doc.save(`Project_${project.id}_Description.pdf`);
+      const pdfBlob = doc.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Project_${project.id}_Description.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -670,6 +680,128 @@ Generated on: ${new Date().toLocaleString()}
       </div>
     </div>
   );
+
+  const renderClients = () => {
+    const clients = users.filter(u => u.role === 'client');
+    
+    const downloadClientsCSV = () => {
+      const data = clients.map(c => ({
+        Name: c.displayName,
+        Email: c.email,
+        Phone: c.phone || 'N/A',
+        Role: c.role,
+        Joined: c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.createdAt as any).toDate().toLocaleDateString() : new Date(c.createdAt as any).toLocaleDateString()) : 'N/A'
+      }));
+      const csv = Papa.unparse(data);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `webbylaunch_clients_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Clients list downloaded');
+    };
+
+    return (
+      <div className="space-y-12">
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">CRM</span>
+            <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Client Base</h2>
+          </div>
+          <button 
+            onClick={downloadClientsCSV}
+            className="px-8 py-4 bg-[#E6FF00] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+          >
+            <Download size={18} />
+            Export CSV
+          </button>
+        </div>
+
+        <div className="bg-[#5E7162]/30 backdrop-blur-md rounded-[3rem] border border-white/10 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Client</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Contact Info</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Status</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Joined</th>
+                  <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-[0.3em] text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clients.map((c) => (
+                  <tr key={c.uid} className="border-b border-white/5 hover:bg-white/5 transition-all">
+                    <td className="p-8">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
+                          {c.photoURL ? (
+                            <img src={c.photoURL} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User size={20} className="text-white/20" />
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-lg font-bold text-white uppercase italic tracking-tighter">{c.displayName}</span>
+                          <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">ID: {c.uid.slice(0, 8)}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-8">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-white">{c.email}</span>
+                        <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{c.phone || 'No Phone'}</span>
+                      </div>
+                    </td>
+                    <td className="p-8">
+                      <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[8px] font-black uppercase tracking-widest">
+                        Active
+                      </span>
+                    </td>
+                    <td className="p-8">
+                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
+                        {c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.createdAt as any).toDate().toLocaleDateString() : new Date(c.createdAt as any).toLocaleDateString()) : 'N/A'}
+                      </span>
+                    </td>
+                    <td className="p-8 text-right">
+                      <button 
+                        onClick={() => {
+                          const details = `
+Client Name: ${c.displayName}
+Email: ${c.email}
+Phone: ${c.phone || 'N/A'}
+Role: ${c.role}
+Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.createdAt as any).toDate().toLocaleString() : new Date(c.createdAt as any).toLocaleString()) : 'N/A'}
+                          `;
+                          const blob = new Blob([details], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `${c.displayName.replace(/\s+/g, '_')}_details.txt`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                          toast.success('Client details downloaded');
+                        }}
+                        className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#E6FF00] hover:text-black transition-all"
+                      >
+                        <Download size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderAnalytics = () => (
     <div className="space-y-12">
@@ -1456,6 +1588,7 @@ Generated on: ${new Date().toLocaleString()}
             { id: 'requests', label: 'Requests', icon: FileText },
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
+            { id: 'clients', label: 'Clients', icon: Users },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'meetings', label: 'Meetings', icon: Video },
             { id: 'leads', label: 'Sales Leads', icon: TrendingUp },
@@ -1507,6 +1640,7 @@ Generated on: ${new Date().toLocaleString()}
             {activeTab === 'requests' && renderRequests()}
             {activeTab === 'active' && renderActiveProjects()}
             {activeTab === 'projects' && renderProjectDetails()}
+            {activeTab === 'clients' && renderClients()}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'recycle' && renderRecycleBin()}

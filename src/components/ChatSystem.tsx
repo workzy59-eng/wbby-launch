@@ -15,7 +15,9 @@ import {
   FileText,
   Maximize2,
   File,
-  ExternalLink
+  ExternalLink,
+  ShieldCheck,
+  Clock
 } from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
@@ -85,6 +87,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [recipientProfile, setRecipientProfile] = useState<UserProfile | null>(null);
+  const [showInfoId, setShowInfoId] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -136,7 +139,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         // Mark individual messages as seen
         messagesData.forEach(async (m) => {
           if (m.senderId !== currentUser.uid && !m.seen) {
-            await updateMessage(projectId, m.id, { seen: true });
+            await markMessageAsSeen(m.id, undefined, projectId);
             notificationSound.current?.play().catch(() => {});
           }
         });
@@ -332,8 +335,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       <header className="px-10 py-8 border-b border-white/10 flex items-center justify-between bg-white/5">
         <div className="flex items-center gap-6">
           <div className="relative">
-            <div className="w-16 h-16 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
-              {recipientUser?.displayName?.[0] || (projectId ? 'P' : 'U')}
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)] ${recipientUser?.displayName === 'SAI ROSHAN' ? 'bg-transparent border border-[#E6FF00]/30 text-[#E6FF00]' : 'bg-[#E6FF00]'}`}>
+              {recipientUser?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={32} /> : (recipientUser?.displayName?.[0] || (projectId ? 'P' : 'U'))}
             </div>
             {isDirect && (
               <div className={`absolute -bottom-1 -right-1 w-5 h-5 border-4 border-black rounded-full ${
@@ -425,16 +428,42 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                     {m.senderName}
                   </span>
                 )}
-                <div className={`flex gap-3 max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`flex gap-3 max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'} group/msg-container`}>
                   <motion.div 
                     layout
-                    onClick={() => !m.isDeleted && setSelectedMessage(m)}
+                    onClick={() => {
+                      if (m.isDeleted) return;
+                      setShowInfoId(showInfoId === m.id ? null : m.id);
+                    }}
                     className={`p-4 rounded-2xl text-sm font-bold leading-relaxed shadow-lg relative group cursor-pointer transition-all ${
                       isMe 
                         ? 'bg-[#005c4b] text-white rounded-tr-none' 
                         : 'bg-[#202c33] text-white rounded-tl-none border border-white/5'
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
+                    {!m.isDeleted && isMe && (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMessage(m);
+                        }}
+                        className="absolute -left-10 top-1/2 -translate-y-1/2 p-2 text-white/20 hover:text-white opacity-0 group-hover/msg-container:opacity-100 transition-all"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                    )}
+                    {!m.isDeleted && !isMe && (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMessage(m);
+                        }}
+                        className="absolute -right-10 top-1/2 -translate-y-1/2 p-2 text-white/20 hover:text-white opacity-0 group-hover/msg-container:opacity-100 transition-all"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                    )}
+
                     {!m.isDeleted && m.fileData && (
                       <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
                         <img src={m.fileData} alt="Shared file" className="w-full h-auto max-h-64 object-cover" />
@@ -532,6 +561,26 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         m.seen ? <CheckCheck size={12} className="text-blue-500" /> : <Check size={12} />
                       )}
                     </div>
+
+                    <AnimatePresence>
+                      {showInfoId === m.id && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="mt-2 pt-2 border-t border-white/5 space-y-1 overflow-hidden"
+                        >
+                          <p className="text-[8px] font-black uppercase tracking-widest text-white/30">
+                            Sent: {formatDate(m.createdAt, 'MMM d, h:mm:ss a')}
+                          </p>
+                          {m.seen && (
+                            <p className="text-[8px] font-black uppercase tracking-widest text-blue-400">
+                              Seen: {m.seenTime ? formatDate(m.seenTime, 'MMM d, h:mm:ss a') : 'Recently'}
+                            </p>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 </div>
               </div>
@@ -656,8 +705,42 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       <footer className="px-6 py-6 border-t border-white/10 bg-[#202c33]">
         <form 
           onSubmit={handleSendMessage}
-          className="max-w-5xl mx-auto flex items-center gap-4"
+          className="max-w-5xl mx-auto flex items-center gap-2"
         >
+          <input 
+            type="file" 
+            id="chat-image-upload" 
+            className="hidden" 
+            accept="image/*" 
+            multiple 
+            onChange={(e) => handleFileUpload(e.target.files, true)}
+          />
+          <input 
+            type="file" 
+            id="chat-file-upload" 
+            className="hidden" 
+            multiple 
+            onChange={(e) => handleFileUpload(e.target.files, false)}
+          />
+          
+          <button 
+            type="button"
+            onClick={() => document.getElementById('chat-image-upload')?.click()}
+            className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+            title="Upload Image"
+          >
+            <ImageIcon size={24} />
+          </button>
+          
+          <button 
+            type="button"
+            onClick={() => document.getElementById('chat-file-upload')?.click()}
+            className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+            title="Upload File"
+          >
+            <Paperclip size={24} />
+          </button>
+
           <div className="flex-1 relative">
             <input 
               type="text" 

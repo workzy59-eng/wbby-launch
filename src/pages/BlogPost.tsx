@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { Calendar, User, Tag, ArrowLeft, Share2, MessageCircle } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Calendar, 
+  User, 
+  Tag, 
+  ArrowLeft, 
+  Share2, 
+  MessageCircle, 
+  Clock, 
+  ChevronRight, 
+  ArrowRight,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Copy
+} from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -21,30 +35,50 @@ const Loader = ({ color = "white" }: { color?: string }) => (
   </div>
 );
 import SEO from '../components/SEO';
-import { getBlogPostBySlug } from '../services/database';
+import { getBlogPostBySlug, getBlogPosts } from '../services/database';
 import { BlogPost as BlogPostType } from '../types';
 import { formatDate } from '../lib/utils';
 import ReactMarkdown from 'react-markdown';
+import { toast } from 'react-hot-toast';
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<BlogPostType | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPostType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchPost = async () => {
       if (slug) {
-        const blogPost = await getBlogPostBySlug(slug);
-        setPost(blogPost as BlogPostType);
+        setIsLoading(true);
+        const blogPost = await getBlogPostBySlug(slug) as BlogPostType | null;
+        setPost(blogPost);
+        
+        if (blogPost) {
+          // Fetch related posts
+          const allPosts = await getBlogPosts();
+          const related = allPosts
+            .filter(p => p.slug !== slug && (p.category === blogPost.category || p.tags.some(t => blogPost.tags.includes(t))))
+            .slice(0, 3);
+          setRelatedPosts(related);
+        }
+        
         setIsLoading(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
     fetchPost();
   }, [slug]);
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Link copied to clipboard!');
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-6 pt-40">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
         <Loader color="white" />
         <p className="text-xs font-black uppercase tracking-widest text-white/20">Loading article...</p>
       </div>
@@ -53,9 +87,9 @@ export default function BlogPost() {
 
   if (!post) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-12 pt-40 px-10 text-center">
-        <h1 className="text-6xl font-black uppercase italic tracking-tighter">Article <span className="text-red-500">Not Found.</span></h1>
-        <Link to="/blog" className="bg-[#E6FF00] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-12 pt-40 px-10 text-center">
+        <h1 className="text-6xl font-black uppercase italic tracking-tighter text-white">Article <span className="text-red-500">Not Found.</span></h1>
+        <Link to="/blog" className="bg-[#E6FF00] text-black px-12 py-5 rounded-full text-sm font-black uppercase tracking-widest hover:scale-105 transition-all">
           Back to Blog
         </Link>
       </div>
@@ -63,92 +97,177 @@ export default function BlogPost() {
   }
 
   return (
-    <div className="pt-40 pb-20 px-10">
+    <div className="min-h-screen bg-black text-white selection:bg-[#E6FF00] selection:text-black">
       <SEO 
         title={`${post.title} – WebbyLaunch Blog`} 
         description={post.excerpt} 
         image={post.image}
       />
-      <div className="max-w-4xl mx-auto">
-        <Link 
-          to="/blog" 
-          className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-[#E6FF00] transition-all mb-12"
-        >
-          <ArrowLeft size={14} /> Back to Blog
-        </Link>
 
-        <div className="space-y-12 mb-20">
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-white/20">
-              <span className="flex items-center gap-1.5"><Calendar size={12} /> {formatDate(post.date, 'MMM d, yyyy')}</span>
-              <span className="flex items-center gap-1.5"><Tag size={12} className="text-[#E6FF00]" /> {post.category}</span>
-              <span className="flex items-center gap-1.5"><User size={12} /> {post.author}</span>
+      {/* Post Header */}
+      <section className="relative pt-40 pb-20 px-6">
+        <div className="max-w-4xl mx-auto space-y-12">
+          <Link 
+            to="/blog" 
+            className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-[#E6FF00] transition-all group"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Blog
+          </Link>
+
+          <div className="space-y-8">
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="px-5 py-2 bg-[#E6FF00]/10 border border-[#E6FF00]/20 text-[#E6FF00] text-[10px] font-black uppercase tracking-widest rounded-full">
+                {post.category}
+              </span>
+              <div className="flex items-center gap-4 text-white/40 text-[10px] font-black uppercase tracking-widest">
+                <span className="flex items-center gap-2"><Calendar size={14} /> {formatDate(post.date, 'MMM d, yyyy')}</span>
+                <span className="flex items-center gap-2"><Clock size={14} /> 5 min read</span>
+              </div>
             </div>
-            <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-tight">
+            <h1 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.9]">
               {post.title}
             </h1>
+            <div className="flex flex-wrap items-center justify-between gap-8 pt-10 border-t border-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-[#E6FF00] font-black text-2xl border border-white/10">
+                  {post.author[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-black text-white uppercase tracking-widest">{post.author}</p>
+                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic">Content Strategist at WebbyLaunch</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={copyToClipboard} className="w-12 h-12 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-[#E6FF00] hover:border-[#E6FF00]/30 transition-all">
+                  <Copy size={18} />
+                </button>
+                <button className="w-12 h-12 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-[#E6FF00] hover:border-[#E6FF00]/30 transition-all">
+                  <Twitter size={18} />
+                </button>
+                <button className="w-12 h-12 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-[#E6FF00] hover:border-[#E6FF00]/30 transition-all">
+                  <Linkedin size={18} />
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="aspect-[21/9] rounded-[3rem] overflow-hidden border border-white/10">
+      {/* Featured Image */}
+      <section className="px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="relative aspect-[21/9] rounded-[4rem] overflow-hidden border border-white/10 shadow-2xl">
             <img 
               src={post.image} 
               alt={post.title} 
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
               referrerPolicy="no-referrer"
             />
           </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-20">
-          <div className="prose prose-invert max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:italic prose-headings:tracking-tighter prose-p:text-white/60 prose-p:leading-relaxed prose-li:text-white/60 prose-strong:text-[#E6FF00] prose-a:text-[#E6FF00] prose-img:rounded-[2rem]">
+      {/* Content */}
+      <section className="px-6 py-24">
+        <div className="max-w-3xl mx-auto">
+          <div className="prose prose-invert prose-xl max-w-none 
+            prose-headings:font-black prose-headings:uppercase prose-headings:italic prose-headings:tracking-tighter prose-headings:text-white
+            prose-p:text-white/60 prose-p:font-medium prose-p:italic prose-p:leading-relaxed
+            prose-strong:text-[#E6FF00] prose-strong:font-black
+            prose-blockquote:border-l-4 prose-blockquote:border-[#E6FF00] prose-blockquote:bg-white/5 prose-blockquote:p-10 prose-blockquote:rounded-r-[2rem] prose-blockquote:italic prose-blockquote:text-white/80
+            prose-ul:text-white/60 prose-li:marker:text-[#E6FF00]
+            prose-a:text-[#E6FF00] prose-a:no-underline hover:prose-a:underline
+            prose-img:rounded-[3rem] prose-img:border prose-img:border-white/10
+          ">
             <ReactMarkdown>{post.content}</ReactMarkdown>
           </div>
 
-          <aside className="space-y-12">
-            <div className="space-y-6">
-              <h4 className="text-xs font-black uppercase tracking-widest text-white/20">Share Article</h4>
-              <div className="flex flex-col gap-4">
-                {['Twitter', 'LinkedIn'].map((platform) => (
-                  <button key={platform} className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E6FF00] hover:text-black hover:border-transparent transition-all flex items-center justify-center gap-2">
-                    <Share2 size={12} /> {platform}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-[#E6FF00] p-8 rounded-[2.5rem] space-y-6">
-              <h4 className="text-xl font-black uppercase italic tracking-tighter text-black leading-tight">Ready to launch your own website?</h4>
-              <p className="text-black/60 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Get your business online in 24-48 hours with WebbyLaunch.</p>
-              <Link 
-                to="/auth" 
-                className="block w-full py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:scale-105 transition-all"
-              >
-                Start Now
-              </Link>
-            </div>
-          </aside>
-        </div>
-
-        <div className="mt-32 pt-16 border-t border-white/5">
-          <div className="flex items-center justify-between gap-8">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center text-[#E6FF00] font-black text-2xl">
-                {post.author[0]}
-              </div>
-              <div>
-                <h4 className="font-black uppercase italic tracking-tighter text-lg">{post.author}</h4>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Content Strategist at WebbyLaunch</p>
-              </div>
-            </div>
-            <Link 
-              to="/contact" 
-              className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
-            >
-              <MessageCircle size={14} /> Contact Author
-            </Link>
+          {/* Tags */}
+          <div className="mt-24 pt-12 border-t border-white/5 flex flex-wrap gap-3">
+            {post.tags.map(tag => (
+              <span key={tag} className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white hover:border-[#E6FF00]/30 transition-all cursor-default">
+                <Tag size={12} className="text-[#E6FF00]" /> {tag}
+              </span>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Related Posts */}
+      {relatedPosts.length > 0 && (
+        <section className="px-6 py-32 border-t border-white/5">
+          <div className="max-w-7xl mx-auto space-y-16">
+            <div className="flex items-end justify-between">
+              <div className="space-y-3">
+                <span className="text-[10px] font-black text-[#E6FF00] uppercase tracking-[0.4em]">Keep Reading</span>
+                <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white">Related <span className="text-[#E6FF00]">Insights.</span></h2>
+              </div>
+              <Link 
+                to="/blog" 
+                className="hidden md:flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest italic"
+              >
+                View All Articles <ChevronRight size={18} />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {relatedPosts.map((p) => (
+                <div 
+                  key={p.id}
+                  onClick={() => navigate(`/blog/${p.slug}`)}
+                  className="group bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden cursor-pointer hover:border-[#E6FF00]/30 transition-all flex flex-col h-full"
+                >
+                  <div className="relative h-56 overflow-hidden">
+                    <img src={p.image} alt={p.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" referrerPolicy="no-referrer" />
+                  </div>
+                  <div className="p-10 space-y-6 flex-1 flex flex-col">
+                    <span className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">{p.category}</span>
+                    <h3 className="text-2xl font-black tracking-tighter uppercase italic leading-tight text-white group-hover:text-[#E6FF00] transition-colors line-clamp-2">
+                      {p.title}
+                    </h3>
+                    <div className="pt-6 mt-auto border-t border-white/5 flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{formatDate(p.date, 'MMM d, yyyy')}</span>
+                      <ArrowRight size={20} className="text-[#E6FF00] group-hover:translate-x-2 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CTA Section */}
+      <section className="px-6 pb-40">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative bg-[#E6FF00] rounded-[5rem] p-16 md:p-32 overflow-hidden text-center">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-black/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative z-10 space-y-10">
+              <h2 className="text-6xl md:text-9xl font-black tracking-tighter text-black uppercase italic leading-[0.8] max-w-4xl mx-auto">
+                Ready to launch <br /> your business?
+              </h2>
+              <p className="text-black/60 text-xl font-black uppercase tracking-[0.2em] italic">
+                Get your professional website in 24-48 hours.
+              </p>
+              <div className="flex flex-wrap justify-center gap-6 pt-6">
+                <Link 
+                  to="/pricing"
+                  className="px-16 py-7 bg-black text-white rounded-full font-black uppercase italic tracking-[0.2em] text-sm hover:scale-105 transition-all shadow-2xl"
+                >
+                  View Pricing
+                </Link>
+                <a 
+                  href={`mailto:workzy59@gmail.com`}
+                  className="px-16 py-7 border-2 border-black text-black rounded-full font-black uppercase italic tracking-[0.2em] text-sm hover:bg-black hover:text-white transition-all"
+                >
+                  Email Us
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
+

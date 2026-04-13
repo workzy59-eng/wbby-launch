@@ -3,11 +3,14 @@ import { motion } from 'motion/react';
 import { Star, Quote, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const CATEGORIES = ['All', 'SEO', 'Website', 'Business', 'Tips'];
+
 const ALL_TESTIMONIALS = [
   { 
     id: 1, 
     name: 'Rahul Sharma', 
     role: 'Gym Owner',
+    category: 'Website',
     description: 'Got my gym website in 2 days. Super smooth! The design is top-notch and my clients love it. The integration with our booking system was flawless.',
     rating: 5
   },
@@ -15,6 +18,7 @@ const ALL_TESTIMONIALS = [
     id: 2, 
     name: 'Priya Patel', 
     role: 'Logistics Manager',
+    category: 'Business',
     description: 'WebbyLaunch made our logistics portal look professional. The tracking feature is a game changer for our clients. Highly recommend their services.',
     rating: 5
   },
@@ -22,6 +26,7 @@ const ALL_TESTIMONIALS = [
     id: 3, 
     name: 'Amit Verma', 
     role: 'Car Dealer',
+    category: 'SEO',
     description: 'The Auto Speed UI is exactly what I needed for my showroom. Fast, clean, and mobile responsive. It has significantly increased our online inquiries.',
     rating: 5
   },
@@ -29,6 +34,7 @@ const ALL_TESTIMONIALS = [
     id: 4, 
     name: 'Sneha Reddy', 
     role: 'Boutique Owner',
+    category: 'Website',
     description: 'My online boutique took off after WebbyLaunch built my site. The payment integration is flawless and secure. The team was very helpful throughout.',
     rating: 5
   },
@@ -36,6 +42,7 @@ const ALL_TESTIMONIALS = [
     id: 5, 
     name: 'Vikram Singh', 
     role: 'Real Estate Agent',
+    category: 'Tips',
     description: 'Professional and fast. I can now showcase my real estate properties with high-quality galleries that load instantly. Great value for money.',
     rating: 4
   },
@@ -43,14 +50,50 @@ const ALL_TESTIMONIALS = [
     id: 6, 
     name: 'Ananya Gupta', 
     role: 'Restaurant Owner',
+    category: 'Business',
     description: 'The digital menu and reservation system have made my restaurant operations so much easier. Highly recommend WebbyLaunch for any food business.',
+    rating: 5
+  },
+  {
+    id: 7,
+    name: 'Karan Malhotra',
+    role: 'Tech Consultant',
+    category: 'SEO',
+    description: 'Our organic traffic grew by 200% within 4 months of launching the new site. The SEO structure is brilliant and easy to manage.',
+    rating: 5
+  },
+  {
+    id: 8,
+    name: 'Meera Deshmukh',
+    role: 'Yoga Instructor',
+    category: 'Tips',
+    description: 'The tips on business growth provided by the team were invaluable. My online classes are now fully booked thanks to the new booking system.',
+    rating: 5
+  },
+  {
+    id: 9,
+    name: 'Arjun Reddy',
+    role: 'E-commerce Founder',
+    category: 'Website',
+    description: 'The speed of the website is incredible. Our bounce rate dropped significantly, and sales are up by 45%. Best investment for my brand.',
     rating: 5
   }
 ];
 
 export default function Testimonials() {
+  const [activeCategory, setActiveCategory] = React.useState('All');
+
+  const filteredTestimonials = activeCategory === 'All' 
+    ? ALL_TESTIMONIALS 
+    : ALL_TESTIMONIALS.filter(t => t.category === activeCategory);
+
   return (
-    <div className="min-h-screen bg-[#4A5D4E] font-sans text-white py-32 px-10">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-[#4A5D4E] font-sans text-white py-32 px-10"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
           <div className="space-y-4">
@@ -66,8 +109,8 @@ export default function Testimonials() {
               animate={{ opacity: 1, y: 0 }}
               className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8]"
             >
-              What Our <br />
-              <span className="text-[#E6FF00]">Clients Say.</span>
+              Our Clients' <br />
+              <span className="text-[#E6FF00]">Growth Journey.</span>
             </motion.h1>
           </div>
           <Link 
@@ -78,8 +121,25 @@ export default function Testimonials() {
           </Link>
         </div>
 
+        {/* Categories */}
+        <div className="flex flex-wrap gap-4 mb-16">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                activeCategory === cat 
+                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.3)]' 
+                  : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white border border-white/5'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {ALL_TESTIMONIALS.map((t, i) => (
+          {filteredTestimonials.map((t, i) => (
             <motion.div
               key={t.id}
               initial={{ opacity: 0, y: 30 }}
@@ -135,6 +195,6 @@ export default function Testimonials() {
           </Link>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

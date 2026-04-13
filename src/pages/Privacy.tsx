@@ -1,14 +1,33 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import SEO from '../components/SEO';
 
 export default function Privacy() {
   return (
-    <div className="pt-40 pb-20 px-10">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="pt-40 pb-20 px-10"
+    >
       <SEO title="Privacy Policy – WebbyLaunch" />
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="space-y-6">
-          <h1 className="text-6xl font-black uppercase italic tracking-tighter">Privacy <span className="text-[#E6FF00]">Policy.</span></h1>
-          <p className="text-white/40 text-sm font-bold uppercase tracking-widest">Last Updated: April 8, 2026</p>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-6xl font-black uppercase italic tracking-tighter"
+          >
+            Privacy <span className="text-[#E6FF00]">Policy.</span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-white/40 text-sm font-bold uppercase tracking-widest"
+          >
+            Last Updated: April 8, 2026
+          </motion.p>
         </div>
 
         <div className="prose prose-invert max-w-none space-y-8 text-white/60 leading-relaxed">
@@ -50,6 +69,6 @@ export default function Privacy() {
           </section>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

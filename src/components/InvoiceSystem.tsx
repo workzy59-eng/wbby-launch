@@ -6,6 +6,7 @@ import { formatDate } from '../lib/utils';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { APP_NAME } from '../constants';
+import { toast } from 'react-hot-toast';
 
 interface InvoiceSystemProps {
   project: Project;
@@ -17,15 +18,15 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const plans = {
-    'starter': { name: 'Starter Launch', price: 1499, features: ['1–3 pages website', 'Basic design', 'Hosting support'] },
-    'food-court': { name: 'Business Pro', price: 3499, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
-    'autos': { name: 'Business Pro', price: 3499, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
-    'clothing': { name: 'Business Pro', price: 3499, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
-    'ai-custom': { name: 'Enterprise Elite', price: 9999, features: ['Full custom website', 'Admin panel', 'Priority support'] },
+    'starter': { name: 'Basic', price: 999, setupFee: 1999, features: ['1–3 pages website', 'Basic design', 'Hosting support'] },
+    'food-court': { name: 'Standard', price: 5999, setupFee: 2999, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
+    'autos': { name: 'Standard', price: 5999, setupFee: 2999, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
+    'clothing': { name: 'Standard', price: 5999, setupFee: 2999, features: ['5–7 pages website', 'SEO setup', 'Faster support'] },
+    'ai-custom': { name: 'Premium', price: 9999, setupFee: 4999, features: ['Full custom website', 'Admin panel', 'Priority support'] },
   };
 
   const selectedPlan = plans[project.templateId as keyof typeof plans] || plans['starter'];
-  const setupFee = 2000;
+  const setupFee = selectedPlan.setupFee;
   const totalAmount = selectedPlan.price + setupFee;
   const invoiceNumber = `INV-${project.id.slice(0, 8).toUpperCase()}`;
   const today = new Date();
@@ -35,20 +36,48 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
   const downloadPDF = async () => {
     if (!invoiceRef.current) return;
     
-    const canvas = await html2canvas(invoiceRef.current, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#000000'
-    });
+    toast.loading('Generating PDF...', { id: 'pdf-gen' });
     
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`${invoiceNumber}.pdf`);
+    try {
+      // Small delay to ensure everything is rendered
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#0a0a0a',
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Ensure the cloned element is visible for capture
+          const el = clonedDoc.getElementById('invoice-content');
+          if (el) el.style.maxHeight = 'none';
+        }
+      });
+      
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      
+      // Use a more robust download method
+      const pdfBlob = pdf.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('Invoice downloaded successfully', { id: 'pdf-gen' });
+    } catch (error) {
+      console.error('PDF Generation Error:', error);
+      toast.error('Failed to generate PDF', { id: 'pdf-gen' });
+    }
   };
 
   return (
@@ -96,7 +125,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
         </div>
 
         {/* Invoice Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 custom-scrollbar" ref={invoiceRef}>
+        <div id="invoice-content" className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 custom-scrollbar" ref={invoiceRef}>
           {/* Brand Header */}
           <div className="flex flex-col md:flex-row justify-between gap-8">
             <div className="space-y-4">

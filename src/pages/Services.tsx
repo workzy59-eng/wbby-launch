@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { Link } from 'react-router-dom';
+import { PROFESSIONAL_EMAIL } from '../constants';
 
 export default function Services() {
   const services = [
@@ -79,7 +80,12 @@ export default function Services() {
   ];
 
   return (
-    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black overflow-x-hidden">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black overflow-x-hidden"
+    >
       <SEO title="Our Services – Premium Web Solutions by WebbyLaunch" />
 
       {/* Sticky CTA */}
@@ -90,11 +96,11 @@ export default function Services() {
         className="fixed bottom-8 right-8 z-50 hidden md:block"
       >
         <Link 
-          to="/contact" 
+          to="/auth" 
           className="bg-[#E6FF00] text-black px-8 py-4 rounded-2xl font-black uppercase italic text-xs flex items-center gap-3 shadow-[0_0_30px_rgba(230,255,0,0.3)] hover:scale-105 transition-all"
         >
           <MousePointer2 size={18} />
-          Start Your Project
+          Get Started
         </Link>
       </motion.div>
 
@@ -126,10 +132,10 @@ export default function Services() {
                 View Pricing
               </Link>
               <Link 
-                to="/contact" 
+                to="/auth" 
                 className="w-full sm:w-auto bg-[#E6FF00] text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
               >
-                Book a Free Meeting
+                Get Started Now
               </Link>
             </div>
           </motion.div>
@@ -171,16 +177,16 @@ export default function Services() {
                 </div>
 
                 <div className="pt-10">
-                  <Link 
-                    to="/contact"
+                  <a 
+                    href={`mailto:${PROFESSIONAL_EMAIL}`}
                     className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                       service.featured 
                         ? 'bg-[#E6FF00] text-black hover:scale-[1.02]' 
                         : 'bg-white/5 text-white hover:bg-white/10'
                     }`}
                   >
-                    Get Started <ArrowRight size={14} />
-                  </Link>
+                    Email Us <ArrowRight size={14} />
+                  </a>
                 </div>
 
                 {service.featured && (
@@ -299,17 +305,17 @@ export default function Services() {
               </h2>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
                 <Link 
-                  to="/contact" 
-                  className="w-full sm:w-auto bg-black text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl"
-                >
-                  Book a Free Meeting
-                </Link>
-                <Link 
                   to="/auth" 
-                  className="w-full sm:w-auto bg-white text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+                  className="w-full sm:w-auto bg-black text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl"
                 >
                   Get Started Now
                 </Link>
+                <a 
+                  href={`mailto:${PROFESSIONAL_EMAIL}`}
+                  className="w-full sm:w-auto bg-white text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+                >
+                  Email Us
+                </a>
               </div>
             </div>
           </div>
@@ -318,6 +324,6 @@ export default function Services() {
 
       {/* Footer Space */}
       <div className="h-20" />
-    </div>
+    </motion.div>
   );
 }
