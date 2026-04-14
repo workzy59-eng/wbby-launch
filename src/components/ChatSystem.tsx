@@ -696,7 +696,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
-                        className="h-full bg-[#E6FF00]"
+                        className="h-full bg-[#6366F1]"
                       />
                     </div>
                   </div>
@@ -831,7 +831,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="button"
             onClick={() => document.getElementById('chat-image-upload')?.click()}
-            className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+            className="p-3 text-[#6366F1] hover:bg-[#6366F1]/10 rounded-xl transition-all"
             title="Upload Image"
           >
             <ImageIcon size={24} />
@@ -840,7 +840,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="button"
             onClick={() => document.getElementById('chat-file-upload')?.click()}
-            className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+            className="p-3 text-[#6366F1] hover:bg-[#6366F1]/10 rounded-xl transition-all"
             title="Upload File"
           >
             <Paperclip size={24} />

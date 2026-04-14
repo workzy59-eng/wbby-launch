@@ -18,7 +18,7 @@ export default function Privacy() {
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl font-black uppercase italic tracking-tighter"
           >
-            Privacy <span className="text-[#E6FF00]">Policy.</span>
+            Privacy <span className="text-[#6366F1]">Policy.</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}

@@ -104,7 +104,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
               placeholder="WebbyLaunch"
             />
           </div>
@@ -118,7 +118,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
               placeholder="hello@webbylaunch.com"
             />
           </div>
@@ -132,7 +132,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
               placeholder="+91 00000 00000"
             />
           </div>
@@ -146,7 +146,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="url"
               value={formData.website}
               onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
               placeholder="https://webbylaunch.com"
             />
           </div>

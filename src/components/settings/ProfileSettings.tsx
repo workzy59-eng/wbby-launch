@@ -108,7 +108,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
               placeholder="Your full name"
             />
           </div>
@@ -135,7 +135,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
               placeholder="+91 00000 00000"
             />
           </div>

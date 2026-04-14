@@ -36,7 +36,7 @@ export default function PaymentSuccess() {
       <SEO title="Payment Successful – WebbyLaunch" />
       
       {/* Background Accents */}
-      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#E6FF00]/10 blur-[120px] rounded-full" />
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#6366F1]/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-black/20 blur-[100px] rounded-full" />
 
       <div className="max-w-3xl mx-auto relative z-10">
@@ -50,14 +50,14 @@ export default function PaymentSuccess() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', damping: 12, delay: 0.2 }}
-            className="w-32 h-32 bg-[#E6FF00] rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(230,255,0,0.4)]"
+            className="w-32 h-32 bg-[#6366F1] rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(99,102,241,0.4)]"
           >
-            <CheckCircle2 size={64} className="text-black" />
+            <CheckCircle2 size={64} className="text-white" />
           </motion.div>
 
           <div className="space-y-4">
             <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic leading-none">
-              Payment <span className="text-[#E6FF00]">Received!</span>
+              Payment <span className="text-[#6366F1]">Received!</span>
             </h1>
             <p className="text-white/60 text-xl font-medium italic">
               Your vision is now our mission. We're getting to work.
@@ -67,9 +67,9 @@ export default function PaymentSuccess() {
           {/* Next Steps Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
             {[
-              { icon: <ShieldCheck className="text-[#E6FF00]" />, title: 'Verified', desc: 'Payment confirmed' },
-              { icon: <Clock className="text-[#E6FF00]" />, title: 'Review', desc: '48h expert analysis' },
-              { icon: <Rocket className="text-[#E6FF00]" />, title: 'Launch', desc: 'Fast deployment' }
+              { icon: <ShieldCheck className="text-[#6366F1]" />, title: 'Verified', desc: 'Payment confirmed' },
+              { icon: <Clock className="text-[#6366F1]" />, title: 'Review', desc: '48h expert analysis' },
+              { icon: <Rocket className="text-[#6366F1]" />, title: 'Launch', desc: 'Fast deployment' }
             ].map((item, i) => (
               <div key={i} className="bg-white/5 p-6 rounded-3xl border border-white/5 space-y-3">
                 <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
@@ -89,7 +89,7 @@ export default function PaymentSuccess() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 to="/dashboard"
-                className="bg-[#E6FF00] text-black px-10 py-6 rounded-full font-black text-xl uppercase italic flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+                className="bg-[#6366F1] text-white px-10 py-6 rounded-full font-black text-xl uppercase italic flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]"
               >
                 Go to Dashboard <ArrowRight size={24} />
               </Link>

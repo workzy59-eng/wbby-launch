@@ -37,9 +37,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#6366F1]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#6366F1]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 import { FirebaseUser } from '../firebase';
@@ -455,7 +455,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   >
                     <button 
                       onClick={() => setReplyingTo(m)}
-                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#E6FF00] transition-all"
+                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#6366F1] transition-all"
                       title="Reply"
                     >
                       <CornerUpLeft size={16} />
@@ -466,7 +466,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           setEditingMessage(m);
                           setInputText(m.text);
                         }}
-                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#E6FF00] transition-all"
+                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#6366F1] transition-all"
                         title="Edit"
                       >
                         <Edit size={16} />
@@ -502,7 +502,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 ) : (
                   <>
                     {m.replyTo && (
-                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#E6FF00]' : 'border-blue-500'}`}>
+                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#6366F1]' : 'border-blue-500'}`}>
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
                           {m.replyTo.senderName}
                         </p>
@@ -512,7 +512,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       </div>
                     )}
                     {!isMe && activeConversation.isProject && (
-                      <p className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest mb-1">
+                      <p className="text-[10px] font-black text-[#6366F1] uppercase tracking-widest mb-1">
                         {m.senderName}
                       </p>
                     )}
@@ -579,7 +579,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <input 
               type="text"
               placeholder="Search chats..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#6366F1]/50 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -606,7 +606,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </div>
               <button 
                 onClick={profile?.role === 'admin' ? () => setShowUserList(true) : handleMessageAdmin}
-                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[#E6FF00] text-[10px] font-black uppercase tracking-widest hover:bg-[#E6FF00] hover:text-black hover:border-transparent transition-all"
+                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[#6366F1] text-[10px] font-black uppercase tracking-widest hover:bg-[#6366F1] hover:text-white hover:border-transparent transition-all"
               >
                 {profile?.role === 'admin' ? 'Start a new chat' : 'Message Admin'}
               </button>
@@ -623,8 +623,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     conv.isProject 
                       ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
                       : conv.recipientProfile?.displayName === 'SAI ROSHAN'
-                        ? 'bg-transparent border border-[#E6FF00]/30 text-[#E6FF00]'
-                        : 'bg-gradient-to-br from-[#E6FF00] to-yellow-600'
+                        ? 'bg-transparent border border-[#6366F1]/30 text-[#6366F1]'
+                        : 'bg-gradient-to-br from-[#6366F1] to-indigo-600'
                   }`}>
                     {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U'))}
                   </div>
@@ -663,7 +663,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         <div className="p-4 border-t border-white/5">
           <button 
             onClick={() => setShowUserList(true)}
-            className="w-full py-4 bg-[#E6FF00] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+            className="w-full py-4 bg-[#6366F1] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]"
           >
             New Message
           </button>
@@ -723,8 +723,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <div className="relative">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center text-black font-black text-lg ${
                     activeConversation.recipientProfile?.displayName === 'SAI ROSHAN'
-                      ? 'bg-transparent border border-[#E6FF00]/30 text-[#E6FF00]'
-                      : 'bg-gradient-to-br from-[#E6FF00] to-yellow-600'
+                      ? 'bg-transparent border border-[#6366F1]/30 text-[#6366F1]'
+                      : 'bg-gradient-to-br from-[#6366F1] to-indigo-600'
                   }`}>
                     {activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} /> : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
@@ -737,7 +737,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <h3 className="font-black text-white uppercase tracking-tight">{activeConversation.recipientProfile?.displayName}</h3>
                   <div className="flex items-center gap-2">
                     {typingUsers.length > 0 ? (
-                      <p className="text-[10px] text-[#E6FF00] font-black uppercase tracking-widest animate-pulse">typing...</p>
+                      <p className="text-[10px] text-[#6366F1] font-black uppercase tracking-widest animate-pulse">typing...</p>
                     ) : (
                       <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
                         activeConversation.recipientProfile?.status === 'online' ? 'text-green-400' : 'text-white/30'
@@ -765,7 +765,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </Link>
                 <button 
                   onClick={() => setShowSearch(!showSearch)}
-                  className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#E6FF00] text-black' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}
+                  className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#6366F1] text-white' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}
                 >
                   <Search size={20} />
                 </button>
@@ -786,7 +786,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <input 
                     type="text"
                     placeholder="Search messages..."
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white outline-none focus:border-[#E6FF00]/30 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white outline-none focus:border-[#6366F1]/30 transition-all"
                     value={messageSearchQuery}
                     onChange={(e) => setMessageSearchQuery(e.target.value)}
                     autoFocus
@@ -809,9 +809,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             >
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full space-y-6">
-                  <div className="w-24 h-24 bg-[#E6FF00]/10 rounded-full flex items-center justify-center relative">
-                    <MessageCircle size={48} className="text-[#E6FF00]" />
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#E6FF00] rounded-full flex items-center justify-center text-black">
+                  <div className="w-24 h-24 bg-[#6366F1]/10 rounded-full flex items-center justify-center relative">
+                    <MessageCircle size={48} className="text-[#6366F1]" />
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#6366F1] rounded-full flex items-center justify-center text-white">
                       <Sparkles size={14} />
                     </div>
                   </div>
@@ -825,11 +825,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               )}
               {renderMessages()}
               {typingUsers.length > 0 && (
-                <div className="flex items-center gap-2 text-[10px] text-[#E6FF00] font-black uppercase tracking-widest italic animate-pulse">
+                <div className="flex items-center gap-2 text-[10px] text-[#6366F1] font-black uppercase tracking-widest italic animate-pulse">
                   <div className="flex gap-1">
-                    <span className="w-1 h-1 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-1 h-1 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-1 h-1 bg-[#E6FF00] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <span className="w-1 h-1 bg-[#6366F1] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1 h-1 bg-[#6366F1] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1 h-1 bg-[#6366F1] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                   {activeConversation.recipientProfile?.displayName} is typing
                 </div>
@@ -848,9 +848,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     className="absolute bottom-full left-0 right-0 p-4 bg-[#1e293b] border-t border-white/10 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <div className={`w-1 h-10 rounded-full ${editingMessage ? 'bg-[#E6FF00]' : 'bg-blue-500'}`} />
+                      <div className={`w-1 h-10 rounded-full ${editingMessage ? 'bg-[#6366F1]' : 'bg-blue-500'}`} />
                       <div className="overflow-hidden">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#6366F1]">
                           {editingMessage ? 'Editing Message' : `Replying to ${replyingTo?.senderName}`}
                         </p>
                         <p className="text-xs text-white/60 truncate italic">
@@ -892,7 +892,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <button 
                   type="button"
                   onClick={() => document.getElementById('direct-image-upload')?.click()}
-                  className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+                  className="p-3 text-[#6366F1] hover:bg-[#6366F1]/10 rounded-xl transition-all"
                   title="Upload Image"
                 >
                   <ImageIcon size={24} />
@@ -901,7 +901,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <button 
                   type="button"
                   onClick={() => document.getElementById('direct-file-upload')?.click()}
-                  className="p-3 text-[#E6FF00] hover:bg-[#E6FF00]/10 rounded-xl transition-all"
+                  className="p-3 text-[#6366F1] hover:bg-[#6366F1]/10 rounded-xl transition-all"
                   title="Upload File"
                 >
                   <Paperclip size={24} />
@@ -911,7 +911,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <input 
                     type="text"
                     placeholder="Type a message..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-sm text-white outline-none focus:border-[#6366F1]/50 transition-all"
                     value={inputText}
                     onChange={handleInputChange}
                   />
@@ -920,7 +920,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     disabled={!inputText.trim() || isSending}
                     className={`absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all ${
                       inputText.trim() && !isSending 
-                        ? 'bg-[#E6FF00] text-black shadow-lg shadow-[#E6FF00]/20' 
+                        ? 'bg-[#6366F1] text-white shadow-lg shadow-[#6366F1]/20' 
                         : 'bg-white/5 text-white/20 cursor-not-allowed'
                     }`}
                   >
@@ -946,7 +946,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <div className="bg-[#1e293b] p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading...</h4>
-                      <div className="w-4 h-4 border-2 border-[#E6FF00] border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
                     </div>
                     <div className="space-y-3">
                       {Object.entries(uploadProgress).map(([name, progress]) => (
@@ -959,7 +959,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${progress}%` }}
-                              className="h-full bg-[#E6FF00]"
+                              className="h-full bg-[#6366F1]"
                             />
                           </div>
                         </div>
@@ -974,7 +974,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
               <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
-                <MessageCircle size={48} strokeWidth={1.5} className="text-[#E6FF00]" />
+                <MessageCircle size={48} strokeWidth={1.5} className="text-[#6366F1]" />
               </div>
               <div className="text-center">
                 <h3 className="text-xl font-black text-white/40 uppercase italic tracking-tighter">Select a conversation</h3>
@@ -1006,7 +1006,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <input 
                     type="text"
                     placeholder="Search users..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#6366F1]/50 transition-all"
                   />
                 </div>
               </div>

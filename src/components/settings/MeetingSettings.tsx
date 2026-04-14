@@ -53,14 +53,14 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-6">
-            <div className="flex items-center gap-4 text-[#E6FF00]">
+            <div className="flex items-center gap-4 text-[#6366F1]">
               <Clock size={24} />
               <h3 className="text-xl font-black uppercase italic tracking-tighter">Default Duration</h3>
             </div>
             <select 
               value={adminData.defaultDuration}
               onChange={(e) => setAdminData({ ...adminData, defaultDuration: parseInt(e.target.value) })}
-              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all appearance-none"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all appearance-none"
             >
               <option value={15}>15 Minutes</option>
               <option value={30}>30 Minutes</option>
@@ -70,7 +70,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
           </div>
 
           <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-6">
-            <div className="flex items-center gap-4 text-[#E6FF00]">
+            <div className="flex items-center gap-4 text-[#6366F1]">
               <Bell size={24} />
               <h3 className="text-xl font-black uppercase italic tracking-tighter">Reminders</h3>
             </div>
@@ -79,7 +79,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
                 <span className="text-sm font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">1 Hour Before</span>
                 <button 
                   onClick={() => setAdminData({ ...adminData, reminders: { ...adminData.reminders, oneHour: !adminData.reminders.oneHour } })}
-                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.reminders.oneHour ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.reminders.oneHour ? 'bg-[#6366F1]' : 'bg-white/10'}`}
                 >
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${adminData.reminders.oneHour ? 'left-7' : 'left-1'}`} />
                 </button>
@@ -88,7 +88,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
                 <span className="text-sm font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">10 Minutes Before</span>
                 <button 
                   onClick={() => setAdminData({ ...adminData, reminders: { ...adminData.reminders, tenMinutes: !adminData.reminders.tenMinutes } })}
-                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.reminders.tenMinutes ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.reminders.tenMinutes ? 'bg-[#6366F1]' : 'bg-white/10'}`}
                 >
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${adminData.reminders.tenMinutes ? 'left-7' : 'left-1'}`} />
                 </button>
@@ -97,7 +97,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
           </div>
 
           <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-6">
-            <div className="flex items-center gap-4 text-[#E6FF00]">
+            <div className="flex items-center gap-4 text-[#6366F1]">
               <RefreshCw size={24} />
               <h3 className="text-xl font-black uppercase italic tracking-tighter">Client Actions</h3>
             </div>
@@ -106,7 +106,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
                 <span className="text-sm font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">Allow Rescheduling</span>
                 <button 
                   onClick={() => setAdminData({ ...adminData, allowRescheduling: !adminData.allowRescheduling })}
-                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.allowRescheduling ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.allowRescheduling ? 'bg-[#6366F1]' : 'bg-white/10'}`}
                 >
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${adminData.allowRescheduling ? 'left-7' : 'left-1'}`} />
                 </button>
@@ -115,7 +115,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
                 <span className="text-sm font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">Allow Meeting Requests</span>
                 <button 
                   onClick={() => setAdminData({ ...adminData, allowClientRequests: !adminData.allowClientRequests })}
-                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.allowClientRequests ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+                  className={`relative w-12 h-6 rounded-full transition-all ${adminData.allowClientRequests ? 'bg-[#6366F1]' : 'bg-white/10'}`}
                 >
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${adminData.allowClientRequests ? 'left-7' : 'left-1'}`} />
                 </button>
@@ -128,7 +128,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
           <button 
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-8 py-4 bg-[#E6FF00] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(230,255,0,0.2)]"
+            className="flex items-center gap-2 px-8 py-4 bg-[#6366F1] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
           >
             {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
             Save Meeting Settings
@@ -143,14 +143,14 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-6">
-          <div className="flex items-center gap-4 text-[#E6FF00]">
+          <div className="flex items-center gap-4 text-[#6366F1]">
             <Calendar size={24} />
             <h3 className="text-xl font-black uppercase italic tracking-tighter">Preferred Time</h3>
           </div>
           <select 
             value={clientData.preferredTimeSlot}
             onChange={(e) => setClientData({ ...clientData, preferredTimeSlot: e.target.value })}
-            className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all appearance-none"
+            className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all appearance-none"
           >
             <option value="Morning (10 AM - 1 PM)">Morning (10 AM - 1 PM)</option>
             <option value="Afternoon (2 PM - 5 PM)">Afternoon (2 PM - 5 PM)</option>
@@ -159,7 +159,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
         </div>
 
         <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-6">
-          <div className="flex items-center gap-4 text-[#E6FF00]">
+          <div className="flex items-center gap-4 text-[#6366F1]">
             <Bell size={24} />
             <h3 className="text-xl font-black uppercase italic tracking-tighter">Reminders</h3>
           </div>
@@ -167,7 +167,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
             <span className="text-sm font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">Enable Meeting Reminders</span>
             <button 
               onClick={() => setClientData({ ...clientData, enableReminders: !clientData.enableReminders })}
-              className={`relative w-12 h-6 rounded-full transition-all ${clientData.enableReminders ? 'bg-[#E6FF00]' : 'bg-white/10'}`}
+              className={`relative w-12 h-6 rounded-full transition-all ${clientData.enableReminders ? 'bg-[#6366F1]' : 'bg-white/10'}`}
             >
               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${clientData.enableReminders ? 'left-7' : 'left-1'}`} />
             </button>
@@ -179,7 +179,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = ({ profile }) => 
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 px-8 py-4 bg-[#E6FF00] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(230,255,0,0.2)]"
+          className="flex items-center gap-2 px-8 py-4 bg-[#6366F1] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
         >
           {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
           Save Preferences

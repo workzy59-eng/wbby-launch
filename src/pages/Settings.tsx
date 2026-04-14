@@ -63,17 +63,17 @@ export default function Settings({ user, profile }: SettingsProps) {
       case 'preferences': return (
         <div className="space-y-8">
           <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6">
-            <div className="flex items-center gap-4 text-[#E6FF00]">
+            <div className="flex items-center gap-4 text-[#6366F1]">
               <Monitor size={24} />
               <h3 className="text-xl font-black uppercase italic tracking-tighter">Appearance</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button className="flex items-center justify-between p-6 bg-black/40 border-2 border-[#E6FF00] rounded-3xl group">
+              <button className="flex items-center justify-between p-6 bg-black/40 border-2 border-[#6366F1] rounded-3xl group">
                 <div className="flex items-center gap-4">
-                  <Moon className="text-[#E6FF00]" size={20} />
+                  <Moon className="text-[#6366F1]" size={20} />
                   <span className="text-sm font-black uppercase tracking-widest text-white">Dark Mode</span>
                 </div>
-                <Check className="text-[#E6FF00]" size={20} />
+                <Check className="text-[#6366F1]" size={20} />
               </button>
               <button className="flex items-center justify-between p-6 bg-white/5 border-2 border-transparent rounded-3xl group hover:border-white/10 transition-all">
                 <div className="flex items-center gap-4">
@@ -97,13 +97,13 @@ export default function Settings({ user, profile }: SettingsProps) {
           <div className="space-y-2">
             <button 
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-white/40 hover:text-[#E6FF00] transition-colors text-[10px] font-black uppercase tracking-widest mb-4"
+              className="flex items-center gap-2 text-white/40 hover:text-[#6366F1] transition-colors text-[10px] font-black uppercase tracking-widest mb-4"
             >
               <ArrowLeft size={14} />
               Back to Dashboard
             </button>
             <h1 className="text-5xl font-black uppercase italic tracking-tighter leading-none">
-              Account <span className="text-[#E6FF00]">Settings.</span>
+              Account <span className="text-[#6366F1]">Settings.</span>
             </h1>
             <p className="text-white/40 text-sm font-medium italic">Manage your account preferences and platform settings.</p>
           </div>
@@ -118,20 +118,20 @@ export default function Settings({ user, profile }: SettingsProps) {
                 onClick={() => setActiveTab(tab.id as SettingsTab)}
                 className={`w-full flex items-center justify-between p-6 rounded-[2rem] transition-all group ${
                   activeTab === tab.id 
-                    ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.1)]' 
+                    ? 'bg-[#6366F1] text-white shadow-[0_0_30px_rgba(99,102,241,0.1)]' 
                     : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white border border-white/5'
                 }`}
               >
                 <div className="flex items-center gap-4">
-                  <tab.icon size={20} className={activeTab === tab.id ? 'text-black' : 'group-hover:text-[#E6FF00] transition-colors'} />
+                  <tab.icon size={20} className={activeTab === tab.id ? 'text-white' : 'group-hover:text-[#6366F1] transition-colors'} />
                   <div className="text-left">
                     <p className="text-sm font-black uppercase tracking-widest">{tab.label}</p>
-                    <p className={`text-[8px] font-black uppercase tracking-[0.2em] ${activeTab === tab.id ? 'text-black/60' : 'text-white/20'}`}>
+                    <p className={`text-[8px] font-black uppercase tracking-[0.2em] ${activeTab === tab.id ? 'text-white/60' : 'text-white/20'}`}>
                       {tab.desc}
                     </p>
                   </div>
                 </div>
-                <ChevronRight size={18} className={activeTab === tab.id ? 'text-black/40' : 'text-white/10'} />
+                <ChevronRight size={18} className={activeTab === tab.id ? 'text-white/40' : 'text-white/10'} />
               </button>
             ))}
           </aside>
@@ -147,7 +147,7 @@ export default function Settings({ user, profile }: SettingsProps) {
             >
               <div className="mb-10 space-y-1">
                 <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">
-                  {tabs.find(t => t.id === activeTab)?.label} <span className="text-[#E6FF00]">Details.</span>
+                  {tabs.find(t => t.id === activeTab)?.label} <span className="text-[#6366F1]">Details.</span>
                 </h2>
                 <p className="text-white/40 text-xs italic uppercase tracking-widest">
                   {tabs.find(t => t.id === activeTab)?.desc}

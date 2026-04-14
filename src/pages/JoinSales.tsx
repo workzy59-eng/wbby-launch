@@ -65,7 +65,7 @@ export default function JoinSales() {
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="inline-block px-4 py-1 bg-[#E6FF00] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic"
+              className="inline-block px-4 py-1 bg-[#6366F1] text-white rounded-full text-[10px] font-black uppercase tracking-widest italic"
             >
               Step {step} of 2
             </motion.div>
@@ -75,12 +75,12 @@ export default function JoinSales() {
               className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.8]"
             >
               Sales / CS <br />
-              <span className="text-[#E6FF00]">Application.</span>
+              <span className="text-[#6366F1]">Application.</span>
             </motion.h1>
           </div>
           <Link 
             to="/careers" 
-            className="flex items-center gap-2 text-white/40 hover:text-[#E6FF00] transition-colors font-black uppercase text-xs tracking-widest italic"
+            className="flex items-center gap-2 text-white/40 hover:text-[#6366F1] transition-colors font-black uppercase text-xs tracking-widest italic"
           >
             <ArrowLeft size={16} /> Back
           </Link>
@@ -98,7 +98,7 @@ export default function JoinSales() {
               {/* Basic Details */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#E6FF00] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white">
                     <Globe size={18} />
                   </div>
                   Personal Details
@@ -110,7 +110,7 @@ export default function JoinSales() {
                       type="text"
                       value={formData.fullName}
                       onChange={e => setFormData({...formData, fullName: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                       placeholder="John Doe"
                     />
                   </div>
@@ -120,7 +120,7 @@ export default function JoinSales() {
                       type="email"
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -131,7 +131,7 @@ export default function JoinSales() {
                       maxLength={10}
                       value={formData.phone}
                       onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                       placeholder="9876543210"
                     />
                   </div>
@@ -141,7 +141,7 @@ export default function JoinSales() {
                       type="text"
                       value={formData.languages}
                       onChange={e => setFormData({...formData, languages: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                       placeholder="e.g. English, Hindi"
                     />
                   </div>
@@ -151,7 +151,7 @@ export default function JoinSales() {
               {/* Skills */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#E6FF00] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white">
                     <MessageSquare size={18} />
                   </div>
                   Communication
@@ -162,7 +162,7 @@ export default function JoinSales() {
                     <select 
                       value={formData.confidence}
                       onChange={e => setFormData({...formData, confidence: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all appearance-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all appearance-none"
                     >
                       <option value="Beginner">Beginner</option>
                       <option value="Medium">Medium</option>
@@ -175,7 +175,7 @@ export default function JoinSales() {
                       type="number"
                       value={formData.hoursPerDay}
                       onChange={e => setFormData({...formData, hoursPerDay: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                       placeholder="e.g. 8"
                     />
                   </div>
@@ -185,7 +185,7 @@ export default function JoinSales() {
               {/* Test Questions */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#E6FF00] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white">
                     <Zap size={18} />
                   </div>
                   Test Questions *
@@ -196,7 +196,7 @@ export default function JoinSales() {
                     <textarea 
                       value={formData.convinceBusiness}
                       onChange={e => setFormData({...formData, convinceBusiness: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all min-h-[120px]"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all min-h-[120px]"
                       placeholder="Your pitch here..."
                     />
                   </div>
@@ -205,7 +205,7 @@ export default function JoinSales() {
                     <textarea 
                       value={formData.handleRudeCustomer}
                       onChange={e => setFormData({...formData, handleRudeCustomer: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#E6FF00]/50 transition-all min-h-[120px]"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#6366F1]/50 transition-all min-h-[120px]"
                       placeholder="Your approach here..."
                     />
                   </div>
@@ -214,7 +214,7 @@ export default function JoinSales() {
 
               <button
                 onClick={() => validateStep1() && setStep(2)}
-                className="w-full py-6 bg-[#E6FF00] text-black rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(230,255,0,0.2)] flex items-center justify-center gap-4"
+                className="w-full py-6 bg-[#6366F1] text-white rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(99,102,241,0.2)] flex items-center justify-center gap-4"
               >
                 Next Step
                 <ArrowRight size={24} />
@@ -229,7 +229,7 @@ export default function JoinSales() {
               className="space-y-12"
             >
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3 text-[#E6FF00]">
+                <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3 text-[#6366F1]">
                   <ShieldCheck size={24} />
                   Terms & Conditions
                 </h3>
@@ -252,8 +252,8 @@ export default function JoinSales() {
                     </ul>
                   </div>
 
-                  <div className="p-6 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-2xl">
-                    <p className="text-xs font-black text-[#E6FF00] uppercase tracking-widest leading-relaxed">
+                  <div className="p-6 bg-[#6366F1]/10 border border-[#6366F1]/20 rounded-2xl">
+                    <p className="text-xs font-black text-[#6366F1] uppercase tracking-widest leading-relaxed">
                       “Shortlisted candidates will be invited for an interview. Selection is based on communication, confidence, and professionalism.”
                     </p>
                   </div>
@@ -263,7 +263,7 @@ export default function JoinSales() {
                   <div 
                     onClick={() => setAgreed(!agreed)}
                     className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${
-                      agreed ? 'bg-[#E6FF00] border-[#E6FF00] text-black' : 'border-white/10 group-hover:border-[#E6FF00]/50'
+                      agreed ? 'bg-[#6366F1] border-[#6366F1] text-white' : 'border-white/10 group-hover:border-[#6366F1]/50'
                     }`}
                   >
                     {agreed && <CheckCircle2 size={20} />}
@@ -284,7 +284,7 @@ export default function JoinSales() {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting || !agreed}
-                  className="flex-[2] py-6 bg-[#E6FF00] text-black rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(230,255,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4"
+                  className="flex-[2] py-6 bg-[#6366F1] text-white rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(99,102,241,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Application'}
                   {!isSubmitting && <Send size={24} />}
