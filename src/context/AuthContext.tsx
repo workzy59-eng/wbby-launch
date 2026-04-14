@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   sendOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, code: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,6 +38,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => unsubscribe();
   }, []);
+
+  const signInWithGoogle = async () => {
+    const { signInWithGoogle: firebaseSignIn } = await import('../firebase');
+    await firebaseSignIn();
+  };
 
   const sendOTP = async (email: string) => {
     const response = await fetch('/api/send-otp', {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2, Sparkles } from 'lucide-react';
+import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2 } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import NavHeader from './ui/nav-header';
@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#E6FF00] selection:text-black">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#6366F1] selection:text-white">
       {/* Navbar */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
@@ -58,9 +58,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
           <div className="flex items-center gap-6">
             {user ? (
-              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#E6FF00] transition-all">Dashboard</Link>
+              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#6366F1] transition-all">Dashboard</Link>
             ) : (
-              <Link to="/auth" className="bg-[#E6FF00] text-black px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]">Get Started</Link>
+              <Link to="/auth" className="bg-[#6366F1] text-white px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]">Get Started</Link>
             )}
             <button className="lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X /> : <Menu />}
@@ -80,28 +80,15 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           >
             <div className="flex flex-col gap-8 text-2xl font-bold tracking-tighter">
               {navItems.map((item) => (
-                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className="hover:text-[#E6FF00] transition-colors">{item.name}</Link>
+                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className="hover:text-[#6366F1] transition-colors">{item.name}</Link>
               ))}
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)} className="text-[#E6FF00]">Login</Link>
+              <Link to="/auth" onClick={() => setIsMenuOpen(false)} className="text-[#6366F1]">Login</Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <main>{children}</main>
-
-      {/* Floating Contact Buttons */}
-      <div className="fixed bottom-8 right-8 z-[60] flex flex-col gap-4">
-        <Link 
-          to="/dashboard?chat=true"
-          className="w-14 h-14 bg-[#E6FF00] text-black rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all group relative"
-        >
-          <Sparkles size={28} />
-          <span className="absolute right-full mr-4 px-4 py-2 bg-black/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Live Chat
-          </span>
-        </Link>
-      </div>
 
       {/* Mobile Bottom Navigation */}
       {user && (
@@ -136,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
             </p>
             <div className="flex gap-4">
               {['Twitter', 'Instagram', 'LinkedIn'].map((social) => (
-                <a key={social} href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#E6FF00] hover:text-black transition-all">
+                <a key={social} href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#6366F1] hover:text-white transition-all">
                   <span className="text-[10px] font-black uppercase tracking-tighter">{social[0]}</span>
                 </a>
               ))}
@@ -144,7 +131,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#E6FF00]">Quick Links</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#6366F1]">Quick Links</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
               {navItems.slice(0, 6).map((item) => (
                 <Link key={item.name} to={item.path} className="hover:text-white transition-colors">{item.name}</Link>
@@ -153,7 +140,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#E6FF00]">Legal</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#6366F1]">Legal</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
               <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
@@ -161,7 +148,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#E6FF00]">Careers</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#6366F1]">Careers</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
               <Link to="/careers" className="hover:text-white transition-colors">Careers Home</Link>
               <Link to="/join-developer" className="hover:text-white transition-colors">Join as Developer</Link>
@@ -170,10 +157,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#E6FF00]">Contact</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#6366F1]">Contact</h4>
             <div className="space-y-6">
               <div className="flex items-center gap-4 group cursor-pointer">
-                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#E6FF00] group-hover:text-black transition-all">
+                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#6366F1] group-hover:text-white transition-all">
                   <Mail size={18} />
                 </div>
                 <span className="text-sm font-bold text-white/40 group-hover:text-white transition-colors">{PROFESSIONAL_EMAIL}</span>
