@@ -23,6 +23,7 @@ const Loader = ({ color = "black" }: { color?: string }) => (
   </div>
 );
 import { jsPDF } from 'jspdf';
+import { toast } from 'react-hot-toast';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
@@ -57,6 +58,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       websiteName: '',
       primaryColor: '#6366F1',
       secondaryColor: '#111827',
+      tertiaryColor: '',
       logoUrl: '',
       documentsUrl: '',
       plan: 'basic' as 'basic' | 'standard' | 'premium',
@@ -155,13 +157,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       case 3: // Domain Preferences
         if (!formData.websiteName) invalid.push('websiteName');
         break;
-      case 4: // Choose Plan
+      case 4: // Design
+        if (!formData.primaryColor) invalid.push('primaryColor');
+        if (!formData.secondaryColor) invalid.push('secondaryColor');
+        break;
+      case 5: // Choose Plan
         if (!formData.plan) invalid.push('plan');
         break;
-      case 5: // Terms and Conditions
+      case 6: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
-      case 6: // Finalize
+      case 7: // Finalize
         break;
     }
     return invalid;
@@ -242,6 +248,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         domainPreferences: formData.domainPreferences,
         primaryColor: formData.primaryColor,
         secondaryColor: formData.secondaryColor,
+        tertiaryColor: formData.tertiaryColor,
         logoUrl: finalLogoUrl,
         documentsUrl: finalDocsUrl,
         plan: formData.plan,
@@ -841,6 +848,129 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
+              <h3 className="text-4xl font-bold tracking-tight text-text">Design for your website</h3>
+            </div>
+
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Primary Color <span className="text-error">*</span></label>
+                  <div className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border">
+                    <input 
+                      type="color" 
+                      value={formData.primaryColor}
+                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
+                      className="w-12 h-12 rounded-lg bg-transparent cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={formData.primaryColor}
+                      onChange={(e) => handleInputChange('primaryColor', e.target.value)}
+                      className="flex-1 bg-transparent text-text font-mono uppercase focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Secondary Color <span className="text-error">*</span></label>
+                  <div className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border">
+                    <input 
+                      type="color" 
+                      value={formData.secondaryColor}
+                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
+                      className="w-12 h-12 rounded-lg bg-transparent cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={formData.secondaryColor}
+                      onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
+                      className="flex-1 bg-transparent text-text font-mono uppercase focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Tertiary Color (Optional)</label>
+                <div className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border">
+                  <input 
+                    type="color" 
+                    value={formData.tertiaryColor || '#000000'}
+                    onChange={(e) => handleInputChange('tertiaryColor', e.target.value)}
+                    className="w-12 h-12 rounded-lg bg-transparent cursor-pointer"
+                  />
+                  <input 
+                    type="text" 
+                    value={formData.tertiaryColor}
+                    onChange={(e) => handleInputChange('tertiaryColor', e.target.value)}
+                    placeholder="E.G. #FFFFFF"
+                    className="flex-1 bg-transparent text-text font-mono uppercase focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Upload Logo</label>
+                <div className="relative group">
+                  <div className="w-full h-48 rounded-2xl bg-card border-2 border-dashed border-border flex flex-col items-center justify-center gap-3 group-hover:border-primary/50 transition-all overflow-hidden">
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain p-6" />
+                    ) : (
+                      <>
+                        <ImageIcon className="w-10 h-10 text-subtext" />
+                        <div className="text-center">
+                          <span className="text-xs font-bold text-text uppercase tracking-widest block mb-1">Click to upload logo</span>
+                          <span className="text-[10px] font-bold text-subtext uppercase tracking-widest">PNG, JPG or SVG (Max 5MB)</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const { uploadToFileService } = await import('../services/cloudinaryService');
+                          toast.promise(
+                            uploadToFileService(file).then(url => {
+                              setLogoPreview(url);
+                              handleInputChange('logoUrl', url);
+                            }),
+                            {
+                              loading: 'Uploading logo...',
+                              success: 'Logo uploaded successfully!',
+                              error: 'Failed to upload logo'
+                            }
+                          );
+                        } catch (err) {
+                          console.error('Logo upload error:', err);
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
+              <button onClick={handleNext} className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">Next</button>
+            </div>
+          </motion.div>
+        );
+      case 5:
+        return (
+          <motion.div 
+            key="step5"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-2">
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
             </div>
 
@@ -885,17 +1015,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 5:
+      case 6:
         return (
           <motion.div 
-            key="step5"
+            key="step6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Terms & Conditions</h3>
             </div>
 
@@ -961,17 +1091,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 6:
+      case 7:
         return (
           <motion.div 
-            key="step6"
+            key="step7"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 7</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Finalize Project</h3>
             </div>
             
@@ -1177,11 +1307,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="h-1.5 w-32 bg-border rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${(step / 6) * 100}%` }}
+                animate={{ width: `${(step / 7) * 100}%` }}
                 className="h-full bg-primary"
               />
             </div>
-            <div className="text-xs font-bold text-primary uppercase tracking-wider">Step {step} of 6</div>
+            <div className="text-xs font-bold text-primary uppercase tracking-wider">Step {step} of 7</div>
           </div>
         </div>
       </header>

@@ -206,6 +206,7 @@ export interface Project {
   description: string;
   websiteName: string;
   primaryColor: string;
+  tertiaryColor?: string;
   secondaryColor: string;
   logoUrl?: string;
   documentsUrl?: string;

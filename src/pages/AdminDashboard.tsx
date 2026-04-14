@@ -24,6 +24,7 @@ import {
   FileText
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { toast } from 'react-hot-toast';
 import { formatDate } from '../lib/utils';
 import { 
   getProfiles, 
@@ -75,6 +76,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   const [isGeneratingWarning, setIsGeneratingWarning] = useState<string | null>(null);
 
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [viewingDescription, setViewingDescription] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -611,25 +613,24 @@ Generated on: ${new Date().toLocaleString()}
                       )}
                     </div>
 
-                    <div className="pt-6 flex flex-wrap gap-4 justify-between items-center">
-                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress: {project.progress || 0}%</div>
-                      <div className="flex gap-2">
-                        <div className="relative group/download">
+                      <div className="pt-6 flex flex-wrap gap-4 justify-between items-center">
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress: {project.progress || 0}%</div>
+                        <div className="flex gap-2">
                           <button 
+                            onClick={() => setViewingDescription(project)}
                             className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all"
                             title="View Description"
                           >
                             <FileText size={16} />
                           </button>
+                          <button 
+                            onClick={() => setEditingProject(project)}
+                            className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 hover:gap-4 transition-all"
+                          >
+                            Manage <ChevronRight size={14} />
+                          </button>
                         </div>
-                        <button 
-                          onClick={() => setEditingProject(project)}
-                          className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 hover:gap-4 transition-all"
-                        >
-                          Manage <ChevronRight size={14} />
-                        </button>
                       </div>
-                    </div>
                   </div>
                 ))}
                 {projects.length === 0 && (
@@ -642,6 +643,77 @@ Generated on: ${new Date().toLocaleString()}
 
             {/* Project Edit Modal */}
             <AnimatePresence>
+              {viewingDescription && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#E6FF00] to-[#00F2FF]" />
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1">
+                        <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Project Prompt</h3>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Generated for Developer</p>
+                      </div>
+                      <button onClick={() => setViewingDescription(null)} className="text-white/40 hover:text-white transition-colors">
+                        <XCircle size={24} />
+                      </button>
+                    </div>
+
+                    <div className="bg-black/40 rounded-3xl p-8 border border-white/5 font-mono text-sm leading-relaxed text-slate-300 relative group">
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => {
+                            const prompt = `Build a SaaS platform named "${viewingDescription.businessName}" for WebbyLaunch using Next.js + Tailwind. Use Primary color ${viewingDescription.primaryColor} and Secondary color ${viewingDescription.secondaryColor}${viewingDescription.tertiaryColor ? ` and Tertiary color ${viewingDescription.tertiaryColor}` : ''} for full theme styling. Include landing page, pricing, authentication, dashboard, project management, admin panel, and settings. Business Description: ${viewingDescription.description}. Make it production-ready, responsive, and deployable on Vercel.`;
+                            navigator.clipboard.writeText(prompt);
+                            toast.success('Prompt copied to clipboard!');
+                          }}
+                          className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-[#00F2FF] transition-all"
+                        >
+                          <RefreshCcw size={14} />
+                        </button>
+                      </div>
+                      <p className="whitespace-pre-wrap">
+                        Build a SaaS platform named <span className="text-[#E6FF00]">“{viewingDescription.businessName}”</span> for WebbyLaunch using Next.js + Tailwind. 
+                        {"\n\n"}
+                        Use Primary color <span className="text-[#00F2FF]">{viewingDescription.primaryColor}</span> and Secondary color <span className="text-[#00F2FF]">{viewingDescription.secondaryColor}</span>
+                        {viewingDescription.tertiaryColor && <> and Tertiary color <span className="text-[#00F2FF]">{viewingDescription.tertiaryColor}</span></>} for full theme styling.
+                        {"\n\n"}
+                        Include landing page, pricing, authentication, dashboard, project management, admin panel, and settings.
+                        {"\n\n"}
+                        <span className="text-slate-500 italic">Business Description:</span>
+                        {"\n"}
+                        {viewingDescription.description || 'No description provided.'}
+                        {"\n\n"}
+                        Make it production-ready, responsive, and deployable on Vercel.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <button 
+                        onClick={() => handleDownloadDescription(viewingDescription, 'pdf')}
+                        className="flex-1 py-4 rounded-xl border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+                      >
+                        <FileText size={16} /> Download PDF
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const prompt = `Build a SaaS platform named "${viewingDescription.businessName}" for WebbyLaunch using Next.js + Tailwind. Use Primary color ${viewingDescription.primaryColor} and Secondary color ${viewingDescription.secondaryColor}${viewingDescription.tertiaryColor ? ` and Tertiary color ${viewingDescription.tertiaryColor}` : ''} for full theme styling. Include landing page, pricing, authentication, dashboard, project management, admin panel, and settings. Business Description: ${viewingDescription.description}. Make it production-ready, responsive, and deployable on Vercel.`;
+                          navigator.clipboard.writeText(prompt);
+                          toast.success('Prompt copied to clipboard!');
+                        }}
+                        className="flex-1 py-4 rounded-xl bg-[#E6FF00] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)] flex items-center justify-center gap-2"
+                      >
+                        Copy Full Prompt
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+
               {editingProject && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
                   <motion.div 

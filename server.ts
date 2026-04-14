@@ -4,13 +4,9 @@ import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
 import admin from 'firebase-admin';
-import { Resend } from 'resend';
 import firebaseConfig from './firebase-applet-config.json';
 
 dotenv.config();
-
-// Initialize Resend
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
@@ -95,53 +91,7 @@ async function startServer() {
     
     console.log(`[OTP] Code for ${email}: ${code}`);
     
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: "WebbyLaunch <onboarding@resend.dev>",
-          to: email,
-          subject: "Your WebbyLaunch Verification Code",
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; rounded: 16px;">
-              <h1 style="color: #6366F1; font-size: 24px; font-weight: bold; margin-bottom: 16px;">Verify your email</h1>
-              <p style="color: #4b5563; font-size: 16px; margin-bottom: 24px;">Use the following code to sign in to your WebbyLaunch account. This code will expire in 10 minutes.</p>
-              <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #111827;">
-                ${code}
-              </div>
-              <p style="color: #9ca3af; font-size: 14px; margin-top: 32px;">If you didn't request this code, you can safely ignore this email.</p>
-            </div>
-          `,
-        });
-        res.json({ success: true, message: "OTP sent successfully to your email" });
-      } catch (error) {
-        console.error("Resend error:", error);
-        res.status(500).json({ error: "Failed to send email. Please check server logs." });
-      }
-    } else {
-      console.warn("RESEND_API_KEY not found. OTP logged to console only.");
-      res.json({ success: true, message: "OTP sent successfully (check server logs for demo)" });
-    }
-  });
-
-  app.post("/api/send-email", async (req, res) => {
-    const { to, subject, html } = req.body;
-    
-    if (!resend) {
-      return res.status(500).json({ error: "Resend is not configured. Please add RESEND_API_KEY to secrets." });
-    }
-
-    try {
-      const data = await resend.emails.send({
-        from: "WebbyLaunch <onboarding@resend.dev>",
-        to: to || "user@example.com",
-        subject: subject || "Welcome to WebbyLaunch",
-        html: html || "<h1>Your project is ready 🚀</h1>",
-      });
-
-      res.status(200).json(data);
-    } catch (error) {
-      res.status(500).json({ error });
-    }
+    res.json({ success: true, message: "OTP logged to console (Email verification disabled)" });
   });
 
   app.post("/api/verify-otp", (req, res) => {
