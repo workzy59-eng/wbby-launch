@@ -38,6 +38,7 @@ const Layout = React.lazy(() => import('./components/Layout'));
 const LocationPage = React.lazy(() => import('./pages/LocationPage'));
 const Careers = React.lazy(() => import('./pages/Careers'));
 const Docs = React.lazy(() => import('./pages/Docs'));
+const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
 
 import { useAuth } from './context/AuthContext';
 
@@ -128,6 +129,7 @@ export default function App() {
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/careers" element={<Careers />} />
                 <Route path="/docs" element={<Docs />} />
+                <Route path="/preview-builder" element={<PreviewBuilder />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/join-developer" element={<JoinDeveloper />} />

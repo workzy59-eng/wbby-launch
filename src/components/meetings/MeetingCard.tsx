@@ -216,7 +216,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
                       type="date"
                       value={rescheduleDate}
                       onChange={(e) => setRescheduleDate(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#6366F1]/50 transition-all"
                     />
                   </div>
                   <div className="space-y-2">
@@ -225,7 +225,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
                       type="time"
                       value={rescheduleTime}
                       onChange={(e) => setRescheduleTime(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#6366F1]/50 transition-all"
                     />
                   </div>
                 </div>

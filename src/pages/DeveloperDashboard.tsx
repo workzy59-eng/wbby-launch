@@ -31,9 +31,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#6366F1]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#6366F1]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 import { formatDate } from '../lib/utils';
@@ -187,11 +187,11 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-xl w-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 w-full h-2 bg-[#E6FF00]/20">
+          <div className="absolute top-0 left-0 w-full h-2 bg-[#6366F1]/20">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
-              className="h-full bg-[#E6FF00]"
+              className="h-full bg-[#6366F1]"
             />
           </div>
 
@@ -204,7 +204,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 type="text" 
                 value={onboardingData.name}
                 onChange={(e) => setOnboardingData({ ...onboardingData, name: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase" 
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase" 
               />
             </div>
 
@@ -214,7 +214,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 type="number" 
                 value={onboardingData.experience}
                 onChange={(e) => setOnboardingData({ ...onboardingData, experience: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase" 
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase" 
               />
             </div>
 
@@ -223,7 +223,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               <select 
                 value={onboardingData.devRole}
                 onChange={(e) => setOnboardingData({ ...onboardingData, devRole: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase appearance-none"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase appearance-none"
               >
                 <option value="" className="bg-[#4A5D4E]">Select Role</option>
                 <option value="Frontend" className="bg-[#4A5D4E]">Frontend Developer</option>
@@ -235,7 +235,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
             <button 
               onClick={handleOnboardingSubmit}
-              className="w-full bg-[#E6FF00] text-black py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(230,255,0,0.2)]"
+              className="w-full bg-[#6366F1] text-white py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(99,102,241,0.2)]"
             >
               Submit Application
             </button>
@@ -253,9 +253,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               <motion.div 
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="max-w-md w-full bg-[#4A5D4E] border border-[#E6FF00]/20 rounded-[2rem] p-10 text-center space-y-8"
+                className="max-w-md w-full bg-[#4A5D4E] border border-[#6366F1]/20 rounded-[2rem] p-10 text-center space-y-8"
               >
-                <div className="w-20 h-20 bg-[#E6FF00]/10 rounded-full flex items-center justify-center mx-auto text-[#E6FF00]">
+                <div className="w-20 h-20 bg-[#6366F1]/10 rounded-full flex items-center justify-center mx-auto text-[#6366F1]">
                   <AlertTriangle size={40} />
                 </div>
                 <div className="space-y-4">
@@ -266,7 +266,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 </div>
                 <div className="flex gap-4">
                   <button onClick={() => setShowSalaryWarning(false)} className="flex-1 py-4 rounded-xl border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-all">Cancel</button>
-                  <button onClick={confirmOnboarding} className="flex-1 py-4 rounded-xl bg-[#E6FF00] text-black font-black uppercase italic hover:scale-105 transition-all">I Agree</button>
+                  <button onClick={confirmOnboarding} className="flex-1 py-4 rounded-xl bg-[#6366F1] text-white font-black uppercase italic hover:scale-105 transition-all">I Agree</button>
                 </div>
               </motion.div>
             </motion.div>
@@ -284,7 +284,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 { label: 'My Projects', value: projects.length, icon: Briefcase, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-                { label: 'Attendance', value: attendance.length > 0 ? `${Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100)}%` : '0%', icon: Clock, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10' },
+                { label: 'Attendance', value: attendance.length > 0 ? `${Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100)}%` : '0%', icon: Clock, color: 'text-[#6366F1]', bg: 'bg-[#6366F1]/10' },
                 { label: 'Messages', value: '0', icon: MessageSquare, color: 'text-yellow-200', bg: 'bg-yellow-500/10' },
               ].map((stat, i) => (
                 <motion.div 
@@ -292,7 +292,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#E6FF00]/30 transition-all group"
+                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#6366F1]/30 transition-all group"
                 >
                   <div className="flex justify-between items-start">
                     <div className={`p-3 ${stat.bg} rounded-2xl ${stat.color} group-hover:scale-110 transition-transform`}>
@@ -337,7 +337,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                     type="date" 
                     value={newLeave.startDate}
                     onChange={(e) => setNewLeave({ ...newLeave, startDate: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase" 
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase" 
                   />
                 </div>
                 <div className="space-y-2">
@@ -346,7 +346,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                     type="date" 
                     value={newLeave.endDate}
                     onChange={(e) => setNewLeave({ ...newLeave, endDate: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase" 
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase" 
                   />
                 </div>
               </div>
@@ -355,12 +355,12 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 <textarea 
                   value={newLeave.reason}
                   onChange={(e) => setNewLeave({ ...newLeave, reason: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase h-32" 
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase h-32" 
                 />
               </div>
               <button 
                 onClick={handleLeaveSubmit}
-                className="w-full bg-[#E6FF00] text-black py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all"
+                className="w-full bg-[#6366F1] text-white py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all"
               >
                 Submit Request
               </button>
@@ -440,7 +440,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 <button 
                   onClick={() => setResignAgreed(!resignAgreed)}
                   className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${
-                    resignAgreed ? 'bg-[#E6FF00] border-[#E6FF00] text-black' : 'border-white/20'
+                    resignAgreed ? 'bg-[#6366F1] border-[#6366F1] text-white' : 'border-white/20'
                   }`}
                 >
                   {resignAgreed && <CheckCircle2 size={20} />}
@@ -469,7 +469,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 {projects.map((project, idx) => (
                   <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#E6FF00]/40 transition-all">
                     <div className="flex justify-between items-start">
-                      <div className="w-14 h-14 bg-[#E6FF00] rounded-2xl flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_20px_rgba(230,255,0,0.1)]">
+                      <div className="w-14 h-14 bg-[#6366F1] rounded-2xl flex items-center justify-center text-white font-black text-xl italic shadow-[0_0_20px_rgba(99,102,241,0.1)]">
                         {project.businessName?.[0]}
                       </div>
                       <div className="px-4 py-1 bg-blue-500/20 text-blue-400 rounded-full text-[10px] font-black uppercase tracking-widest">
@@ -482,7 +482,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                     </div>
                     <div className="pt-6 border-t border-white/5 flex justify-between items-center">
                       <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">Deadline: 14 Days</div>
-                      <button className="text-[#E6FF00] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                      <button className="text-[#6366F1] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
                         View Details <ChevronRight size={14} />
                       </button>
                     </div>
@@ -517,7 +517,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   <select 
                     value={projectUpdate.projectId}
                     onChange={(e) => setProjectUpdate({ ...projectUpdate, projectId: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase appearance-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase appearance-none"
                   >
                     <option value="" className="bg-[#4A5D4E]">Choose Project</option>
                     {projects.map(p => (
@@ -531,13 +531,13 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                     value={projectUpdate.details}
                     onChange={(e) => setProjectUpdate({ ...projectUpdate, details: e.target.value })}
                     placeholder="What have you completed today?"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#E6FF00] outline-none transition-all text-white font-bold uppercase h-40" 
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#6366F1] outline-none transition-all text-white font-bold uppercase h-40" 
                   />
                 </div>
                 <button 
                   onClick={handleUpdateSubmit}
                   disabled={!projectUpdate.projectId || !projectUpdate.details || isUpdating}
-                  className="w-full bg-[#E6FF00] text-black py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                  className="w-full bg-[#6366F1] text-white py-6 rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                 >
                   {isUpdating ? <Loader color="black" /> : 'Post Update'}
                 </button>
@@ -549,12 +549,12 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] font-sans selection:bg-[#E6FF00] selection:text-black text-slate-200">
+    <div className="min-h-screen bg-[#0F172A] font-sans selection:bg-[#6366F1] selection:text-white text-slate-200">
       {/* Sidebar */}
       <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#E6FF00] rounded-lg -rotate-6 shadow-[0_0_20px_rgba(230,255,0,0.3)]" />
-          Webby<span className="text-[#E6FF00]">Dev</span>
+          <div className="w-8 h-8 bg-[#6366F1] rounded-lg -rotate-6 shadow-[0_0_20px_rgba(99,102,241,0.3)]" />
+          Webby<span className="text-[#6366F1]">Dev</span>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -571,7 +571,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] scale-[1.02]' 
+                  ? 'bg-[#6366F1] text-white shadow-[0_0_30px_rgba(99,102,241,0.2)] scale-[1.02]' 
                   : 'text-slate-500 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -608,7 +608,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             onClick={() => setActiveTab(tab.id as Tab)}
             className={`p-3 rounded-xl transition-all ${
               activeTab === tab.id 
-                ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.2)]' 
+                ? 'bg-[#6366F1] text-white shadow-[0_0_20px_rgba(99,102,241,0.2)]' 
                 : 'text-slate-500'
             }`}
           >
@@ -632,16 +632,16 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           <div className="flex items-center gap-6">
             <button 
               onClick={() => setShowChat(true)}
-              className="p-4 bg-[#E6FF00]/10 text-[#E6FF00] rounded-2xl hover:bg-[#E6FF00] hover:text-black transition-all flex items-center gap-2 group"
+              className="p-4 bg-[#6366F1]/10 text-[#6366F1] rounded-2xl hover:bg-[#6366F1] hover:text-white transition-all flex items-center gap-2 group"
             >
               <MessageSquare size={20} className="group-hover:scale-110 transition-transform" />
               <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Chat with Admin</span>
             </button>
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">{profile?.displayName}</div>
-              <div className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">{profile?.status || 'Active'}</div>
+              <div className="text-[10px] font-black text-[#6366F1] uppercase tracking-widest">{profile?.status || 'Active'}</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6366F1] to-indigo-600 flex items-center justify-center text-white font-black text-xl italic shadow-[0_0_30px_rgba(99,102,241,0.2)]">
               {profile?.displayName?.[0] || 'D'}
             </div>
           </div>

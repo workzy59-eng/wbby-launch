@@ -143,7 +143,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all [color-scheme:dark]"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#6366F1]/50 transition-all [color-scheme:dark]"
                 />
               </div>
 
@@ -157,7 +157,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all [color-scheme:dark]"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#6366F1]/50 transition-all [color-scheme:dark]"
                 />
               </div>
             </div>

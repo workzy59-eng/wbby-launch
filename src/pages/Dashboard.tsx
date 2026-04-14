@@ -124,7 +124,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   // Removed old statusSteps and currentStepIndex from here
 
   return (
-    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#E6FF00] selection:text-black">
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#6366F1] selection:text-white">
       <MeetingReminder meetings={meetings} />
       {/* Sidebar Navigation */}
       <aside className="fixed left-0 top-0 bottom-0 w-24 bg-black/20 backdrop-blur-3xl border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
@@ -144,7 +144,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               onClick={() => tab.link ? navigate(tab.link) : setActiveTab(tab.id as any)}
               className={`p-4 rounded-2xl transition-all duration-300 relative group ${
                 activeTab === tab.id 
-                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] scale-110' 
+                  ? 'bg-[#6366F1] text-white shadow-[0_0_30px_rgba(99,102,241,0.2)] scale-110' 
                   : 'text-white/30 hover:text-white hover:bg-white/5'
               }`}
               title={tab.label}
@@ -160,7 +160,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           {profile?.role === 'admin' && (
             <Link 
               to="/admin"
-              className="p-4 rounded-2xl text-white/30 hover:text-[#E6FF00] hover:bg-white/5 transition-all"
+              className="p-4 rounded-2xl text-white/30 hover:text-[#6366F1] hover:bg-white/5 transition-all"
             >
               <LayoutDashboard size={24} />
             </Link>
@@ -179,7 +179,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             exit={{ opacity: 0, y: -100 }}
             className="fixed top-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6"
           >
-            <div className="bg-[#E6FF00] text-black p-6 rounded-[2rem] shadow-2xl flex items-center gap-6 border border-white/20">
+            <div className="bg-[#6366F1] text-white p-6 rounded-[2rem] shadow-2xl flex items-center gap-6 border border-white/20">
               <div className="w-16 h-16 bg-black/10 rounded-2xl flex items-center justify-center shrink-0">
                 <PartyPopper size={32} className="animate-bounce" />
               </div>
@@ -302,12 +302,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-center gap-2 mb-4"
               >
-                <div className="w-2 h-2 bg-[#E6FF00] rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E6FF00]">Client Dashboard</span>
+                <div className="w-2 h-2 bg-[#6366F1] rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6366F1]">Client Dashboard</span>
               </motion.div>
               <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
                 Welcome back,<br />
-                <span className="text-[#E6FF00]">{profile?.displayName?.split(' ')[0] || 'User'}</span>
+                <span className="text-[#6366F1]">{profile?.displayName?.split(' ')[0] || 'User'}</span>
               </h1>
             </div>
             <div className="flex flex-col items-end gap-4">
@@ -315,7 +315,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 {adminProfile && (
                   <button 
                     onClick={() => setShowDirectChat(true)}
-                    className="flex items-center gap-3 bg-[#E6FF00]/10 border border-[#E6FF00]/20 px-6 py-3 rounded-2xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all group"
+                    className="flex items-center gap-3 bg-[#6366F1]/10 border border-[#6366F1]/20 px-6 py-3 rounded-2xl text-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-all group"
                   >
                     <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
                     <span className="text-[10px] font-black uppercase tracking-widest">Chat with Admin</span>
@@ -351,24 +351,24 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               ) : activeTab === 'meetings' ? (
                 <div className="space-y-12">
                   <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E6FF00]">Scheduling</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6366F1]">Scheduling</span>
                     <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Meetings</h2>
                   </div>
                   <MeetingList user={user} profile={profile!} />
                 </div>
               ) : activeTab === 'settings' ? (
                 <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl text-center space-y-8">
-                  <div className="w-24 h-24 bg-[#E6FF00] rounded-full flex items-center justify-center text-black mx-auto shadow-[0_0_50px_rgba(230,255,0,0.2)]">
+                  <div className="w-24 h-24 bg-[#6366F1] rounded-full flex items-center justify-center text-white mx-auto shadow-[0_0_50px_rgba(99,102,241,0.2)]">
                     <Settings size={48} />
                   </div>
                   <div className="space-y-4">
-                    <h2 className="text-5xl font-black tracking-tighter uppercase italic text-[#E6FF00]">Professional Settings</h2>
+                    <h2 className="text-5xl font-black tracking-tighter uppercase italic text-[#6366F1]">Professional Settings</h2>
                     <p className="text-white/50 text-xl max-w-md mx-auto font-medium italic">Manage your profile, business details, and platform controls in our new dedicated settings portal.</p>
                   </div>
                   <div className="pt-8">
                     <Link 
                       to="/settings" 
-                      className="inline-block bg-[#E6FF00] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+                      className="inline-block bg-[#6366F1] text-white px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]"
                     >
                       Open Settings Portal
                     </Link>
@@ -378,7 +378,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 <div className="space-y-10">
                   <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                     <div className="space-y-4">
-                      <h2 className="text-xs font-black text-[#E6FF00] uppercase tracking-[0.4em]">Billing & Subscription</h2>
+                      <h2 className="text-xs font-black text-[#6366F1] uppercase tracking-[0.4em]">Billing & Subscription</h2>
                       <h3 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Payments</h3>
                     </div>
                     
@@ -386,13 +386,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
                       <button 
                         onClick={() => setBillingType('one-time')}
-                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#6366F1] text-white' : 'text-white/40 hover:text-white'}`}
                       >
                         One-Time
                       </button>
                       <button 
                         onClick={() => setBillingType('subscription')}
-                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#E6FF00] text-black' : 'text-white/40 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#6366F1] text-white' : 'text-white/40 hover:text-white'}`}
                       >
                         Monthly
                       </button>
@@ -402,16 +402,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Active Plan Card */}
                     <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#E6FF00]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#E6FF00]/10 transition-all" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#6366F1]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#6366F1]/10 transition-all" />
                       
                       <div className="flex justify-between items-start relative z-10">
                         <div className="space-y-1">
-                          <div className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">Current Plan</div>
+                          <div className="text-[10px] font-black uppercase tracking-widest text-[#6366F1]">Current Plan</div>
                           <h4 className="text-3xl font-black uppercase italic tracking-tighter">
                             {selectedProject?.plan || 'Basic'} {billingType === 'one-time' ? '(One-Time)' : '(Subscription)'}
                           </h4>
                         </div>
-                        <div className="px-4 py-1.5 bg-[#E6FF00]/10 border border-[#E6FF00]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#E6FF00]">
+                        <div className="px-4 py-1.5 bg-[#6366F1]/10 border border-[#6366F1]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#6366F1]">
                           Active
                         </div>
                       </div>
@@ -459,7 +459,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         <p className="text-white/40 text-xs font-medium italic">Your subscription is in good standing. No action required.</p>
                       </div>
                       <div className="pt-4">
-                        <button className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:underline">
+                        <button className="text-[10px] font-black uppercase tracking-widest text-[#6366F1] hover:underline">
                           Update Payment Method
                         </button>
                       </div>
@@ -490,7 +490,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             <tr key={i} className="group hover:bg-white/5 transition-all">
                               <td className="px-8 py-6 text-xs font-bold text-white/60">{tx.date}</td>
                               <td className="px-8 py-6 text-xs font-black uppercase italic tracking-tighter">{tx.desc}</td>
-                              <td className="px-8 py-6 text-xs font-black text-[#E6FF00] italic">{tx.amount}</td>
+                              <td className="px-8 py-6 text-xs font-black text-[#6366F1] italic">{tx.amount}</td>
                               <td className="px-8 py-6">
                                 <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-500/20">
                                   {tx.status}
@@ -516,7 +516,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-blue-400', bg: 'bg-blue-400/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
                       { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
                       { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-400/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
-                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#E6FF00]', bg: 'bg-[#E6FF00]/10', items: ['Basic Plan'] },
+                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#6366F1]', bg: 'bg-[#6366F1]/10', items: ['Basic Plan'] },
                     ].map((stat, i) => (
                       <div key={stat.id} className="relative">
                         <motion.button 
@@ -524,7 +524,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.1 }}
                           onClick={() => setExpandedBox(expandedBox === stat.id ? null : stat.id)}
-                          className={`w-full bg-black/20 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#E6FF00]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#E6FF00]/50' : ''}`}
+                          className={`w-full bg-black/20 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#6366F1]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#6366F1]/50' : ''}`}
                         >
                           <div className="flex justify-between items-start mb-6">
                             <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
@@ -563,9 +563,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
                   {projects.length === 0 ? (
                     <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
-                      <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#E6FF00]">No projects yet</h2>
+                      <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#6366F1]">No projects yet</h2>
                       <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
-                      <Link to="/onboarding" className="inline-block bg-[#E6FF00] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+                      <Link to="/onboarding" className="inline-block bg-[#6366F1] text-white px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]">
                         Start Your Project
                       </Link>
                     </div>
@@ -575,7 +575,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       <div className="lg:col-span-1 space-y-6">
                         <div className="flex items-center justify-between px-4">
                           <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">Your Projects</h2>
-                          <Link to="/onboarding" className="text-[10px] font-black uppercase tracking-widest text-[#E6FF00] hover:underline">New +</Link>
+                          <Link to="/onboarding" className="text-[10px] font-black uppercase tracking-widest text-[#6366F1] hover:underline">New +</Link>
                         </div>
                         <div className="space-y-4">
                           {projects.map((p) => (
@@ -584,8 +584,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               onClick={() => setSelectedProject(p)}
                               className={`w-full p-8 rounded-[2.5rem] text-left transition-all border duration-300 ${
                                 selectedProject?.id === p.id 
-                                  ? 'bg-[#E6FF00] border-[#E6FF00] text-black shadow-xl scale-[1.02]' 
-                                  : 'bg-black/20 border-white/5 text-white hover:border-[#E6FF00]/50'
+                                  ? 'bg-[#6366F1] border-[#6366F1] text-white shadow-xl scale-[1.02]' 
+                                  : 'bg-black/20 border-white/5 text-white hover:border-[#6366F1]/50'
                               }`}
                             >
                               <div className="flex items-center justify-between mb-2">
@@ -600,7 +600,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               <p className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? 'text-black/70' : 'text-white/50'}`}>{p.businessType}</p>
                               <div className="flex items-center justify-between">
                                 <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                  selectedProject?.id === p.id ? 'bg-black text-[#E6FF00]' : 'bg-white/10 text-white'
+                                  selectedProject?.id === p.id ? 'bg-black text-[#6366F1]' : 'bg-white/10 text-white'
                                 }`}>
                                   {p.status}
                                 </div>
@@ -621,11 +621,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-10 lg:p-16 border border-white/5 shadow-2xl relative overflow-hidden"
                           >
                             {/* Atmospheric Glow */}
-                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#E6FF00] rounded-full blur-[120px] opacity-10"></div>
+                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#6366F1] rounded-full blur-[120px] opacity-10"></div>
 
                             <div className="flex justify-between items-start mb-16 relative z-10">
                               <div>
-                                <h2 className="text-6xl font-black tracking-tighter mb-4 uppercase italic text-[#E6FF00]">Project Status</h2>
+                                <h2 className="text-6xl font-black tracking-tighter mb-4 uppercase italic text-[#6366F1]">Project Status</h2>
                                 <p className="text-2xl text-white/70 font-black uppercase italic tracking-tighter">{selectedProject.businessName}</p>
                                 <div className="mt-2 text-[10px] font-bold text-white/40 uppercase tracking-widest flex flex-wrap gap-x-4 gap-y-1">
                                   <span>{selectedProject.businessType}</span>
@@ -638,7 +638,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                       const el = document.getElementById('dev-phase');
                                       if (el) el.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className="flex items-center gap-2 bg-[#E6FF00]/10 border border-[#E6FF00]/20 px-6 py-3 rounded-xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all group"
+                                    className="flex items-center gap-2 bg-[#6366F1]/10 border border-[#6366F1]/20 px-6 py-3 rounded-xl text-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-all group"
                                   >
                                     <Clock size={16} className="group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">View Full Process</span>
@@ -653,7 +653,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Selected Template</h3>
                                 <div className="p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between">
                                   <div>
-                                    <div className="text-xl font-black uppercase italic text-[#E6FF00]">
+                                    <div className="text-xl font-black uppercase italic text-[#6366F1]">
                                       {selectedProject.templateId === 'food-court' ? 'Food Court' : 
                                        selectedProject.templateId === 'autos' ? 'Global Autos' : 
                                        selectedProject.templateId === 'clothing' ? 'Wearism Fashion' : 
@@ -666,7 +666,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   {['food-court', 'autos', 'clothing'].includes(selectedProject.templateId) && (
                                     <Link 
                                       to={`/portfolio/${selectedProject.templateId === 'food-court' ? 'food-court' : selectedProject.templateId === 'autos' ? 'autos' : 'clothing'}`}
-                                      className="bg-white/5 hover:bg-[#E6FF00] hover:text-black p-3 rounded-xl transition-all"
+                                      className="bg-white/5 hover:bg-[#6366F1] hover:text-white p-3 rounded-xl transition-all"
                                     >
                                       <ArrowRight size={20} />
                                     </Link>
@@ -683,7 +683,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                       rel="noopener noreferrer"
                                       className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3 hover:bg-white/10 transition-all group"
                                     >
-                                      <div className="w-10 h-10 rounded-xl bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
+                                      <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 flex items-center justify-center text-[#6366F1]">
                                         <ImageIcon size={20} />
                                       </div>
                                       <div className="flex-1 min-w-0">
@@ -698,7 +698,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                       rel="noopener noreferrer"
                                       className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3 hover:bg-white/10 transition-all group"
                                     >
-                                      <div className="w-10 h-10 rounded-xl bg-[#E6FF00]/10 flex items-center justify-center text-[#E6FF00]">
+                                      <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 flex items-center justify-center text-[#6366F1]">
                                         <FileText size={20} />
                                       </div>
                                       <div className="flex-1 min-w-0">
@@ -722,15 +722,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   <div key={step} className="flex flex-col items-center min-w-[120px] text-center gap-4">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
                                       i < currentStepIndex 
-                                        ? 'bg-[#E6FF00] border-[#E6FF00] text-black' 
+                                        ? 'bg-[#6366F1] border-[#6366F1] text-white' 
                                         : i === currentStepIndex
-                                          ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#E6FF00] border-[#E6FF00] text-black'
+                                          ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#6366F1] border-[#6366F1] text-white'
                                           : 'bg-transparent border-white/20 text-white/20'
                                     }`}>
                                       {i < currentStepIndex ? <Check size={24} /> : step === 'Declined' ? <X size={24} /> : <span className="font-black text-lg">{i + 1}</span>}
                                     </div>
                                     <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                      i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#E6FF00]' : 'text-white/20'
+                                      i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#6366F1]' : 'text-white/20'
                                     }`}>
                                       {step}
                                     </span>
@@ -740,14 +740,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               
                               <div className="space-y-6">
                                 <div className="flex justify-between items-end">
-                                  <span className="text-2xl font-black uppercase italic text-[#E6FF00]">Progress: {selectedProject.progress}%</span>
+                                  <span className="text-2xl font-black uppercase italic text-[#6366F1]">Progress: {selectedProject.progress}%</span>
                                   <span className="text-xs font-black text-white/40 uppercase tracking-widest">Est. Completion: {formatDate(selectedProject.estimatedCompletion)}</span>
                                 </div>
                                 <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
                                   <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${selectedProject.progress}%` }}
-                                    className="h-full bg-[#E6FF00] rounded-full shadow-[0_0_15px_rgba(230,255,0,0.5)]"
+                                    className="h-full bg-[#6366F1] rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)]"
                                   />
                                 </div>
                               </div>
@@ -781,7 +781,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               { step: '04', title: 'Launch', desc: 'Final testing and production deployment.', done: false },
                             ].map((phase, i) => (
                               <div key={i} className="flex gap-6 items-start">
-                                <div className={`text-xl font-black italic ${phase.done ? 'text-[#E6FF00]' : 'text-white/20'}`}>{phase.step}</div>
+                                <div className={`text-xl font-black italic ${phase.done ? 'text-[#6366F1]' : 'text-white/20'}`}>{phase.step}</div>
                                 <div>
                                   <h4 className={`font-black uppercase italic tracking-tighter ${phase.done ? 'text-white' : 'text-white/40'}`}>{phase.title}</h4>
                                   <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{phase.desc}</p>
@@ -791,7 +791,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           </div>
                         </div>
                         
-                        <div className="bg-[#E6FF00] p-10 rounded-[3rem] text-black flex flex-col justify-between shadow-[0_0_40px_rgba(230,255,0,0.1)]">
+                        <div className="bg-[#6366F1] p-10 rounded-[3rem] text-white flex flex-col justify-between shadow-[0_0_40px_rgba(99,102,241,0.1)]">
                           <div>
                             <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none">Need help with<br />your plan?</h3>
                             <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 mb-8">Our experts are ready to assist you in building the perfect web presence.</p>
@@ -854,9 +854,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#E6FF00]/10"
+              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#6366F1]/10"
             >
-              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#E6FF00]">Cancel Project?</h3>
+              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#6366F1]">Cancel Project?</h3>
               <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>
               <div className="flex flex-col gap-4">
                 <button onClick={handleCancelProject} className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all">
