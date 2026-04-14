@@ -39,10 +39,10 @@ const LocationPage = React.lazy(() => import('./pages/LocationPage'));
 const Careers = React.lazy(() => import('./pages/Careers'));
 const Docs = React.lazy(() => import('./pages/Docs'));
 
+import { useAuth } from './context/AuthContext';
+
 export default function App() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, profile, loading } = useAuth();
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -50,191 +50,36 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const seedBlogPosts = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, 'blog_posts'));
-        if (snapshot.empty) {
-          const posts = [
-            {
-              title: "Why Mobile-First Design is the Standard in 2026",
-              slug: "mobile-first-design-2026",
-              excerpt: "Explore why mobile-first design is no longer an option but a necessity for business success in the modern digital era.",
-              content: `
-# The Shift to Mobile Dominance
-
-In the rapidly evolving digital landscape of 2026, the way users interact with the web has shifted fundamentally. Mobile devices are no longer just an alternative; they are the primary gateway to the internet.
-
-## Why Mobile-First?
-
-Statistically, over 85% of global web traffic now originates from mobile devices. Google's mobile-first indexing is no longer a suggestion—it's the absolute standard. If your website isn't optimized for the palm of a hand, it effectively doesn't exist in search results.
-
-### Key Benefits:
-1. **Better SEO Ranking**: Google prioritizes mobile-friendly sites.
-2. **Improved User Experience**: Faster load times and touch-friendly interfaces.
-3. **Higher Conversion Rates**: Users are more likely to buy on a seamless mobile site.
-
-> "Design is not just what it looks like and feels like. Design is how it works." - Steve Jobs
-
-At WebbyLaunch, we build every site with a mobile-first philosophy, ensuring your business looks premium on every screen size.
-              `,
-              author: "Sarah Chen",
-              date: serverTimestamp(),
-              image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=1200&h=600",
-              category: "Website",
-              tags: ["Featured", "Design", "Mobile"]
-            },
-            {
-              title: "10 SEO Strategies to Double Your Traffic",
-              slug: "seo-strategies-2026",
-              excerpt: "Master the latest SEO techniques that actually work in 2026. From AI-driven content to technical optimization.",
-              content: `
-# SEO in the Age of AI
-
-Search Engine Optimization has changed. It's no longer just about keywords; it's about intent, authority, and user satisfaction.
-
-## Our Top 10 Strategies
-
-1. **Focus on User Intent**: Answer the questions your users are actually asking.
-2. **Optimize for Core Web Vitals**: Speed, stability, and responsiveness are key.
-3. **Leverage AI Content Wisely**: Use AI for research, but keep the human touch for authority.
-4. **Build High-Quality Backlinks**: Quality always beats quantity.
-
-... and much more.
-              `,
-              author: "Alex Rivera",
-              date: serverTimestamp(),
-              image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200&h=600",
-              category: "SEO",
-              tags: ["SEO", "Growth", "Marketing"]
-            },
-            {
-              title: "How to Scale Your SaaS Business Fast",
-              slug: "scale-saas-business",
-              excerpt: "Learn the proven frameworks for scaling your software business from zero to hero in record time.",
-              content: `
-# Scaling Your SaaS
-
-Scaling a SaaS business requires a mix of product excellence, aggressive marketing, and operational efficiency.
-
-## The Growth Framework
-
-- **Product-Led Growth**: Let your product do the talking.
-- **Customer Success**: Happy customers are your best advocates.
-- **Data-Driven Decisions**: Use analytics to guide your next move.
-              `,
-              author: "James Wilson",
-              date: serverTimestamp(),
-              image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200&h=600",
-              category: "Business",
-              tags: ["Business", "SaaS", "Scaling"]
-            }
-          ];
-
-          for (const post of posts) {
-            await addDoc(collection(db, 'blog_posts'), post);
-          }
+    if (user) {
+      // Set online status
+      updateUserStatus(user.uid, 'online');
+      
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          updateUserStatus(user.uid, 'online');
+        } else {
+          updateUserStatus(user.uid, 'away');
         }
-      } catch (error) {
-        console.error("Error seeding blog posts:", error);
-      }
-    };
+      };
 
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        
-        // Use onSnapshot for real-time profile updates
-        const profileUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid), async (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data() as UserProfile;
-            setProfile(data);
-            
-            // Sync admin role if email matches ADMIN_EMAIL but role is not admin
-            if (firebaseUser.email === ADMIN_EMAIL && data.role !== 'admin') {
-              const { updateDoc } = await import('./firebase');
-              await updateDoc(doc(db, 'users', firebaseUser.uid), { role: 'admin' });
-            }
-          } else {
-            // Create profile if it doesn't exist
-            await createUserProfile(firebaseUser);
-          }
-          setLoading(false);
-        }, (error) => {
-          console.error("Error fetching user profile:", error);
-          setLoading(false);
-        });
+      const handleBeforeUnload = () => {
+        updateUserStatus(user.uid, 'offline');
+      };
 
-        // Set online status
-        updateUserStatus(firebaseUser.uid, 'online');
-        
-        // Handle tab close/visibility change
-        const handleVisibilityChange = () => {
-          if (document.visibilityState === 'visible') {
-            updateUserStatus(firebaseUser.uid, 'online');
-          } else {
-            updateUserStatus(firebaseUser.uid, 'away');
-          }
-        };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('beforeunload', handleBeforeUnload);
 
-        const handleBeforeUnload = () => {
-          updateUserStatus(firebaseUser.uid, 'offline');
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('beforeunload', handleBeforeUnload);
-
-        // Message Notifications Listener
-        const conversationsQuery = query(
-          collection(db, 'conversations'),
-          where('participants', 'array-contains', firebaseUser.uid)
-        );
-
-        const messagesUnsubscribe = onSnapshot(conversationsQuery, (snapshot) => {
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === 'modified') {
-              const data = change.doc.data();
-              const lastMessageAt = data.lastMessageAt?.toDate();
-              const now = new Date();
-              
-              // Only notify if message is recent (last 10 seconds) and not from self
-              if (lastMessageAt && (now.getTime() - lastMessageAt.getTime() < 10000) && data.lastSenderId !== firebaseUser.uid) {
-                // Check if unread count increased for current user
-                const unreadCount = data.unreadCount?.[firebaseUser.uid] || 0;
-                if (unreadCount > 0) {
-                  notificationSound.current?.play().catch(() => {});
-                  toast(`New message: ${data.lastMessage}`, {
-                    icon: '💬',
-                    duration: 4000
-                  });
-                }
-              }
-            }
-          });
-        }, (error) => {
-          console.error("Error in conversations snapshot listener:", error);
-        });
-        
-        return () => {
-          profileUnsubscribe();
-          messagesUnsubscribe();
-          document.removeEventListener('visibilitychange', handleVisibilityChange);
-          window.removeEventListener('beforeunload', handleBeforeUnload);
-          updateUserStatus(firebaseUser.uid, 'offline');
-        };
-      } else {
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-      }
-      seedBlogPosts();
-    });
-
-    return () => unsubscribe();
-  }, []);
+        updateUserStatus(user.uid, 'offline');
+      };
+    }
+  }, [user]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#4A5D4E]">
+      <div className="flex items-center justify-center h-screen bg-background">
         <Loader size={48} />
       </div>
     );

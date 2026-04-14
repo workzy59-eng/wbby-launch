@@ -12,8 +12,11 @@ export interface UserProfile {
   lastSeen?: string | Timestamp;
   createdAt: string | Timestamp;
   updatedAt?: string | Timestamp;
-  isApproved?: boolean; // For manual approval
+  isApproved?: boolean;
   commissionEarned?: number;
+  salesCode?: string; // For sales users
+  referralCode?: string; // For clients who used a sales code
+  // ... rest of the fields
   
   // Settings & Preferences
   notificationPreferences?: {
@@ -245,8 +248,11 @@ export interface Message {
   projectId?: string;
   conversationId?: string;
   senderId: string;
+  receiverId?: string; // Added for direct messages
   senderName: string;
   text: string;
+  fileUrl?: string; // Added for Cloudinary
+  type: 'text' | 'image' | 'audio'; // Added
   attachments?: Attachment[];
   imageUrl?: string;
   attachmentUrl?: string;
