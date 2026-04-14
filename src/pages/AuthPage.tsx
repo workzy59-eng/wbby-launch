@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_NAME } from '../constants';
 import { AlertCircle, ArrowRight, Mail, Lock, CheckCircle2, ShieldCheck } from 'lucide-react';

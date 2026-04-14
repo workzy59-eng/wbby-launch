@@ -90,7 +90,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 border border-white/10 p-6 rounded-3xl space-y-6 hover:border-[#E6FF00]/30 transition-all group"
+      className="bg-white/5 border border-white/10 p-6 rounded-3xl space-y-6 hover:border-[#6366F1]/30 transition-all group"
     >
       <div className="flex items-start justify-between">
         <div className="space-y-1">
@@ -137,7 +137,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
         </div>
         
         {meeting.status === 'Pending' || meeting.status === 'Accepted' ? (
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#E6FF00]/10 text-[#E6FF00] rounded-2xl text-[10px] font-black uppercase tracking-widest">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[#6366F1]/10 text-[#6366F1] rounded-2xl text-[10px] font-black uppercase tracking-widest">
             <AlertCircle size={14} />
             {timeLeft}
           </div>
@@ -173,7 +173,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
             {meeting.status === 'Reschedule Requested' && (
               <button 
                 onClick={() => onEdit?.(meeting)}
-                className="flex items-center gap-2 px-6 py-3 bg-[#E6FF00] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                className="flex items-center gap-2 px-6 py-3 bg-[#6366F1] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
               >
                 Update Schedule
               </button>
@@ -235,7 +235,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
                     value={rescheduleMsg}
                     onChange={(e) => setRescheduleMsg(e.target.value)}
                     placeholder="Why do you want to reschedule?"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all resize-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#6366F1]/50 transition-all resize-none"
                     rows={3}
                   />
                 </div>
@@ -269,7 +269,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
               disabled={!isJoinable && !isAdmin}
               className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                 isJoinable || isAdmin 
-                  ? 'bg-[#E6FF00] text-black hover:scale-105 shadow-[0_0_20px_rgba(230,255,0,0.2)]' 
+                  ? 'bg-[#6366F1] text-white hover:scale-105 shadow-[0_0_20px_rgba(99,102,241,0.2)]' 
                   : 'bg-white/5 text-white/20 cursor-not-allowed'
               }`}
             >

@@ -51,7 +51,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prof
             className="flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl hover:border-white/20 transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white/40 group-hover:text-[#E6FF00] transition-colors">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white/40 group-hover:text-[#6366F1] transition-colors">
                 <item.icon size={20} />
               </div>
               <div>
@@ -63,7 +63,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prof
             <button 
               onClick={() => togglePref(item.key as keyof typeof prefs)}
               className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
-                prefs[item.key as keyof typeof prefs] ? 'bg-[#E6FF00]' : 'bg-white/10'
+                prefs[item.key as keyof typeof prefs] ? 'bg-[#6366F1]' : 'bg-white/10'
               }`}
             >
               <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-lg transition-all duration-300 ${
@@ -78,7 +78,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prof
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 px-8 py-4 bg-[#E6FF00] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(230,255,0,0.2)]"
+          className="flex items-center gap-2 px-8 py-4 bg-[#6366F1] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
         >
           {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
           Save Preferences

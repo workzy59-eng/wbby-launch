@@ -1,5 +1,5 @@
 import * as React from "react"
-import { motion, PanInfo } from "motion/react"
+import { motion, PanInfo } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface Testimonial {
@@ -64,7 +64,7 @@ const TestimonialCarousel = React.forwardRef<
                 className={cn(
                   "absolute w-full h-full rounded-[3rem] cursor-grab active:cursor-grabbing",
                   "bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl",
-                  "dark:bg-white/5 dark:shadow-[0_0_50px_rgba(230,255,0,0.15)]",
+                  "dark:bg-white/5 dark:shadow-[0_0_50px_rgba(99,102,241,0.15)]",
                 )}
                 style={{
                   zIndex: isCurrentCard ? 3 : isPrevCard ? 2 : 1,
@@ -95,13 +95,13 @@ const TestimonialCarousel = React.forwardRef<
                 {showArrows && isCurrentCard && (
                   <div className="absolute inset-x-0 top-2 flex justify-between px-4">
                     <span 
-                      className="text-2xl select-none cursor-pointer text-[#E6FF00]/40 hover:text-[#E6FF00] transition-colors"
+                      className="text-2xl select-none cursor-pointer text-[#6366F1]/40 hover:text-[#6366F1] transition-colors"
                       onClick={() => setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)}
                     >
                       &larr;
                     </span>
                     <span 
-                      className="text-2xl select-none cursor-pointer text-[#E6FF00]/40 hover:text-[#E6FF00] transition-colors"
+                      className="text-2xl select-none cursor-pointer text-[#6366F1]/40 hover:text-[#6366F1] transition-colors"
                       onClick={() => setCurrentIndex((prev) => (prev + 1) % testimonials.length)}
                     >
                       &rarr;
@@ -113,7 +113,7 @@ const TestimonialCarousel = React.forwardRef<
                   <div className="space-y-4">
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} className="text-[#E6FF00] text-xs">★</span>
+                        <span key={star} className="text-[#6366F1] text-xs">★</span>
                       ))}
                     </div>
                     <p className="text-2xl font-black italic text-white leading-tight uppercase tracking-tighter">
@@ -121,8 +121,8 @@ const TestimonialCarousel = React.forwardRef<
                     </p>
                   </div>
                   <div className="flex justify-end items-center gap-3">
-                    <div className="h-[1px] w-8 bg-[#E6FF00]/30" />
-                    <h3 className="text-sm font-black uppercase italic tracking-widest text-[#E6FF00]">
+                    <div className="h-[1px] w-8 bg-[#6366F1]/30" />
+                    <h3 className="text-sm font-black uppercase italic tracking-widest text-[#6366F1]">
                       {testimonial.name}
                     </h3>
                   </div>
@@ -138,7 +138,7 @@ const TestimonialCarousel = React.forwardRef<
                   className={cn(
                     "w-2 h-2 rounded-full transition-colors",
                     index === currentIndex
-                      ? "bg-[#E6FF00]"
+                      ? "bg-[#6366F1]"
                       : "bg-white/10",
                   )}
                 />

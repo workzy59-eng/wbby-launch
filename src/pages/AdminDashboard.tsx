@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, LeaveRequest, Attendance, Project } from '../types';
 import { 

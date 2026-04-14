@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc } from '../firebase';
 import { UserProfile, Project, ProjectStatus } from '../types';
 import { Link } from 'react-router-dom';
@@ -412,18 +412,18 @@ Generated on: ${new Date().toLocaleString()}
   const renderDashboard = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Overview</span>
+        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Overview</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#E6FF00]' },
-          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#E6FF00]' },
-          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#E6FF00]' },
-          { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#E6FF00]' },
+          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#6366F1]' },
+          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#6366F1]' },
+          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#6366F1]' },
+          { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#6366F1]' },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#E6FF00]/30 transition-all">
+          <div key={i} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#6366F1]/30 transition-all">
             <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
               <stat.icon size={24} className={stat.color} />
             </div>
@@ -437,14 +437,14 @@ Generated on: ${new Date().toLocaleString()}
         <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">Recent Activity</h3>
-            <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-widest">Live Feed</span>
+            <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest">Live Feed</span>
           </div>
           <div className="space-y-4">
             {projects.slice(0, 5).map((p, i) => (
               <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#E6FF00]/10 flex items-center justify-center">
-                    <FileText size={16} className="text-[#E6FF00]" />
+                  <div className="w-10 h-10 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
+                    <FileText size={16} className="text-[#6366F1]" />
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">{p.businessName}</div>
@@ -460,7 +460,7 @@ Generated on: ${new Date().toLocaleString()}
         <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">System Health</h3>
-            <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-widest">Stable</span>
+            <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest">Stable</span>
           </div>
           <div className="space-y-6">
             {[
@@ -477,7 +477,7 @@ Generated on: ${new Date().toLocaleString()}
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${item.value}%` }}
-                    className="h-full bg-[#E6FF00]"
+                    className="h-full bg-[#6366F1]"
                   />
                 </div>
               </div>
@@ -491,19 +491,19 @@ Generated on: ${new Date().toLocaleString()}
   const renderRequests = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">Incoming</span>
+        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Incoming</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">PROJECT REQUESTS</h2>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => (p.status === 'Waiting for Review' || p.status === 'Rejected') && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#E6FF00]/30 transition-all">
+          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#6366F1]/30 transition-all">
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <div className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-widest">{p.businessType}</div>
+                    <div className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest">{p.businessType}</div>
                     <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
                       Template: {p.templateId}
                     </div>
@@ -565,7 +565,7 @@ Generated on: ${new Date().toLocaleString()}
             <div className="flex gap-3">
               <button 
                 onClick={() => handleAccept(p.id)}
-                className="flex-1 bg-[#E6FF00] text-black py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
+                className="flex-1 bg-[#6366F1] text-white py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
               >
                 Accept Project
               </button>
@@ -590,14 +590,14 @@ Generated on: ${new Date().toLocaleString()}
   const renderActiveProjects = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">In Progress</span>
+        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">In Progress</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Active Operations</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status) && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#E6FF00]/30 transition-all relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#E6FF00]/5 rounded-full blur-3xl"></div>
+          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#6366F1]/30 transition-all relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#6366F1]/5 rounded-full blur-3xl"></div>
             
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
@@ -616,7 +616,7 @@ Generated on: ${new Date().toLocaleString()}
                   </button>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="px-3 py-1 bg-[#E6FF00]/10 rounded-full text-[8px] font-black text-[#E6FF00] uppercase tracking-widest border border-[#E6FF00]/20">
+                  <div className="px-3 py-1 bg-[#6366F1]/10 rounded-full text-[8px] font-black text-[#6366F1] uppercase tracking-widest border border-[#6366F1]/20">
                     {p.status}
                   </div>
                   <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest">
@@ -627,14 +627,14 @@ Generated on: ${new Date().toLocaleString()}
               <div className="flex gap-2">
                 <button 
                   onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
-                  className="p-4 bg-white/5 rounded-full text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all shadow-lg"
+                  className="p-4 bg-white/5 rounded-full text-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-all shadow-lg"
                   title="View Details"
                 >
                   <ArrowRight size={20} />
                 </button>
                 <button 
                   onClick={() => { setSelectedProject(p); setShowChat(true); }}
-                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#E6FF00] hover:text-black transition-all shadow-lg"
+                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#6366F1] hover:text-white transition-all shadow-lg"
                   title="Project Chat"
                 >
                   <MessageCircle size={20} />
@@ -645,13 +645,13 @@ Generated on: ${new Date().toLocaleString()}
             <div className="mb-10 relative z-10">
               <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-3">
                 <span>Current Progress</span>
-                <span className="text-[#E6FF00]">{p.progress}%</span>
+                <span className="text-[#6366F1]">{p.progress}%</span>
               </div>
               <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${p.progress}%` }}
-                  className="h-full bg-[#E6FF00] rounded-full shadow-[0_0_10px_rgba(230,255,0,0.3)]" 
+                  className="h-full bg-[#6366F1] rounded-full shadow-[0_0_10px_rgba(99,102,241,0.3)]" 
                 />
               </div>
             </div>
@@ -709,12 +709,12 @@ Generated on: ${new Date().toLocaleString()}
       <div className="space-y-12">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-[#E6FF00] uppercase tracking-[0.3em]">CRM</span>
+            <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">CRM</span>
             <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Client Base</h2>
           </div>
           <button 
             onClick={downloadClientsCSV}
-            className="px-8 py-4 bg-[#E6FF00] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(230,255,0,0.2)]"
+            className="px-8 py-4 bg-[#6366F1] text-white rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(99,102,241,0.2)]"
           >
             <Download size={18} />
             Export CSV

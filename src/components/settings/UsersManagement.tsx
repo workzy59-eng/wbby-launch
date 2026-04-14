@@ -136,7 +136,7 @@ export const UsersManagement: React.FC = () => {
           <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Total Clients</p>
           <div className="flex items-end justify-between">
             <h4 className="text-3xl font-black text-white italic tracking-tighter">{users.length}</h4>
-            <Users className="text-[#E6FF00]/20" size={32} />
+            <Users className="text-[#6366F1]/20" size={32} />
           </div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-2">
@@ -153,8 +153,8 @@ export const UsersManagement: React.FC = () => {
         <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-2">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Est. Monthly Revenue</p>
           <div className="flex items-end justify-between">
-            <h4 className="text-3xl font-black text-[#E6FF00] italic tracking-tighter">₹ {totalRevenue.toLocaleString()}</h4>
-            <CreditCard className="text-[#E6FF00]/20" size={32} />
+            <h4 className="text-3xl font-black text-[#6366F1] italic tracking-tighter">₹ {totalRevenue.toLocaleString()}</h4>
+            <CreditCard className="text-[#6366F1]/20" size={32} />
           </div>
         </div>
       </div>
@@ -162,13 +162,13 @@ export const UsersManagement: React.FC = () => {
       {/* Filters Bar */}
       <div className="flex flex-col lg:flex-row gap-4 justify-between items-center bg-white/5 border border-white/10 p-4 rounded-[2rem]">
         <div className="relative w-full lg:w-96 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#E6FF00] transition-colors" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#6366F1] transition-colors" size={18} />
           <input 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, email or phone..."
-            className="w-full bg-black/40 border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#E6FF00]/50 transition-all"
+            className="w-full bg-black/40 border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#6366F1]/50 transition-all"
           />
         </div>
 
@@ -176,7 +176,7 @@ export const UsersManagement: React.FC = () => {
           <select 
             value={planFilter}
             onChange={(e) => setPlanFilter(e.target.value)}
-            className="flex-1 lg:flex-none bg-black/40 border border-white/5 rounded-2xl px-6 py-3 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all appearance-none"
+            className="flex-1 lg:flex-none bg-black/40 border border-white/5 rounded-2xl px-6 py-3 text-xs text-white outline-none focus:border-[#6366F1]/50 transition-all appearance-none"
           >
             <option value="All">All Plans</option>
             <option value="Basic">Basic</option>
@@ -187,7 +187,7 @@ export const UsersManagement: React.FC = () => {
           <select 
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex-1 lg:flex-none bg-black/40 border border-white/5 rounded-2xl px-6 py-3 text-xs text-white outline-none focus:border-[#E6FF00]/50 transition-all appearance-none"
+            className="flex-1 lg:flex-none bg-black/40 border border-white/5 rounded-2xl px-6 py-3 text-xs text-white outline-none focus:border-[#6366F1]/50 transition-all appearance-none"
           >
             <option value="All">All Status</option>
             <option value="active">Active</option>
@@ -263,7 +263,7 @@ export const UsersManagement: React.FC = () => {
                   <td className="px-8 py-6 text-right">
                     <button 
                       onClick={() => setSelectedUser(user)}
-                      className="p-3 bg-white/5 hover:bg-[#E6FF00] hover:text-black rounded-2xl transition-all group-hover:scale-110"
+                      className="p-3 bg-white/5 hover:bg-[#6366F1] hover:text-white rounded-2xl transition-all group-hover:scale-110"
                     >
                       <Eye size={18} />
                     </button>
@@ -338,7 +338,7 @@ export const UsersManagement: React.FC = () => {
                       setIsEditing(!isEditing);
                       setEditData(selectedUser);
                     }}
-                    className={`p-4 rounded-2xl transition-all ${isEditing ? 'bg-[#E6FF00] text-black' : 'bg-white/5 text-white/40 hover:text-white'}`}
+                    className={`p-4 rounded-2xl transition-all ${isEditing ? 'bg-[#6366F1] text-white' : 'bg-white/5 text-white/40 hover:text-white'}`}
                   >
                     <Edit2 size={20} />
                   </button>
@@ -358,28 +358,28 @@ export const UsersManagement: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Full Name</label>
-                        <input 
-                          type="text"
-                          value={editData.displayName}
-                          onChange={(e) => setEditData({ ...editData, displayName: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
-                        />
+                          <input 
+                            type="text"
+                            value={editData.displayName}
+                            onChange={(e) => setEditData({ ...editData, displayName: e.target.value })}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
+                          />
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Phone Number</label>
-                        <input 
-                          type="tel"
-                          value={editData.phone}
-                          onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
-                        />
+                          <input 
+                            type="tel"
+                            value={editData.phone}
+                            onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
+                          />
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Subscription Plan</label>
                         <select 
                           value={editData.plan}
                           onChange={(e) => setEditData({ ...editData, plan: e.target.value as any })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all appearance-none"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all appearance-none"
                         >
                           <option value="Basic">Basic</option>
                           <option value="Standard">Standard</option>
@@ -391,7 +391,7 @@ export const UsersManagement: React.FC = () => {
                         <select 
                           value={editData.status}
                           onChange={(e) => setEditData({ ...editData, status: e.target.value as any })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all appearance-none"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all appearance-none"
                         >
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
@@ -407,7 +407,7 @@ export const UsersManagement: React.FC = () => {
                       </button>
                       <button 
                         onClick={handleUpdateUser}
-                        className="px-8 py-4 bg-[#E6FF00] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)]"
+                        className="px-8 py-4 bg-[#6366F1] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]"
                       >
                         Save Changes
                       </button>
@@ -417,7 +417,7 @@ export const UsersManagement: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     {/* Basic Info */}
                     <div className="space-y-6">
-                      <div className="flex items-center gap-4 text-[#E6FF00]">
+                      <div className="flex items-center gap-4 text-[#6366F1]">
                         <Users size={20} />
                         <h4 className="text-sm font-black uppercase tracking-widest">Basic Information</h4>
                       </div>
@@ -448,7 +448,7 @@ export const UsersManagement: React.FC = () => {
 
                     {/* Account & Subscription */}
                     <div className="space-y-6">
-                      <div className="flex items-center gap-4 text-[#E6FF00]">
+                      <div className="flex items-center gap-4 text-[#6366F1]">
                         <CreditCard size={20} />
                         <h4 className="text-sm font-black uppercase tracking-widest">Account & Subscription</h4>
                       </div>
@@ -471,15 +471,15 @@ export const UsersManagement: React.FC = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-[#E6FF00]/5 rounded-2xl border border-[#E6FF00]/10">
+                        <div className="flex items-center justify-between p-4 bg-[#6366F1]/5 rounded-2xl border border-[#6366F1]/10">
                           <div className="flex items-center gap-4">
-                            <CreditCard className="text-[#E6FF00]" size={18} />
+                            <CreditCard className="text-[#6366F1]" size={18} />
                             <div>
-                              <p className="text-[8px] font-black uppercase tracking-widest text-[#E6FF00]/60">Current Plan</p>
+                              <p className="text-[8px] font-black uppercase tracking-widest text-[#6366F1]/60">Current Plan</p>
                               <p className="text-sm font-black text-white uppercase">{selectedUser.plan || 'Standard'}</p>
                             </div>
                           </div>
-                          <span className="px-3 py-1 bg-[#E6FF00] text-black rounded-full text-[8px] font-black uppercase tracking-widest">Active</span>
+                          <span className="px-3 py-1 bg-[#6366F1] text-white rounded-full text-[8px] font-black uppercase tracking-widest">Active</span>
                         </div>
                       </div>
                     </div>
@@ -519,7 +519,7 @@ export const UsersManagement: React.FC = () => {
                           <button 
                             onClick={() => toggleUserStatus(selectedUser)}
                             className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                              selectedUser.status === 'inactive' ? 'bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white' : 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-white'
+                              selectedUser.status === 'inactive' ? 'bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white' : 'bg-[#6366F1]/10 text-[#6366F1] hover:bg-[#6366F1] hover:text-white'
                             }`}
                           >
                             {selectedUser.status === 'inactive' ? <UserPlus className="inline mr-2" size={14} /> : <UserMinus className="inline mr-2" size={14} />}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Check, Sparkles, ArrowRight, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PROFESSIONAL_EMAIL } from '../constants';

@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp, onSnapshot, doc, query, where } from './firebase';
 import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
 import { ADMIN_EMAIL } from './constants';
 import { Smartphone } from 'lucide-react';

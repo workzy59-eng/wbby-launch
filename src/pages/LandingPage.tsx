@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FirebaseUser } from '../firebase';
 import { SystemSettings, UserProfile } from '../types';
 import { getSystemSettings } from '../services/database';

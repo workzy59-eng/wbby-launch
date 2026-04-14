@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2 } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';

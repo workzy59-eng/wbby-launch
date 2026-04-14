@@ -42,25 +42,25 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* UPI Settings */}
           <div className="space-y-6 bg-white/5 border border-white/10 rounded-[2.5rem] p-8">
-            <div className="flex items-center gap-4 text-[#E6FF00]">
+            <div className="flex items-center gap-4 text-[#6366F1]">
               <QrCode size={24} />
               <h3 className="text-xl font-black uppercase italic tracking-tighter">UPI Configuration</h3>
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">UPI ID</label>
-              <input 
-                type="text"
-                value={adminData.upiId}
-                onChange={(e) => setAdminData({ ...adminData, upiId: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
-                placeholder="example@upi"
-              />
+                <input 
+                  type="text"
+                  value={adminData.upiId}
+                  onChange={(e) => setAdminData({ ...adminData, upiId: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
+                  placeholder="example@upi"
+                />
             </div>
           </div>
 
           {/* Bank Settings */}
           <div className="space-y-6 bg-white/5 border border-white/10 rounded-[2.5rem] p-8">
-            <div className="flex items-center gap-4 text-[#E6FF00]">
+            <div className="flex items-center gap-4 text-[#6366F1]">
               <Landmark size={24} />
               <h3 className="text-xl font-black uppercase italic tracking-tighter">Bank Details</h3>
             </div>
@@ -74,7 +74,7 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
                     ...adminData, 
                     bankDetails: { ...adminData.bankDetails, accountName: e.target.value } 
                   })}
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                   placeholder="Business Name"
                 />
               </div>
@@ -87,7 +87,7 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
                     ...adminData, 
                     bankDetails: { ...adminData.bankDetails, accountNumber: e.target.value } 
                   })}
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                   placeholder="000000000000"
                 />
               </div>
@@ -100,7 +100,7 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
                     ...adminData, 
                     bankDetails: { ...adminData.bankDetails, ifscCode: e.target.value } 
                   })}
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#E6FF00]/50 transition-all"
+                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
                   placeholder="SBIN0000000"
                 />
               </div>
@@ -112,7 +112,7 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
           <button 
             onClick={handleAdminSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-8 py-4 bg-[#E6FF00] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(230,255,0,0.2)]"
+            className="flex items-center gap-2 px-8 py-4 bg-[#6366F1] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
           >
             {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
             Save Payment Settings
@@ -128,7 +128,7 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
       <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+            <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
               <CreditCard size={24} />
             </div>
             <div>
@@ -136,7 +136,7 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
               <p className="text-white/40 text-xs italic uppercase tracking-widest">Manage your subscription.</p>
             </div>
           </div>
-          <span className="px-4 py-2 bg-[#E6FF00] text-black rounded-full text-[10px] font-black uppercase tracking-widest">
+          <span className="px-4 py-2 bg-[#6366F1] text-white rounded-full text-[10px] font-black uppercase tracking-widest">
             {profile.plan || 'Standard'} Plan
           </span>
         </div>
