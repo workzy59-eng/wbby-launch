@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#6366F1] selection:text-white">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#FFD700] selection:text-black">
       {/* Navbar */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
@@ -58,9 +58,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
           <div className="flex items-center gap-6">
             {user ? (
-              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#6366F1] transition-all">Dashboard</Link>
+              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#FFD700] transition-all">Dashboard</Link>
             ) : (
-              <Link to="/auth" className="bg-[#6366F1] text-white px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]">Get Started</Link>
+              <Link to="/auth" className="bg-[#FFD700] text-black px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,215,0,0.2)]">Get Started</Link>
             )}
             <button className="lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X /> : <Menu />}
@@ -80,9 +80,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           >
             <div className="flex flex-col gap-8 text-2xl font-bold tracking-tighter">
               {navItems.map((item) => (
-                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className="hover:text-[#6366F1] transition-colors">{item.name}</Link>
+                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className="hover:text-[#FFD700] transition-colors">{item.name}</Link>
               ))}
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)} className="text-[#6366F1]">Login</Link>
+              <Link to="/auth" onClick={() => setIsMenuOpen(false)} className="text-[#FFD700]">Login</Link>
             </div>
           </motion.div>
         )}

@@ -37,9 +37,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#6366F1]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#FFD700]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#6366F1]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#FFD700]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 import { FirebaseUser } from '../firebase';
@@ -455,7 +455,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   >
                     <button 
                       onClick={() => setReplyingTo(m)}
-                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#6366F1] transition-all"
+                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#FFD700] transition-all"
                       title="Reply"
                     >
                       <CornerUpLeft size={16} />
@@ -466,7 +466,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           setEditingMessage(m);
                           setInputText(m.text);
                         }}
-                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#6366F1] transition-all"
+                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#FFD700] transition-all"
                         title="Edit"
                       >
                         <Edit size={16} />
@@ -502,7 +502,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 ) : (
                   <>
                     {m.replyTo && (
-                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#6366F1]' : 'border-blue-500'}`}>
+                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#FFD700]' : 'border-yellow-500'}`}>
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
                           {m.replyTo.senderName}
                         </p>
@@ -512,7 +512,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       </div>
                     )}
                     {!isMe && activeConversation.isProject && (
-                      <p className="text-[10px] font-black text-[#6366F1] uppercase tracking-widest mb-1">
+                      <p className="text-[10px] font-black text-[#FFD700] uppercase tracking-widest mb-1">
                         {m.senderName}
                       </p>
                     )}
@@ -533,7 +533,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   {isMe && (
                     <span>
                       {m.status === 'seen' ? (
-                        <CheckCheck size={14} className="text-[#53bdeb]" />
+                        <CheckCheck size={14} className="text-[#FFD700]" />
                       ) : m.status === 'delivered' ? (
                         <CheckCheck size={14} className="text-white/60" />
                       ) : (
@@ -579,7 +579,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <input 
               type="text"
               placeholder="Search chats..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#6366F1]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#FFD700]/50 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

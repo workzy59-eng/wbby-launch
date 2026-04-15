@@ -108,37 +108,7 @@ async function startServer() {
     
     console.log(`[OTP] Code for ${email}: ${code}`);
 
-    const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey) {
-      try {
-        const { Resend } = await import('resend');
-        const resend = new Resend(resendKey);
-        await resend.emails.send({
-          from: 'WebbyLaunch <onboarding@resend.dev>',
-          to: email,
-          subject: 'Your Verification Code - WebbyLaunch',
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-              <h2 style="color: #6366F1; text-align: center;">WebbyLaunch</h2>
-              <p>Hi ${name || 'there'},</p>
-              <p>Your verification code for WebbyLaunch is:</p>
-              <div style="background: #f4f4f4; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; border-radius: 5px; margin: 20px 0;">
-                ${code}
-              </div>
-              <p>This code will expire in 10 minutes.</p>
-              <p>If you didn't request this code, please ignore this email.</p>
-              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #666; text-align: center;">&copy; 2026 WebbyLaunch. All rights reserved.</p>
-            </div>
-          `
-        });
-        return res.json({ success: true, message: "OTP sent via Resend" });
-      } catch (error) {
-        console.error("Resend Error:", error);
-        return res.status(500).json({ error: "Failed to send email via Resend" });
-      }
-    }
-    
+    // Resend removed as per user request
     res.json({ success: true, message: "OTP logged to console (Email verification disabled)", code });
   });
 

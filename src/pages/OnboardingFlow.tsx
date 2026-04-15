@@ -17,9 +17,9 @@ const Loader = ({ color = "black" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'black' ? 'black' : '[#6366F1]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'black' ? 'black' : '[#FFD700]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#6366F1]'} animate-pulse italic`}>Processing...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#FFD700]'} animate-pulse italic`}>Processing...</span>
   </div>
 );
 import { jsPDF } from 'jspdf';
@@ -59,8 +59,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       description: '',
       location: '',
       websiteName: '',
-      primaryColor: '#6366F1',
-      secondaryColor: '#111827',
+      primaryColor: '#FFD700',
+      secondaryColor: '#000000',
       tertiaryColor: '',
       logoUrl: '',
       documentsUrl: '',
@@ -189,9 +189,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
       setIsOtpSent(true);
       setOtpTimer(30);
-    } catch (err) {
-      console.error("EmailJS Error:", err);
-      toast.error("Failed to send OTP. Please try again.");
+    } catch (err: any) {
+      console.error("OTP Error:", err);
+      toast.error(err.message || "Failed to send OTP. Please try again.");
     }
   };
 

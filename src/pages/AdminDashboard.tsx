@@ -57,9 +57,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#6366F1]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#FFD700]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#6366F1]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#FFD700]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 
@@ -801,7 +801,7 @@ Requirements:
                           max="100"
                           value={editingProject.progress}
                           onChange={(e) => setEditingProject({ ...editingProject, progress: parseInt(e.target.value) })}
-                          className="w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer accent-[#00F2FF]"
+                          className="w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer accent-[#FFD700]"
                         />
                       </div>
 
@@ -831,7 +831,7 @@ Requirements:
                           progress: editingProject.progress,
                           rejectionReason: editingProject.rejectionReason
                         })}
-                        className="flex-1 py-4 rounded-xl bg-[#00F2FF] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(0,242,255,0.2)]"
+                        className="flex-1 py-4 rounded-xl bg-[#FFD700] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,215,0,0.2)]"
                       >
                         Save Changes
                       </button>
@@ -870,7 +870,7 @@ Requirements:
                       <tr key={idx} className="group hover:bg-white/5 transition-colors">
                         <td className="py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#6366F1]/20 rounded-lg flex items-center justify-center text-[#6366F1] font-black text-xs italic">
+                            <div className="w-8 h-8 bg-[#FFD700]/20 rounded-lg flex items-center justify-center text-[#FFD700] font-black text-xs italic">
                               {record.userName?.[0]}
                             </div>
                             <span className="text-sm font-bold text-white uppercase italic">{record.userName}</span>
@@ -915,12 +915,12 @@ Requirements:
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#6366F1] selection:text-white text-slate-200">
+    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#FFD700] selection:text-black text-slate-200">
       {/* Sidebar */}
       <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#6366F1] rounded-lg rotate-12 shadow-[0_0_20px_rgba(99,102,241,0.3)]" />
-          Webby<span className="text-[#6366F1]">Admin</span>
+          <div className="w-8 h-8 bg-[#FFD700] rounded-lg rotate-12 shadow-[0_0_20px_rgba(255,215,0,0.3)]" />
+          Webby<span className="text-[#FFD700]">Admin</span>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -937,7 +937,7 @@ Requirements:
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-[#6366F1] text-white shadow-[0_0_30_rgba(99,102,241,0.2)] scale-[1.02]' 
+                  ? 'bg-[#FFD700] text-black shadow-[0_0_30_rgba(255,215,0,0.2)] scale-[1.02]' 
                   : 'text-slate-500 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -969,7 +969,7 @@ Requirements:
             onClick={() => setActiveTab(tab.id as Tab)}
             className={`p-3 rounded-xl transition-all ${
               activeTab === tab.id 
-                ? 'bg-[#6366F1] text-white shadow-[0_0_20px_rgba(99,102,241,0.2)]' 
+                ? 'bg-[#FFD700] text-black shadow-[0_0_20px_rgba(255,215,0,0.2)]' 
                 : 'text-slate-500'
             }`}
           >
@@ -993,9 +993,9 @@ Requirements:
           <div className="flex items-center gap-6">
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">System Admin</div>
-              <div className="text-[10px] font-black text-[#6366F1] uppercase tracking-widest">Online</div>
+              <div className="text-[10px] font-black text-[#FFD700] uppercase tracking-widest">Online</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6366F1] to-indigo-600 flex items-center justify-center text-white font-black text-xl italic shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFD700] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(255,215,0,0.2)]">
               A
             </div>
           </div>

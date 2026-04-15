@@ -412,18 +412,18 @@ Generated on: ${new Date().toLocaleString()}
   const renderDashboard = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Overview</span>
+        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Overview</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#6366F1]' },
-          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#6366F1]' },
-          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#6366F1]' },
-          { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#6366F1]' },
+          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#FACC15]' },
+          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#FACC15]' },
+          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#FACC15]' },
+          { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#FACC15]' },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#6366F1]/30 transition-all">
+          <div key={i} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all">
             <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
               <stat.icon size={24} className={stat.color} />
             </div>
@@ -437,14 +437,14 @@ Generated on: ${new Date().toLocaleString()}
         <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">Recent Activity</h3>
-            <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest">Live Feed</span>
+            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">Live Feed</span>
           </div>
           <div className="space-y-4">
             {projects.slice(0, 5).map((p, i) => (
               <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
-                    <FileText size={16} className="text-[#6366F1]" />
+                  <div className="w-10 h-10 rounded-full bg-[#FACC15]/10 flex items-center justify-center">
+                    <FileText size={16} className="text-[#FACC15]" />
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">{p.businessName}</div>
@@ -460,7 +460,7 @@ Generated on: ${new Date().toLocaleString()}
         <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">System Health</h3>
-            <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest">Stable</span>
+            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">Stable</span>
           </div>
           <div className="space-y-6">
             {[
@@ -477,7 +477,7 @@ Generated on: ${new Date().toLocaleString()}
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${item.value}%` }}
-                    className="h-full bg-[#6366F1]"
+                    className="h-full bg-[#FACC15]"
                   />
                 </div>
               </div>
@@ -491,19 +491,19 @@ Generated on: ${new Date().toLocaleString()}
   const renderRequests = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Incoming</span>
+        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Incoming</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">PROJECT REQUESTS</h2>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => (p.status === 'Waiting for Review' || p.status === 'Rejected') && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#6366F1]/30 transition-all">
+          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#FACC15]/30 transition-all">
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <div className="text-[10px] font-bold text-[#6366F1] uppercase tracking-widest">{p.businessType}</div>
+                    <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">{p.businessType}</div>
                     <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
                       Template: {p.templateId}
                     </div>
@@ -554,7 +554,7 @@ Generated on: ${new Date().toLocaleString()}
               <div className="flex gap-2">
                 <button 
                   onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
-                  className="p-4 bg-white/5 rounded-full text-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-all"
+                  className="p-4 bg-white/5 rounded-full text-[#FACC15] hover:bg-[#FACC15] hover:text-black transition-all"
                   title="View Details"
                 >
                   <ArrowRight size={20} />
@@ -565,7 +565,7 @@ Generated on: ${new Date().toLocaleString()}
             <div className="flex gap-3">
               <button 
                 onClick={() => handleAccept(p.id)}
-                className="flex-1 bg-[#6366F1] text-white py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
+                className="flex-1 bg-[#FACC15] text-black py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
               >
                 Accept Project
               </button>
@@ -590,14 +590,14 @@ Generated on: ${new Date().toLocaleString()}
   const renderActiveProjects = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">In Progress</span>
+        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">In Progress</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Active Operations</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status) && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#6366F1]/30 transition-all relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#6366F1]/5 rounded-full blur-3xl"></div>
+          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#FACC15]/5 rounded-full blur-3xl"></div>
             
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
@@ -616,7 +616,7 @@ Generated on: ${new Date().toLocaleString()}
                   </button>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="px-3 py-1 bg-[#6366F1]/10 rounded-full text-[8px] font-black text-[#6366F1] uppercase tracking-widest border border-[#6366F1]/20">
+                  <div className="px-3 py-1 bg-[#FACC15]/10 rounded-full text-[8px] font-black text-[#FACC15] uppercase tracking-widest border border-[#FACC15]/20">
                     {p.status}
                   </div>
                   <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest">
@@ -627,14 +627,14 @@ Generated on: ${new Date().toLocaleString()}
               <div className="flex gap-2">
                 <button 
                   onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
-                  className="p-4 bg-white/5 rounded-full text-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-all shadow-lg"
+                  className="p-4 bg-white/5 rounded-full text-[#FACC15] hover:bg-[#FACC15] hover:text-black transition-all shadow-lg"
                   title="View Details"
                 >
                   <ArrowRight size={20} />
                 </button>
                 <button 
                   onClick={() => { setSelectedProject(p); setShowChat(true); }}
-                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#6366F1] hover:text-white transition-all shadow-lg"
+                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#FACC15] hover:text-black transition-all shadow-lg"
                   title="Project Chat"
                 >
                   <MessageCircle size={20} />
@@ -645,13 +645,13 @@ Generated on: ${new Date().toLocaleString()}
             <div className="mb-10 relative z-10">
               <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-3">
                 <span>Current Progress</span>
-                <span className="text-[#6366F1]">{p.progress}%</span>
+                <span className="text-[#FACC15]">{p.progress}%</span>
               </div>
               <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${p.progress}%` }}
-                  className="h-full bg-[#6366F1] rounded-full shadow-[0_0_10px_rgba(99,102,241,0.3)]" 
+                  className="h-full bg-[#FACC15] rounded-full shadow-[0_0_10px_rgba(250,204,21,0.3)]" 
                 />
               </div>
             </div>
@@ -709,12 +709,12 @@ Generated on: ${new Date().toLocaleString()}
       <div className="space-y-12">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">CRM</span>
+            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">CRM</span>
             <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Client Base</h2>
           </div>
           <button 
             onClick={downloadClientsCSV}
-            className="px-8 py-4 bg-[#6366F1] text-white rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(99,102,241,0.2)]"
+            className="px-8 py-4 bg-[#FACC15] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(250,204,21,0.2)]"
           >
             <Download size={18} />
             Export CSV
@@ -788,7 +788,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           URL.revokeObjectURL(url);
                           toast.success('Client details downloaded');
                         }}
-                        className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#6366F1] hover:text-white transition-all"
+                        className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#FACC15] hover:text-black transition-all"
                       >
                         <Download size={16} />
                       </button>
@@ -806,7 +806,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderAnalytics = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Data</span>
+        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Data</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">USER METRICS</h2>
       </div>
 
@@ -816,7 +816,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             <h3 className="text-2xl font-bold text-white tracking-tight">Platform Engagement</h3>
             <p className="text-xs text-white/40 uppercase tracking-widest mt-1">Users Visited Per Day</p>
           </div>
-          <div className="text-[10px] font-bold text-[#6366F1] border border-[#6366F1]/20 px-4 py-2 rounded-full uppercase tracking-widest">Last 7 Days</div>
+          <div className="text-[10px] font-bold text-[#FACC15] border border-[#FACC15]/20 px-4 py-2 rounded-full uppercase tracking-widest">Last 7 Days</div>
         </div>
         <div className="h-80 flex items-end justify-between gap-4">
           {[40, 60, 30, 80, 50, 90, 70].map((h, i) => (
@@ -824,9 +824,9 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <motion.div 
                 initial={{ height: 0 }}
                 animate={{ height: `${h}%` }}
-                className="w-full bg-[#6366F1] rounded-t-2xl absolute bottom-0 transition-all group-hover:brightness-125"
+                className="w-full bg-[#FACC15] rounded-t-2xl absolute bottom-0 transition-all group-hover:brightness-125"
               />
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all text-[10px] font-bold text-[#6366F1] tabular-nums">
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all text-[10px] font-bold text-[#FACC15] tabular-nums">
                 {h * 10}
               </div>
             </div>
@@ -851,12 +851,12 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       <div className="space-y-12">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Management</span>
+            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Management</span>
             <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Project Details</h2>
           </div>
           <button 
             onClick={() => { setEditingProjectDetails(null); setShowProjectModal(true); }}
-            className="px-8 py-4 bg-[#6366F1] text-white rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(99,102,241,0.2)]"
+            className="px-8 py-4 bg-[#FACC15] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(250,204,21,0.2)]"
           >
             <Plus size={18} />
             Add New Project
@@ -872,7 +872,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               placeholder="Search by project or user name..."
               value={projectSearch}
               onChange={(e) => setProjectSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-white font-bold uppercase tracking-widest outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-white/10"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-white font-bold uppercase tracking-widest outline-none focus:border-[#FACC15]/50 transition-all placeholder:text-white/10"
             />
           </div>
           <div className="relative">
@@ -880,7 +880,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             <select 
               value={projectStatusFilter}
               onChange={(e) => setProjectStatusFilter(e.target.value as any)}
-              className="appearance-none bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-12 text-white font-bold uppercase tracking-widest outline-none focus:border-[#6366F1]/50 transition-all"
+              className="appearance-none bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-12 text-white font-bold uppercase tracking-widest outline-none focus:border-[#FACC15]/50 transition-all"
             >
               <option value="all">All Status</option>
               <option value="Waiting for Review">Waiting for Review</option>
@@ -936,7 +936,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <td className="p-8">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-white uppercase italic tracking-tighter">{p.businessType}</span>
-                        <span className="text-[10px] font-black text-[#6366F1] uppercase tracking-widest mt-1">{p.plan || 'N/A'}</span>
+                        <span className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest mt-1">{p.plan || 'N/A'}</span>
                       </div>
                     </td>
                     <td className="p-8">
@@ -945,7 +945,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           <Calendar size={10} />
                           <span>Start: {p.startDate ? new Date(p.startDate as any).toLocaleDateString() : 'N/A'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-[8px] font-bold text-[#6366F1] uppercase tracking-widest">
+                        <div className="flex items-center gap-2 text-[8px] font-bold text-[#FACC15] uppercase tracking-widest">
                           <Clock size={10} />
                           <span>End: {p.deadline ? new Date(p.deadline as any).toLocaleDateString() : 'N/A'}</span>
                         </div>
@@ -955,14 +955,14 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       <div className="flex justify-end gap-2">
                         <button 
                           onClick={() => { setViewingProject(p); setModalTab('overview'); setShowProjectDetailModal(true); }}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#6366F1] hover:text-white transition-all"
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#FACC15] hover:text-black transition-all"
                           title="View Details"
                         >
                           <ArrowRight size={16} />
                         </button>
                         <button 
                           onClick={() => { setEditingProjectDetails(p); setShowProjectModal(true); }}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#6366F1] hover:text-white transition-all"
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#FACC15] hover:text-black transition-all"
                           title="Edit Project"
                         >
                           <Edit2 size={16} />
@@ -996,13 +996,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderRecycleBin = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Archive</span>
+        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Archive</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">RECYCLE BIN</h2>
       </div>
 
       <div className="space-y-4">
         {projects.filter(p => p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#6366F1]/30 transition-all">
+          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#FACC15]/30 transition-all">
             <div>
               <h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.businessName}</h3>
               <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deleted Project • {p.businessType}</div>
@@ -1133,7 +1133,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderLeads = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Sales</span>
+        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Sales</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Global Leads</h2>
       </div>
 
@@ -1212,19 +1212,19 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
     <div className="space-y-12">
       <div className="flex justify-between items-end">
         <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Recruitment</span>
+          <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Recruitment</span>
           <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Applications</h2>
         </div>
         <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
           <button 
             onClick={() => setAppTab('developer')}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'developer' ? 'bg-[#6366F1] text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'developer' ? 'bg-[#FACC15] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
             Developers
           </button>
           <button 
             onClick={() => setAppTab('sales')}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'sales' ? 'bg-[#6366F1] text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'sales' ? 'bg-[#FACC15] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
             Sales
           </button>
@@ -1261,7 +1261,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   </div>
                   <div>
                     <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Portfolio</p>
-                    <a href={app.portfolio} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#6366F1] hover:underline">View Link</a>
+                    <a href={app.portfolio} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#FACC15] hover:underline">View Link</a>
                   </div>
                   <div>
                     <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Availability</p>
@@ -1297,7 +1297,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="flex gap-4 pt-4">
                 <button 
                   onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_applications' : 'sales_applications', app.id, 'approved')}
-                  className="flex-1 bg-[#6366F1] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
+                  className="flex-1 bg-[#FACC15] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
                 >
                   Approve
                 </button>
@@ -1399,7 +1399,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderSystem = () => (
     <div className="space-y-12 pb-20">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Configuration</span>
+        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Configuration</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">SYSTEM SETTINGS</h2>
         <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2 italic">Global platform configuration and pricing management.</p>
       </div>
@@ -1411,7 +1411,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Pricing Section */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
+                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <TrendingUp size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Pricing Configuration</h3>
@@ -1420,36 +1420,36 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Starter Launch Price</label>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#6366F1] font-black">$</span>
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FACC15] font-black">$</span>
                     <input 
                       type="number"
                       value={systemSettings.pricing?.starter || 1499}
                       onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, starter: parseInt(e.target.value) } })}
-                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-black text-xl"
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-black text-xl"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Pro Growth Price</label>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#6366F1] font-black">$</span>
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FACC15] font-black">$</span>
                     <input 
                       type="number"
                       value={systemSettings.pricing?.pro || 2999}
                       onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, pro: parseInt(e.target.value) } })}
-                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-black text-xl"
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-black text-xl"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Enterprise Price</label>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#6366F1] font-black">$</span>
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FACC15] font-black">$</span>
                     <input 
                       type="number"
                       value={systemSettings.pricing?.enterprise || 9999}
                       onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, enterprise: parseInt(e.target.value) } })}
-                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-black text-xl"
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-black text-xl"
                     />
                   </div>
                 </div>
@@ -1459,7 +1459,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Required Fields */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
+                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <FileText size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Registration Fields</h3>
@@ -1472,7 +1472,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       onClick={() => handleUpdateSettings({
                         requiredFields: { ...systemSettings.requiredFields, [field as keyof SystemSettings['requiredFields']]: !isRequired }
                       })}
-                      className={`w-12 h-6 rounded-full transition-all relative ${isRequired ? 'bg-[#6366F1]' : 'bg-white/10'}`}
+                      className={`w-12 h-6 rounded-full transition-all relative ${isRequired ? 'bg-[#FACC15]' : 'bg-white/10'}`}
                     >
                       <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${isRequired ? 'right-1' : 'left-1'}`} />
                     </button>
@@ -1487,7 +1487,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Global Switches */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
+                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <Settings size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Platform Controls</h3>
@@ -1512,7 +1512,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   </div>
                   <button 
                     onClick={() => handleUpdateSettings({ allowNewRegistrations: !systemSettings.allowNewRegistrations })}
-                    className={`w-14 h-7 rounded-full transition-all relative ${systemSettings.allowNewRegistrations ? 'bg-[#6366F1]' : 'bg-white/10'}`}
+                    className={`w-14 h-7 rounded-full transition-all relative ${systemSettings.allowNewRegistrations ? 'bg-[#FACC15]' : 'bg-white/10'}`}
                   >
                     <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all ${systemSettings.allowNewRegistrations ? 'right-1' : 'left-1'}`} />
                   </button>
@@ -1523,7 +1523,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Notifications */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
+                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <Bell size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Admin Notifications</h3>
@@ -1536,7 +1536,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       onClick={() => handleUpdateSettings({
                         notifications: { ...systemSettings.notifications, [key as keyof SystemSettings['notifications']]: !enabled }
                       })}
-                      className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#6366F1]' : 'bg-white/10'}`}
+                      className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#FACC15]' : 'bg-white/10'}`}
                     >
                       <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${enabled ? 'right-1' : 'left-1'}`} />
                     </button>
@@ -1568,18 +1568,18 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   );
 
   return (
-    <div className="min-h-screen bg-[#4A5D4E] font-sans flex flex-col md:flex-row text-white selection:bg-[#6366F1] selection:text-white">
+    <div className="min-h-screen bg-[#4A5D4E] font-sans flex flex-col md:flex-row text-white selection:bg-[#FACC15] selection:text-black">
       {/* Sidebar */}
       <aside className="w-full md:w-80 bg-[#4A5D4E] border-r border-white/5 flex flex-col sticky top-0 h-screen z-20">
         <div className="p-10 border-b border-white/5 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="px-2 py-0.5 bg-[#6366F1] rounded flex items-center justify-center">
+              <div className="px-2 py-0.5 bg-[#FACC15] rounded flex items-center justify-center">
                 <span className="text-black font-black text-[8px] tracking-tighter">{HYPHENATED_NAME}</span>
               </div>
               <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
             </div>
-            <div className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
+            <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
           </div>
         </div>
         <nav className="flex-1 p-6 space-y-3">
@@ -1602,7 +1602,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               onClick={() => setActiveTab(item.id as any)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${
                 activeTab === item.id 
-                  ? 'bg-[#6366F1] text-white shadow-[0_0_30px_rgba(99,102,241,0.2)]' 
+                  ? 'bg-[#FACC15] text-black shadow-[0_0_30px_rgba(250,204,21,0.2)]' 
                   : 'text-white/40 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -1650,7 +1650,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {activeTab === 'meetings' && (
               <div className="space-y-12">
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.3em]">Scheduling</span>
+                  <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Scheduling</span>
                   <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Meeting Manager</h2>
                 </div>
                 <MeetingList user={user} profile={profile!} allClients={users.filter(u => u.role === 'client')} />
@@ -1731,13 +1731,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <h3 className="text-4xl font-bold tracking-tighter text-white mb-2">Reject Project</h3>
               <p className="text-white/40 text-sm font-bold uppercase tracking-widest mb-8">Specify Reason</p>
               <textarea 
-                className="w-full p-6 rounded-3xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 h-40 mb-8 resize-none placeholder:text-white/20"
+                className="w-full p-6 rounded-3xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 h-40 mb-8 resize-none placeholder:text-white/20"
                 placeholder="Reason for rejection..."
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
               />
               <div className="flex flex-col gap-4">
-                <button onClick={handleReject} className="w-full bg-[#6366F1] text-white py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <button onClick={handleReject} className="w-full bg-[#FACC15] text-black py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
                   Confirm Rejection
                 </button>
                 <button onClick={() => setShowRejectModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -1775,7 +1775,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   min="0"
                   max="100"
                   step="5"
-                  className="w-full h-2 bg-black/20 rounded-full appearance-none cursor-pointer accent-[#6366F1]"
+                  className="w-full h-2 bg-black/20 rounded-full appearance-none cursor-pointer accent-[#FACC15]"
                   value={newProgress}
                   onChange={(e) => setNewProgress(parseInt(e.target.value))}
                 />
@@ -1783,7 +1783,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               </div>
 
               <div className="flex flex-col gap-4">
-                <button onClick={handleUpdateProgress} className="w-full bg-[#6366F1] text-white py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <button onClick={handleUpdateProgress} className="w-full bg-[#FACC15] text-black py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
                   Save Progress
                 </button>
                 <button onClick={() => setShowProgressModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -1816,7 +1816,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="p-10 border-b border-white/5 flex justify-between items-center">
                 <div>
                   <h2 className="text-4xl font-bold tracking-tighter text-white">PROJECT CHAT</h2>
-                  <div className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.4em] mt-2">{selectedProject.businessName}</div>
+                  <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">{selectedProject.businessName}</div>
                 </div>
                 <button onClick={() => setShowChat(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
                   <X size={24} />
@@ -1857,7 +1857,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5 backdrop-blur-md">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6366F1] to-indigo-600 flex items-center justify-center text-white font-black text-lg">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FACC15] to-yellow-600 flex items-center justify-center text-black font-black text-lg">
                       {selectedUser.displayName?.[0] || 'U'}
                     </div>
                     <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#0F172A] rounded-full ${
@@ -1909,7 +1909,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="flex justify-between items-start mb-10">
                 <div>
                   <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{viewingProject.businessName}</h3>
-                  <div className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.4em] mt-2">Project Details</div>
+                  <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">Project Details</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <button 
@@ -1933,7 +1933,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       link.click();
                       toast.success('Project details downloaded');
                     }}
-                    className="p-4 bg-[#6366F1] text-white rounded-full hover:scale-110 transition-all flex items-center gap-2"
+                    className="p-4 bg-[#FACC15] text-black rounded-full hover:scale-110 transition-all flex items-center gap-2"
                     title="Download All Details"
                   >
                     <Download size={20} />
@@ -1949,13 +1949,13 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
               <div className="flex gap-4 mb-10 border-b border-white/5 pb-4">
                 <button 
                   onClick={() => setModalTab('overview')}
-                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'overview' ? 'bg-[#6366F1] text-white' : 'text-white/40 hover:text-white'}`}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'overview' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
                 >
                   Overview
                 </button>
                 <button 
                   onClick={() => setModalTab('inputs')}
-                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'inputs' ? 'bg-[#6366F1] text-white' : 'text-white/40 hover:text-white'}`}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'inputs' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
                 >
                   User Inputs
                 </button>
@@ -1991,7 +1991,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span>
-                          <span className="text-xs font-bold text-[#6366F1] uppercase">{viewingProject.plan || 'N/A'}</span>
+                          <span className="text-xs font-bold text-[#FACC15] uppercase">{viewingProject.plan || 'N/A'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Status</span>
@@ -2006,13 +2006,13 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
 
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Preferences</h4>
-                      <div className="bg-[#6366F1]/5 p-6 rounded-3xl border border-[#6366F1]/10 space-y-3">
+                      <div className="bg-[#FACC15]/5 p-6 rounded-3xl border border-[#FACC15]/10 space-y-3">
                         {[0, 1, 2].map((idx) => (
                           <div key={idx} className="flex justify-between items-center">
                             <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
                               {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
                             </span>
-                            <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#6366F1]' : 'text-white/60'}`}>
+                            <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#FACC15]' : 'text-white/60'}`}>
                               {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
                             </span>
                           </div>
@@ -2063,8 +2063,8 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
 
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Internal Notes</h4>
-                      <div className="bg-[#6366F1]/5 p-6 rounded-3xl border border-[#6366F1]/10">
-                        <p className="text-xs font-medium text-[#6366F1]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
+                      <div className="bg-[#FACC15]/5 p-6 rounded-3xl border border-[#FACC15]/10">
+                        <p className="text-xs font-medium text-[#FACC15]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
                       </div>
                     </section>
 
@@ -2073,7 +2073,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       <div className="grid grid-cols-2 gap-4">
                         {viewingProject.logoUrl && (
                           <a href={viewingProject.logoUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
-                            <FileText size={24} className="text-[#6366F1]" />
+                            <FileText size={24} className="text-[#FACC15]" />
                             <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Logo</span>
                           </a>
                         )}
@@ -2090,7 +2090,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
               ) : (
                 <div className="space-y-12">
                   <section>
-                    <h4 className="text-[10px] font-black text-[#6366F1] uppercase tracking-[0.4em] mb-6 italic">Personal Details</h4>
+                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">Personal Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
                         <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">User Name</span>
@@ -2104,7 +2104,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                   </section>
 
                   <section>
-                    <h4 className="text-[10px] font-black text-[#6366F1] uppercase tracking-[0.4em] mb-6 italic">Business Details</h4>
+                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">Business Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
                         <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Name</span>
@@ -2122,21 +2122,21 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                   </section>
 
                   <section>
-                    <h4 className="text-[10px] font-black text-[#6366F1] uppercase tracking-[0.4em] mb-6 italic">Domain Preferences</h4>
+                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">Domain Preferences</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {[0, 1, 2].map((idx) => (
                         <div 
                           key={idx} 
                           className={`p-8 rounded-3xl border transition-all flex flex-col gap-2 ${
                             idx === 0 
-                              ? 'bg-[#6366F1]/10 border-[#6366F1]/30 shadow-[0_0_30px_rgba(99,102,241,0.1)]' 
+                              ? 'bg-[#FACC15]/10 border-[#FACC15]/30 shadow-[0_0_30px_rgba(250,204,21,0.1)]' 
                               : 'bg-black/30 border-white/5'
                           }`}
                         >
                           <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
                             {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
                           </div>
-                          <div className={`text-xl font-black uppercase italic tracking-tighter ${idx === 0 ? 'text-[#6366F1]' : 'text-white'}`}>
+                          <div className={`text-xl font-black uppercase italic tracking-tighter ${idx === 0 ? 'text-[#FACC15]' : 'text-white'}`}>
                             {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
                           </div>
                         </div>
@@ -2145,7 +2145,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                   </section>
 
                   <section>
-                    <h4 className="text-[10px] font-black text-[#6366F1] uppercase tracking-[0.4em] mb-6 italic">User Description</h4>
+                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">User Description</h4>
                     <div className="bg-black/30 p-8 rounded-3xl border border-white/5">
                       <p className="text-sm font-medium text-white/70 leading-relaxed italic">{viewingProject.description}</p>
                     </div>
@@ -2156,7 +2156,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
               <div className="mt-12 pt-10 border-t border-white/5 flex gap-4">
                 <button 
                   onClick={() => { setEditingProjectDetails(viewingProject); setShowProjectDetailModal(false); setShowProjectModal(true); }}
-                  className="flex-1 bg-[#6366F1] text-white py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                  className="flex-1 bg-[#FACC15] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                 >
                   Edit Project
                 </button>
@@ -2192,7 +2192,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
               <div className="flex justify-between items-start mb-10">
                 <div>
                   <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{editingProjectDetails ? 'Edit Project' : 'Add New Project'}</h3>
-                  <div className="text-[10px] font-bold text-[#6366F1] uppercase tracking-[0.4em] mt-2">Configuration</div>
+                  <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">Configuration</div>
                 </div>
                 <button onClick={() => setShowProjectModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
                   <X size={24} />
@@ -2212,7 +2212,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       name="businessName"
                       defaultValue={editingProjectDetails?.businessName}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2221,7 +2221,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       name="userName"
                       defaultValue={editingProjectDetails?.userName}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2231,7 +2231,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       type="email"
                       defaultValue={editingProjectDetails?.userEmail}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -2241,7 +2241,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                         name="businessType"
                         defaultValue={editingProjectDetails?.businessType}
                         required
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                     <div className="space-y-2">
@@ -2249,7 +2249,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       <select 
                         name="plan"
                         defaultValue={editingProjectDetails?.plan}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest appearance-none"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest appearance-none"
                       >
                         <option value="Basic">Basic</option>
                         <option value="Standard">Standard</option>
@@ -2267,7 +2267,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                         name="startDate"
                         type="date"
                         defaultValue={editingProjectDetails?.startDate ? new Date(editingProjectDetails.startDate as any).toISOString().split('T')[0] : ''}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                     <div className="space-y-2">
@@ -2276,7 +2276,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                         name="deadline"
                         type="date"
                         defaultValue={editingProjectDetails?.deadline ? new Date(editingProjectDetails.deadline as any).toISOString().split('T')[0] : ''}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                   </div>
@@ -2285,7 +2285,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                     <select 
                       name="status"
                       defaultValue={editingProjectDetails?.status}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest appearance-none"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest appearance-none"
                     >
                       <option value="Waiting for Review">Waiting for Review</option>
                       <option value="Under Review">Under Review</option>
@@ -2300,7 +2300,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                     <textarea 
                       name="description"
                       defaultValue={editingProjectDetails?.description}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest h-32 resize-none"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest h-32 resize-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2308,14 +2308,14 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                     <textarea 
                       name="internalNotes"
                       defaultValue={editingProjectDetails?.internalNotes}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-[#6366F1] focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest h-32 resize-none placeholder:text-[#6366F1]/20"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-[#FACC15] focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest h-32 resize-none placeholder:text-[#FACC15]/20"
                       placeholder="Admin only notes..."
                     />
                   </div>
                 </div>
 
                 <div className="col-span-full mt-8 flex gap-4">
-                  <button type="submit" className="flex-1 bg-[#6366F1] text-white py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl">
+                  <button type="submit" className="flex-1 bg-[#FACC15] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl">
                     {editingProjectDetails ? 'Update Project' : 'Create Project'}
                   </button>
                   <button type="button" onClick={() => setShowProjectModal(false)} className="flex-1 bg-white/5 text-white py-5 rounded-full font-black uppercase italic text-sm hover:bg-white/10 transition-all">
