@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@google/genai": "^1.29.0",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
@@ -35,6 +36,7 @@
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
     "papaparse": "^5.5.3",
+    "razorpay": "^2.9.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-helmet-async": "^3.0.0",

@@ -164,10 +164,12 @@ export interface LeaveRequest {
 export interface Attendance {
   id: string;
   userId: string;
+  userName?: string;
   date: string; // YYYY-MM-DD
   status: 'present' | 'absent' | 'leave';
   inTime?: string;
   outTime?: string;
+  checkInTime?: string;
 }
 
 export type ProjectStatus = 

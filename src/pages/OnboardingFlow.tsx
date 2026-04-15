@@ -24,6 +24,7 @@ const Loader = ({ color = "black" }: { color?: string }) => (
 );
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
+import emailjs from '@emailjs/browser';
 import { useAuth } from '../context/AuthContext';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
@@ -93,6 +94,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     return saved ? parseInt(saved, 10) : 1;
   });
 
+  const [otp, setOtp] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +131,70 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
   }, [profile]);
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (otpTimer > 0) {
+      timer = setInterval(() => setOtpTimer(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [otpTimer]);
+
+  const sendOTP = async () => {
+    if (!formData.email) {
+      toast.error("Please enter an email first");
+      return;
+    }
+
+    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(newOtp);
+    localStorage.setItem("otp", newOtp);
+    localStorage.setItem("otp_expiry", (Date.now() + 5 * 60 * 1000).toString());
+
+    try {
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      if (!serviceId || !templateId || !publicKey) {
+        console.warn("EmailJS not configured. OTP is:", newOtp);
+        toast.success(`Test Mode: OTP is ${newOtp}`);
+        setIsOtpSent(true);
+        setOtpTimer(30);
+        return;
+      }
+
+      await emailjs.send(serviceId, templateId, {
+        to_email: formData.email,
+        to_name: formData.name,
+        otp: newOtp,
+      }, publicKey);
+
+      toast.success("OTP sent to your email!");
+      setIsOtpSent(true);
+      setOtpTimer(30);
+    } catch (err) {
+      console.error("EmailJS Error:", err);
+      toast.error("Failed to send OTP. Please try again.");
+    }
+  };
+
+  const verifyOTP = () => {
+    const storedOtp = localStorage.getItem("otp");
+    const expiry = localStorage.getItem("otp_expiry");
+
+    if (!expiry || Date.now() > parseInt(expiry)) {
+      toast.error("OTP expired. Please resend.");
+      return;
+    }
+
+    if (otp === storedOtp) {
+      toast.success("Email verified successfully!");
+      setStep(3);
+    } else {
+      toast.error("Invalid OTP. Please try again.");
+    }
+  };
+
   const getInvalidFieldsForStep = (currentStep: number) => {
     if (!systemSettings) return [];
     const req = systemSettings.requiredFields;
@@ -142,7 +212,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.referralSource) invalid.push('referralSource');
         if (formData.referralSource === 'I got a call' && !formData.salesCode) invalid.push('salesCode');
         break;
-      case 2: // Business info
+      case 2: // OTP
+        if (!otp || otp.length !== 6) invalid.push('otp');
+        break;
+      case 3: // Business info
         if (req.businessName && !formData.businessName) invalid.push('businessName');
         if (req.businessType && !formData.businessType) invalid.push('businessType');
         if (formData.businessType === 'Other' && !formData.otherBusinessType) invalid.push('otherBusinessType');
@@ -194,7 +267,14 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const handleNext = () => {
     const invalid = getInvalidFieldsForStep(step);
     if (invalid.length === 0) {
-      setStep(step + 1);
+      if (step === 1) {
+        sendOTP();
+        setStep(2);
+      } else if (step === 2) {
+        verifyOTP();
+      } else {
+        setStep(step + 1);
+      }
       setInvalidFields([]);
     } else {
       setInvalidFields(invalid);
@@ -279,16 +359,49 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         });
       }
 
-      // Redirect to Stripe Payment Link with projectId
-      const stripeLinks: Record<string, string> = {
-        basic: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07',
-        standard: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08',
-        premium: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09'
+      // Razorpay Integration
+      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!razorpayKey) {
+        toast.error("Razorpay Key not configured. Redirecting to dashboard.");
+        navigate('/dashboard?success=true');
+        return;
+      }
+
+      const amount = formData.plan === 'basic' ? 149900 : formData.plan === 'standard' ? 349900 : 999900;
+
+      const options = {
+        key: razorpayKey,
+        amount: amount,
+        currency: "INR",
+        name: "WebbyLaunch",
+        description: `${formData.plan.toUpperCase()} Plan Subscription`,
+        image: "/favicon.svg",
+        handler: async function (response: any) {
+          try {
+            const { updateProject } = await import('../services/database');
+            await updateProject(projectId, { 
+              paymentStatus: 'paid',
+              paymentId: response.razorpay_payment_id
+            });
+            toast.success("Payment successful!");
+            navigate('/dashboard?success=true');
+          } catch (err) {
+            console.error("Error updating payment status:", err);
+            toast.error("Payment recorded but failed to update status. Please contact support.");
+          }
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone
+        },
+        theme: {
+          color: "#6366F1"
+        }
       };
 
-      const stripeLink = stripeLinks[formData.plan] || stripeLinks.basic;
-      
-      window.location.href = `${stripeLink}?client_reference_id=${projectId}`;
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
 
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('onboarding_step');
@@ -523,6 +636,73 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
+              <h3 className="text-4xl font-bold tracking-tight text-text">Verify Email</h3>
+              <p className="text-subtext font-medium italic">We've sent a 6-digit OTP to <span className="text-primary">{formData.email}</span></p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex justify-center gap-2">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <input
+                    key={i}
+                    type="text"
+                    maxLength={1}
+                    className="w-12 h-16 bg-card border border-border rounded-xl text-center text-2xl font-black text-primary focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all"
+                    value={otp[i] || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val)) {
+                        const newOtp = otp.split('');
+                        newOtp[i] = val;
+                        setOtp(newOtp.join(''));
+                        if (val && e.target.nextSibling) {
+                          (e.target.nextSibling as HTMLInputElement).focus();
+                        }
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' && !otp[i] && (e.target as HTMLInputElement).previousSibling) {
+                        (e.target as HTMLInputElement).previousSibling && ( (e.target as HTMLInputElement).previousSibling as HTMLInputElement).focus();
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="text-center">
+                <button 
+                  onClick={sendOTP}
+                  disabled={otpTimer > 0}
+                  className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 disabled:text-subtext transition-colors"
+                >
+                  {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : 'Resend OTP'}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
+              <button 
+                onClick={verifyOTP}
+                disabled={otp.length !== 6}
+                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+              >
+                Verify & Continue
+              </button>
+            </div>
+          </motion.div>
+        );
+      case 3:
+        return (
+          <motion.div 
+            key="step3"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-2">
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 3</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Business Details</h3>
             </div>
 
@@ -748,17 +928,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 3:
+      case 4:
         return (
           <motion.div 
-            key="step3"
+            key="step4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 3</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Domain Preferences</h3>
             </div>
 
@@ -836,17 +1016,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 4:
+      case 5:
         return (
           <motion.div 
-            key="step4"
+            key="step5"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Design for your website</h3>
             </div>
 
@@ -959,17 +1139,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 5:
+      case 6:
         return (
           <motion.div 
-            key="step5"
+            key="step6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
             </div>
 
@@ -1014,17 +1194,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 6:
+      case 7:
         return (
           <motion.div 
-            key="step6"
+            key="step7"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 7</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Terms & Conditions</h3>
             </div>
 
@@ -1090,17 +1270,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 7:
+      case 8:
         return (
           <motion.div 
-            key="step7"
+            key="step8"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 7</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 8</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Finalize Project</h3>
             </div>
             
@@ -1331,11 +1511,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="h-1.5 w-32 bg-border rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${(step / 7) * 100}%` }}
+                animate={{ width: `${(step / 8) * 100}%` }}
                 className="h-full bg-primary"
               />
             </div>
-            <div className="text-xs font-bold text-primary uppercase tracking-wider">Step {step} of 7</div>
+            <div className="text-xs font-bold text-primary uppercase tracking-wider">Step {step} of 8</div>
           </div>
         </div>
       </header>

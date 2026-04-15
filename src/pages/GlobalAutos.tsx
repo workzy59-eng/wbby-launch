@@ -142,13 +142,13 @@ export default function GlobalAutos() {
                 initial={{ y: -200, opacity: 0, rotate: -45 }}
                 animate={{ y: 0, opacity: 1, rotate: 0 }}
                 transition={{ duration: 0.8, delay: 1.2, type: 'spring' }}
-                className="absolute top-0 z-30 text-[#E6FF00]"
+                className="absolute top-0 z-30 text-[#6366F1]"
               >
                 <Key size={48} strokeWidth={2.5} />
                 <motion.div 
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ repeat: Infinity, duration: 2 }}
-                  className="absolute inset-0 bg-[#E6FF00]/20 blur-xl rounded-full"
+                  className="absolute inset-0 bg-[#6366F1]/20 blur-xl rounded-full"
                 />
               </motion.div>
 

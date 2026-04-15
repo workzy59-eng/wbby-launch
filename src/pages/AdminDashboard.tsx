@@ -57,9 +57,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#E6FF00]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#6366F1]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#E6FF00]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#6366F1]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 
@@ -88,10 +88,21 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
           getAllLeaveRequests(),
           getAllAttendance()
         ]);
+
+        // Enrich attendance with user names if missing
+        const enrichedAttendance = allAttendance.map(record => {
+          const userProfile = allProfiles.find(p => p.uid === record.userId);
+          return {
+            ...record,
+            userName: record.userName || userProfile?.displayName || 'Unknown Developer',
+            checkInTime: record.checkInTime || record.inTime || '--:--'
+          };
+        });
+
         setProfiles(allProfiles);
         setProjects(allProjects);
         setLeaveRequests(allLeaves);
-        setAttendance(allAttendance);
+        setAttendance(enrichedAttendance);
       } catch (error) {
         console.error("Error fetching admin data:", error);
       } finally {
@@ -455,7 +466,7 @@ Generated on: ${new Date().toLocaleString()}
         return (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#E6FF00]">Developers Team</h2>
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#6366F1]">Developers Team</h2>
             </div>
             <div className="flex justify-between items-center bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="relative flex-1 max-w-md">
@@ -591,7 +602,7 @@ Generated on: ${new Date().toLocaleString()}
                           {project.documentsUrl.split(',').map((docUrl, dIdx) => (
                             <div key={dIdx} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
                               <div className="flex items-center gap-3">
-                                <FileText size={20} className="text-[#E6FF00]" />
+                                <FileText size={20} className="text-[#6366F1]" />
                                 <span className="text-[10px] font-black text-white uppercase tracking-widest truncate max-w-[150px]">
                                   {docUrl.split('/').pop()?.split('_').slice(1).join('_') || `Document ${dIdx + 1}`}
                                 </span>
@@ -618,7 +629,7 @@ Generated on: ${new Date().toLocaleString()}
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setViewingDescription(project)}
-                            className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#E6FF00] hover:bg-[#E6FF00] hover:text-black transition-all"
+                            className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#6366F1] hover:bg-[#6366F1] hover:text-black transition-all"
                             title="View Description"
                           >
                             <FileText size={16} />
@@ -651,7 +662,7 @@ Generated on: ${new Date().toLocaleString()}
                     exit={{ scale: 0.9, opacity: 0 }}
                     className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
                   >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#E6FF00] to-[#00F2FF]" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#6366F1] to-[#00F2FF]" />
                     
                     <div className="flex justify-between items-center">
                       <div className="space-y-1">
@@ -667,7 +678,20 @@ Generated on: ${new Date().toLocaleString()}
                       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                           onClick={() => {
-                            const prompt = `Build a SaaS platform named "${viewingDescription.businessName}" for WebbyLaunch using Next.js + Tailwind. Use Primary color ${viewingDescription.primaryColor} and Secondary color ${viewingDescription.secondaryColor}${viewingDescription.tertiaryColor ? ` and Tertiary color ${viewingDescription.tertiaryColor}` : ''} for full theme styling. Include landing page, pricing, authentication, dashboard, project management, admin panel, and settings. Business Description: ${viewingDescription.description}. Make it production-ready, responsive, and deployable on Vercel.`;
+                            const prompt = `Build a modern, responsive website for a business named "${viewingDescription.businessName}".
+
+The website should be designed based on the following details:
+
+- Website Type / Description: ${viewingDescription.description || 'Not provided'}
+- Primary Color: ${viewingDescription.primaryColor}
+- Secondary Color: ${viewingDescription.secondaryColor}
+- Business Phone: ${viewingDescription.businessPhone || viewingDescription.businessNumber || 'Not provided'}
+- Business Email: ${viewingDescription.businessEmail || viewingDescription.userEmail || 'Not provided'}
+
+Requirements:
+- Pages: Home, About Us, Services, Contact
+- Premium UI
+- Responsive design`;
                             navigator.clipboard.writeText(prompt);
                             toast.success('Prompt copied to clipboard!');
                           }}
@@ -677,18 +701,27 @@ Generated on: ${new Date().toLocaleString()}
                         </button>
                       </div>
                       <p className="whitespace-pre-wrap">
-                        Build a SaaS platform named <span className="text-[#E6FF00]">“{viewingDescription.businessName}”</span> for WebbyLaunch using Next.js + Tailwind. 
+                        Build a modern, responsive website for a business named <span className="text-[#6366F1]">“{viewingDescription.businessName}”</span>.
                         {"\n\n"}
-                        Use Primary color <span className="text-[#00F2FF]">{viewingDescription.primaryColor}</span> and Secondary color <span className="text-[#00F2FF]">{viewingDescription.secondaryColor}</span>
-                        {viewingDescription.tertiaryColor && <> and Tertiary color <span className="text-[#00F2FF]">{viewingDescription.tertiaryColor}</span></>} for full theme styling.
+                        The website should be designed based on the following details:
                         {"\n\n"}
-                        Include landing page, pricing, authentication, dashboard, project management, admin panel, and settings.
-                        {"\n\n"}
-                        <span className="text-slate-500 italic">Business Description:</span>
+                        - Website Type / Description: <span className="text-slate-400">{viewingDescription.description || 'Not provided'}</span>
                         {"\n"}
-                        {viewingDescription.description || 'No description provided.'}
+                        - Primary Color: <span className="text-[#00F2FF]">{viewingDescription.primaryColor}</span>
+                        {"\n"}
+                        - Secondary Color: <span className="text-[#00F2FF]">{viewingDescription.secondaryColor}</span>
+                        {"\n"}
+                        - Business Phone: <span className="text-slate-400">{viewingDescription.businessPhone || viewingDescription.businessNumber || 'Not provided'}</span>
+                        {"\n"}
+                        - Business Email: <span className="text-slate-400">{viewingDescription.businessEmail || viewingDescription.userEmail || 'Not provided'}</span>
                         {"\n\n"}
-                        Make it production-ready, responsive, and deployable on Vercel.
+                        Requirements:
+                        {"\n"}
+                        - Pages: Home, About Us, Services, Contact
+                        {"\n"}
+                        - Premium UI
+                        {"\n"}
+                        - Responsive design
                       </p>
                     </div>
 
@@ -701,11 +734,24 @@ Generated on: ${new Date().toLocaleString()}
                       </button>
                       <button 
                         onClick={() => {
-                          const prompt = `Build a SaaS platform named "${viewingDescription.businessName}" for WebbyLaunch using Next.js + Tailwind. Use Primary color ${viewingDescription.primaryColor} and Secondary color ${viewingDescription.secondaryColor}${viewingDescription.tertiaryColor ? ` and Tertiary color ${viewingDescription.tertiaryColor}` : ''} for full theme styling. Include landing page, pricing, authentication, dashboard, project management, admin panel, and settings. Business Description: ${viewingDescription.description}. Make it production-ready, responsive, and deployable on Vercel.`;
+                          const prompt = `Build a modern, responsive website for a business named "${viewingDescription.businessName}".
+
+The website should be designed based on the following details:
+
+- Website Type / Description: ${viewingDescription.description || 'Not provided'}
+- Primary Color: ${viewingDescription.primaryColor}
+- Secondary Color: ${viewingDescription.secondaryColor}
+- Business Phone: ${viewingDescription.businessPhone || viewingDescription.businessNumber || 'Not provided'}
+- Business Email: ${viewingDescription.businessEmail || viewingDescription.userEmail || 'Not provided'}
+
+Requirements:
+- Pages: Home, About Us, Services, Contact
+- Premium UI
+- Responsive design`;
                           navigator.clipboard.writeText(prompt);
                           toast.success('Prompt copied to clipboard!');
                         }}
-                        className="flex-1 py-4 rounded-xl bg-[#E6FF00] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,255,0,0.2)] flex items-center justify-center gap-2"
+                        className="flex-1 py-4 rounded-xl bg-[#6366F1] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] flex items-center justify-center gap-2"
                       >
                         Copy Full Prompt
                       </button>
@@ -799,49 +845,55 @@ Generated on: ${new Date().toLocaleString()}
       case 'attendance':
         return (
           <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Attendance Logs</h2>
+              <button 
+                onClick={() => exportToCSV(attendance, 'attendance_logs')}
+                className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+              >
+                Export CSV
+              </button>
+            </div>
             <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
-              <h3 className="text-2xl font-black text-white uppercase italic mb-8">Developer Attendance Tracking</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-white/5">
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Developer</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Role</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Last Check-in</th>
-                      <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Developer</th>
+                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date</th>
+                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
+                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Check In</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {profiles.filter(p => p.role === 'developer' && p.status === 'approved').map((dev, idx) => (
-                      <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition-all group">
-                        <td className="px-6 py-6">
+                  <tbody className="divide-y divide-white/5">
+                    {attendance.map((record, idx) => (
+                      <tr key={idx} className="group hover:bg-white/5 transition-colors">
+                        <td className="py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#00F2FF] rounded-lg flex items-center justify-center text-black font-black italic text-sm shadow-[0_0_15px_rgba(0,242,255,0.1)]">
-                              {dev.displayName?.[0]}
+                            <div className="w-8 h-8 bg-[#6366F1]/20 rounded-lg flex items-center justify-center text-[#6366F1] font-black text-xs italic">
+                              {record.userName?.[0]}
                             </div>
-                            <span className="font-bold text-white uppercase italic">{dev.displayName}</span>
+                            <span className="text-sm font-bold text-white uppercase italic">{record.userName}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-6">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{dev.devRole}</span>
+                        <td className="py-6 text-xs font-bold text-slate-400">{formatDate(record.date)}</td>
+                        <td className="py-6">
+                          <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                            record.status === 'present' ? 'bg-green-500/20 text-green-400' :
+                            record.status === 'absent' ? 'bg-red-500/20 text-red-400' :
+                            'bg-yellow-500/20 text-yellow-400'
+                          }`}>
+                            {record.status}
+                          </span>
                         </td>
-                        <td className="px-6 py-6">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-                            <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Present</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-6">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Today, 09:00 AM</span>
-                        </td>
-                        <td className="px-6 py-6 text-right">
-                          <button className="p-2 bg-white/5 border border-white/10 rounded-lg text-slate-500 hover:text-[#00F2FF] hover:border-[#00F2FF]/40 transition-all">
-                            <CalendarIcon size={16} />
-                          </button>
-                        </td>
+                        <td className="py-6 text-xs font-bold text-slate-500">{record.checkInTime || '--:--'}</td>
                       </tr>
                     ))}
+                    {attendance.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="py-12 text-center text-slate-500 font-black uppercase tracking-widest italic">No attendance records found</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -857,16 +909,18 @@ Generated on: ${new Date().toLocaleString()}
             fullScreen={false}
           />
         );
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#E6FF00] selection:text-black text-slate-200">
+    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#6366F1] selection:text-white text-slate-200">
       {/* Sidebar */}
       <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#E6FF00] rounded-lg rotate-12 shadow-[0_0_20px_rgba(230,255,0,0.3)]" />
-          Webby<span className="text-[#E6FF00]">Admin</span>
+          <div className="w-8 h-8 bg-[#6366F1] rounded-lg rotate-12 shadow-[0_0_20px_rgba(99,102,241,0.3)]" />
+          Webby<span className="text-[#6366F1]">Admin</span>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -883,7 +937,7 @@ Generated on: ${new Date().toLocaleString()}
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-[#E6FF00] text-black shadow-[0_0_30px_rgba(230,255,0,0.2)] scale-[1.02]' 
+                  ? 'bg-[#6366F1] text-white shadow-[0_0_30_rgba(99,102,241,0.2)] scale-[1.02]' 
                   : 'text-slate-500 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -915,7 +969,7 @@ Generated on: ${new Date().toLocaleString()}
             onClick={() => setActiveTab(tab.id as Tab)}
             className={`p-3 rounded-xl transition-all ${
               activeTab === tab.id 
-                ? 'bg-[#E6FF00] text-black shadow-[0_0_20px_rgba(230,255,0,0.2)]' 
+                ? 'bg-[#6366F1] text-white shadow-[0_0_20px_rgba(99,102,241,0.2)]' 
                 : 'text-slate-500'
             }`}
           >
@@ -939,9 +993,9 @@ Generated on: ${new Date().toLocaleString()}
           <div className="flex items-center gap-6">
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">System Admin</div>
-              <div className="text-[10px] font-black text-[#E6FF00] uppercase tracking-widest">Online</div>
+              <div className="text-[10px] font-black text-[#6366F1] uppercase tracking-widest">Online</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E6FF00] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(230,255,0,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6366F1] to-indigo-600 flex items-center justify-center text-white font-black text-xl italic shadow-[0_0_30px_rgba(99,102,241,0.2)]">
               A
             </div>
           </div>

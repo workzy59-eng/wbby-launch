@@ -788,7 +788,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           URL.revokeObjectURL(url);
                           toast.success('Client details downloaded');
                         }}
-                        className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#E6FF00] hover:text-black transition-all"
+                        className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#6366F1] hover:text-white transition-all"
                       >
                         <Download size={16} />
                       </button>
@@ -955,14 +955,14 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       <div className="flex justify-end gap-2">
                         <button 
                           onClick={() => { setViewingProject(p); setModalTab('overview'); setShowProjectDetailModal(true); }}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#E6FF00] hover:text-black transition-all"
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#6366F1] hover:text-white transition-all"
                           title="View Details"
                         >
                           <ArrowRight size={16} />
                         </button>
                         <button 
                           onClick={() => { setEditingProjectDetails(p); setShowProjectModal(true); }}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#E6FF00] hover:text-black transition-all"
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#6366F1] hover:text-white transition-all"
                           title="Edit Project"
                         >
                           <Edit2 size={16} />
@@ -1411,7 +1411,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Pricing Section */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
                   <TrendingUp size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Pricing Configuration</h3>
@@ -1459,7 +1459,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Required Fields */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
                   <FileText size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Registration Fields</h3>
@@ -1487,7 +1487,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Global Switches */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
                   <Settings size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Platform Controls</h3>
@@ -1523,7 +1523,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Notifications */}
             <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#E6FF00]/10 rounded-2xl flex items-center justify-center text-[#E6FF00]">
+                <div className="w-12 h-12 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
                   <Bell size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Admin Notifications</h3>
@@ -1731,13 +1731,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <h3 className="text-4xl font-bold tracking-tighter text-white mb-2">Reject Project</h3>
               <p className="text-white/40 text-sm font-bold uppercase tracking-widest mb-8">Specify Reason</p>
               <textarea 
-                className="w-full p-6 rounded-3xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 h-40 mb-8 resize-none placeholder:text-white/20"
+                className="w-full p-6 rounded-3xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 h-40 mb-8 resize-none placeholder:text-white/20"
                 placeholder="Reason for rejection..."
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
               />
               <div className="flex flex-col gap-4">
-                <button onClick={handleReject} className="w-full bg-[#E6FF00] text-black py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <button onClick={handleReject} className="w-full bg-[#6366F1] text-white py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
                   Confirm Rejection
                 </button>
                 <button onClick={() => setShowRejectModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -2156,7 +2156,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
               <div className="mt-12 pt-10 border-t border-white/5 flex gap-4">
                 <button 
                   onClick={() => { setEditingProjectDetails(viewingProject); setShowProjectDetailModal(false); setShowProjectModal(true); }}
-                  className="flex-1 bg-[#E6FF00] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                  className="flex-1 bg-[#6366F1] text-white py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                 >
                   Edit Project
                 </button>
@@ -2212,7 +2212,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       name="businessName"
                       defaultValue={editingProjectDetails?.businessName}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2221,7 +2221,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       name="userName"
                       defaultValue={editingProjectDetails?.userName}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2231,7 +2231,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                       type="email"
                       defaultValue={editingProjectDetails?.userEmail}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -2241,7 +2241,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                         name="businessType"
                         defaultValue={editingProjectDetails?.businessType}
                         required
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                     <div className="space-y-2">
@@ -2267,7 +2267,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                         name="startDate"
                         type="date"
                         defaultValue={editingProjectDetails?.startDate ? new Date(editingProjectDetails.startDate as any).toISOString().split('T')[0] : ''}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                     <div className="space-y-2">
@@ -2276,7 +2276,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                         name="deadline"
                         type="date"
                         defaultValue={editingProjectDetails?.deadline ? new Date(editingProjectDetails.deadline as any).toISOString().split('T')[0] : ''}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                   </div>
@@ -2285,7 +2285,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                     <select 
                       name="status"
                       defaultValue={editingProjectDetails?.status}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest appearance-none"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest appearance-none"
                     >
                       <option value="Waiting for Review">Waiting for Review</option>
                       <option value="Under Review">Under Review</option>
@@ -2300,7 +2300,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                     <textarea 
                       name="description"
                       defaultValue={editingProjectDetails?.description}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#E6FF00]/50 font-bold uppercase tracking-widest h-32 resize-none"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#6366F1]/50 font-bold uppercase tracking-widest h-32 resize-none"
                     />
                   </div>
                   <div className="space-y-2">

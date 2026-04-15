@@ -79,6 +79,40 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     details: '',
   });
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isMarkingAttendance, setIsMarkingAttendance] = useState(false);
+
+  const handleMarkAttendance = async () => {
+    if (!user?.uid || isMarkingAttendance) return;
+    const today = new Date().toISOString().split('T')[0];
+    const alreadyMarked = attendance.find(a => a.date === today);
+    
+    if (alreadyMarked) {
+      alert('Attendance already marked for today!');
+      return;
+    }
+
+    setIsMarkingAttendance(true);
+    try {
+      const { db, collection, addDoc, serverTimestamp } = await import('../firebase');
+      await addDoc(collection(db, 'attendance'), {
+        userId: user.uid,
+        userName: profile?.displayName || 'Developer',
+        date: today,
+        status: 'present',
+        checkInTime: new Date().toLocaleTimeString(),
+        createdAt: serverTimestamp()
+      });
+      
+      alert('Attendance marked successfully!');
+      const att = await getAttendance(user.uid);
+      setAttendance(att);
+    } catch (error) {
+      console.error('Error marking attendance:', error);
+      alert('Failed to mark attendance.');
+    } finally {
+      setIsMarkingAttendance(false);
+    }
+  };
 
   const handleUpdateSubmit = async () => {
     if (!projectUpdate.projectId || !projectUpdate.details || isUpdating) return;
@@ -395,7 +429,16 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         return (
           <div className="space-y-8">
             <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10">
-              <h3 className="text-2xl font-black text-white uppercase italic mb-8">Attendance Calendar</h3>
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-black text-white uppercase italic">Attendance Calendar</h3>
+                <button 
+                  onClick={handleMarkAttendance}
+                  disabled={isMarkingAttendance || attendance.some(a => a.date === new Date().toISOString().split('T')[0])}
+                  className="px-6 py-3 bg-[#6366F1] text-white rounded-xl font-black uppercase italic text-xs tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {isMarkingAttendance ? 'Marking...' : attendance.some(a => a.date === new Date().toISOString().split('T')[0]) ? 'Marked Today' : 'Mark Attendance'}
+                </button>
+              </div>
               <div className="grid grid-cols-7 gap-4">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                   <div key={day} className="text-center text-[10px] font-black text-white/20 uppercase tracking-widest mb-4">{day}</div>
@@ -467,7 +510,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               <h3 className="text-2xl font-black text-white uppercase italic mb-8">Assigned Projects</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {projects.map((project, idx) => (
-                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#E6FF00]/40 transition-all">
+                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#6366F1]/40 transition-all">
                     <div className="flex justify-between items-start">
                       <div className="w-14 h-14 bg-[#6366F1] rounded-2xl flex items-center justify-center text-white font-black text-xl italic shadow-[0_0_20px_rgba(99,102,241,0.1)]">
                         {project.businessName?.[0]}

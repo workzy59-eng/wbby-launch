@@ -11,17 +11,34 @@ dotenv.config();
 // Initialize Firebase Admin
 if (!admin.apps.length) {
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  if (clientEmail) {
+    clientEmail = clientEmail.trim().replace(/^["']|["']$/g, '');
+  }
   const projectId = process.env.FIREBASE_PROJECT_ID || firebaseConfig.projectId;
 
-  let privateKey = rawKey ? rawKey.replace(/\\n/g, '\n').trim() : undefined;
-  
-  // Handle case where the key might be wrapped in quotes from the environment
-  if (privateKey && privateKey.startsWith('"') && privateKey.endsWith('"')) {
-    privateKey = privateKey.substring(1, privateKey.length - 1).replace(/\\n/g, '\n').trim();
+  let privateKey = rawKey;
+  if (privateKey) {
+    // Remove wrapping quotes if they exist
+    privateKey = privateKey.trim();
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.substring(1, privateKey.length - 1);
+    } else if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+      privateKey = privateKey.substring(1, privateKey.length - 1);
+    }
+    
+    // Replace literal \n strings with actual newline characters
+    privateKey = privateKey.replace(/\\n/g, '\n');
+    
+    // Ensure the key has the correct PEM structure if it's flattened
+    if (privateKey.includes('-----BEGIN PRIVATE KEY-----') && !privateKey.includes('\n', privateKey.indexOf('-----BEGIN PRIVATE KEY-----') + 25)) {
+      // It looks like a flattened key (no newlines after the header)
+      privateKey = privateKey
+        .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
+        .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+    }
   }
-
-  // Only attempt cert initialization if we have a key that looks like a PEM key
+  
   const hasValidKey = privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----');
   const hasClientEmail = clientEmail && clientEmail.includes('@');
 
