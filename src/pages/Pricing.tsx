@@ -20,7 +20,7 @@ export default function Pricing() {
         'Contact Form',
         '7 Days Support'
       ],
-      stripeLink: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07'
+      stripeLink: 'https://buy.stripe.com/test_eVqcN45is5n6bTudhRbAs0a'
     },
     {
       name: 'Standard',
@@ -262,7 +262,7 @@ export default function Pricing() {
             </p>
             <div className="flex flex-wrap justify-center gap-6">
               <a 
-                href={`mailto:${PROFESSIONAL_EMAIL}`}
+                href={`mailto:${PROFESSIONAL_EMAIL}?subject=Pricing Inquiry&body=Hi WebbyLaunch, I have a question about your pricing plans.`}
                 className="px-12 py-5 bg-[#FACC15] text-black rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all inline-flex items-center gap-4"
               >
                 Email Us <Sparkles size={24} />

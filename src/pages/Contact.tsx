@@ -41,7 +41,7 @@ export default function Contact() {
             <div className="space-y-2">
               <h4 className="text-xs font-black uppercase tracking-widest text-white/20">Email Us</h4>
               <a 
-                href={`mailto:${PROFESSIONAL_EMAIL}`}
+                href={`mailto:${PROFESSIONAL_EMAIL}?subject=Project Inquiry&body=Hi WebbyLaunch, I'm interested in starting a project.`}
                 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-white hover:text-[#E6FF00] transition-colors"
               >
                 {PROFESSIONAL_EMAIL}
