@@ -105,8 +105,12 @@ export default function Pricing() {
 
   const navigate = useNavigate();
 
-  const handleSubscribe = () => {
-    navigate('/auth');
+  const handleSubscribe = (stripeLink: string) => {
+    if (stripeLink) {
+      window.open(stripeLink, '_blank');
+    } else {
+      navigate('/auth');
+    }
   };
 
   return (
@@ -229,7 +233,7 @@ export default function Pricing() {
                   </div>
 
                   <button 
-                    onClick={handleSubscribe}
+                    onClick={() => handleSubscribe(plan.stripeLink)}
                     className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
                       plan.popular 
                         ? 'bg-[#FACC15] text-black shadow-[0_0_30px_rgba(250,204,21,0.3)] hover:scale-[1.05]' 

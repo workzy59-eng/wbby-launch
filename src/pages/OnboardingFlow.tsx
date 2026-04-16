@@ -63,7 +63,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       secondaryColor: '#000000',
       tertiaryColor: '',
       logoUrl: '',
-      plan: 'basic' as 'basic' | 'standard' | 'premium',
+      plan: 'basic' as 'basic' | 'standard' | 'pro',
       billingCycle: 'one-time' as 'one-time' | 'subscription',
       referenceWebsite: '',
       templateId: '',
@@ -368,12 +368,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         'one-time': {
           basic: 'https://buy.stripe.com/test_eVqcN45is5n6bTudhRbAs0a',
           standard: 'https://buy.stripe.com/test_6oU6oGdOY8zi7Deb9JbAs0b',
-          premium: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
+          pro: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
         },
         'subscription': {
           basic: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07',
           standard: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08',
-          premium: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09',
+          pro: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09',
         },
         advance: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07' // Placeholder for Advance Payment
       };
@@ -394,7 +394,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         
         toast.success("Redirecting to secure payment...");
         setTimeout(() => {
-          window.location.href = finalUrl;
+          window.open(finalUrl, '_blank');
         }, 1500);
         return;
       }
@@ -1093,8 +1093,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] 
                 },
                 { 
-                  id: 'premium', 
-                  name: 'Premium', 
+                  id: 'pro', 
+                  name: 'Pro', 
                   price: formData.billingCycle === 'one-time' ? '₹30,000/-' : '₹9,999/-', 
                   features: ['Everything in Standard', 'E-commerce', 'AI features'] 
                 }
