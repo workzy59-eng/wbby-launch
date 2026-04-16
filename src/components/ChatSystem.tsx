@@ -260,7 +260,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   };
 
   const handleFileUpload = async (files: FileList | null, isImage: boolean) => {
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0 || isSending) return;
     
     setIsSending(true);
     const attachments: Attachment[] = [];

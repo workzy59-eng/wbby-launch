@@ -10,6 +10,8 @@ interface AuthContextType {
   sendOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, code: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +44,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     const { signInWithGoogle: firebaseSignIn } = await import('../firebase');
     await firebaseSignIn();
+  };
+
+  const signInWithEmail = async (email: string, pass: string) => {
+    const { signInWithEmail: firebaseSignIn } = await import('../firebase');
+    await firebaseSignIn(email, pass);
+  };
+
+  const signUpWithEmail = async (email: string, pass: string) => {
+    const { signUpWithEmail: firebaseSignUp } = await import('../firebase');
+    await firebaseSignUp(email, pass);
   };
 
   const sendOTP = async (email: string) => {
@@ -92,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, sendOTP, verifyOTP, signInWithGoogle }}>
+    <AuthContext.Provider value={{ user, profile, loading, sendOTP, verifyOTP, signInWithGoogle, signInWithEmail, signUpWithEmail }}>
       {children}
     </AuthContext.Provider>
   );

@@ -142,7 +142,7 @@ export default function Pricing() {
             className="flex items-center justify-center gap-2 pt-6"
           >
             <Shield size={14} className="text-[#FACC15]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">100% Money Back Guarantee</span>
+            {/* Removed 100% Money Back Guarantee */}
           </motion.div>
 
           <motion.div 

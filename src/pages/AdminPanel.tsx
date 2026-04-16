@@ -317,21 +317,8 @@ Generated on: ${new Date().toLocaleString()}
       doc.setFontSize(10);
       doc.text(`Primary Color: ${project.primaryColor || 'Not Provided'}`, 25, 108);
       doc.text(`Secondary Color: ${project.secondaryColor || 'Not Provided'}`, 25, 115);
-      doc.text(`Logo: ${project.logoUrl ? 'Uploaded' : 'No Logo Uploaded'}`, 25, 122);
-      if (project.logoUrl) {
-        doc.setFontSize(8);
-        doc.setTextColor(0, 0, 255);
-        doc.text(`Logo URL: ${project.logoUrl}`, 25, 128);
-        doc.setTextColor(0, 0, 0);
-      }
-      doc.setFontSize(10);
-      doc.text(`Documents: ${project.documentsUrl ? 'Uploaded' : 'No Documents Uploaded'}`, 25, 135);
-      if (project.documentsUrl) {
-        doc.setFontSize(8);
-        doc.setTextColor(0, 0, 255);
-        doc.text(`Docs URL: ${project.documentsUrl}`, 25, 141);
-        doc.setTextColor(0, 0, 0);
-      }
+      doc.text(`Logo: Not Required`, 25, 122);
+      doc.text(`Documents: Not Required`, 25, 135);
 
       // Section 3: Description
       doc.setFontSize(16);

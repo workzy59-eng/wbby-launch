@@ -54,44 +54,9 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
   return (
     <div className="space-y-10">
       <div className="flex flex-col sm:flex-row items-center gap-8">
-        <div className="relative group">
-          <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden bg-white/5 border-2 border-white/10 group-hover:border-[#FACC15]/50 transition-all flex items-center justify-center">
-            {formData.logo ? (
-              <img 
-                src={formData.logo} 
-                alt="Business Logo" 
-                className="w-full h-full object-contain p-4"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="text-white/20 flex flex-col items-center gap-2">
-                <ImageIcon size={48} />
-                <span className="text-[8px] font-black uppercase tracking-widest">No Logo</span>
-              </div>
-            )}
-            {isUploading && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <Loader2 className="text-[#FACC15] animate-spin" size={24} />
-              </div>
-            )}
-          </div>
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            className="absolute -bottom-2 -right-2 p-3 bg-[#FACC15] text-black rounded-2xl shadow-xl hover:scale-110 transition-all"
-          >
-            <Camera size={18} />
-          </button>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            className="hidden" 
-            accept="image/*"
-          />
-        </div>
         <div className="text-center sm:text-left space-y-1">
-          <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Business Branding</h3>
-          <p className="text-white/40 text-sm italic">This logo will appear on invoices and client communications.</p>
+          <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Business Information</h3>
+          <p className="text-white/40 text-sm italic">Update your business contact details below.</p>
         </div>
       </div>
 

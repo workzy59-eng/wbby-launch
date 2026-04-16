@@ -566,62 +566,8 @@ Generated on: ${new Date().toLocaleString()}
                       </div>
                     </div>
 
-                    {/* File Display Section */}
+                    {/* File Display Section Removed */}
                     <div className="grid grid-cols-1 gap-4 py-4 border-y border-white/5">
-                      {/* Logo Display */}
-                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-                            {project.logoUrl ? (
-                              <img src={project.logoUrl} alt="Logo" className="w-full h-full object-cover" />
-                            ) : (
-                              <FileText size={20} className="text-white/20" />
-                            )}
-                          </div>
-                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Business Logo</span>
-                        </div>
-                        {project.logoUrl && (
-                          <div className="flex gap-2">
-                            <a 
-                              href={project.logoUrl} 
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#00F2FF] transition-all"
-                              title="View Logo"
-                            >
-                              <ArrowUpRight size={14} />
-                            </a>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Documents Display */}
-                      {project.documentsUrl && (
-                        <div className="space-y-2">
-                          <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-2">Project Documents</div>
-                          {project.documentsUrl.split(',').map((docUrl, dIdx) => (
-                            <div key={dIdx} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                              <div className="flex items-center gap-3">
-                                <FileText size={20} className="text-[#FACC15]" />
-                                <span className="text-[10px] font-black text-white uppercase tracking-widest truncate max-w-[150px]">
-                                  {docUrl.split('/').pop()?.split('_').slice(1).join('_') || `Document ${dIdx + 1}`}
-                                </span>
-                              </div>
-                              <div className="flex gap-2">
-                                <a 
-                                  href={docUrl} 
-                                  target="_blank" 
-                                  rel="noreferrer"
-                                  className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#00F2FF] transition-all"
-                                  title="View Document"
-                                >
-                                  <ArrowUpRight size={14} />
-                                </a>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
                       <div className="pt-6 flex flex-wrap gap-4 justify-between items-center">

@@ -63,7 +63,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       secondaryColor: '#000000',
       tertiaryColor: '',
       logoUrl: '',
-      documentsUrl: '',
       plan: 'basic' as 'basic' | 'standard' | 'premium',
       referenceWebsite: '',
       templateId: '',
@@ -85,8 +84,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [profileFile, setProfileFile] = useState<File | null>(null);
-  const [docFiles, setDocFiles] = useState<File[]>([]);
-  const [logoPreview, setLogoPreview] = useState<string>(formData.logoUrl || '');
   const [profilePreview, setProfilePreview] = useState<string>(profile?.photoURL || '');
 
   const [step, setStep] = useState(() => {
@@ -306,20 +303,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     setError(null);
 
     try {
-      let finalLogoUrl = formData.logoUrl;
-      let finalDocsUrl = formData.documentsUrl;
       let finalProfileUrl = profile?.photoURL || '';
 
       // Upload files if present
       if (profileFile) {
         finalProfileUrl = await uploadFile(profileFile, 'profiles');
-      }
-      if (logoFile) {
-        finalLogoUrl = await uploadFile(logoFile, 'logos');
-      }
-      if (docFiles.length > 0) {
-        const urls = await Promise.all(docFiles.map(file => uploadFile(file, 'documents')));
-        finalDocsUrl = urls.join(',');
       }
 
       const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
@@ -347,8 +335,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         primaryColor: formData.primaryColor,
         secondaryColor: formData.secondaryColor,
         tertiaryColor: formData.tertiaryColor,
-        logoUrl: finalLogoUrl,
-        documentsUrl: finalDocsUrl,
         plan: formData.plan,
         paymentStatus: 'pending' as 'pending' | 'paid',
         referenceWebsite: formData.referenceWebsite,
@@ -800,59 +786,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 />
               </div>
 
-              {/* Logo and Documents Upload */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Logo</label>
-                  <div className="relative group">
-                    <div className="w-full h-32 rounded-2xl bg-card border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 group-hover:border-primary/50 transition-all overflow-hidden">
-                      {logoPreview ? (
-                        <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain p-4" />
-                      ) : (
-                        <>
-                          <ImageIcon className="w-8 h-8 text-subtext" />
-                          <span className="text-[10px] font-bold text-subtext uppercase tracking-widest">Upload Logo</span>
-                        </>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setLogoFile(file);
-                          setLogoPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Documents</label>
-                  <div className="relative group">
-                    <div className="w-full h-32 rounded-2xl bg-card border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 group-hover:border-primary/50 transition-all">
-                      <FileText className="w-8 h-8 text-subtext" />
-                      <span className="text-[10px] font-bold text-subtext uppercase tracking-widest">
-                        {docFiles.length > 0 ? `${docFiles.length} Files Selected` : 'Upload Documents'}
-                      </span>
-                    </div>
-                    <input
-                      type="file"
-                      multiple
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      onChange={(e) => {
-                        if (e.target.files) {
-                          setDocFiles(Array.from(e.target.files));
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
+              {/* Logo and Documents Upload Removed */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">City <span className="text-error">*</span></label>
@@ -1103,50 +1037,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Upload Logo</label>
-                <div className="relative group">
-                  <div className="w-full h-48 rounded-2xl bg-card border-2 border-dashed border-border flex flex-col items-center justify-center gap-3 group-hover:border-primary/50 transition-all overflow-hidden">
-                    {logoPreview ? (
-                      <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain p-6" />
-                    ) : (
-                      <>
-                        <ImageIcon className="w-10 h-10 text-subtext" />
-                        <div className="text-center">
-                          <span className="text-xs font-bold text-text uppercase tracking-widest block mb-1">Click to upload logo</span>
-                          <span className="text-[10px] font-bold text-subtext uppercase tracking-widest">PNG, JPG or SVG (Max 5MB)</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        try {
-                          const { uploadToFileService } = await import('../services/cloudinaryService');
-                          toast.promise(
-                            uploadToFileService(file).then(url => {
-                              setLogoPreview(url);
-                              handleInputChange('logoUrl', url);
-                            }),
-                            {
-                              loading: 'Uploading logo...',
-                              success: 'Logo uploaded successfully!',
-                              error: 'Failed to upload logo'
-                            }
-                          );
-                        } catch (err) {
-                          console.error('Logo upload error:', err);
-                        }
-                      }
-                    }}
-                  />
-                </div>
-              </div>
+              {/* Logo Upload Removed */}
             </div>
 
             <div className="flex gap-4">

@@ -674,43 +674,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 </div>
                               </div>
                               <div className="space-y-6">
-                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Your Resources</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                  {selectedProject.logoUrl && (
-                                    <a 
-                                      href={selectedProject.logoUrl} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3 hover:bg-white/10 transition-all group"
-                                    >
-                                      <div className="w-10 h-10 rounded-xl bg-[#FACC15]/10 flex items-center justify-center text-[#FACC15]">
-                                        <ImageIcon size={20} />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Logo</div>
-                                      </div>
-                                    </a>
-                                  )}
-                                  {selectedProject.documentsUrl && (
-                                    <a 
-                                      href={selectedProject.documentsUrl} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3 hover:bg-white/10 transition-all group"
-                                    >
-                                      <div className="w-10 h-10 rounded-xl bg-[#FACC15]/10 flex items-center justify-center text-[#FACC15]">
-                                        <FileText size={20} />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Docs</div>
-                                      </div>
-                                    </a>
-                                  )}
-                                  {!selectedProject.logoUrl && !selectedProject.documentsUrl && (
-                                    <div className="col-span-2 p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
-                                      <p className="text-[10px] font-black uppercase tracking-widest text-white/20">No files uploaded</p>
-                                    </div>
-                                  )}
+                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Project Details</h3>
+                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 text-center">
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Project information is being processed</p>
                                 </div>
                               </div>
                             </div>
