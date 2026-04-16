@@ -107,7 +107,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     if (!profile) return;
-    const unsubscribe = subscribeToMeetings(profile.role as 'admin' | 'client', user.uid, (data) => {
+    const unsubscribe = subscribeToMeetings(profile?.role as 'admin' | 'client', user.uid, (data) => {
       setMeetings(data);
     });
     return () => unsubscribe();

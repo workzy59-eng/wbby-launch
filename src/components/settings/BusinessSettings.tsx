@@ -55,7 +55,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
     <div className="space-y-10">
       <div className="flex flex-col sm:flex-row items-center gap-8">
         <div className="relative group">
-          <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden bg-white/5 border-2 border-white/10 group-hover:border-[#6366F1]/50 transition-all flex items-center justify-center">
+          <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden bg-white/5 border-2 border-white/10 group-hover:border-[#FACC15]/50 transition-all flex items-center justify-center">
             {formData.logo ? (
               <img 
                 src={formData.logo} 
@@ -71,13 +71,13 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
             )}
             {isUploading && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <Loader2 className="text-[#6366F1] animate-spin" size={24} />
+                <Loader2 className="text-[#FACC15] animate-spin" size={24} />
               </div>
             )}
           </div>
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="absolute -bottom-2 -right-2 p-3 bg-[#6366F1] text-white rounded-2xl shadow-xl hover:scale-110 transition-all"
+            className="absolute -bottom-2 -right-2 p-3 bg-[#FACC15] text-black rounded-2xl shadow-xl hover:scale-110 transition-all"
           >
             <Camera size={18} />
           </button>
@@ -104,7 +104,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#FACC15]/50 transition-all"
               placeholder="WebbyLaunch"
             />
           </div>
@@ -118,7 +118,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#FACC15]/50 transition-all"
               placeholder="hello@webbylaunch.com"
             />
           </div>
@@ -132,7 +132,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#FACC15]/50 transition-all"
               placeholder="+91 00000 00000"
             />
           </div>
@@ -146,7 +146,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               type="url"
               value={formData.website}
               onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#6366F1]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#FACC15]/50 transition-all"
               placeholder="https://webbylaunch.com"
             />
           </div>
@@ -157,7 +157,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 px-8 py-4 bg-[#6366F1] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
+          className="flex items-center gap-2 px-8 py-4 bg-[#FACC15] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(250,204,21,0.2)]"
         >
           {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
           Save Business Info

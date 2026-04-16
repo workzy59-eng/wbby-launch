@@ -579,7 +579,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <input 
               type="text"
               placeholder="Search chats..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#FFD700]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#FACC15]/50 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -621,10 +621,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <div className="relative">
                   <div className={`w-14 h-14 rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg ${
                     conv.isProject 
-                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                      ? 'bg-gradient-to-br from-blue-500 to-yellow-600' 
                       : conv.recipientProfile?.displayName === 'SAI ROSHAN'
-                        ? 'bg-transparent border border-[#6366F1]/30 text-[#6366F1]'
-                        : 'bg-gradient-to-br from-[#6366F1] to-indigo-600'
+                        ? 'bg-transparent border border-[#FACC15]/30 text-[#FACC15]'
+                        : 'bg-gradient-to-br from-[#FACC15] to-yellow-600'
                   }`}>
                     {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U'))}
                   </div>
@@ -683,7 +683,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   >
                     <ChevronLeft size={24} />
                   </button>
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-black font-black text-lg">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-yellow-600 flex items-center justify-center text-black font-black text-lg">
                     <Briefcase size={20} />
                   </div>
                   <div>
@@ -809,9 +809,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             >
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full space-y-6">
-                  <div className="w-24 h-24 bg-[#6366F1]/10 rounded-full flex items-center justify-center relative">
-                    <MessageCircle size={48} className="text-[#6366F1]" />
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#6366F1] rounded-full flex items-center justify-center text-white">
+                  <div className="w-24 h-24 bg-[#FACC15]/10 rounded-full flex items-center justify-center relative">
+                    <MessageCircle size={48} className="text-[#FACC15]" />
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#FACC15] rounded-full flex items-center justify-center text-black">
                       <Sparkles size={14} />
                     </div>
                   </div>

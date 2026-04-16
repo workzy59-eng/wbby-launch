@@ -63,7 +63,7 @@ export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, 
             className="relative w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden"
           >
             {/* Background Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1/2 bg-[#6366F1]/5 blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1/2 bg-[#FACC15]/5 blur-[100px] pointer-events-none" />
 
             <div className="flex justify-between items-center mb-8">
               <div>
@@ -83,13 +83,13 @@ export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-4">Preferred Date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6366F1]" size={16} />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FACC15]" size={16} />
                     <input
                       type="date"
                       required
                       value={formData.preferredDate}
                       onChange={(e) => setFormData({ ...formData, preferredDate: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#6366F1]/50 transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#FACC15]/50 transition-colors"
                     />
                   </div>
                 </div>
@@ -97,13 +97,13 @@ export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-4">Preferred Time</label>
                   <div className="relative">
-                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6366F1]" size={16} />
+                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FACC15]" size={16} />
                     <input
                       type="time"
                       required
                       value={formData.preferredTime}
                       onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#6366F1]/50 transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#FACC15]/50 transition-colors"
                     />
                   </div>
                 </div>
@@ -112,13 +112,13 @@ export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-4">Message (Optional)</label>
                 <div className="relative">
-                  <MessageSquare className="absolute left-4 top-4 text-[#6366F1]" size={16} />
+                  <MessageSquare className="absolute left-4 top-4 text-[#FACC15]" size={16} />
                   <textarea
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="What would you like to discuss?"
                     rows={4}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#6366F1]/50 transition-colors resize-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#FACC15]/50 transition-colors resize-none"
                   />
                 </div>
               </div>
@@ -126,7 +126,7 @@ export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#6366F1] hover:bg-[#4f46e5] disabled:opacity-50 text-white font-black uppercase tracking-widest py-4 rounded-2xl transition-all flex items-center justify-center gap-2 group"
+                className="w-full bg-[#FACC15] hover:bg-[#eab308] disabled:opacity-50 text-black font-black uppercase tracking-widest py-4 rounded-2xl transition-all flex items-center justify-center gap-2 group"
               >
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

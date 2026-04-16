@@ -157,51 +157,29 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
       const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
+      console.log("EMAIL VALUE:", formData.email);
       console.log("📧 EmailJS Config:", {
         serviceId: serviceId ? "✅ Present" : "❌ Missing",
         templateId: templateId ? "✅ Present" : "❌ Missing",
         publicKey: publicKey ? "✅ Present" : "❌ Missing"
       });
 
-      if (serviceId && templateId && publicKey) {
-        console.log("📤 Sending Email via EmailJS...");
-        const response = await emailjs.send(serviceId, templateId, {
-          to_email: formData.email,
-          to_name: formData.name,
-          otp: newOtp,
-          OTP: newOtp, // Adding uppercase version just in case template uses {{OTP}}
-        }, publicKey);
-        
-        console.log("✅ EmailJS Success:", response);
-        toast.success("OTP sent to your email!");
-      } else {
-        console.log("⚠️ EmailJS keys missing, falling back to server-side OTP");
-        const response = await fetch('/api/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email, name: formData.name })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          if (data.message.includes("logged to console")) {
-            console.warn("Email verification disabled. OTP is:", data.code);
-            toast.success(`Test Mode: OTP is ${data.code}`);
-            setGeneratedOtp(data.code);
-            localStorage.setItem("otp", data.code);
-          } else {
-            toast.success("OTP sent to your email!");
-          }
-        } else {
-          throw new Error(data.error || "Failed to send OTP");
-        }
+      if (!serviceId || !templateId || !publicKey) {
+        throw new Error("EmailJS configuration is missing. Please check your environment variables.");
       }
 
+      console.log("📤 Sending Email via EmailJS...");
+      const response = await emailjs.send(serviceId, templateId, {
+        email: formData.email,
+        otp: newOtp,
+      }, publicKey);
+      
+      console.log("OTP SENT ✅", response);
+      toast.success("OTP sent to your email!");
       setIsOtpSent(true);
       setOtpTimer(30);
     } catch (err: any) {
-      console.error("OTP Error:", err);
+      console.error("FULL ERROR:", err);
       toast.error(err.message || "Failed to send OTP. Please try again.");
     }
   };
@@ -218,7 +196,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       isExpired: expiry ? Date.now() > parseInt(expiry) : true
     });
 
-    // If we have a stored OTP, it was likely generated locally or returned by the server in test mode
     if (storedOtp && expiry && Date.now() <= parseInt(expiry)) {
       if (otp === storedOtp) {
         console.log("✅ OTP Match (Local)");
@@ -227,28 +204,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         return;
       } else {
         console.log("❌ OTP Mismatch (Local)");
+        toast.error("Invalid OTP. Please try again.");
       }
-    }
-
-    // Otherwise, try server-side verification
-    try {
-      const response = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, code: otp })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success("Email verified successfully!");
-        setStep(3);
-      } else {
-        toast.error(data.error || "Invalid OTP. Please try again.");
-      }
-    } catch (err) {
-      console.error("Verification Error:", err);
-      toast.error("Failed to verify OTP. Please try again.");
+    } else {
+      toast.error("OTP expired or not found. Please resend.");
     }
   };
 

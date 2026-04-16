@@ -36,7 +36,7 @@ type SettingsTab = 'profile' | 'security' | 'notifications' | 'payments' | 'meet
 export default function Settings({ user, profile }: SettingsProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
-  const isAdmin = profile.role === 'admin';
+  const isAdmin = profile?.role === 'admin';
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User, desc: 'Personal information & photo' },
