@@ -1,14 +1,34 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
+
+// Log initialization for debugging
+console.log("🔥 Initializing Firebase with Project ID:", firebaseConfig.projectId);
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// Connection test as per system instructions
+async function testFirestoreConnection() {
+  try {
+    // Try to get a non-existent doc from a 'test' collection to verify connectivity
+    await getDocFromServer(doc(db, '_system_', 'connectivity_test'));
+    console.log("✅ Firestore connection verified");
+  } catch (error: any) {
+    if (error?.message?.includes('the client is offline')) {
+      console.error("❌ Firestore Error: The client is offline. Check your Firebase configuration and authorized domains.");
+    } else {
+      console.warn("ℹ️ Firestore connectivity test note:", error?.message || error);
+    }
+  }
+}
+
+testFirestoreConnection();
 
 export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const logOut = () => signOut(auth);

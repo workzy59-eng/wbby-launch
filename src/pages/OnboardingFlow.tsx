@@ -150,9 +150,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     localStorage.setItem("otp_expiry", (Date.now() + 5 * 60 * 1000).toString());
 
     try {
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-      const templateId = import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID || import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_swbnsgq';
+      const templateId = import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID || import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_y8iz6zl';
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'vOnX0vXEzyWfWDgQL';
 
       console.log("EMAIL VALUE:", formData.email);
       console.log("📧 EmailJS Config:", {
@@ -161,9 +161,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         publicKey: publicKey ? "✅ Present" : "❌ Missing"
       });
 
-      if (!serviceId || !templateId || !publicKey) {
-        throw new Error("EmailJS configuration is missing. Please add VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID (or VITE_EMAILJS_OTP_TEMPLATE_ID), and VITE_EMAILJS_PUBLIC_KEY to your AI Studio Secrets.");
-      }
+      // Configuration is now handled with fallbacks
 
       console.log("📤 Sending Email via EmailJS...");
       const response = await emailjs.send(serviceId, templateId, {

@@ -120,12 +120,16 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         if (chatId) markConversationAsSeen(chatId, currentUser.uid);
         
         // Mark individual messages as delivered and seen
+        // Optimize: only update if status is not already seen/delivered
         messagesData.forEach(async (m) => {
           if (m.senderId !== currentUser.uid) {
-            if (m.status === 'sent') {
+            const isNew = m.status === 'sent';
+            const isUnseen = m.status !== 'seen';
+
+            if (isNew) {
               await markMessageAsDelivered(m.id, chatId);
             }
-            if (m.status !== 'seen') {
+            if (isUnseen) {
               await markMessageAsSeen(m.id, chatId);
               notificationSound.current?.play().catch(() => {});
             }
@@ -149,10 +153,13 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         // Mark individual messages as delivered and seen
         messagesData.forEach(async (m) => {
           if (m.senderId !== currentUser.uid) {
-            if (m.status === 'sent') {
+            const isNew = m.status === 'sent';
+            const isUnseen = m.status !== 'seen';
+
+            if (isNew) {
               await markMessageAsDelivered(m.id, undefined, projectId);
             }
-            if (m.status !== 'seen') {
+            if (isUnseen) {
               await markMessageAsSeen(m.id, undefined, projectId);
               notificationSound.current?.play().catch(() => {});
             }

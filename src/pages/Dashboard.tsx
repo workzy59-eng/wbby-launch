@@ -55,45 +55,60 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     const fetchAdmin = async () => {
-      const { getProfiles, getDirectMessages, getConversations } = await import('../services/database');
+      const { getProfiles } = await import('../services/database');
       const profiles = await getProfiles();
       setTotalUsersCount(profiles.length);
       const admin = profiles.find(p => p.role === 'admin');
       if (admin) {
         setAdminProfile(admin);
-        // Also fetch messages for the unread count
-        getDirectMessages(user.uid, admin.uid, (msgs) => {
-          setMessages(msgs);
-        });
       }
-
-      // Fetch conversations for unread count
-      const unsubConvs = getConversations(user.uid, (convs) => {
-        let totalUnread = 0;
-        convs.forEach(conv => {
-          if (conv.unreadCount && conv.unreadCount[user.uid]) {
-            totalUnread += conv.unreadCount[user.uid];
-          }
-        });
-        
-        // Also check projects for unread counts
-        const unsubProjects = getProjects((projectsData) => {
-          let projectUnread = 0;
-          projectsData.forEach(p => {
-            if (p.unreadCount && p.unreadCount[user.uid]) {
-              projectUnread += p.unreadCount[user.uid];
-            }
-          });
-          setUnreadCount(totalUnread + projectUnread);
-        }, user.uid);
-
-        return () => unsubProjects();
-      });
-
-      return () => unsubConvs?.();
     };
     fetchAdmin();
+  }, []);
+
+  // Separate effect for unread counts to avoid nested listeners
+  const [convUnread, setConvUnread] = useState(0);
+  const [projectUnread, setProjectUnread] = useState(0);
+
+  useEffect(() => {
+    setUnreadCount(convUnread + projectUnread);
+  }, [convUnread, projectUnread]);
+
+  useEffect(() => {
+    const unsubConvs = getConversations(user.uid, (convs) => {
+      let count = 0;
+      convs.forEach(conv => {
+        if (conv.unreadCount && conv.unreadCount[user.uid]) {
+          count += conv.unreadCount[user.uid];
+        }
+      });
+      setConvUnread(count);
+    });
+
+    const unsubProjects = getProjects((projectsData) => {
+      let count = 0;
+      projectsData.forEach(p => {
+        if (p.unreadCount && p.unreadCount[user.uid]) {
+          count += p.unreadCount[user.uid];
+        }
+      });
+      setProjectUnread(count);
+    }, user.uid);
+
+    return () => {
+      unsubConvs();
+      unsubProjects();
+    };
   }, [user.uid]);
+
+  useEffect(() => {
+    if (adminProfile) {
+      const unsubMessages = getDirectMessages(user.uid, adminProfile.uid, (msgs) => {
+        setMessages(msgs);
+      });
+      return () => unsubMessages();
+    }
+  }, [user.uid, adminProfile]);
 
   useEffect(() => {
     const unsubscribe = getProjects((projectsData) => {

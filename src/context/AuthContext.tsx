@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, onAuthStateChanged, FirebaseUser, db, doc, onSnapshot } from '../firebase';
 import { UserProfile } from '../types';
 import { getUserProfile, createUserProfile } from '../services/database';
+import toast from 'react-hot-toast';
 
 interface AuthContextType {
   user: FirebaseUser | null;
@@ -58,49 +59,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const sendOTP = async (email: string) => {
     console.log("🚀 AuthContext: sendOTP triggered for", email);
-    const response = await fetch('/api/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    
-    let data;
-    try {
-      data = await response.json();
-      console.log("📦 AuthContext: sendOTP response", data);
-    } catch (e) {
-      console.error("❌ AuthContext: sendOTP parse error", e);
-      throw new Error('Server returned an invalid response. Please try again later.');
-    }
-
-    if (!response.ok) {
-      console.error("❌ AuthContext: sendOTP failed", data.error);
-      throw new Error(data.error || 'Failed to send OTP');
-    }
+    // On Vercel, server-side API routes in server.ts are not available in static deployments.
+    // OTP is now handled client-side in OnboardingFlow.tsx using EmailJS.
+    toast.error("OTP verification is currently handled during the onboarding process.");
+    throw new Error('OTP service is moved to Onboarding Flow.');
   };
 
   const verifyOTP = async (email: string, code: string) => {
     console.log("🔐 AuthContext: verifyOTP triggered for", email, "with code", code);
-    const response = await fetch('/api/verify-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code }),
-    });
-
-    let data;
-    try {
-      data = await response.json();
-      console.log("📦 AuthContext: verifyOTP response", data);
-    } catch (e) {
-      console.error("❌ AuthContext: verifyOTP parse error", e);
-      throw new Error('Server returned an invalid response. Please try again later.');
-    }
-
-    if (!response.ok) {
-      console.error("❌ AuthContext: verifyOTP failed", data.error);
-      throw new Error(data.error || 'Invalid code');
-    }
-    console.log("✅ AuthContext: verifyOTP success");
+    toast.error("OTP verification is currently handled during the onboarding process.");
+    throw new Error('OTP service is moved to Onboarding Flow.');
   };
 
   return (

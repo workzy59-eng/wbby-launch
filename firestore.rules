@@ -57,7 +57,7 @@ service cloud.firestore {
     function isAdmin() {
       let email = request.auth.token.email;
       let isVerified = request.auth.token.email_verified == true;
-      let isHardcodedAdmin = (email == "workzy59@gmail.com" || email == "webbylaunch@gmail.com") && isVerified;
+      let isHardcodedAdmin = (email == "workzy59@gmail.com" || (email == "webbylaunch@gmail.com" && isVerified));
       
       return isAuthenticated() && (
         isHardcodedAdmin || 
@@ -113,7 +113,9 @@ service cloud.firestore {
         'skills', 'portfolio', 'availability', 'maxProjectsPerWeek', 'expectedEarnings', 'message', 'languages'
       ];
       return hasOnlyAllowedFields(allowedFields) &&
-             (data.get('email', '') == '' || isValidEmail(data.get('email', ''))) &&
+             isValidString('displayName', 100) &&
+             isValidString('email', 100) &&
+             isValidString('phone', 20) &&
              data.get('role', 'client') in ['admin', 'client', 'developer', 'sales'];
     }
 
@@ -173,6 +175,7 @@ service cloud.firestore {
              (data.get('projectId', '') != '' || data.get('conversationId', '') != '') && 
              data.senderId is string && 
              data.text is string && data.text.size() <= 5000 &&
+             data.get('senderName', '').size() <= 100 &&
              data.get('seen', false) is bool;
     }
 
@@ -208,13 +211,14 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      // Allow any authenticated user to read a specific profile
-      allow get: if isAuthenticated();
-      // Allow listing users (needed for admin panel and chat search)
-      allow list: if isAuthenticated();
+      // PII Protection: Only owner or admin can read full profile
+      allow get: if isOwner(userId) || isAdmin();
+      // Only admin can list all users
+      allow list: if isAdmin();
       
-      allow create: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
       allow update: if (isOwner(userId) || isAdmin()) && 
+                    isValidUser(request.resource.data) &&
                     (!('role' in request.resource.data) || request.resource.data.role == resource.data.role || isAdmin());
     }
 
