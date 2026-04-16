@@ -372,7 +372,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         return;
       }
 
-      const amount = formData.plan === 'basic' ? 149900 : formData.plan === 'standard' ? 349900 : 999900;
+      let amount = formData.plan === 'basic' ? 149900 : formData.plan === 'standard' ? 349900 : 999900;
+      
+      // If advance payment selected, charge ₹499
+      if (paymentOption === 'understanding') {
+        amount = 49900;
+      }
 
       const options = {
         key: razorpayKey,
@@ -1266,9 +1271,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-1">
-                    <div className="text-xl font-bold text-primary">Pay Advance for starting with us</div>
-                    <p className="text-xs font-medium text-subtext">You will pay the remaining balance once you receive your project.</p>
+                  <div className="flex justify-between items-center">
+                    <div className="space-y-1">
+                      <div className="text-xl font-bold text-primary">Pay Advance for starting with us</div>
+                      <p className="text-xs font-medium text-subtext">You will pay the remaining balance once you receive your project.</p>
+                    </div>
+                    <div className="text-2xl font-bold text-text">₹499/-</div>
                   </div>
                 )}
               </div>
