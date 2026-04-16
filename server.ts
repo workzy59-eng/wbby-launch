@@ -15,27 +15,41 @@ if (!admin.apps.length) {
   if (clientEmail) {
     clientEmail = clientEmail.trim().replace(/^["']|["']$/g, '');
   }
-  const projectId = process.env.FIREBASE_PROJECT_ID || firebaseConfig.projectId;
+  let projectId = process.env.FIREBASE_PROJECT_ID || firebaseConfig.projectId;
+  if (projectId) {
+    projectId = projectId.trim().replace(/^["']|["']$/g, '');
+  }
 
   let privateKey = rawKey;
   if (privateKey) {
     // Remove wrapping quotes if they exist
     privateKey = privateKey.trim();
-    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-      privateKey = privateKey.substring(1, privateKey.length - 1);
-    } else if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+    if ((privateKey.startsWith('"') && privateKey.endsWith('"')) || 
+        (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
       privateKey = privateKey.substring(1, privateKey.length - 1);
     }
     
     // Replace literal \n strings with actual newline characters
     privateKey = privateKey.replace(/\\n/g, '\n');
     
-    // Ensure the key has the correct PEM structure if it's flattened
+    // If the key is a single line (flattened), reformat it properly
     if (privateKey.includes('-----BEGIN PRIVATE KEY-----') && !privateKey.includes('\n', privateKey.indexOf('-----BEGIN PRIVATE KEY-----') + 25)) {
-      // It looks like a flattened key (no newlines after the header)
-      privateKey = privateKey
-        .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-        .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+      const header = '-----BEGIN PRIVATE KEY-----';
+      const footer = '-----END PRIVATE KEY-----';
+      
+      let content = privateKey
+        .replace(header, '')
+        .replace(footer, '')
+        .replace(/\s/g, ''); // Remove all whitespace from content
+        
+      // Reconstruct with proper newlines (every 64 chars is standard for PEM)
+      const lines = content.match(/.{1,64}/g) || [];
+      privateKey = `${header}\n${lines.join('\n')}\n${footer}\n`;
+    }
+    
+    // Final check: ensure it starts and ends with the correct markers
+    if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      console.warn("FIREBASE_PRIVATE_KEY is missing the BEGIN header.");
     }
   }
   
