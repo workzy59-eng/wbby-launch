@@ -244,20 +244,22 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.pincode) invalid.push('pincode');
         if (req.description && !formData.description) invalid.push('description');
         break;
-      case 3: // Domain Preferences
-        if (!formData.websiteName) invalid.push('websiteName');
+      case 4: // Domain Preferences
+        if (!domainData.businessName || domainData.businessName.length < 3) invalid.push('businessNameDomain');
+        if (domainData.preferences.some(p => !p)) invalid.push('preferences');
         break;
-      case 4: // Design
+      case 5: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
         if (!formData.secondaryColor) invalid.push('secondaryColor');
         break;
-      case 5: // Choose Plan
+      case 6: // Choose Plan
         if (!formData.plan) invalid.push('plan');
         break;
-      case 6: // Terms and Conditions
+      case 7: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
-      case 7: // Finalize
+      case 8: // Finalize
+        if (!paymentOption) invalid.push('paymentOption');
         break;
     }
     return invalid;
@@ -393,9 +395,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         localStorage.removeItem('onboarding_step');
         
         toast.success("Redirecting to secure payment...");
-        setTimeout(() => {
-          window.open(finalUrl, '_blank');
-        }, 1500);
+        window.location.href = finalUrl;
         return;
       }
 
@@ -1439,8 +1439,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans selection:bg-primary selection:text-white">
-      <header className="px-10 py-8 border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-black font-sans selection:bg-primary selection:text-black">
+      <header className="px-10 py-8 border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50 text-white">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">

@@ -35,7 +35,7 @@ const TESTIMONIAL_DATA: Testimonial[] = [
 
 export default function ComponentShowcase() {
   return (
-    <div className="min-h-screen bg-[#4A5D4E] font-sans text-white selection:bg-[#FACC15] selection:text-black p-10 lg:p-20 overflow-hidden">
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#FACC15] selection:text-black p-10 lg:p-20 overflow-hidden">
       <div className="max-w-7xl mx-auto space-y-32">
         
         {/* Header Section */}

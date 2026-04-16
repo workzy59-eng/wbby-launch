@@ -215,7 +215,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
   if (showOnboarding) {
     return (
-      <div className="min-h-screen bg-[#4A5D4E] flex items-center justify-center p-6 font-sans">
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 font-sans text-white">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -259,11 +259,11 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 onChange={(e) => setOnboardingData({ ...onboardingData, devRole: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#FACC15] outline-none transition-all text-white font-bold uppercase appearance-none"
               >
-                <option value="" className="bg-[#4A5D4E]">Select Role</option>
-                <option value="Frontend" className="bg-[#4A5D4E]">Frontend Developer</option>
-                <option value="Backend" className="bg-[#4A5D4E]">Backend Developer</option>
-                <option value="Fullstack" className="bg-[#4A5D4E]">Fullstack Developer</option>
-                <option value="UI/UX" className="bg-[#4A5D4E]">UI/UX Designer</option>
+                <option value="" className="bg-black">Select Role</option>
+                <option value="Frontend" className="bg-black">Frontend Developer</option>
+                <option value="Backend" className="bg-black">Backend Developer</option>
+                <option value="Fullstack" className="bg-black">Fullstack Developer</option>
+                <option value="UI/UX" className="bg-black">UI/UX Designer</option>
               </select>
             </div>
 
@@ -287,7 +287,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               <motion.div 
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="max-w-md w-full bg-[#4A5D4E] border border-[#FACC15]/20 rounded-[2rem] p-10 text-center space-y-8"
+                className="max-w-md w-full bg-black border border-[#FACC15]/20 rounded-[2rem] p-10 text-center space-y-8"
               >
                 <div className="w-20 h-20 bg-[#FACC15]/10 rounded-full flex items-center justify-center mx-auto text-[#FACC15]">
                   <AlertTriangle size={40} />
@@ -562,9 +562,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                     onChange={(e) => setProjectUpdate({ ...projectUpdate, projectId: e.target.value })}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:border-[#FACC15] outline-none transition-all text-white font-bold uppercase appearance-none"
                   >
-                    <option value="" className="bg-[#4A5D4E]">Choose Project</option>
+                    <option value="" className="bg-black">Choose Project</option>
                     {projects.map(p => (
-                      <option key={p.id} value={p.id} className="bg-[#4A5D4E]">{p.businessName}</option>
+                      <option key={p.id} value={p.id} className="bg-black">{p.businessName}</option>
                     ))}
                   </select>
                 </div>
@@ -592,9 +592,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] font-sans selection:bg-[#FACC15] selection:text-black text-slate-200">
+    <div className="min-h-screen bg-black font-sans selection:bg-[#FACC15] selection:text-black text-slate-200">
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
+      <aside className="fixed top-0 left-0 h-full w-80 bg-black/50 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
           <div className="w-8 h-8 bg-[#FACC15] rounded-lg -rotate-6 shadow-[0_0_20px_rgba(250,204,21,0.3)]" />
           Webby<span className="text-[#FACC15]">Dev</span>
@@ -729,7 +729,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="max-w-md w-full bg-[#4A5D4E] border border-red-500/20 rounded-[2rem] p-10 text-center space-y-8"
+              className="max-w-md w-full bg-black border border-red-500/20 rounded-[2rem] p-10 text-center space-y-8"
             >
               <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto text-red-500">
                 <AlertTriangle size={40} />

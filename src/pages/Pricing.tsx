@@ -86,7 +86,7 @@ export default function Pricing() {
       stripeLink: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08'
     },
     {
-      name: 'Premium',
+      name: 'Pro',
       price: '₹9,999',
       period: '/mo',
       description: 'Full support and priority updates for enterprise-level needs.',
@@ -107,7 +107,7 @@ export default function Pricing() {
 
   const handleSubscribe = (stripeLink: string) => {
     if (stripeLink) {
-      window.open(stripeLink, '_blank');
+      window.location.href = stripeLink;
     } else {
       navigate('/auth');
     }

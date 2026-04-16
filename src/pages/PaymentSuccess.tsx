@@ -32,7 +32,7 @@ export default function PaymentSuccess() {
   }, [projectId]);
 
   return (
-    <div className="min-h-screen bg-[#4A5D4E] pt-40 pb-20 px-10 font-sans overflow-hidden relative">
+    <div className="min-h-screen bg-black pt-40 pb-20 px-10 font-sans overflow-hidden relative">
       <SEO title="Payment Successful – WebbyLaunch" />
       
       {/* Background Accents */}

@@ -410,7 +410,7 @@ Generated on: ${new Date().toLocaleString()}
           { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#FACC15]' },
           { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#FACC15]' },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all">
+          <div key={i} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all">
             <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
               <stat.icon size={24} className={stat.color} />
             </div>
@@ -421,7 +421,7 @@ Generated on: ${new Date().toLocaleString()}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
+        <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">Recent Activity</h3>
             <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">Live Feed</span>
@@ -444,7 +444,7 @@ Generated on: ${new Date().toLocaleString()}
           </div>
         </div>
 
-        <div className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
+        <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">System Health</h3>
             <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">Stable</span>
@@ -484,7 +484,7 @@ Generated on: ${new Date().toLocaleString()}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => (p.status === 'Waiting for Review' || p.status === 'Rejected') && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#FACC15]/30 transition-all">
+          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#FACC15]/30 transition-all">
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
@@ -583,7 +583,7 @@ Generated on: ${new Date().toLocaleString()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status) && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all relative overflow-hidden">
+          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#FACC15]/5 rounded-full blur-3xl"></div>
             
             <div className="flex justify-between items-start mb-8 relative z-10">
@@ -989,7 +989,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
 
       <div className="space-y-4">
         {projects.filter(p => p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#FACC15]/30 transition-all">
+          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#FACC15]/30 transition-all">
             <div>
               <h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.businessName}</h3>
               <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deleted Project • {p.businessType}</div>
@@ -1220,7 +1220,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {(appTab === 'developer' ? developerApps : salesApps).map((app) => (
-          <div key={app.id} className="bg-[#5E7162]/30 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 space-y-8">
+          <div key={app.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 space-y-8">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white uppercase italic">{app.name}</h3>
@@ -1555,9 +1555,9 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   );
 
   return (
-    <div className="min-h-screen bg-[#4A5D4E] font-sans flex flex-col md:flex-row text-white selection:bg-[#FACC15] selection:text-black">
+    <div className="min-h-screen bg-black font-sans flex flex-col md:flex-row text-white selection:bg-[#FACC15] selection:text-black">
       {/* Sidebar */}
-      <aside className="w-full md:w-80 bg-[#4A5D4E] border-r border-white/5 flex flex-col sticky top-0 h-screen z-20">
+      <aside className="w-full md:w-80 bg-black border-r border-white/5 flex flex-col sticky top-0 h-screen z-20">
         <div className="p-10 border-b border-white/5 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -1713,7 +1713,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-md w-full shadow-2xl border border-white/10"
+              className="relative bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[3rem] p-12"
             >
               <h3 className="text-4xl font-bold tracking-tighter text-white mb-2">Reject Project</h3>
               <p className="text-white/40 text-sm font-bold uppercase tracking-widest mb-8">Specify Reason</p>
@@ -1751,7 +1751,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-white/10"
+              className="relative bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[3rem] p-12"
             >
               <h3 className="text-4xl font-bold tracking-tighter text-white mb-2">Update Status</h3>
               <p className="text-white/40 text-sm font-bold uppercase tracking-widest mb-10">{selectedProject?.businessName}</p>
