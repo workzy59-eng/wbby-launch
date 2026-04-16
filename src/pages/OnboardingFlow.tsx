@@ -151,7 +151,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
     try {
       const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const templateId = import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID || import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
       const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
       console.log("EMAIL VALUE:", formData.email);
@@ -162,7 +162,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       });
 
       if (!serviceId || !templateId || !publicKey) {
-        throw new Error("EmailJS configuration is missing. Please check your environment variables.");
+        throw new Error("EmailJS configuration is missing. Please add VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID (or VITE_EMAILJS_OTP_TEMPLATE_ID), and VITE_EMAILJS_PUBLIC_KEY to your AI Studio Secrets.");
       }
 
       console.log("📤 Sending Email via EmailJS...");
