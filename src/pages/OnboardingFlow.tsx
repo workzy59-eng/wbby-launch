@@ -364,57 +364,36 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         });
       }
 
-      // Razorpay Integration
-      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
-      if (!razorpayKey) {
-        toast.error("Razorpay Key not configured. Redirecting to dashboard.");
-        navigate('/dashboard?success=true');
+      // Stripe Payment Links
+      const stripeLinks = {
+        basic: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07',
+        standard: 'https://buy.stripe.com/test_6oU6oGdOY8zi7Deb9JbAs0b',
+        premium: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
+        advance: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07' // Placeholder for Advance Payment
+      };
+
+      let paymentUrl = '';
+      if (paymentOption === 'understanding') {
+        paymentUrl = stripeLinks.advance;
+      } else {
+        paymentUrl = stripeLinks[formData.plan];
+      }
+
+      if (paymentUrl) {
+        // Append projectId as client_reference_id for tracking
+        const finalUrl = `${paymentUrl}?client_reference_id=${projectId}`;
+        
+        localStorage.removeItem('onboarding_data');
+        localStorage.removeItem('onboarding_step');
+        
+        toast.success("Redirecting to secure payment...");
+        setTimeout(() => {
+          window.location.href = finalUrl;
+        }, 1500);
         return;
       }
 
-      let amount = formData.plan === 'basic' ? 149900 : formData.plan === 'standard' ? 349900 : 999900;
-      
-      // If advance payment selected, charge ₹499
-      if (paymentOption === 'understanding') {
-        amount = 49900;
-      }
-
-      const options = {
-        key: razorpayKey,
-        amount: amount,
-        currency: "INR",
-        name: "WebbyLaunch",
-        description: `${formData.plan.toUpperCase()} Plan Subscription`,
-        image: "/favicon.svg",
-        handler: async function (response: any) {
-          try {
-            const { updateProject } = await import('../services/database');
-            await updateProject(projectId, { 
-              paymentStatus: 'paid',
-              paymentId: response.razorpay_payment_id
-            });
-            toast.success("Payment successful!");
-            navigate('/dashboard?success=true');
-          } catch (err) {
-            console.error("Error updating payment status:", err);
-            toast.error("Payment recorded but failed to update status. Please contact support.");
-          }
-        },
-        prefill: {
-          name: formData.name,
-          email: formData.email,
-          contact: formData.phone
-        },
-        theme: {
-          color: "#FACC15"
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-
-      localStorage.removeItem('onboarding_data');
-      localStorage.removeItem('onboarding_step');
+      toast.error("Payment configuration missing. Please contact support.");
     } catch (err: any) {
       console.error('Error submitting project:', err);
       setError(err.message || 'Failed to submit project. Please try again.');
