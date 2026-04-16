@@ -15,7 +15,7 @@ function NavHeader({ className }: { className?: string }) {
   return (
     <ul
       className={cn(
-        "relative mx-auto flex w-fit rounded-full border-2 border-[#6366F1] bg-black/20 backdrop-blur-xl p-1",
+        "relative mx-auto flex w-fit rounded-full border-2 border-[#FACC15] bg-black/20 backdrop-blur-xl p-1",
         className
       )}
       onMouseLeave={() => setPosition((pv) => ({ ...pv, opacity: 0 }))}
@@ -67,7 +67,7 @@ const Cursor = ({ position }: { position: any }) => {
   return (
     <motion.li
       animate={position}
-      className="absolute z-0 h-7 rounded-full bg-[#6366F1] md:h-10"
+      className="absolute z-0 h-7 rounded-full bg-[#FACC15] md:h-10"
     />
   );
 };

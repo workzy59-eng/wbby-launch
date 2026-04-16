@@ -57,9 +57,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#FFD700]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#FACC15]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#FFD700]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#FACC15]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 
@@ -466,7 +466,7 @@ Generated on: ${new Date().toLocaleString()}
         return (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#6366F1]">Developers Team</h2>
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#FACC15]">Developers Team</h2>
             </div>
             <div className="flex justify-between items-center bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="relative flex-1 max-w-md">
@@ -602,7 +602,7 @@ Generated on: ${new Date().toLocaleString()}
                           {project.documentsUrl.split(',').map((docUrl, dIdx) => (
                             <div key={dIdx} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
                               <div className="flex items-center gap-3">
-                                <FileText size={20} className="text-[#6366F1]" />
+                                <FileText size={20} className="text-[#FACC15]" />
                                 <span className="text-[10px] font-black text-white uppercase tracking-widest truncate max-w-[150px]">
                                   {docUrl.split('/').pop()?.split('_').slice(1).join('_') || `Document ${dIdx + 1}`}
                                 </span>
@@ -629,7 +629,7 @@ Generated on: ${new Date().toLocaleString()}
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setViewingDescription(project)}
-                            className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#6366F1] hover:bg-[#6366F1] hover:text-black transition-all"
+                            className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#FACC15] hover:bg-[#FACC15] hover:text-black transition-all"
                             title="View Description"
                           >
                             <FileText size={16} />
@@ -662,7 +662,7 @@ Generated on: ${new Date().toLocaleString()}
                     exit={{ scale: 0.9, opacity: 0 }}
                     className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
                   >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#6366F1] to-[#00F2FF]" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#FACC15] to-[#00F2FF]" />
                     
                     <div className="flex justify-between items-center">
                       <div className="space-y-1">
@@ -701,7 +701,7 @@ Requirements:
                         </button>
                       </div>
                       <p className="whitespace-pre-wrap">
-                        Build a modern, responsive website for a business named <span className="text-[#6366F1]">“{viewingDescription.businessName}”</span>.
+                        Build a modern, responsive website for a business named <span className="text-[#FACC15]">“{viewingDescription.businessName}”</span>.
                         {"\n\n"}
                         The website should be designed based on the following details:
                         {"\n\n"}
@@ -751,7 +751,7 @@ Requirements:
                           navigator.clipboard.writeText(prompt);
                           toast.success('Prompt copied to clipboard!');
                         }}
-                        className="flex-1 py-4 rounded-xl bg-[#6366F1] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] flex items-center justify-center gap-2"
+                        className="flex-1 py-4 rounded-xl bg-[#FACC15] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center justify-center gap-2"
                       >
                         Copy Full Prompt
                       </button>

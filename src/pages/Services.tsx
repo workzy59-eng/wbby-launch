@@ -84,7 +84,7 @@ export default function Services() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-black font-sans text-white selection:bg-[#6366F1] selection:text-white overflow-x-hidden"
+      className="min-h-screen bg-black font-sans text-white selection:bg-[#FACC15] selection:text-black overflow-x-hidden"
     >
       <SEO title="Our Services – Premium Web Solutions by WebbyLaunch" />
 
@@ -97,7 +97,7 @@ export default function Services() {
       >
         <Link 
           to="/auth" 
-          className="bg-[#6366F1] text-white px-8 py-4 rounded-2xl font-black uppercase italic text-xs flex items-center gap-3 shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:scale-105 transition-all"
+          className="bg-[#FACC15] text-black px-8 py-4 rounded-2xl font-black uppercase italic text-xs flex items-center gap-3 shadow-[0_0_30px_rgba(250,204,21,0.3)] hover:scale-105 transition-all"
         >
           <MousePointer2 size={18} />
           Get Started
@@ -107,7 +107,7 @@ export default function Services() {
       {/* Hero Section */}
       <section className="relative pt-48 pb-32 px-10 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[#6366F1]/5 rounded-full blur-[120px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[#FACC15]/5 rounded-full blur-[120px]" />
         </div>
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
@@ -118,7 +118,7 @@ export default function Services() {
           >
             <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
               We Build Websites That <br />
-              <span className="text-[#6366F1]">Bring You Clients</span>, <br />
+              <span className="text-[#FACC15]">Bring You Clients</span>, <br />
               Not Just Design
             </h1>
             <p className="max-w-2xl mx-auto text-white/60 text-lg md:text-xl font-medium leading-relaxed italic">
@@ -127,13 +127,13 @@ export default function Services() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
               <Link 
                 to="/pricing" 
-                className="w-full sm:w-auto bg-white/5 border border-white/10 text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 hover:border-[#6366F1]/30 transition-all group"
+                className="w-full sm:w-auto bg-white/5 border border-white/10 text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 hover:border-[#FACC15]/30 transition-all group"
               >
                 View Pricing
               </Link>
               <Link 
                 to="/auth" 
-                className="w-full sm:w-auto bg-[#6366F1] text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]"
+                className="w-full sm:w-auto bg-[#FACC15] text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(250,204,21,0.2)]"
               >
                 Get Started Now
               </Link>
@@ -155,18 +155,18 @@ export default function Services() {
                 transition={{ delay: idx * 0.1 }}
                 className={`group relative p-10 rounded-[3rem] border transition-all duration-500 flex flex-col h-full ${
                   service.featured 
-                    ? 'bg-white/10 border-[#6366F1]/30 shadow-[0_0_50px_rgba(99,102,241,0.1)]' 
-                    : 'bg-white/5 border-white/10 hover:border-[#6366F1]/30'
+                    ? 'bg-white/10 border-[#FACC15]/30 shadow-[0_0_50px_rgba(250,204,21,0.1)]' 
+                    : 'bg-white/5 border-white/10 hover:border-[#FACC15]/30'
                 }`}
               >
                 {service.featured && (
-                  <div className="absolute -top-4 left-10 bg-[#6366F1] text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest italic">
+                  <div className="absolute -top-4 left-10 bg-[#FACC15] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest italic">
                     {service.badge}
                   </div>
                 )}
 
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 ${
-                  service.featured ? 'bg-[#6366F1] text-white' : 'bg-[#6366F1]/10 text-[#6366F1] group-hover:bg-[#6366F1] group-hover:text-white'
+                  service.featured ? 'bg-[#FACC15] text-black' : 'bg-[#FACC15]/10 text-[#FACC15] group-hover:bg-[#FACC15] group-hover:text-black'
                 }`}>
                   <service.icon size={32} />
                 </div>
@@ -181,7 +181,7 @@ export default function Services() {
                     href={`mailto:${PROFESSIONAL_EMAIL}`}
                     className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                       service.featured 
-                        ? 'bg-[#6366F1] text-white hover:scale-[1.02]' 
+                        ? 'bg-[#FACC15] text-black hover:scale-[1.02]' 
                         : 'bg-white/5 text-white hover:bg-white/10'
                     }`}
                   >
@@ -190,7 +190,7 @@ export default function Services() {
                 </div>
 
                 {service.featured && (
-                  <div className="absolute inset-0 rounded-[3rem] bg-[#6366F1]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blur-2xl" />
+                  <div className="absolute inset-0 rounded-[3rem] bg-[#FACC15]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blur-2xl" />
                 )}
               </motion.div>
             ))}
@@ -200,13 +200,13 @@ export default function Services() {
 
       {/* What You Get Section */}
       <section className="py-32 px-10 bg-white/5 relative overflow-hidden">
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[#6366F1]/5 rounded-full blur-[100px] -ml-48" />
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[#FACC15]/5 rounded-full blur-[100px] -ml-48" />
         
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
           <div className="space-y-8">
             <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
               What You Get With <br />
-              <span className="text-[#6366F1]">Every Project</span>
+              <span className="text-[#FACC15]">Every Project</span>
             </h2>
             <p className="text-white/40 text-lg font-medium italic leading-relaxed max-w-lg">
               We don't just build websites; we build business tools. Every project comes with these standard features to ensure your success.
@@ -221,9 +221,9 @@ export default function Services() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="flex items-center gap-4 p-6 bg-black/40 border border-white/5 rounded-2xl hover:border-[#6366F1]/30 transition-all group"
+                className="flex items-center gap-4 p-6 bg-black/40 border border-white/5 rounded-2xl hover:border-[#FACC15]/30 transition-all group"
               >
-                <div className="text-[#6366F1] group-hover:scale-110 transition-transform">
+                <div className="text-[#FACC15] group-hover:scale-110 transition-transform">
                   <CheckCircle2 size={24} />
                 </div>
                 <span className="text-sm font-black uppercase italic tracking-tighter">{item}</span>
@@ -237,7 +237,7 @@ export default function Services() {
       <section className="py-32 px-10">
         <div className="max-w-7xl mx-auto text-center space-y-20">
           <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">
-            Who Is This <span className="text-[#6366F1]">For?</span>
+            Who Is This <span className="text-[#FACC15]">For?</span>
           </h2>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
@@ -250,7 +250,7 @@ export default function Services() {
                 transition={{ delay: idx * 0.1 }}
                 className="bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-6 hover:bg-white/10 transition-all group cursor-default"
               >
-                <div className="w-20 h-20 bg-[#6366F1]/10 rounded-full flex items-center justify-center text-[#6366F1] mx-auto group-hover:scale-110 transition-transform">
+                <div className="w-20 h-20 bg-[#FACC15]/10 rounded-full flex items-center justify-center text-[#FACC15] mx-auto group-hover:scale-110 transition-transform">
                   <item.icon size={40} />
                 </div>
                 <h3 className="text-xl font-black uppercase italic tracking-tighter">{item.title}</h3>
@@ -264,12 +264,12 @@ export default function Services() {
       <section className="py-32 px-10 relative">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white/5 border border-white/10 rounded-[4rem] p-12 md:p-24 relative overflow-hidden">
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#6366F1]/5 rounded-full blur-[100px] -mr-48 -mb-48" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#FACC15]/5 rounded-full blur-[100px] -mr-48 -mb-48" />
             
             <div className="relative z-10 space-y-20">
               <div className="text-center space-y-4">
                 <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">
-                  Why Choose <span className="text-[#6366F1]">WebbyLaunch?</span>
+                  Why Choose <span className="text-[#FACC15]">WebbyLaunch?</span>
                 </h2>
                 <p className="text-white/40 font-medium italic">The difference is in the details.</p>
               </div>
@@ -277,12 +277,12 @@ export default function Services() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                 {whyChooseUs.map((item, idx) => (
                   <div key={idx} className="space-y-4 text-center">
-                    <div className="text-[#6366F1] flex justify-center">
+                    <div className="text-[#FACC15] flex justify-center">
                       <item.icon size={48} strokeWidth={1.5} />
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-lg font-black uppercase italic tracking-tighter">{item.title}</h4>
-                      <p className="text-[#6366F1] text-xs font-black uppercase tracking-widest">{item.desc}</p>
+                      <p className="text-[#FACC15] text-xs font-black uppercase tracking-widest">{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -295,11 +295,11 @@ export default function Services() {
       {/* Bottom CTA */}
       <section className="py-32 px-10">
         <div className="max-w-5xl mx-auto relative">
-          <div className="bg-[#6366F1] rounded-[4rem] p-16 md:p-24 text-center space-y-12 relative overflow-hidden shadow-[0_0_100px_rgba(99,102,241,0.15)]">
+          <div className="bg-[#FACC15] rounded-[4rem] p-16 md:p-24 text-center space-y-12 relative overflow-hidden shadow-[0_0_100px_rgba(250,204,21,0.15)]">
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent)]" />
             
             <div className="relative z-10 space-y-8">
-              <h2 className="text-5xl md:text-7xl font-black text-white uppercase italic tracking-tighter leading-none">
+              <h2 className="text-5xl md:text-7xl font-black text-black uppercase italic tracking-tighter leading-none">
                 Have a project in mind? <br />
                 Let's build something amazing.
               </h2>

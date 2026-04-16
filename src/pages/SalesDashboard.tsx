@@ -118,7 +118,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
 
   const stats = [
     { label: 'Total Leads', value: leads.length, icon: Users, color: 'text-blue-500' },
-    { label: 'Closed Deals', value: leads.filter(l => l.status === 'Closed').length, icon: CheckCircle2, color: 'text-[#6366F1]' },
+    { label: 'Closed Deals', value: leads.filter(l => l.status === 'Closed').length, icon: CheckCircle2, color: 'text-[#FACC15]' },
     { label: 'Conversion Rate', value: leads.length ? `${Math.round((leads.filter(l => l.status === 'Closed').length / leads.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-purple-500' },
     { label: 'Total Commission', value: `₹${commissions.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}`, icon: DollarSign, color: 'text-green-500' },
   ];
@@ -130,12 +130,12 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Sales <span className="text-[#6366F1]">Dashboard</span></h1>
+            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Sales <span className="text-[#FACC15]">Dashboard</span></h1>
             <p className="text-white/40 font-medium italic">Welcome back, {profile?.displayName || 'Agent'}. Let's close some deals today.</p>
           </div>
           <button 
             onClick={() => setIsAddLeadModalOpen(true)}
-            className="bg-[#6366F1] text-white px-8 py-4 rounded-2xl font-black uppercase italic flex items-center gap-3 hover:scale-105 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]"
+            className="bg-[#FACC15] text-black px-8 py-4 rounded-2xl font-black uppercase italic flex items-center gap-3 hover:scale-105 transition-all shadow-[0_0_30px_rgba(250,204,21,0.2)]"
           >
             <Plus size={20} /> Add New Lead
           </button>
@@ -164,7 +164,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-              <Target className="text-[#6366F1]" /> My Leads
+              <Target className="text-[#FACC15]" /> My Leads
             </h2>
             <div className="flex flex-wrap items-center gap-4">
               <div className="relative">
@@ -174,13 +174,13 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                   placeholder="Search leads..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm font-medium focus:outline-none focus:border-[#6366F1]/50 transition-all w-full md:w-64"
+                  className="bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-sm font-medium focus:outline-none focus:border-[#FACC15]/50 transition-all w-full md:w-64"
                 />
               </div>
               <select 
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-xl py-3 px-6 text-sm font-black uppercase tracking-widest focus:outline-none focus:border-[#6366F1]/50 transition-all"
+                className="bg-white/5 border border-white/10 rounded-xl py-3 px-6 text-sm font-black uppercase tracking-widest focus:outline-none focus:border-[#FACC15]/50 transition-all"
               >
                 <option value="All">All Status</option>
                 <option value="Not Called">Not Called</option>
@@ -205,7 +205,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="flex items-start gap-6">
-                      <div className="w-16 h-16 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1] shrink-0">
+                      <div className="w-16 h-16 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15] shrink-0">
                         <Phone size={24} />
                       </div>
                       <div>
@@ -231,7 +231,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                           value={lead.status}
                           onChange={(e) => updateLeadStatus(lead.id, e.target.value)}
                           className={`text-xs font-black uppercase tracking-widest py-2 px-4 rounded-lg border transition-all ${
-                            lead.status === 'Closed' ? 'bg-[#6366F1]/20 border-[#6366F1] text-[#6366F1]' :
+                            lead.status === 'Closed' ? 'bg-[#FACC15]/20 border-[#FACC15] text-[#FACC15]' :
                             lead.status === 'Interested' ? 'bg-blue-500/20 border-blue-500 text-blue-500' :
                             lead.status === 'Not Called' ? 'bg-white/10 border-white/20 text-white/40' :
                             'bg-orange-500/20 border-orange-500 text-orange-500'
@@ -276,7 +276,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
         {/* Commission History */}
         <div className="space-y-6">
           <h2 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-            <DollarSign className="text-[#6366F1]" /> Commission History
+            <DollarSign className="text-[#FACC15]" /> Commission History
           </h2>
           <div className="bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden">
             <table className="w-full text-left border-collapse">
@@ -295,7 +295,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                       <td className="p-6 text-sm font-medium text-white/60">
                         {comm.createdAt ? format(comm.createdAt.toDate(), 'MMM dd, yyyy') : 'N/A'}
                       </td>
-                      <td className="p-6 text-lg font-black text-[#6366F1]">₹{comm.amount.toLocaleString()}</td>
+                      <td className="p-6 text-lg font-black text-[#FACC15]">₹{comm.amount.toLocaleString()}</td>
                       <td className="p-6">
                         <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
                           comm.status === 'paid' ? 'bg-green-500/20 text-green-500' : 'bg-orange-500/20 text-orange-500'
@@ -336,7 +336,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative bg-[#0B0B0B] border border-white/10 p-10 rounded-[3rem] w-full max-w-xl shadow-2xl"
             >
-              <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-8">Add New <span className="text-[#6366F1]">Lead</span></h3>
+              <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-8">Add New <span className="text-[#FACC15]">Lead</span></h3>
               <form onSubmit={handleAddLead} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -346,7 +346,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                       type="text" 
                       value={newLead.businessName}
                       onChange={(e) => setNewLead({...newLead, businessName: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#6366F1]/50 transition-all font-medium"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#FACC15]/50 transition-all font-medium"
                       placeholder="e.g. Iron Pulse Gym"
                     />
                   </div>
@@ -357,7 +357,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                       type="tel" 
                       value={newLead.phone}
                       onChange={(e) => setNewLead({...newLead, phone: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#6366F1]/50 transition-all font-medium"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#FACC15]/50 transition-all font-medium"
                       placeholder="e.g. +91 98765 43210"
                     />
                   </div>
@@ -369,7 +369,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                       type="text" 
                       value={newLead.businessType}
                       onChange={(e) => setNewLead({...newLead, businessType: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#6366F1]/50 transition-all font-medium"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#FACC15]/50 transition-all font-medium"
                       placeholder="e.g. Fitness / Gym"
                     />
                   </div>
@@ -379,7 +379,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                       type="text" 
                       value={newLead.location}
                       onChange={(e) => setNewLead({...newLead, location: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#6366F1]/50 transition-all font-medium"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#FACC15]/50 transition-all font-medium"
                       placeholder="e.g. Mumbai, MH"
                     />
                   </div>
@@ -390,7 +390,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                     rows={4}
                     value={newLead.notes}
                     onChange={(e) => setNewLead({...newLead, notes: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#6366F1]/50 transition-all font-medium resize-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:outline-none focus:border-[#FACC15]/50 transition-all font-medium resize-none"
                     placeholder="Any specific details about the lead..."
                   />
                 </div>
@@ -404,7 +404,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 px-8 py-5 bg-[#6366F1] text-white rounded-2xl font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]"
+                    className="flex-1 px-8 py-5 bg-[#FACC15] text-black rounded-2xl font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_30px_rgba(250,204,21,0.2)]"
                   >
                     Save Lead
                   </button>

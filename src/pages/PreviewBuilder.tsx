@@ -33,7 +33,7 @@ const PREVIEW_PAGES = [
 export default function PreviewBuilder() {
   const navigate = useNavigate();
   const [businessName, setBusinessName] = useState('Your Business');
-  const [primaryColor, setPrimaryColor] = useState('#6366F1');
+  const [primaryColor, setPrimaryColor] = useState('#FACC15');
   const [secondaryColor, setSecondaryColor] = useState('#000000');
   const [logo, setLogo] = useState<string | null>(null);
   const [activePage, setActivePage] = useState('home');
@@ -57,15 +57,15 @@ export default function PreviewBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#6366F1] selection:text-white flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#FACC15] selection:text-black flex flex-col lg:flex-row overflow-hidden">
       {/* Left Panel: Controls */}
       <div className="w-full lg:w-[400px] border-r border-white/10 bg-black/40 backdrop-blur-xl flex flex-col h-screen overflow-y-auto">
         <div className="p-8 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#6366F1] rounded-xl flex items-center justify-center text-white shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+            <div className="w-10 h-10 bg-[#FACC15] rounded-xl flex items-center justify-center text-black shadow-[0_0_20px_rgba(250,204,21,0.3)]">
               <Zap size={24} />
             </div>
-            <h1 className="text-xl font-black uppercase italic tracking-tighter">Preview <span className="text-[#6366F1]">Builder</span></h1>
+            <h1 className="text-xl font-black uppercase italic tracking-tighter">Preview <span className="text-[#FACC15]">Builder</span></h1>
           </div>
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/5 rounded-lg transition-all">
             <ChevronLeft size={20} />
@@ -83,7 +83,7 @@ export default function PreviewBuilder() {
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               placeholder="Enter business name..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold focus:border-[#6366F1]/50 outline-none transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold focus:border-[#FACC15]/50 outline-none transition-all"
             />
           </div>
 
@@ -94,13 +94,13 @@ export default function PreviewBuilder() {
             </label>
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="w-full aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#6366F1]/30 transition-all group overflow-hidden relative"
+              className="w-full aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#FACC15]/30 transition-all group overflow-hidden relative"
             >
               {logo ? (
                 <img src={logo} alt="Logo" className="w-full h-full object-contain p-4" />
               ) : (
                 <>
-                  <Upload className="text-white/20 group-hover:text-[#6366F1] transition-colors" size={32} />
+                  <Upload className="text-white/20 group-hover:text-[#FACC15] transition-colors" size={32} />
                   <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Upload PNG/SVG</span>
                 </>
               )}
@@ -162,7 +162,7 @@ export default function PreviewBuilder() {
                   onClick={() => setActivePage(page.id)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     activePage === page.id 
-                      ? 'bg-[#6366F1] text-white shadow-[0_0_20px_rgba(99,102,241,0.2)]' 
+                      ? 'bg-[#FACC15] text-black shadow-[0_0_20px_rgba(250,204,21,0.2)]' 
                       : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
                   }`}
                 >
@@ -177,7 +177,7 @@ export default function PreviewBuilder() {
         <div className="mt-auto p-8 border-t border-white/10 bg-black/60">
           <button 
             onClick={handleBuildWebsite}
-            className="w-full py-6 bg-[#6366F1] text-white rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(99,102,241,0.3)] flex items-center justify-center gap-4 group"
+            className="w-full py-6 bg-[#FACC15] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(250,204,21,0.3)] flex items-center justify-center gap-4 group"
           >
             Build This Site <Sparkles size={24} className="group-hover:rotate-12 transition-transform" />
           </button>
@@ -187,19 +187,19 @@ export default function PreviewBuilder() {
       {/* Right Panel: Live Preview */}
       <div className="flex-1 bg-[#111] p-6 lg:p-12 flex flex-col items-center justify-center relative overflow-hidden">
         {/* Background Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#6366F1]/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FACC15]/5 rounded-full blur-[150px] pointer-events-none" />
 
         {/* View Mode Switcher */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl z-50">
           <button 
             onClick={() => setViewMode('desktop')}
-            className={`p-3 rounded-xl transition-all ${viewMode === 'desktop' ? 'bg-[#6366F1] text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+            className={`p-3 rounded-xl transition-all ${viewMode === 'desktop' ? 'bg-[#FACC15] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
             <Monitor size={18} />
           </button>
           <button 
             onClick={() => setViewMode('mobile')}
-            className={`p-3 rounded-xl transition-all ${viewMode === 'mobile' ? 'bg-[#6366F1] text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+            className={`p-3 rounded-xl transition-all ${viewMode === 'mobile' ? 'bg-[#FACC15] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
             <Smartphone size={18} />
           </button>
@@ -440,7 +440,7 @@ export default function PreviewBuilder() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleBuildWebsite}
-            className="flex items-center gap-4 px-8 py-4 bg-[#6366F1] text-white rounded-full font-black text-sm uppercase italic shadow-[0_20px_40px_rgba(99,102,241,0.3)] border-4 border-black group"
+            className="flex items-center gap-4 px-8 py-4 bg-[#FACC15] text-black rounded-full font-black text-sm uppercase italic shadow-[0_20px_40px_rgba(250,204,21,0.3)] border-4 border-black group"
           >
             Build This Website for Me <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </motion.button>

@@ -5,30 +5,30 @@ import { Link } from 'react-router-dom';
 
 export default function FoodCourt() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#6366F1] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#FACC15] selection:text-black overflow-x-hidden">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-10 py-8 max-w-7xl mx-auto relative z-50">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-[#6366F1] rounded-full flex items-center justify-center">
-            <Utensils size={20} className="text-white" />
+          <div className="w-10 h-10 bg-[#FACC15] rounded-full flex items-center justify-center">
+            <Utensils size={20} className="text-black" />
           </div>
           <span className="text-2xl font-black tracking-tighter uppercase italic">FoodCourt</span>
         </div>
         
         <div className="hidden md:flex items-center gap-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
           {['Menu', 'Specials', 'Locations', 'About', 'Contact'].map((item) => (
-            <a key={item} href="#" className="hover:text-[#6366F1] transition-colors">{item}</a>
+            <a key={item} href="#" className="hover:text-[#FACC15] transition-colors">{item}</a>
           ))}
         </div>
 
-        <button className="px-8 py-3 rounded-full bg-[#6366F1] text-white text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+        <button className="px-8 py-3 rounded-full bg-[#FACC15] text-black text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(250,204,21,0.2)]">
           Order Now
         </button>
       </nav>
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 px-10 max-w-7xl mx-auto min-h-[90vh] flex flex-col items-center justify-center">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#6366F1]/5 rounded-full blur-[150px] -z-10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FACC15]/5 rounded-full blur-[150px] -z-10" />
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div className="space-y-8 text-left">
@@ -37,7 +37,7 @@ export default function FoodCourt() {
               animate={{ opacity: 1, x: 0 }}
               className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10"
             >
-              <Star size={14} className="text-[#6366F1]" />
+              <Star size={14} className="text-[#FACC15]" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Top Rated Dining Experience</span>
             </motion.div>
             
@@ -48,7 +48,7 @@ export default function FoodCourt() {
               className="text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] uppercase italic"
             >
               Fresh and Healthy <br />
-              <span className="text-[#6366F1]">Food Specialties</span>
+              <span className="text-[#FACC15]">Food Specialties</span>
             </motion.h1>
             
             <motion.p 
@@ -66,7 +66,7 @@ export default function FoodCourt() {
               transition={{ delay: 0.3 }}
               className="flex items-center gap-6"
             >
-              <button className="bg-[#6366F1] text-white px-10 py-5 rounded-2xl font-black text-lg uppercase italic flex items-center gap-3 hover:scale-105 transition-all">
+              <button className="bg-[#FACC15] text-black px-10 py-5 rounded-2xl font-black text-lg uppercase italic flex items-center gap-3 hover:scale-105 transition-all">
                 Explore Menu <ChevronRight size={20} />
               </button>
               <div className="flex -space-x-4">
@@ -75,7 +75,7 @@ export default function FoodCourt() {
                     <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="user" className="w-full h-full object-cover" />
                   </div>
                 ))}
-                <div className="w-12 h-12 rounded-full border-4 border-[#0A0A0A] bg-[#6366F1] flex items-center justify-center text-white font-bold text-xs">
+                <div className="w-12 h-12 rounded-full border-4 border-[#0A0A0A] bg-[#FACC15] flex items-center justify-center text-black font-bold text-xs">
                   +2k
                 </div>
               </div>
@@ -103,7 +103,7 @@ export default function FoodCourt() {
               className="absolute -top-10 -right-10 bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl z-20"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#6366F1] rounded-2xl flex items-center justify-center text-white">
+                <div className="w-12 h-12 bg-[#FACC15] rounded-2xl flex items-center justify-center text-black">
                   <ShoppingBag size={24} />
                 </div>
                 <div>
@@ -120,21 +120,21 @@ export default function FoodCourt() {
       <section className="py-32 px-10 max-w-7xl mx-auto border-t border-white/5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="space-y-4">
-            <div className="w-14 h-14 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
+            <div className="w-14 h-14 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
               <Clock size={28} />
             </div>
             <h3 className="text-2xl font-black uppercase italic">24/7 Service</h3>
             <p className="text-white/40 text-sm leading-relaxed">Craving something at 3 AM? We've got you covered with our round-the-clock kitchen.</p>
           </div>
           <div className="space-y-4">
-            <div className="w-14 h-14 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
+            <div className="w-14 h-14 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
               <MapPin size={28} />
             </div>
             <h3 className="text-2xl font-black uppercase italic">Live Tracking</h3>
             <p className="text-white/40 text-sm leading-relaxed">Watch your meal's journey from our kitchen to your doorstep in real-time.</p>
           </div>
           <div className="space-y-4">
-            <div className="w-14 h-14 bg-[#6366F1]/10 rounded-2xl flex items-center justify-center text-[#6366F1]">
+            <div className="w-14 h-14 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
               <Utensils size={28} />
             </div>
             <h3 className="text-2xl font-black uppercase italic">Quality First</h3>
@@ -147,7 +147,7 @@ export default function FoodCourt() {
       <div className="fixed bottom-10 left-10 z-50">
         <Link 
           to="/" 
-          className="bg-white/5 backdrop-blur-xl border border-white/10 text-white/50 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:text-[#6366F1] hover:border-[#6366F1]/30 transition-all flex items-center gap-2"
+          className="bg-white/5 backdrop-blur-xl border border-white/10 text-white/50 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:text-[#FACC15] hover:border-[#FACC15]/30 transition-all flex items-center gap-2"
         >
           <ArrowLeft size={14} /> Back to Portfolio
         </Link>

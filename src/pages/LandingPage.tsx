@@ -214,7 +214,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           >
             <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter mb-8 leading-[0.85] text-white uppercase italic">
               Get Your Business<br />
-              <span className="text-[#FFD700]">Online in 24 Hours.</span>
+              <span className="text-[#FACC15]">Online in 24 Hours.</span>
             </h1>
 
             <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-medium text-white/60 leading-relaxed">
@@ -349,7 +349,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     "Direct chat with your dedicated admin"
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 size={18} className="text-[#FFD700]" />
+                      <CheckCircle2 size={18} className="text-[#FACC15]" />
                       <span className="text-sm font-bold text-white/60 italic">{item}</span>
                     </div>
                   ))}
@@ -772,7 +772,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     'Domain (1st Year Free)'
                   ].map((feature, i) => (
                     <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
-                      <CheckCircle2 size={18} className="text-[#FFD700]" />
+                      <CheckCircle2 size={18} className="text-[#FACC15]" />
                       {feature}
                     </li>
                   ))}
@@ -869,7 +869,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     'Advanced Analytics'
                   ].map((feature, i) => (
                     <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
-                      <CheckCircle2 size={18} className="text-[#FFD700]" />
+                      <CheckCircle2 size={18} className="text-[#FACC15]" />
                       {feature}
                     </li>
                   ))}
@@ -943,7 +943,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div 
           className="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-0 group-hover:opacity-100"
           style={{
-            background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(99, 102, 241, 0.15), transparent 40%)`
+            background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(250, 204, 21, 0.15), transparent 40%)`
           }}
         />
         <div className="max-w-7xl mx-auto text-center relative z-10">
@@ -964,7 +964,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <div className="pt-8">
               <Link 
                 to="/onboarding"
-                className="inline-block bg-[#FFD700] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all shadow-[0_0_50px_rgba(255, 215, 0, 0.3)]"
+                className="inline-block bg-[#FACC15] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all shadow-[0_0_50px_rgba(250, 204, 21, 0.3)]"
               >
                 Start Your Journey
               </Link>

@@ -17,9 +17,9 @@ const Loader = ({ color = "black" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'black' ? 'black' : '[#FFD700]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'black' ? 'black' : '[#FACC15]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#FFD700]'} animate-pulse italic`}>Processing...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#FACC15]'} animate-pulse italic`}>Processing...</span>
   </div>
 );
 import { jsPDF } from 'jspdf';
@@ -59,7 +59,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       description: '',
       location: '',
       websiteName: '',
-      primaryColor: '#FFD700',
+      primaryColor: '#FACC15',
       secondaryColor: '#000000',
       tertiaryColor: '',
       logoUrl: '',
@@ -140,12 +140,14 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   }, [otpTimer]);
 
   const sendOTP = async () => {
+    console.log("🚀 sendOTP triggered");
     if (!formData.email) {
       toast.error("Please enter an email first");
       return;
     }
 
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log("🔢 Generated OTP:", newOtp);
     setGeneratedOtp(newOtp);
     localStorage.setItem("otp", newOtp);
     localStorage.setItem("otp_expiry", (Date.now() + 5 * 60 * 1000).toString());
@@ -155,16 +157,25 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
       const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
+      console.log("📧 EmailJS Config:", {
+        serviceId: serviceId ? "✅ Present" : "❌ Missing",
+        templateId: templateId ? "✅ Present" : "❌ Missing",
+        publicKey: publicKey ? "✅ Present" : "❌ Missing"
+      });
+
       if (serviceId && templateId && publicKey) {
-        await emailjs.send(serviceId, templateId, {
+        console.log("📤 Sending Email via EmailJS...");
+        const response = await emailjs.send(serviceId, templateId, {
           to_email: formData.email,
           to_name: formData.name,
           otp: newOtp,
+          OTP: newOtp, // Adding uppercase version just in case template uses {{OTP}}
         }, publicKey);
         
+        console.log("✅ EmailJS Success:", response);
         toast.success("OTP sent to your email!");
       } else {
-        // Fallback to server-side OTP sending
+        console.log("⚠️ EmailJS keys missing, falling back to server-side OTP");
         const response = await fetch('/api/send-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -196,15 +207,26 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   const verifyOTP = async () => {
+    console.log("🔐 verifyOTP triggered. Input:", otp);
     const storedOtp = localStorage.getItem("otp");
     const expiry = localStorage.getItem("otp_expiry");
+
+    console.log("📦 Stored OTP Info:", {
+      storedOtp,
+      expiry,
+      now: Date.now(),
+      isExpired: expiry ? Date.now() > parseInt(expiry) : true
+    });
 
     // If we have a stored OTP, it was likely generated locally or returned by the server in test mode
     if (storedOtp && expiry && Date.now() <= parseInt(expiry)) {
       if (otp === storedOtp) {
+        console.log("✅ OTP Match (Local)");
         toast.success("Email verified successfully!");
         setStep(3);
         return;
+      } else {
+        console.log("❌ OTP Mismatch (Local)");
       }
     }
 
@@ -431,7 +453,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           contact: formData.phone
         },
         theme: {
-          color: "#6366F1"
+          color: "#FACC15"
         }
       };
 

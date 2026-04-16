@@ -100,7 +100,7 @@ export default function Testimonials() {
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="inline-block px-4 py-1 bg-[#6366F1] text-white rounded-full text-[10px] font-black uppercase tracking-widest italic"
+              className="inline-block px-4 py-1 bg-[#FACC15] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic"
             >
               Success Stories
             </motion.div>
@@ -110,12 +110,12 @@ export default function Testimonials() {
               className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8]"
             >
               Our Clients' <br />
-              <span className="text-[#6366F1]">Growth Journey.</span>
+              <span className="text-[#FACC15]">Growth Journey.</span>
             </motion.h1>
           </div>
           <Link 
             to="/" 
-            className="flex items-center gap-2 text-white/40 hover:text-[#6366F1] transition-colors font-black uppercase text-xs tracking-widest italic"
+            className="flex items-center gap-2 text-white/40 hover:text-[#FACC15] transition-colors font-black uppercase text-xs tracking-widest italic"
           >
             <ArrowLeft size={16} /> Back to Home
           </Link>
@@ -129,7 +129,7 @@ export default function Testimonials() {
               onClick={() => setActiveCategory(cat)}
               className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                 activeCategory === cat 
-                  ? 'bg-[#6366F1] text-white shadow-[0_0_30px_rgba(99,102,241,0.3)]' 
+                  ? 'bg-[#FACC15] text-black shadow-[0_0_30px_rgba(250,204,21,0.3)]' 
                   : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white border border-white/5'
               }`}
             >
@@ -146,15 +146,15 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              className="bg-white/5 border border-white/10 p-16 rounded-[4rem] relative group hover:border-[#6366F1]/30 transition-all overflow-hidden"
+              className="bg-white/5 border border-white/10 p-16 rounded-[4rem] relative group hover:border-[#FACC15]/30 transition-all overflow-hidden"
             >
-              <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#6366F1]/5 rounded-full blur-[100px] group-hover:bg-[#6366F1]/10 transition-all" />
-              <Quote className="absolute top-12 right-12 text-[#6366F1]/10 group-hover:text-[#6366F1]/20 transition-all" size={80} />
+              <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#FACC15]/5 rounded-full blur-[100px] group-hover:bg-[#FACC15]/10 transition-all" />
+              <Quote className="absolute top-12 right-12 text-[#FACC15]/10 group-hover:text-[#FACC15]/20 transition-all" size={80} />
               
               <div className="flex items-center gap-8 mb-10 relative z-10">
                 <div>
                   <h4 className="text-3xl font-black uppercase italic tracking-tighter">{t.name}</h4>
-                  <p className="text-xs font-black uppercase tracking-widest text-[#6366F1]">{t.role}</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-[#FACC15]">{t.role}</p>
                 </div>
               </div>
 
@@ -163,7 +163,7 @@ export default function Testimonials() {
                   <Star 
                     key={idx} 
                     size={18} 
-                    className={idx < t.rating ? "text-[#6366F1] fill-[#6366F1]" : "text-white/10"} 
+                    className={idx < t.rating ? "text-[#FACC15] fill-[#FACC15]" : "text-white/10"} 
                   />
                 ))}
               </div>
@@ -182,14 +182,14 @@ export default function Testimonials() {
           viewport={{ once: true }}
           className="mt-32 p-16 bg-white/5 border border-white/10 rounded-[4rem] text-center space-y-8 relative overflow-hidden"
         >
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#6366F1] rounded-full blur-[120px] opacity-10 animate-pulse"></div>
+          <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#FACC15] rounded-full blur-[120px] opacity-10 animate-pulse"></div>
           <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Ready to be our next success story?</h2>
           <p className="text-white/40 max-w-2xl mx-auto font-medium italic">
             Join 50+ businesses that have transformed their digital presence with WebbyLaunch.
           </p>
           <Link 
             to="/auth" 
-            className="inline-flex items-center gap-4 px-12 py-6 bg-[#6366F1] text-white rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(99,102,241,0.2)]"
+            className="inline-flex items-center gap-4 px-12 py-6 bg-[#FACC15] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(250,204,21,0.2)]"
           >
             Start Your Project
           </Link>

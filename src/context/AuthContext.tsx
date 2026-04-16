@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const sendOTP = async (email: string) => {
+    console.log("🚀 AuthContext: sendOTP triggered for", email);
     const response = await fetch('/api/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,14 +55,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let data;
     try {
       data = await response.json();
+      console.log("📦 AuthContext: sendOTP response", data);
     } catch (e) {
+      console.error("❌ AuthContext: sendOTP parse error", e);
       throw new Error('Server returned an invalid response. Please try again later.');
     }
 
-    if (!response.ok) throw new Error(data.error || 'Failed to send OTP');
+    if (!response.ok) {
+      console.error("❌ AuthContext: sendOTP failed", data.error);
+      throw new Error(data.error || 'Failed to send OTP');
+    }
   };
 
   const verifyOTP = async (email: string, code: string) => {
+    console.log("🔐 AuthContext: verifyOTP triggered for", email, "with code", code);
     const response = await fetch('/api/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,11 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let data;
     try {
       data = await response.json();
+      console.log("📦 AuthContext: verifyOTP response", data);
     } catch (e) {
+      console.error("❌ AuthContext: verifyOTP parse error", e);
       throw new Error('Server returned an invalid response. Please try again later.');
     }
 
-    if (!response.ok) throw new Error(data.error || 'Invalid code');
+    if (!response.ok) {
+      console.error("❌ AuthContext: verifyOTP failed", data.error);
+      throw new Error(data.error || 'Invalid code');
+    }
+    console.log("✅ AuthContext: verifyOTP success");
   };
 
   return (

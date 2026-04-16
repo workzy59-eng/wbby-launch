@@ -114,14 +114,14 @@ export default function Pricing() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-black font-sans text-white selection:bg-[#6366F1] selection:text-white py-20 px-6"
+      className="min-h-screen bg-black font-sans text-white selection:bg-[#FACC15] selection:text-black py-20 px-6"
     >
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-block px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.4em] text-[#6366F1] italic"
+            className="inline-block px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.4em] text-[#FACC15] italic"
           >
             Pricing Plans
           </motion.div>
@@ -132,7 +132,7 @@ export default function Pricing() {
             className="text-7xl md:text-9xl font-black tracking-tighter uppercase italic leading-[0.8]"
           >
             Simple <br />
-            <span className="text-[#6366F1]">Affordable</span> Plans.
+            <span className="text-[#FACC15]">Affordable</span> Plans.
           </motion.h1>
           
           <motion.div
@@ -141,7 +141,7 @@ export default function Pricing() {
             transition={{ delay: 0.4 }}
             className="flex items-center justify-center gap-2 pt-6"
           >
-            <Shield size={14} className="text-[#6366F1]" />
+            <Shield size={14} className="text-[#FACC15]" />
             <span className="text-[10px] font-black uppercase tracking-widest text-white/60">100% Money Back Guarantee</span>
           </motion.div>
 
@@ -151,21 +151,21 @@ export default function Pricing() {
             transition={{ delay: 0.3 }}
             className="flex flex-col items-center gap-6 pt-10"
           >
-            <div className="flex items-center gap-3 px-6 py-2 bg-[#6366F1]/10 border border-[#6366F1]/20 rounded-full">
+            <div className="flex items-center gap-3 px-6 py-2 bg-[#FACC15]/10 border border-[#FACC15]/20 rounded-full">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#6366F1]">Only 5 project slots left this month</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#FACC15]">Only 5 project slots left this month</span>
             </div>
             
             <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
               <button 
                 onClick={() => setBillingType('one-time')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#6366F1] text-white' : 'text-white/40 hover:text-white'}`}
+                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
               >
                 One-Time
               </button>
               <button 
                 onClick={() => setBillingType('subscription')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#6366F1] text-white' : 'text-white/40 hover:text-white'}`}
+                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
               >
                 Subscription
               </button>
@@ -183,18 +183,18 @@ export default function Pricing() {
               viewport={{ once: true }}
               className={`relative p-1 rounded-[3.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col h-full pricing-glow-card`}
             >
-              <div className={`pricing-glow-card-inner p-12 rounded-[3.5rem] border flex flex-col h-full bg-[#0B0B0B] ${plan.popular ? 'border-[#6366F1]' : 'border-white/10'}`}>
+              <div className={`pricing-glow-card-inner p-12 rounded-[3.5rem] border flex flex-col h-full bg-[#0B0B0B] ${plan.popular ? 'border-[#FACC15]' : 'border-white/10'}`}>
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#6366F1] text-white rounded-full text-[10px] font-black uppercase tracking-widest italic shadow-[0_0_20px_rgba(99,102,241,0.5)] z-20">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#FACC15] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic shadow-[0_0_20px_rgba(250,204,21,0.5)] z-20">
                     Most Popular
                   </div>
                 )}
 
                 <div className="mb-10">
-                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#6366F1]' : 'text-white'}`}>{plan.name} Website</h3>
+                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#FACC15]' : 'text-white'}`}>{plan.name} Website</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black italic text-[#6366F1]">₹</span>
-                    <span className={`text-7xl font-black tracking-tighter relative z-10 text-[#6366F1] ${plan.price.includes('15,000') ? 'drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]' : ''}`}>
+                    <span className="text-2xl font-black italic text-[#FACC15]">₹</span>
+                    <span className={`text-7xl font-black tracking-tighter relative z-10 text-[#FACC15] ${plan.price.includes('15,000') ? 'drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]' : ''}`}>
                       {plan.price.replace('₹', '')}
                     </span>
                     {plan.period && (
@@ -209,7 +209,7 @@ export default function Pricing() {
                 <div className="space-y-4 flex-1 mb-12">
                   {plan.features.map((feature, idx) => (
                     <div key={idx} className="flex items-center gap-4 group">
-                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-[#6366F1]/10 text-[#6366F1]`}>
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-[#FACC15]/10 text-[#FACC15]`}>
                         <Check size={14} />
                       </div>
                       <span className={`text-xs font-bold uppercase tracking-widest group-hover:brightness-125 transition-all text-white/70`}>
@@ -232,7 +232,7 @@ export default function Pricing() {
                     onClick={handleSubscribe}
                     className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
                       plan.popular 
-                        ? 'bg-[#6366F1] text-white shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:scale-[1.05]' 
+                        ? 'bg-[#FACC15] text-black shadow-[0_0_30px_rgba(250,204,21,0.3)] hover:scale-[1.05]' 
                         : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
                     }`}
                   >
@@ -255,7 +255,7 @@ export default function Pricing() {
 
         <div className="mt-32 text-center">
           <div className="p-12 bg-black/20 backdrop-blur-3xl rounded-[4rem] border border-white/5 max-w-4xl mx-auto relative overflow-hidden">
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#6366F1] rounded-full blur-[120px] opacity-10"></div>
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#FACC15] rounded-full blur-[120px] opacity-10"></div>
             <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6">Need help choosing a plan?</h2>
             <p className="text-white/50 mb-10 max-w-xl mx-auto font-medium italic">
               If your project requires specialized features or enterprise-level infrastructure, let's talk.
@@ -263,7 +263,7 @@ export default function Pricing() {
             <div className="flex flex-wrap justify-center gap-6">
               <a 
                 href={`mailto:${PROFESSIONAL_EMAIL}`}
-                className="px-12 py-5 bg-[#6366F1] text-white rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all inline-flex items-center gap-4"
+                className="px-12 py-5 bg-[#FACC15] text-black rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all inline-flex items-center gap-4"
               >
                 Email Us <Sparkles size={24} />
               </a>
