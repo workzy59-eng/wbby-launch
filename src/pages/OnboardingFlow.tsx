@@ -536,6 +536,21 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
       const projectId = await createProject(projectData);
 
+      // Send automated message from admin
+      if (user) {
+        const { sendDirectMessage, getProfiles } = await import('../services/database');
+        const adminProfiles = await getProfiles();
+        const admin = adminProfiles.find(p => p.role === 'admin');
+        if (admin) {
+          await sendDirectMessage(user.uid, {
+            senderId: admin.uid,
+            senderName: 'ADMIN',
+            text: `We have received your project ${formData.businessName}! Our team will review it and get back to you shortly.`,
+            status: 'sent'
+          });
+        }
+      }
+
       // Update user profile with onboarding info
       if (user) {
         await createUserProfile(user, {

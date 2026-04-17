@@ -201,8 +201,8 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       {/* Hero Section */}
       <section id="home" className="relative min-h-screen flex flex-col items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FACC15]/10 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FACC15]/5 rounded-full blur-[120px] animate-pulse delay-1000" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#cfcb11]/10 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#cfcb11]/5 rounded-full blur-[120px] animate-pulse delay-1000" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-10 w-full text-center mb-20">
@@ -214,7 +214,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           >
             <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter mb-8 leading-[0.85] text-white uppercase italic">
               Get Your Business<br />
-              <span className="text-[#FACC15]">Online in 24 Hours.</span>
+              <span className="text-[#cfcb11]">Online in 24 Hours.</span>
             </h1>
 
             <p className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-medium text-white/60 leading-relaxed">
@@ -257,7 +257,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           </div>
           <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
             {['FITNESS FIRST', 'AUTO HUB', 'GLOBAL CARGO', 'TECH FLOW', 'ZENITH RETAIL', 'NEXUS APPS'].map((logo, i) => (
-              <span key={i} className="text-2xl font-black italic tracking-tighter uppercase text-white hover:text-[#FACC15] transition-colors cursor-default">
+              <span key={i} className="text-2xl font-black italic tracking-tighter uppercase text-white hover:text-[#cfcb11] transition-colors cursor-default">
                 {logo}
               </span>
             ))}
@@ -270,7 +270,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="relative group">
-              <div className="absolute -inset-4 bg-[#FACC15]/20 rounded-[3rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute -inset-4 bg-[#cfcb11]/20 rounded-[3rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               <div className="relative aspect-video bg-slate-900 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-transparent z-10" />
                 <img 
@@ -280,7 +280,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 flex items-center justify-center z-20">
-                  <div className="w-20 h-20 bg-[#FACC15] rounded-full flex items-center justify-center text-black shadow-[0_0_50px_rgba(250,204,21,0.4)] group-hover:scale-110 transition-transform cursor-pointer">
+                  <div className="w-20 h-20 bg-[#cfcb11] rounded-full flex items-center justify-center text-black shadow-[0_0_50px_rgba(207,203,17,0.4)] group-hover:scale-110 transition-transform cursor-pointer">
                     <Zap size={32} fill="currentColor" />
                   </div>
                 </div>
@@ -296,10 +296,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
             <div className="space-y-8">
               <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">The Experience</h2>
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">The Experience</h2>
                 <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white leading-tight">
                   Interactive <br />
-                  <span className="text-[#FACC15]">Live Demos.</span>
+                  <span className="text-[#cfcb11]">Live Demos.</span>
                 </h3>
               </div>
               <p className="text-white/40 text-lg font-medium italic leading-relaxed">
@@ -307,11 +307,11 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               </p>
               <div className="grid grid-cols-2 gap-6">
                 <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-2">
-                  <h5 className="text-[#FACC15] font-black italic tracking-tighter">99.9%</h5>
+                  <h5 className="text-[#cfcb11] font-black italic tracking-tighter">99.9%</h5>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Uptime Guaranteed</p>
                 </div>
                 <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-2">
-                  <h5 className="text-[#FACC15] font-black italic tracking-tighter">&lt; 1s</h5>
+                  <h5 className="text-[#cfcb11] font-black italic tracking-tighter">&lt; 1s</h5>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Load Time</p>
                 </div>
               </div>
@@ -330,15 +330,15 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       <section className="py-32 px-10 bg-black relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="bg-gradient-to-br from-white/5 to-transparent p-16 md:p-24 rounded-[4rem] border border-white/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#FACC15]/5 rounded-full blur-[100px]" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#cfcb11]/5 rounded-full blur-[100px]" />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">Collaboration</h2>
+                  <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">Collaboration</h2>
                   <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white leading-tight">
                     Professional <br />
-                    <span className="text-[#FACC15]">Meeting System.</span>
+                    <span className="text-[#cfcb11]">Meeting System.</span>
                   </h3>
                 </div>
                 <p className="text-white/40 text-lg font-medium italic leading-relaxed">
@@ -352,7 +352,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     "Direct chat with your dedicated admin"
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 size={18} className="text-[#FACC15]" />
+                      <CheckCircle2 size={18} className="text-[#cfcb11]" />
                       <span className="text-sm font-bold text-white/60 italic">{item}</span>
                     </div>
                   ))}
@@ -363,10 +363,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <div className="bg-black/40 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 shadow-2xl space-y-8">
                   <div className="flex justify-between items-center">
                     <div className="space-y-1">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-[#FACC15]">Upcoming Meeting</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-[#cfcb11]">Upcoming Meeting</div>
                       <h4 className="text-2xl font-black uppercase italic tracking-tighter">Project Kickoff</h4>
                     </div>
-                    <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
+                    <div className="w-12 h-12 bg-[#cfcb11]/10 rounded-2xl flex items-center justify-center text-[#cfcb11]">
                       <Video size={24} />
                     </div>
                   </div>
@@ -402,16 +402,16 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       <section id="portfolio" className="py-32 px-10 bg-black/20 relative overflow-hidden">
         {/* Crazy Background Effect */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-[#FACC15]/20 rounded-full animate-rotate-glow" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#FACC15]/10 rounded-full animate-rotate-glow [animation-direction:reverse]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-[#cfcb11]/20 rounded-full animate-rotate-glow" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#cfcb11]/10 rounded-full animate-rotate-glow [animation-direction:reverse]" />
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
             <div className="space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">The Showcase</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">The Showcase</h2>
               <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-                Crazy <span className="text-[#FACC15]">Portfolios.</span>
+                Crazy <span className="text-[#cfcb11]">Portfolios.</span>
               </h3>
             </div>
             <div className="max-w-md space-y-4">
@@ -446,10 +446,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   z: 20
                 }}
                 style={{ transformStyle: "preserve-3d" }}
-                className="group relative bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden hover:border-[#FACC15]/30 transition-all perspective-1000"
+                className="group relative bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden hover:border-[#cfcb11]/30 transition-all perspective-1000"
               >
                 {/* Holographic Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FACC15]/10 via-transparent to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#cfcb11]/10 via-transparent to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20" />
                 
                 <div className="aspect-[4/3] overflow-hidden relative">
                   <img 
@@ -465,14 +465,14 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 </div>
                 <div className="p-10 space-y-6 relative z-30">
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#FACC15] mb-2 block">{item.category}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#cfcb11] mb-2 block">{item.category}</span>
                     <h4 className="text-3xl font-black uppercase italic tracking-tighter">{item.title}</h4>
                     <p className="text-white/40 text-xs font-medium mt-2">{item.description}</p>
                   </div>
                   <div className="flex flex-col gap-3">
                     <Link 
                       to={item.link} 
-                      className="w-full py-4 bg-[#FACC15] text-black rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(250,204,21,0.2)]"
+                      className="w-full py-4 bg-[#cfcb11] text-black rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(207,203,17,0.2)]"
                     >
                       <Eye size={14} /> Enter Experience
                     </Link>
@@ -516,21 +516,21 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
             <div className="space-y-12">
               <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">The Webby Solution</h2>
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">The Webby Solution</h2>
                 <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-white">
                   We Build. <br />
-                  <span className="text-[#FACC15]">You Grow.</span>
+                  <span className="text-[#cfcb11]">You Grow.</span>
                 </h3>
               </div>
               <div className="space-y-6">
                 {[
-                  { icon: CheckCircle2, text: "Your site live in just 24-48 hours", color: "text-[#FACC15]" },
-                  { icon: CheckCircle2, text: "Transparent monthly plans with no risk", color: "text-[#FACC15]" },
-                  { icon: CheckCircle2, text: "Zero tech knowledge required from you", color: "text-[#FACC15]" },
-                  { icon: CheckCircle2, text: "Lifetime maintenance and expert support", color: "text-[#FACC15]" }
+                  { icon: CheckCircle2, text: "Your site live in just 24-48 hours", color: "text-[#cfcb11]" },
+                  { icon: CheckCircle2, text: "Transparent monthly plans with no risk", color: "text-[#cfcb11]" },
+                  { icon: CheckCircle2, text: "Zero tech knowledge required from you", color: "text-[#cfcb11]" },
+                  { icon: CheckCircle2, text: "Lifetime maintenance and expert support", color: "text-[#cfcb11]" }
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-4 bg-[#FACC15]/5 p-6 rounded-2xl border border-[#FACC15]/10">
-                    <div className={`w-10 h-10 rounded-full bg-[#FACC15]/10 flex items-center justify-center ${item.color}`}>
+                  <div key={i} className="flex items-center gap-4 bg-[#cfcb11]/5 p-6 rounded-2xl border border-[#cfcb11]/10">
+                    <div className={`w-10 h-10 rounded-full bg-[#cfcb11]/10 flex items-center justify-center ${item.color}`}>
                       <item.icon size={20} />
                     </div>
                     <span className="text-lg font-black text-white italic">{item.text}</span>
@@ -562,9 +562,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
             <div className="space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">The Process</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">The Process</h2>
               <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-                How It <span className="text-[#FACC15]">Works.</span>
+                How It <span className="text-[#cfcb11]">Works.</span>
               </h3>
             </div>
             <a 
@@ -583,9 +583,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-8 group hover:border-[#FACC15]/30 transition-all"
+                className="bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-8 group hover:border-[#cfcb11]/30 transition-all"
               >
-                <div className="w-16 h-16 bg-[#FACC15] rounded-2xl flex items-center justify-center text-black font-black text-2xl shadow-[0_0_30px_rgba(250,204,21,0.2)] group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 bg-[#cfcb11] rounded-2xl flex items-center justify-center text-black font-black text-2xl shadow-[0_0_30px_rgba(207,203,17,0.2)] group-hover:scale-110 transition-transform">
                   {idx + 1}
                 </div>
                 <div className="space-y-4">
@@ -603,9 +603,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div className="space-y-12">
             <div className="space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">Why Choose Us</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">Why Choose Us</h2>
               <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-tight">
-                Built for <span className="text-[#FACC15]">Speed</span> & Performance.
+                Built for <span className="text-[#cfcb11]">Speed</span> & Performance.
               </h3>
             </div>
             
@@ -617,7 +617,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 { icon: LayoutIcon, title: 'Custom UI', desc: 'Unique design for your brand.' }
               ].map((feature, idx) => (
                 <div key={idx} className="flex gap-4">
-                  <div className="w-12 h-12 bg-[#FACC15]/10 rounded-xl flex items-center justify-center text-[#FACC15] shrink-0">
+                  <div className="w-12 h-12 bg-[#cfcb11]/10 rounded-xl flex items-center justify-center text-[#cfcb11] shrink-0">
                     <feature.icon size={24} />
                   </div>
                   <div className="space-y-1">
@@ -630,7 +630,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           </div>
 
           <div className="relative">
-            <div className="aspect-square bg-gradient-to-br from-[#FACC15]/20 to-transparent rounded-[3rem] border border-white/10 p-8">
+            <div className="aspect-square bg-gradient-to-br from-[#cfcb11]/20 to-transparent rounded-[3rem] border border-white/10 p-8">
               <div className="w-full h-full bg-slate-900 rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative">
                 <img 
                   src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" 
@@ -643,7 +643,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="bg-black/60 backdrop-blur-xl p-8 rounded-3xl border border-white/10 text-center space-y-4 max-w-xs">
-                    <div className="w-12 h-12 bg-[#FACC15] rounded-full flex items-center justify-center text-black mx-auto">
+                    <div className="w-12 h-12 bg-[#cfcb11] rounded-full flex items-center justify-center text-black mx-auto">
                       <CheckCircle2 size={24} />
                     </div>
                     <h5 className="font-black uppercase italic tracking-tighter">Project Completed</h5>
@@ -661,9 +661,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
             <div className="space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">Success Stories</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">Success Stories</h2>
               <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-                Trusted by <span className="text-[#FACC15]">50+ Businesses.</span>
+                Trusted by <span className="text-[#cfcb11]">50+ Businesses.</span>
               </h3>
             </div>
             <Link 
@@ -686,20 +686,20 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <div 
               className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
               style={{
-                background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(250,204,21,0.15), transparent 40%)`
+                background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(207,203,17,0.15), transparent 40%)`
               }}
             />
             <div className="relative z-10 space-y-8">
               <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
                 Ready to be our <br />
-                <span className="text-[#FACC15]">Next Success Story?</span>
+                <span className="text-[#cfcb11]">Next Success Story?</span>
               </h2>
               <p className="text-xl text-white/40 font-medium italic max-w-2xl mx-auto">
                 Join hundreds of businesses that have transformed their digital presence with Webbylaunch.
               </p>
               <Link 
                 to="/auth"
-                className="inline-flex px-12 py-6 bg-[#FACC15] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(250,204,21,0.2)]"
+                className="inline-flex px-12 py-6 bg-[#cfcb11] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(207,203,17,0.2)]"
               >
                 Start Your Journey
               </Link>
@@ -713,14 +713,14 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-8 mb-24">
             <div className="space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">Pricing</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">Pricing</h2>
               <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-                Simple <span className="text-[#FACC15]">Affordable</span> Plans.
+                Simple <span className="text-[#cfcb11]">Affordable</span> Plans.
               </h3>
               <div className="flex flex-col items-center gap-4 pt-6">
-                <div className="flex items-center gap-3 px-6 py-2 bg-[#FACC15]/10 border border-[#FACC15]/20 rounded-full">
+                <div className="flex items-center gap-3 px-6 py-2 bg-[#cfcb11]/10 border border-[#cfcb11]/20 rounded-full">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#FACC15]">Only 5 project slots left this month</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#cfcb11]">Only 5 project slots left this month</span>
                 </div>
                 <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">
                   Launch Offer: Free Meeting + Free SEO Setup included in all plans
@@ -735,7 +735,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 onClick={() => setBillingType(billingType === 'one-time' ? 'subscription' : 'one-time')}
                 className="w-16 h-8 bg-white/10 rounded-full p-1 relative transition-all"
               >
-                <div className={`w-6 h-6 bg-[#FACC15] rounded-full transition-all ${billingType === 'subscription' ? 'translate-x-8' : 'translate-x-0'}`} />
+                <div className={`w-6 h-6 bg-[#cfcb11] rounded-full transition-all ${billingType === 'subscription' ? 'translate-x-8' : 'translate-x-0'}`} />
               </button>
               <span className={`text-xs font-black uppercase tracking-widest transition-colors ${billingType === 'subscription' ? 'text-white' : 'text-white/40'}`}>Subscription</span>
             </div>
@@ -744,7 +744,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               No hidden costs. Domain included for first year. Transparent pricing.
             </p>
             <div className="flex items-center justify-center gap-2 pt-4">
-              <Shield size={14} className="text-[#FACC15]" />
+              <Shield size={14} className="text-[#cfcb11]" />
               {/* Removed 100% Money Back Guarantee */}
             </div>
           </div>
@@ -757,13 +757,13 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               viewport={{ once: true }}
               className="pricing-glow-card p-1 rounded-[3.5rem]"
             >
-              <div className="bg-[#0B0B0B] border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#FACC15]/30 transition-all flex flex-col h-full">
+              <div className="bg-[#0B0B0B] border border-white/10 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#cfcb11]/30 transition-all flex flex-col h-full">
                 <div className="space-y-4">
                   <h4 className="text-2xl font-black uppercase italic tracking-tighter">Basic</h4>
                   <div className="space-y-1">
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-xl font-black italic text-[#FACC15]/60">₹</span>
-                    <span className="text-6xl font-black tracking-tighter text-[#FACC15]">
+                    <span className="text-xl font-black italic text-[#cfcb11]/60">₹</span>
+                    <span className="text-6xl font-black tracking-tighter text-[#cfcb11]">
                       {billingType === 'one-time' ? '5,000' : '999'}
                     </span>
                     <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">{billingType === 'one-time' ? 'Once' : '/mo'}</span>
@@ -781,7 +781,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     'Domain (1st Year Free)'
                   ].map((feature, i) => (
                     <li key={i} className="flex items-center gap-4 text-sm font-bold text-white/60">
-                      <CheckCircle2 size={18} className="text-[#FACC15]" />
+                      <CheckCircle2 size={18} className="text-[#cfcb11]" />
                       {feature}
                     </li>
                   ))}
@@ -803,8 +803,8 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               transition={{ delay: 0.1 }}
               className="pricing-glow-card p-1 rounded-[3.5rem]"
             >
-              <div className="bg-[#FACC15] border-[#FACC15] p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(250,204,21,0.3)] group hover:scale-[1.02] transition-all flex flex-col h-full text-black">
-                <div className="absolute top-0 right-0 bg-black text-[#FACC15] px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest border-l border-b border-[#FACC15]/20">
+              <div className="bg-[#cfcb11] border-[#cfcb11] p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden shadow-[0_0_50px_rgba(207,203,17,0.3)] group hover:scale-[1.02] transition-all flex flex-col h-full text-black">
+                <div className="absolute top-0 right-0 bg-black text-[#cfcb11] px-6 py-2 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest border-l border-b border-[#cfcb11]/20">
                   Most Popular
                 </div>
                 <div className="space-y-4">
@@ -853,13 +853,13 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               transition={{ delay: 0.2 }}
               className="pricing-glow-card p-1 rounded-[3.5rem]"
             >
-              <div className="bg-[#0B0B0B] border border-[#FACC15]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#FACC15] transition-all flex flex-col h-full">
+              <div className="bg-[#0B0B0B] border border-[#cfcb11]/30 p-12 rounded-[3.5rem] text-center space-y-10 relative overflow-hidden group hover:border-[#cfcb11] transition-all flex flex-col h-full">
                 <div className="space-y-4">
-                  <h4 className="text-2xl font-black uppercase italic tracking-tighter text-[#FACC15]">Custom Pro</h4>
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter text-[#cfcb11]">Custom Pro</h4>
                   <div className="space-y-1">
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-xl font-black italic text-[#FACC15]/60">₹</span>
-                    <span className="text-6xl font-black tracking-tighter text-[#FACC15]">
+                    <span className="text-xl font-black italic text-[#cfcb11]/60">₹</span>
+                    <span className="text-6xl font-black tracking-tighter text-[#cfcb11]">
                       {billingType === 'one-time' ? '30,000' : '9,999'}
                     </span>
                     <span className="text-xs font-black uppercase tracking-widest ml-2 text-white/40">{billingType === 'one-time' ? 'Once' : '/mo'}</span>
@@ -885,7 +885,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 </ul>
                 <Link 
                   to={user ? "/onboarding" : "/auth"}
-                  className="block w-full py-6 bg-[#FACC15] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all text-center shadow-[0_0_30px_rgba(250,204,21,0.2)]"
+                  className="block w-full py-6 bg-[#cfcb11] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all text-center shadow-[0_0_30px_rgba(207,203,17,0.2)]"
                 >
                   Get Started
                 </Link>
@@ -899,7 +899,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       <section className="py-32 px-10 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <h3 className="text-4xl font-black uppercase italic tracking-tighter">Compare <span className="text-[#FACC15]">Features.</span></h3>
+            <h3 className="text-4xl font-black uppercase italic tracking-tighter">Compare <span className="text-[#cfcb11]">Features.</span></h3>
           </div>
           
           <div className="overflow-x-auto">
@@ -908,7 +908,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <tr className="border-b border-white/10">
                   <th className="py-8 px-6 text-[10px] font-black uppercase tracking-widest text-white/40">Feature</th>
                   <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/40">Basic</th>
-                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-[#FACC15]">Standard</th>
+                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-[#cfcb11]">Standard</th>
                   <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/40">Pro</th>
                 </tr>
               </thead>
@@ -928,13 +928,13 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="py-6 px-6 text-sm font-bold text-white/60 italic">{row.name}</td>
                     <td className="py-6 px-6 text-center">
-                      {typeof row.basic === 'boolean' ? (row.basic ? <CheckCircle2 size={16} className="mx-auto text-[#FACC15]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.basic}</span>}
+                      {typeof row.basic === 'boolean' ? (row.basic ? <CheckCircle2 size={16} className="mx-auto text-[#cfcb11]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.basic}</span>}
                     </td>
-                    <td className="py-6 px-6 text-center bg-[#FACC15]/5">
-                      {typeof row.standard === 'boolean' ? (row.standard ? <CheckCircle2 size={16} className="mx-auto text-[#FACC15]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-[#FACC15]">{row.standard}</span>}
+                    <td className="py-6 px-6 text-center bg-[#cfcb11]/5">
+                      {typeof row.standard === 'boolean' ? (row.standard ? <CheckCircle2 size={16} className="mx-auto text-[#cfcb11]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-[#cfcb11]">{row.standard}</span>}
                     </td>
                     <td className="py-6 px-6 text-center">
-                      {typeof row.pro === 'boolean' ? (row.pro ? <CheckCircle2 size={16} className="mx-auto text-[#FACC15]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.pro}</span>}
+                      {typeof row.pro === 'boolean' ? (row.pro ? <CheckCircle2 size={16} className="mx-auto text-[#cfcb11]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.pro}</span>}
                     </td>
                   </tr>
                 ))}
@@ -952,7 +952,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <div 
           className="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-0 group-hover:opacity-100"
           style={{
-            background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(250, 204, 21, 0.15), transparent 40%)`
+            background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(207, 203, 17, 0.15), transparent 40%)`
           }}
         />
         <div className="max-w-7xl mx-auto text-center relative z-10">
@@ -962,10 +962,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">Your Turn</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">Your Turn</h2>
             <h3 className="text-5xl md:text-8xl font-black tracking-tighter uppercase italic text-white">
               Get Your Business <br />
-              <span className="text-[#FACC15]">Online in 24 Hours.</span>
+              <span className="text-[#cfcb11]">Online in 24 Hours.</span>
             </h3>
             <p className="text-white/60 text-xl max-w-2xl mx-auto font-medium italic">
               Modern, fast, and scalable websites with powerful dashboards. Delivered in 3–7 days with zero hassle.
@@ -973,7 +973,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <div className="pt-8">
               <Link 
                 to="/onboarding"
-                className="inline-block bg-[#FACC15] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all shadow-[0_0_50px_rgba(250, 204, 21, 0.3)]"
+                className="inline-block bg-[#cfcb11] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all shadow-[0_0_50px_rgba(207, 203, 17, 0.3)]"
               >
                 Start Your Journey
               </Link>
@@ -986,9 +986,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       <section className="py-32 px-10 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
-            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">The Advantage</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">The Advantage</h2>
             <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-              Why <span className="text-[#FACC15]">Webby Launch?</span>
+              Why <span className="text-[#cfcb11]">Webby Launch?</span>
             </h3>
           </div>
 
@@ -1001,12 +1001,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               { title: "Trust Backed", value: "Money Back Guarantee", desc: "Not satisfied? We'll refund your setup cost." },
               { title: "Ongoing Support", value: "Updates & Help", desc: "We're here for you even after the launch." }
             ].map((item, idx) => (
-              <div key={idx} className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] space-y-4 hover:border-[#FACC15]/30 transition-all">
+              <div key={idx} className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] space-y-4 hover:border-[#cfcb11]/30 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-[#FACC15] rounded-full" />
+                  <div className="w-2 h-2 bg-[#cfcb11] rounded-full" />
                   <h4 className="text-xl font-black uppercase italic tracking-tighter">{item.title}</h4>
                 </div>
-                <p className="text-2xl font-black text-[#FACC15] tracking-tighter uppercase italic">{item.value}</p>
+                <p className="text-2xl font-black text-[#cfcb11] tracking-tighter uppercase italic">{item.value}</p>
                 <p className="text-white/40 text-sm font-medium italic">{item.desc}</p>
               </div>
             ))}
@@ -1018,17 +1018,17 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         <section className="py-32 px-10 relative overflow-hidden">
           <div className="max-w-7xl mx-auto">
             <div className="bg-white/5 border border-white/10 rounded-[4rem] p-12 md:p-24 relative overflow-hidden">
-              <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#FACC15] rounded-full blur-[120px] opacity-10"></div>
+              <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#cfcb11] rounded-full blur-[120px] opacity-10"></div>
               <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-yellow-500 rounded-full blur-[120px] opacity-10"></div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                 <div className="space-y-8">
-                  <div className="inline-block px-6 py-2 bg-[#FACC15]/10 border border-[#FACC15]/20 rounded-full text-[10px] font-black uppercase tracking-[0.4em] text-[#FACC15] italic">
+                  <div className="inline-block px-6 py-2 bg-[#cfcb11]/10 border border-[#cfcb11]/20 rounded-full text-[10px] font-black uppercase tracking-[0.4em] text-[#cfcb11] italic">
                     Careers
                   </div>
                   <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.8]">
                     Build the <br />
-                    <span className="text-[#FACC15]">Future</span> of Web.
+                    <span className="text-[#cfcb11]">Future</span> of Web.
                   </h2>
                   <p className="text-xl text-white/40 font-medium italic leading-relaxed">
                     We're looking for talented developers and sales experts to join our mission of putting every Indian business online.
@@ -1038,9 +1038,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <Link 
                     to="/join-developer"
-                    className="group bg-white/5 border border-white/10 p-10 rounded-[2.5rem] hover:bg-[#FACC15] transition-all duration-500"
+                    className="group bg-white/5 border border-white/10 p-10 rounded-[2.5rem] hover:bg-[#cfcb11] transition-all duration-500"
                   >
-                    <div className="w-12 h-12 bg-[#FACC15]/10 rounded-xl flex items-center justify-center text-[#FACC15] group-hover:bg-black/10 group-hover:text-black mb-6 transition-all">
+                    <div className="w-12 h-12 bg-[#cfcb11]/10 rounded-xl flex items-center justify-center text-[#cfcb11] group-hover:bg-black/10 group-hover:text-black mb-6 transition-all">
                       <Code size={24} />
                     </div>
                     <h3 className="text-xl font-black uppercase italic tracking-tighter group-hover:text-black transition-all">Join as Developer</h3>
@@ -1049,9 +1049,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   
                   <Link 
                     to="/join-sales"
-                    className="group bg-white/5 border border-white/10 p-10 rounded-[2.5rem] hover:bg-[#FACC15] transition-all duration-500"
+                    className="group bg-white/5 border border-white/10 p-10 rounded-[2.5rem] hover:bg-[#cfcb11] transition-all duration-500"
                   >
-                    <div className="w-12 h-12 bg-[#FACC15]/10 rounded-xl flex items-center justify-center text-[#FACC15] group-hover:bg-black/10 group-hover:text-black mb-6 transition-all">
+                    <div className="w-12 h-12 bg-[#cfcb11]/10 rounded-xl flex items-center justify-center text-[#cfcb11] group-hover:bg-black/10 group-hover:text-black mb-6 transition-all">
                       <Phone size={24} />
                     </div>
                     <h3 className="text-xl font-black uppercase italic tracking-tighter group-hover:text-black transition-all">Join as Sales</h3>
@@ -1066,11 +1066,11 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       {/* Founder's Message */}
       <section className="py-32 px-10 bg-black relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center space-y-12 relative z-10">
-          <div className="w-24 h-24 rounded-full bg-[#FACC15]/10 border border-[#FACC15]/20 mx-auto flex items-center justify-center text-[#FACC15]">
+          <div className="w-24 h-24 rounded-full bg-[#cfcb11]/10 border border-[#cfcb11]/20 mx-auto flex items-center justify-center text-[#cfcb11]">
             <ShieldCheck size={48} />
           </div>
           <div className="space-y-6">
-            <h3 className="text-3xl font-black uppercase italic tracking-tighter text-[#FACC15]">A Message from the Founder</h3>
+            <h3 className="text-3xl font-black uppercase italic tracking-tighter text-[#cfcb11]">A Message from the Founder</h3>
             <p className="text-xl text-white/60 font-medium italic leading-relaxed">
               "I started WebbyLaunch because I saw too many small businesses getting overcharged for slow, outdated websites. Our mission is simple: high-converting, premium digital presences delivered in days, not months. We don't just build websites; we build growth engines."
             </p>
@@ -1086,9 +1086,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       <section className="py-32 px-10 bg-white/5">
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-4 mb-20">
-            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#FACC15]">Questions</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#cfcb11]">Questions</h2>
             <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-              Common <span className="text-[#FACC15]">FAQs.</span>
+              Common <span className="text-[#cfcb11]">FAQs.</span>
             </h3>
           </div>
 
@@ -1103,7 +1103,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
                 >
                   <span className="text-lg font-black uppercase italic tracking-tighter">{faq.question}</span>
-                  {openFaq === idx ? <Minus className="text-[#FACC15]" /> : <Plus className="text-[#FACC15]" />}
+                  {openFaq === idx ? <Minus className="text-[#cfcb11]" /> : <Plus className="text-[#cfcb11]" />}
                 </button>
                 <AnimatePresence>
                   {openFaq === idx && (
@@ -1134,7 +1134,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <Link 
                 key={loc.slug} 
                 to={`/web-development-${loc.slug}`}
-                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#FACC15] hover:text-black transition-all"
+                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#cfcb11] hover:text-black transition-all"
               >
                 <MapPin size={12} />
                 {loc.name}

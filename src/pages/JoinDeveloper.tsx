@@ -90,7 +90,7 @@ export default function JoinDeveloper() {
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="inline-block px-4 py-1 bg-[#FACC15] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic"
+              className="inline-block px-4 py-1 bg-[#cfcb11] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic"
             >
               Step {step} of 2
             </motion.div>
@@ -100,12 +100,12 @@ export default function JoinDeveloper() {
               className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.8]"
             >
               Developer <br />
-              <span className="text-[#FACC15]">Application.</span>
+              <span className="text-[#cfcb11]">Application.</span>
             </motion.h1>
           </div>
           <Link 
             to="/careers" 
-            className="flex items-center gap-2 text-white/40 hover:text-[#FACC15] transition-colors font-black uppercase text-xs tracking-widest italic"
+            className="flex items-center gap-2 text-white/40 hover:text-[#cfcb11] transition-colors font-black uppercase text-xs tracking-widest italic"
           >
             <ArrowLeft size={16} /> Back
           </Link>
@@ -123,7 +123,7 @@ export default function JoinDeveloper() {
               {/* Basic Details */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#cfcb11] rounded-lg flex items-center justify-center text-black">
                     <Globe size={18} />
                   </div>
                   Personal Details
@@ -135,7 +135,7 @@ export default function JoinDeveloper() {
                       type="text"
                       value={formData.fullName}
                       onChange={e => setFormData({...formData, fullName: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="John Doe"
                     />
                   </div>
@@ -145,7 +145,7 @@ export default function JoinDeveloper() {
                       type="email"
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -156,7 +156,7 @@ export default function JoinDeveloper() {
                       maxLength={10}
                       value={formData.phone}
                       onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="9876543210"
                     />
                   </div>
@@ -167,7 +167,7 @@ export default function JoinDeveloper() {
                       min="1"
                       value={formData.experience}
                       onChange={e => setFormData({...formData, experience: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="e.g. 2"
                     />
                   </div>
@@ -177,7 +177,7 @@ export default function JoinDeveloper() {
               {/* Skills */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#cfcb11] rounded-lg flex items-center justify-center text-black">
                     <Briefcase size={18} />
                   </div>
                   Skills (Multi-select) *
@@ -190,7 +190,7 @@ export default function JoinDeveloper() {
                       onClick={() => toggleSkill(skill)}
                       className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                         formData.skills.includes(skill)
-                          ? 'bg-[#FACC15] text-black'
+                          ? 'bg-[#cfcb11] text-black'
                           : 'bg-white/5 text-white/40 hover:bg-white/10 border border-white/5'
                       }`}
                     >
@@ -203,7 +203,7 @@ export default function JoinDeveloper() {
               {/* Links */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#cfcb11] rounded-lg flex items-center justify-center text-black">
                     <LinkIcon size={18} />
                   </div>
                   Links *
@@ -215,7 +215,7 @@ export default function JoinDeveloper() {
                       type="url"
                       value={formData.portfolio}
                       onChange={e => setFormData({...formData, portfolio: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="https://portfolio.com"
                     />
                   </div>
@@ -225,7 +225,7 @@ export default function JoinDeveloper() {
                       type="url"
                       value={formData.github}
                       onChange={e => setFormData({...formData, github: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="https://github.com/user"
                     />
                   </div>
@@ -235,7 +235,7 @@ export default function JoinDeveloper() {
               {/* Availability */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#cfcb11] rounded-lg flex items-center justify-center text-black">
                     <Clock size={18} />
                   </div>
                   Availability
@@ -247,7 +247,7 @@ export default function JoinDeveloper() {
                       type="number"
                       value={formData.hoursPerDay}
                       onChange={e => setFormData({...formData, hoursPerDay: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="e.g. 6"
                     />
                   </div>
@@ -267,7 +267,7 @@ export default function JoinDeveloper() {
               {/* Test Questions */}
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center text-black">
+                  <div className="w-8 h-8 bg-[#cfcb11] rounded-lg flex items-center justify-center text-black">
                     <Send size={18} />
                   </div>
                   Test Questions *
@@ -279,7 +279,7 @@ export default function JoinDeveloper() {
                       type="url"
                       value={formData.projectLink}
                       onChange={e => setFormData({...formData, projectLink: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
                       placeholder="https://bestproject.com"
                     />
                   </div>
@@ -288,7 +288,7 @@ export default function JoinDeveloper() {
                     <textarea 
                       value={formData.clientChanges}
                       onChange={e => setFormData({...formData, clientChanges: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#FACC15]/50 transition-all min-h-[120px]"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm outline-none focus:border-[#cfcb11]/50 transition-all min-h-[120px]"
                       placeholder="Explain your process..."
                     />
                   </div>
@@ -297,7 +297,7 @@ export default function JoinDeveloper() {
 
               <button
                 onClick={() => validateStep1() && setStep(2)}
-                className="w-full py-6 bg-[#FACC15] text-black rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(250,204,21,0.2)] flex items-center justify-center gap-4"
+                className="w-full py-6 bg-[#cfcb11] text-black rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(207,203,17,0.2)] flex items-center justify-center gap-4"
               >
                 Next Step
                 <ArrowRight size={24} />
@@ -312,7 +312,7 @@ export default function JoinDeveloper() {
               className="space-y-12"
             >
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3 text-[#FACC15]">
+                <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3 text-[#cfcb11]">
                   <ShieldCheck size={24} />
                   Terms & Conditions
                 </h3>
@@ -335,8 +335,8 @@ export default function JoinDeveloper() {
                     </ul>
                   </div>
 
-                  <div className="p-6 bg-[#FACC15]/10 border border-[#FACC15]/20 rounded-2xl">
-                    <p className="text-xs font-black text-[#FACC15] uppercase tracking-widest leading-relaxed">
+                  <div className="p-6 bg-[#cfcb11]/10 border border-[#cfcb11]/20 rounded-2xl">
+                    <p className="text-xs font-black text-[#cfcb11] uppercase tracking-widest leading-relaxed">
                       “Shortlisted candidates will be invited for an interview. Selection is based on skills, communication, and professionalism.”
                     </p>
                   </div>
@@ -346,7 +346,7 @@ export default function JoinDeveloper() {
                   <div 
                     onClick={() => setAgreed(!agreed)}
                     className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${
-                      agreed ? 'bg-[#FACC15] border-[#FACC15] text-black' : 'border-white/10 group-hover:border-[#FACC15]/50'
+                      agreed ? 'bg-[#cfcb11] border-[#cfcb11] text-black' : 'border-white/10 group-hover:border-[#cfcb11]/50'
                     }`}
                   >
                     {agreed && <CheckCircle2 size={20} />}
@@ -367,7 +367,7 @@ export default function JoinDeveloper() {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting || !agreed}
-                  className="flex-[2] py-6 bg-[#FACC15] text-black rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(250,204,21,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4"
+                  className="flex-[2] py-6 bg-[#cfcb11] text-black rounded-3xl font-black uppercase italic text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(207,203,17,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Application'}
                   {!isSubmitting && <Send size={24} />}

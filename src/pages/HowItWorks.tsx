@@ -59,7 +59,7 @@ export default function HowItWorks() {
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="inline-block px-4 py-1 bg-[#FACC15] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic"
+              className="inline-block px-4 py-1 bg-[#cfcb11] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic"
             >
               The Process
             </motion.div>
@@ -69,12 +69,12 @@ export default function HowItWorks() {
               className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8]"
             >
               How It <br />
-              <span className="text-[#FACC15]">Works.</span>
+              <span className="text-[#cfcb11]">Works.</span>
             </motion.h1>
           </div>
           <Link 
             to="/" 
-            className="flex items-center gap-2 text-white/40 hover:text-[#FACC15] transition-colors font-black uppercase text-xs tracking-widest italic"
+            className="flex items-center gap-2 text-white/40 hover:text-[#cfcb11] transition-colors font-black uppercase text-xs tracking-widest italic"
           >
             <ArrowLeft size={16} /> Back to Home
           </Link>
@@ -97,7 +97,7 @@ export default function HowItWorks() {
                   transition={{ delay: 0.3 }}
                   className="flex items-center gap-8"
                 >
-                  <div className="w-24 h-24 bg-[#FACC15] rounded-[2.5rem] flex items-center justify-center text-black shadow-[0_0_50px_rgba(250,204,21,0.3)] group-hover:rotate-12 transition-transform duration-500">
+                  <div className="w-24 h-24 bg-[#cfcb11] rounded-[2.5rem] flex items-center justify-center text-black shadow-[0_0_50px_rgba(207,203,17,0.3)] group-hover:rotate-12 transition-transform duration-500">
                     <step.icon size={48} />
                   </div>
                   <div className="text-8xl font-black text-white/5 uppercase italic tracking-tighter leading-none">0{i + 1}</div>
@@ -119,7 +119,7 @@ export default function HowItWorks() {
                       transition={{ delay: 0.5 + (idx * 0.1) }}
                       className="flex items-center gap-4 p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-all group"
                     >
-                      <div className="w-8 h-8 rounded-full bg-[#FACC15]/10 flex items-center justify-center text-[#FACC15] group-hover:scale-110 transition-transform">
+                      <div className="w-8 h-8 rounded-full bg-[#cfcb11]/10 flex items-center justify-center text-[#cfcb11] group-hover:scale-110 transition-transform">
                         <CheckCircle2 size={16} />
                       </div>
                       <span className="text-xs font-black uppercase tracking-widest text-white/70 group-hover:text-white transition-colors">{detail}</span>
@@ -135,7 +135,7 @@ export default function HowItWorks() {
                 className="flex-1 w-full"
               >
                 <div className="aspect-[4/3] bg-white/5 border border-white/10 rounded-[4rem] overflow-hidden relative group shadow-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#FACC15]/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-1000 z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#cfcb11]/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-1000 z-10" />
                   <motion.img 
                     whileHover={{ scale: 1.1 }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
@@ -150,7 +150,7 @@ export default function HowItWorks() {
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute bottom-10 left-10 z-20">
-                    <div className="px-6 py-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-[#FACC15]">
+                    <div className="px-6 py-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-[#cfcb11]">
                       Phase 0{i + 1}
                     </div>
                   </div>
@@ -169,12 +169,12 @@ export default function HowItWorks() {
         >
           <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-tight">
             Ready to start the <br />
-            <span className="text-[#FACC15]">journey with us?</span>
+            <span className="text-[#cfcb11]">journey with us?</span>
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link 
               to="/auth" 
-              className="px-12 py-6 bg-[#FACC15] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(250,204,21,0.2)]"
+              className="px-12 py-6 bg-[#cfcb11] text-black rounded-2xl font-black uppercase italic text-xl hover:scale-105 transition-all shadow-[0_0_50px_rgba(207,203,17,0.2)]"
             >
               Start Now
             </Link>

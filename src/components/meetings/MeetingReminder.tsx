@@ -25,7 +25,7 @@ export const MeetingReminder: React.FC<MeetingReminderProps> = ({ meetings }) =>
         if (diff === 60 && !notifiedMeetings.has(`${meeting.id}-60`)) {
           toast((t) => (
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-[#FACC15] rounded-full flex items-center justify-center text-black">
+              <div className="w-10 h-10 bg-[#cfcb11] rounded-full flex items-center justify-center text-black">
                 <Bell size={20} />
               </div>
               <div>
@@ -41,7 +41,7 @@ export const MeetingReminder: React.FC<MeetingReminderProps> = ({ meetings }) =>
         if (diff === 10 && !notifiedMeetings.has(`${meeting.id}-10`)) {
           toast((t) => (
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-[#FACC15] rounded-full flex items-center justify-center text-black">
+              <div className="w-10 h-10 bg-[#cfcb11] rounded-full flex items-center justify-center text-black">
                 <Video size={20} />
               </div>
               <div>

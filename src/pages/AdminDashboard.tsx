@@ -57,9 +57,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#FACC15]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#cfcb11]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#FACC15]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#cfcb11]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 
@@ -466,7 +466,7 @@ Generated on: ${new Date().toLocaleString()}
         return (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#FACC15]">Developers Team</h2>
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#cfcb11]">Developers Team</h2>
             </div>
             <div className="flex justify-between items-center bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="relative flex-1 max-w-md">
@@ -575,7 +575,7 @@ Generated on: ${new Date().toLocaleString()}
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setViewingDescription(project)}
-                            className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#FACC15] hover:bg-[#FACC15] hover:text-black transition-all"
+                            className="p-2 bg-white/5 border border-white/10 rounded-xl text-[#cfcb11] hover:bg-[#cfcb11] hover:text-black transition-all"
                             title="View Description"
                           >
                             <FileText size={16} />
@@ -608,7 +608,7 @@ Generated on: ${new Date().toLocaleString()}
                     exit={{ scale: 0.9, opacity: 0 }}
                     className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
                   >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#FACC15] to-[#00F2FF]" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#cfcb11] to-[#00F2FF]" />
                     
                     <div className="flex justify-between items-center">
                       <div className="space-y-1">
@@ -647,7 +647,7 @@ Requirements:
                         </button>
                       </div>
                       <p className="whitespace-pre-wrap">
-                        Build a modern, responsive website for a business named <span className="text-[#FACC15]">“{viewingDescription.businessName}”</span>.
+                        Build a modern, responsive website for a business named <span className="text-[#cfcb11]">“{viewingDescription.businessName}”</span>.
                         {"\n\n"}
                         The website should be designed based on the following details:
                         {"\n\n"}
@@ -697,7 +697,7 @@ Requirements:
                           navigator.clipboard.writeText(prompt);
                           toast.success('Prompt copied to clipboard!');
                         }}
-                        className="flex-1 py-4 rounded-xl bg-[#FACC15] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center justify-center gap-2"
+                        className="flex-1 py-4 rounded-xl bg-[#cfcb11] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(207,203,17,0.2)] flex items-center justify-center gap-2"
                       >
                         Copy Full Prompt
                       </button>
@@ -747,7 +747,7 @@ Requirements:
                           max="100"
                           value={editingProject.progress}
                           onChange={(e) => setEditingProject({ ...editingProject, progress: parseInt(e.target.value) })}
-                          className="w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer accent-[#FFD700]"
+                          className="w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer accent-[#cfcb11]"
                         />
                       </div>
 
@@ -777,7 +777,7 @@ Requirements:
                           progress: editingProject.progress,
                           rejectionReason: editingProject.rejectionReason
                         })}
-                        className="flex-1 py-4 rounded-xl bg-[#FFD700] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,215,0,0.2)]"
+                        className="flex-1 py-4 rounded-xl bg-[#cfcb11] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(207,203,17,0.2)]"
                       >
                         Save Changes
                       </button>
@@ -816,7 +816,7 @@ Requirements:
                       <tr key={idx} className="group hover:bg-white/5 transition-colors">
                         <td className="py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#FFD700]/20 rounded-lg flex items-center justify-center text-[#FFD700] font-black text-xs italic">
+                            <div className="w-8 h-8 bg-[#cfcb11]/20 rounded-lg flex items-center justify-center text-[#cfcb11] font-black text-xs italic">
                               {record.userName?.[0]}
                             </div>
                             <span className="text-sm font-bold text-white uppercase italic">{record.userName}</span>
@@ -861,12 +861,12 @@ Requirements:
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#FFD700] selection:text-black text-slate-200">
+    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#cfcb11] selection:text-black text-slate-200">
       {/* Sidebar */}
       <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#FFD700] rounded-lg rotate-12 shadow-[0_0_20px_rgba(255,215,0,0.3)]" />
-          Webby<span className="text-[#FFD700]">Admin</span>
+          <div className="w-8 h-8 bg-[#cfcb11] rounded-lg rotate-12 shadow-[0_0_20px_rgba(207,203,17,0.3)]" />
+          Webby<span className="text-[#cfcb11]">Admin</span>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -883,7 +883,7 @@ Requirements:
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-[#FFD700] text-black shadow-[0_0_30_rgba(255,215,0,0.2)] scale-[1.02]' 
+                  ? 'bg-[#cfcb11] text-black shadow-[0_0_30_rgba(207,203,17,0.2)] scale-[1.02]' 
                   : 'text-slate-500 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -915,7 +915,7 @@ Requirements:
             onClick={() => setActiveTab(tab.id as Tab)}
             className={`p-3 rounded-xl transition-all ${
               activeTab === tab.id 
-                ? 'bg-[#FFD700] text-black shadow-[0_0_20px_rgba(255,215,0,0.2)]' 
+                ? 'bg-[#cfcb11] text-black shadow-[0_0_20px_rgba(207,203,17,0.2)]' 
                 : 'text-slate-500'
             }`}
           >
@@ -939,9 +939,9 @@ Requirements:
           <div className="flex items-center gap-6">
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">System Admin</div>
-              <div className="text-[10px] font-black text-[#FFD700] uppercase tracking-widest">Online</div>
+              <div className="text-[10px] font-black text-[#cfcb11] uppercase tracking-widest">Online</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFD700] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(255,215,0,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#cfcb11] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(207,203,17,0.2)]">
               A
             </div>
           </div>

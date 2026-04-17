@@ -258,11 +258,24 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
   const handleAccept = async (projectId: string) => {
     try {
+      const project = projects.find(p => p.id === projectId);
       await updateProject(projectId, { 
         status: 'Accepted',
         progress: 10,
         estimatedCompletion: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
       });
+
+      // Send automated message from admin
+      if (project && project.userId) {
+        const { sendDirectMessage } = await import('../services/database');
+        await sendDirectMessage(project.userId, {
+          senderId: user.uid,
+          senderName: 'ADMIN',
+          text: `We have received your project ${project.businessName}, you can message me now`,
+          status: 'sent'
+        });
+      }
+
       // Auto action: Development Started
       setTimeout(async () => {
         await updateProject(projectId, { 

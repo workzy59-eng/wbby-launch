@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#FACC15] selection:text-black">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#cfcb11] selection:text-black">
       {/* Navbar */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
@@ -58,9 +58,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
           <div className="flex items-center gap-6">
             {user ? (
-              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#FACC15] transition-all">Dashboard</Link>
+              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#cfcb11] transition-all">Dashboard</Link>
             ) : (
-              <Link to="/auth" className="bg-[#FACC15] text-black px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(250,204,21,0.2)]">Get Started</Link>
+              <Link to="/auth" className="bg-[#cfcb11] text-black px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(207,203,17,0.2)]">Get Started</Link>
             )}
             <button className="lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X /> : <Menu />}
@@ -80,9 +80,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           >
             <div className="flex flex-col gap-8 text-2xl font-bold tracking-tighter">
               {navItems.map((item) => (
-                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className="hover:text-[#FACC15] transition-colors">{item.name}</Link>
+                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className="hover:text-[#cfcb11] transition-colors">{item.name}</Link>
               ))}
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)} className="text-[#FACC15]">Login</Link>
+              <Link to="/auth" onClick={() => setIsMenuOpen(false)} className="text-[#cfcb11]">Login</Link>
             </div>
           </motion.div>
         )}
@@ -123,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
             </p>
             <div className="flex gap-4">
               {['Twitter', 'Instagram', 'LinkedIn'].map((social) => (
-                <a key={social} href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#FACC15] hover:text-black transition-all">
+                <a key={social} href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#cfcb11] hover:text-black transition-all">
                   <span className="text-[10px] font-black uppercase tracking-tighter">{social[0]}</span>
                 </a>
               ))}
@@ -131,7 +131,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#FACC15]">Quick Links</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#cfcb11]">Quick Links</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
               {navItems.slice(0, 6).map((item) => (
                 <Link key={item.name} to={item.path} className="hover:text-white transition-colors">{item.name}</Link>
@@ -140,7 +140,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#FACC15]">Legal</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#cfcb11]">Legal</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
               <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
@@ -148,7 +148,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#FACC15]">Careers</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#cfcb11]">Careers</h4>
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
               <Link to="/careers" className="hover:text-white transition-colors">Careers Home</Link>
               <Link to="/join-developer" className="hover:text-white transition-colors">Join as Developer</Link>
@@ -157,7 +157,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#FACC15]">Contact</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#cfcb11]">Contact</h4>
             <div className="space-y-6">
               <a 
                 href={`https://mail.google.com/mail/?view=cm&fs=1&to=${PROFESSIONAL_EMAIL}`}
@@ -165,7 +165,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
                 rel="noreferrer"
                 className="flex items-center gap-4 group cursor-pointer"
               >
-                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#FACC15] group-hover:text-black transition-all">
+                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#cfcb11] group-hover:text-black transition-all">
                   <Mail size={18} />
                 </div>
                 <span className="text-sm font-bold text-white/40 group-hover:text-white transition-colors">{PROFESSIONAL_EMAIL}</span>

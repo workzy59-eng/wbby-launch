@@ -60,7 +60,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-center gap-8">
         <div className="relative group">
-          <div className="w-32 h-32 rounded-[2rem] overflow-hidden bg-white/5 border-2 border-white/10 group-hover:border-[#FACC15]/50 transition-all">
+          <div className="w-32 h-32 rounded-[2rem] overflow-hidden bg-white/5 border-2 border-white/10 group-hover:border-[#cfcb11]/50 transition-all">
             {formData.photoURL ? (
               <img 
                 src={formData.photoURL} 
@@ -75,13 +75,13 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
             )}
             {isUploading && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <Loader2 className="text-[#FACC15] animate-spin" size={24} />
+                <Loader2 className="text-[#cfcb11] animate-spin" size={24} />
               </div>
             )}
           </div>
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="absolute -bottom-2 -right-2 p-3 bg-[#FACC15] text-black rounded-2xl shadow-xl hover:scale-110 transition-all"
+            className="absolute -bottom-2 -right-2 p-3 bg-[#cfcb11] text-black rounded-2xl shadow-xl hover:scale-110 transition-all"
           >
             <Camera size={18} />
           </button>
@@ -108,7 +108,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
               placeholder="Your full name"
             />
           </div>
@@ -135,7 +135,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#FACC15]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#cfcb11]/50 transition-all"
               placeholder="+91 00000 00000"
             />
           </div>
@@ -146,7 +146,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 px-8 py-4 bg-[#FACC15] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(250,204,21,0.2)]"
+          className="flex items-center gap-2 px-8 py-4 bg-[#cfcb11] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(207,203,17,0.2)]"
         >
           {isSaving ? (
             <Loader2 className="animate-spin" size={16} />
