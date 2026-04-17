@@ -138,8 +138,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   // Removed old statusSteps and currentStepIndex from here
 
+  const primaryColor = selectedProject?.primaryColor || '#cfcb11';
+
   return (
-    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#FACC15] selection:text-black">
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-primary selection:text-black">
       <MeetingReminder meetings={meetings} />
       {/* Sidebar Navigation */}
       <aside className="fixed left-0 top-0 bottom-0 w-24 bg-black/20 backdrop-blur-3xl border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
@@ -159,9 +161,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               onClick={() => tab.link ? navigate(tab.link) : setActiveTab(tab.id as any)}
               className={`p-4 rounded-2xl transition-all duration-300 relative group ${
                 activeTab === tab.id 
-                  ? 'bg-[#FACC15] text-black shadow-[0_0_30px_rgba(250,204,21,0.2)] scale-110' 
+                  ? 'bg-primary text-black shadow-lg scale-110' 
                   : 'text-white/30 hover:text-white hover:bg-white/5'
               }`}
+              style={activeTab === tab.id ? { backgroundColor: primaryColor } : {}}
               title={tab.label}
             >
               <tab.icon size={24} />
@@ -194,7 +197,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             exit={{ opacity: 0, y: -100 }}
             className="fixed top-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6"
           >
-            <div className="bg-[#FACC15] text-black p-6 rounded-[2rem] shadow-2xl flex items-center gap-6 border border-white/20">
+            <div 
+              className="bg-primary text-black p-6 rounded-[2rem] shadow-2xl flex items-center gap-6 border border-white/20"
+              style={{ backgroundColor: primaryColor }}
+            >
               <div className="w-16 h-16 bg-black/10 rounded-2xl flex items-center justify-center shrink-0">
                 <PartyPopper size={32} className="animate-bounce" />
               </div>
@@ -317,12 +323,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-center gap-2 mb-4"
               >
-                <div className="w-2 h-2 bg-[#FACC15] rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FACC15]">Client Dashboard</span>
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Client Dashboard</span>
               </motion.div>
               <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
                 Welcome back,<br />
-                <span className="text-[#FACC15]">{profile?.displayName?.split(' ')[0] || 'User'}</span>
+                <span style={{ color: primaryColor }}>{profile?.displayName?.split(' ')[0] || 'User'}</span>
               </h1>
             </div>
             <div className="flex flex-col items-end gap-4">
@@ -330,7 +336,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 {adminProfile && (
                   <button 
                     onClick={() => setShowDirectChat(true)}
-                    className="flex items-center gap-3 bg-[#FACC15]/10 border border-[#FACC15]/20 px-6 py-3 rounded-2xl text-[#FACC15] hover:bg-[#FACC15] hover:text-black transition-all group"
+                    className="flex items-center gap-3 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl hover:bg-white/10 transition-all group"
+                    style={{ color: primaryColor, borderColor: primaryColor + '40' }}
                   >
                     <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
                     <span className="text-[10px] font-black uppercase tracking-widest">Chat with Admin</span>
@@ -401,13 +408,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
                       <button 
                         onClick={() => setBillingType('one-time')}
-                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'text-black' : 'text-white/40 hover:text-white'}`}
+                        style={billingType === 'one-time' ? { backgroundColor: primaryColor } : {}}
                       >
                         One-Time
                       </button>
                       <button 
                         onClick={() => setBillingType('subscription')}
-                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'text-black' : 'text-white/40 hover:text-white'}`}
+                        style={billingType === 'subscription' ? { backgroundColor: primaryColor } : {}}
                       >
                         Monthly
                       </button>
@@ -594,14 +603,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         </div>
                         <div className="space-y-4">
                           {projects.map((p) => (
-                            <button
+                            <div 
                               key={p.id}
                               onClick={() => setSelectedProject(p)}
                               className={`w-full p-8 rounded-[2.5rem] text-left transition-all border duration-300 ${
                                 selectedProject?.id === p.id 
-                                  ? 'bg-[#FACC15] border-[#FACC15] text-black shadow-xl scale-[1.02]' 
-                                  : 'bg-black/20 border-white/5 text-white hover:border-[#FACC15]/50'
+                                  ? 'text-black shadow-xl scale-[1.02]' 
+                                  : 'bg-black/20 border-white/5 text-white hover:border-white/20'
                               }`}
+                              style={selectedProject?.id === p.id ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
                             >
                               <div className="flex items-center justify-between mb-2">
                                 <h3 className="font-black text-2xl uppercase italic tracking-tighter">{p.businessName}</h3>

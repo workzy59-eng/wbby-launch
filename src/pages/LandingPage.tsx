@@ -224,7 +224,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link 
                 to={user ? "/onboarding" : "/auth"} 
-                className="group relative bg-[#FACC15] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(250,204,21,0.3)] flex items-center gap-3"
+                className="group relative bg-[#cfcb11] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(207,203,17,0.3)] flex items-center gap-3"
               >
                 Get Started
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -234,14 +234,14 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 className="group relative bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
               >
                 Join as Dev
-                <Briefcase size={18} className="text-[#FACC15]" />
+                <Briefcase size={18} className="text-[#cfcb11]" />
               </Link>
               <Link 
                 to="/join-sales" 
                 className="group relative bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
               >
                 Join as Sales
-                <User size={18} className="text-[#FACC15]" />
+                <User size={18} className="text-[#cfcb11]" />
               </Link>
             </div>
           </motion.div>
@@ -315,7 +315,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Load Time</p>
                 </div>
               </div>
-              <button className="px-10 py-5 bg-[#FACC15] text-black rounded-2xl font-black uppercase italic tracking-widest hover:scale-105 transition-all flex items-center gap-3 shadow-[0_0_30px_rgba(250,204,21,0.2)]">
+              <button 
+                onClick={() => document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-10 py-5 bg-[#cfcb11] text-black rounded-2xl font-black uppercase italic tracking-widest hover:scale-105 transition-all flex items-center gap-3 shadow-[0_0_30px_rgba(207,203,17,0.2)]"
+              >
                 Explore All Demos <ArrowRight size={18} />
               </button>
             </div>
@@ -379,7 +382,13 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     </div>
                   </div>
 
-                  <button className="w-full py-5 bg-[#FACC15] text-black rounded-2xl font-black uppercase italic tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(250,204,21,0.2)]">
+                  <button 
+                    onClick={() => {
+                        const el = document.getElementById('pricing');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="w-full py-5 bg-[#cfcb11] text-black rounded-2xl font-black uppercase italic tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(207,203,17,0.2)]"
+                  >
                     Join Now
                   </button>
                 </div>

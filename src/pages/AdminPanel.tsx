@@ -2036,27 +2036,32 @@ ${viewingProject.description}
                       const prompt = `
 Build me a fully responsive website for my ${viewingProject.businessType} business.
 
+Business Name: ${viewingProject.businessName}
 Description: ${viewingProject.description}
 
+Design Aesthetic:
+- Primary Color: ${viewingProject.primaryColor}
+- Secondary Color: ${viewingProject.secondaryColor}
+- Style: ${viewingProject.businessType === 'Logistics' ? 'Industrial Corporate / Tech-Noir Hybrid' : 'Modern & Professional'}
+
 Features required:
-${(viewingProject.selectedFeatures || []).join(', ')}
+${(viewingProject.selectedFeatures || []).map((f: string) => `- ${f}`).join('\n')}
 
-Business Details:
-- Business Name: ${viewingProject.businessName}
-- Phone: ${viewingProject.userPhone || viewingProject.businessPhone}
-- Email: ${viewingProject.userEmail || viewingProject.businessEmail}
-- Address: ${viewingProject.addressLine || 'Not provided'}
-- GST: ${viewingProject.gstNumber || 'Not provided'}
+Technical Requirements:
+- Fully Responsive (Mobile/Tablet/Desktop)
+- Modern UI with sharp edges and premium typography
+- Fast loading speed
+- Basic SEO optimized
+${(viewingProject.selectedFeatures || []).includes('Booking System') ? '- Implement a high-end booking/scheduling system' : ''}
+${(viewingProject.selectedFeatures || []).includes('Google Login System') ? '- Secure Google Authentication' : ''}
 
-Requirements:
-- Responsive on all devices
-- Modern UI (Colors: ${viewingProject.primaryColor}, ${viewingProject.secondaryColor})
-- Fast loading
-- SEO friendly
-${(viewingProject.selectedFeatures || []).includes('Booking System') ? '- Booking system integration required' : ''}
-${(viewingProject.selectedFeatures || []).includes('Google Login System') ? '- Google login integration required' : ''}
+Contact Information for Footer:
+- Phone: ${viewingProject.businessPhone || viewingProject.userPhone}
+- Email: ${viewingProject.businessEmail || viewingProject.userEmail}
+- Location: ${viewingProject.city}, ${viewingProject.state}
 
-Make it highly professional and better than basic templates.
+Specific Project Brief:
+${viewingProject.description}
                       `;
                       const blob = new Blob([prompt], { type: 'text/plain' });
                       const url = URL.createObjectURL(blob);
@@ -2083,13 +2088,13 @@ Make it highly professional and better than basic templates.
               <div className="flex gap-4 mb-10 border-b border-white/5 pb-4">
                 <button 
                   onClick={() => setModalTab('overview')}
-                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'overview' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'overview' ? 'bg-[#cfcb11] text-black' : 'text-white/40 hover:text-white'}`}
                 >
                   Overview
                 </button>
                 <button 
                   onClick={() => setModalTab('preview')}
-                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'preview' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'preview' ? 'bg-[#cfcb11] text-black' : 'text-white/40 hover:text-white'}`}
                 >
                   Preview
                 </button>

@@ -3,37 +3,42 @@ import { Ship, ArrowRight, Globe, Shield, Clock, Phone, Mail, MapPin, Play, Star
 import { Link } from 'react-router-dom';
 
 export default function Cargo() {
+  const primaryColor = '#cfcb11';
+
   return (
-    <div className="min-h-screen bg-[#0a1a2f] text-white font-sans selection:bg-[#f59e0b] selection:text-black overflow-x-hidden">
+    <div className={`min-h-screen bg-[#0a1a2f] text-white font-sans selection:bg-[${primaryColor}] selection:text-black overflow-x-hidden`}>
       {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 px-12 py-10 flex justify-between items-center bg-transparent">
         <div className="flex items-center gap-4">
           <div className="flex flex-col gap-1.5">
             <svg width="24" height="12" viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 2C4 2 4 0 8 0C12 0 12 2 16 2C20 2 20 0 24 0" stroke="#f59e0b" strokeWidth="2"/>
-              <path d="M0 7C4 7 4 5 8 5C12 5 12 7 16 7C20 7 20 5 24 5" stroke="#f59e0b" strokeWidth="2"/>
-              <path d="M0 12C4 12 4 10 8 10C12 10 12 12 16 12C20 12 20 10 24 10" stroke="#f59e0b" strokeWidth="2"/>
+              <path d="M0 2C4 2 4 0 8 0C12 0 12 2 16 2C20 2 20 0 24 0" stroke={primaryColor} strokeWidth="2"/>
+              <path d="M0 7C4 7 4 5 8 5C12 5 12 7 16 7C20 7 20 5 24 5" stroke={primaryColor} strokeWidth="2"/>
+              <path d="M0 12C4 12 4 10 8 10C12 10 12 12 16 12C20 12 20 10 24 10" stroke={primaryColor} strokeWidth="2"/>
             </svg>
           </div>
           <span className="text-2xl font-black tracking-tighter uppercase">GFS</span>
         </div>
         
         <div className="hidden lg:flex gap-10 text-[11px] font-bold uppercase tracking-[0.1em] opacity-90">
-          <a href="#" className="hover:text-[#f59e0b] transition-colors">Home</a>
-          <div className="flex items-center gap-1 cursor-pointer hover:text-[#f59e0b] transition-colors">
+          <a href="#" className={`hover:text-[${primaryColor}] transition-colors`}>Home</a>
+          <div className={`flex items-center gap-1 cursor-pointer hover:text-[${primaryColor}] transition-colors`}>
             <span>Services</span>
             <ChevronDown size={14} />
           </div>
-          <a href="#" className="hover:text-[#f59e0b] transition-colors">Track Your Shipment</a>
-          <a href="#" className="hover:text-[#f59e0b] transition-colors">Reviews</a>
-          <a href="#" className="hover:text-[#f59e0b] transition-colors">Contact</a>
+          <a href="#" className={`hover:text-[${primaryColor}] transition-colors`}>Track Your Shipment</a>
+          <a href="#" className={`hover:text-[${primaryColor}] transition-colors`}>Reviews</a>
+          <a href="#" className={`hover:text-[${primaryColor}] transition-colors`}>Contact</a>
         </div>
 
         <div className="flex items-center gap-6">
           <Link to="/" className="px-8 py-3 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
             Back to Webby
           </Link>
-          <button className="px-8 py-3 bg-[#f59e0b] text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl">
+          <button 
+            style={{ backgroundColor: primaryColor }}
+            className="px-8 py-3 text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+          >
             Get a Quote
           </button>
         </div>
@@ -76,7 +81,10 @@ export default function Cargo() {
               transition={{ delay: 0.2 }}
               className="flex gap-4"
             >
-              <button className="px-10 py-5 bg-[#f59e0b] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">
+              <button 
+                style={{ backgroundColor: primaryColor }}
+                className="px-10 py-5 text-black rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl"
+              >
                 Get a Quote
               </button>
               <button className="px-10 py-5 bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -117,7 +125,7 @@ export default function Cargo() {
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-5xl font-black tracking-tighter">4.8</span>
-                <Star size={20} fill="#f59e0b" className="text-[#f59e0b]" />
+                <Star size={20} fill={primaryColor} className={`text-[${primaryColor}]`} style={{ color: primaryColor }} />
               </div>
             </motion.div>
 
@@ -133,7 +141,10 @@ export default function Cargo() {
                   <div className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">CN SHG</div>
                   <div className="text-xl font-black tracking-tighter">SHANGHAI</div>
                 </div>
-                <div className="w-10 h-10 bg-[#f59e0b] rounded-full flex items-center justify-center text-black">
+                <div 
+                  style={{ backgroundColor: primaryColor }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-black"
+                >
                   <Ship size={20} />
                 </div>
                 <div className="text-right">
@@ -142,11 +153,12 @@ export default function Cargo() {
                 </div>
               </div>
               <div className="relative h-1 bg-white/10 rounded-full mb-6">
-                <div className="absolute top-0 left-0 w-3/4 h-full bg-[#f59e0b] rounded-full" />
+                <div className="absolute top-0 left-0 w-3/4 h-full rounded-full" style={{ backgroundColor: primaryColor }} />
                 <motion.div 
                   animate={{ left: ['0%', '75%'] }}
                   transition={{ duration: 3, repeat: Infinity }}
-                  className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f59e0b] rounded-full shadow-[0_0_15px_#f59e0b]" 
+                  className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: primaryColor, boxShadow: `0 0 15px ${primaryColor}` }}
                 />
               </div>
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-50">
@@ -163,9 +175,9 @@ export default function Cargo() {
               className="absolute -bottom-20 -left-10 bg-[#0a1a2f]/80 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl w-72 overflow-hidden shadow-2xl"
             >
               <div className="relative z-10">
-                <div className="text-[10px] font-black uppercase tracking-widest text-[#f59e0b] mb-2">UNLOADING</div>
+                <div className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: primaryColor }}>UNLOADING</div>
                 <h4 className="text-xl font-black tracking-tighter leading-tight mb-6">Book Container<br />Unloading Today</h4>
-                <button className="text-[10px] font-black uppercase tracking-widest text-[#f59e0b] hover:underline">Book Now</button>
+                <button className="text-[10px] font-black uppercase tracking-widest hover:underline" style={{ color: primaryColor }}>Book Now</button>
               </div>
               <div className="absolute -right-10 -bottom-10 w-40 h-40 opacity-30 grayscale">
                 <img 

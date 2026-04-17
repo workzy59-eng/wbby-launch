@@ -29,7 +29,7 @@ import { useAuth } from '../context/AuthContext';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
-import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship } from 'lucide-react';
 
 const AVAILABLE_FEATURES = [
   'Google Login System',
@@ -419,8 +419,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
         break;
       case 5: // Domain Preferences
-        if (!domainData.businessName || domainData.businessName.length < 3) invalid.push('businessNameDomain');
-        if (domainData.preferences.some(p => !p)) invalid.push('preferences');
+        if (formData.domainPreferences.some(p => !p)) {
+          formData.domainPreferences.forEach((p, i) => {
+            if (!p) invalid.push(`domainPreference${i}`);
+          });
+        }
         break;
       case 6: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
@@ -1128,8 +1131,44 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Domain Preferences</h3>
+              <p className="text-subtext font-medium italic">Suggest 3 domain names you'd like (e.g. yourbusiness.com)</p>
             </div>
-... (code for domain preferences) ...
+
+            <div className="space-y-6">
+              {[0, 1, 2].map((idx) => (
+                <div key={idx} className="space-y-4">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Preference {idx + 1}</label>
+                  <input 
+                    type="text"
+                    value={formData.domainPreferences[idx]}
+                    onChange={(e) => {
+                      const newPrefs = [...formData.domainPreferences];
+                      newPrefs[idx] = e.target.value;
+                      handleInputChange('domainPreferences', newPrefs);
+                    }}
+                    placeholder={`e.g. ${formData.businessName.toLowerCase().replace(/\s/g, '')}${idx === 0 ? '.com' : idx === 1 ? '.in' : '.net'}`}
+                    className={getInputClass(`domainPreference${idx}`)}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={handleBack} 
+                className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all"
+                style={{ borderColor: formData.primaryColor, color: formData.primaryColor }}
+              >
+                Back
+              </button>
+              <button 
+                onClick={handleNext} 
+                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                style={{ backgroundColor: formData.primaryColor }}
+              >
+                Next
+              </button>
+            </div>
           </motion.div>
         );
       case 6:
@@ -1278,13 +1317,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="bg-primary px-2 py-0.5 rounded flex items-center justify-center">
+                  <div className="bg-primary px-2 py-0.5 rounded flex items-center justify-center" style={{ backgroundColor: formData.primaryColor }}>
                     <span className="text-black font-black text-[10px] tracking-tighter uppercase">{HYPHENATED_NAME}</span>
                   </div>
                   <div className="text-3xl font-bold tracking-tighter text-white uppercase italic">{APP_NAME}</div>
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 8</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 8</h2>
                   <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
                 </div>
               </div>
@@ -1292,13 +1331,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <div className="flex items-center gap-4 bg-card p-2 rounded-2xl border border-border">
                 <button 
                   onClick={() => setFormData({ ...formData, billingCycle: 'one-time' })}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.billingCycle === 'one-time' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.billingCycle === 'one-time' ? 'text-white' : 'text-subtext hover:text-text'}`}
+                  style={formData.billingCycle === 'one-time' ? { backgroundColor: formData.primaryColor } : {}}
                 >
                   One-Time
                 </button>
                 <button 
                   onClick={() => setFormData({ ...formData, billingCycle: 'subscription' })}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.billingCycle === 'subscription' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.billingCycle === 'subscription' ? 'text-white' : 'text-subtext hover:text-text'}`}
+                  style={formData.billingCycle === 'subscription' ? { backgroundColor: formData.primaryColor } : {}}
                 >
                   Monthly
                 </button>
@@ -1331,12 +1372,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   onClick={() => setFormData({ ...formData, plan: plan.id as any })}
                   className={`p-8 rounded-2xl border transition-all text-left flex flex-col h-full ${
                     formData.plan === plan.id 
-                      ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
+                      ? 'text-white shadow-lg shadow-primary/20' 
                       : 'bg-card border-border text-text hover:border-primary/50'
                   }`}
+                  style={formData.plan === plan.id ? { backgroundColor: formData.primaryColor, borderColor: formData.primaryColor } : {}}
                 >
                   <div className="flex justify-between items-start mb-6">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.plan === plan.id ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                    <div 
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.plan === plan.id ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}
+                      style={formData.plan !== plan.id ? { backgroundColor: formData.primaryColor + '10', color: formData.primaryColor } : {}}
+                    >
                       <CreditCard size={24} />
                     </div>
                     {formData.plan === plan.id && <Check size={20} />}
@@ -1346,7 +1391,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <ul className="space-y-3 flex-1">
                     {plan.features.map((feature, i) => (
                       <li key={i} className={`text-xs font-medium flex items-center gap-2 ${formData.plan === plan.id ? 'text-white/80' : 'text-subtext'}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${formData.plan === plan.id ? 'bg-white' : 'bg-primary'}`} />
+                        <div 
+                          className={`w-1.5 h-1.5 rounded-full ${formData.plan === plan.id ? 'bg-white' : 'bg-primary'}`} 
+                          style={formData.plan !== plan.id ? { backgroundColor: formData.primaryColor } : {}}
+                        />
                         {feature}
                       </li>
                     ))}
@@ -1356,8 +1404,26 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
 
             <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
-              <button onClick={handleNext} className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">Next</button>
+              <button 
+                onClick={handleBack} 
+                className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all"
+                style={{ borderColor: formData.primaryColor, color: formData.primaryColor }}
+              >
+                Back
+              </button>
+              <button 
+                onClick={() => {
+                  if (!formData.plan) {
+                    toast.error('Please select a plan to continue');
+                    return;
+                  }
+                  handleNext();
+                }} 
+                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                style={{ backgroundColor: formData.primaryColor }}
+              >
+                Next
+              </button>
             </div>
           </motion.div>
         );
