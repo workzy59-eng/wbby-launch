@@ -4,7 +4,7 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-  --color-primary: #c7c42a;
+  --color-primary: #cfcb11;
   --color-background: #000000;
   --color-card: rgba(255, 255, 255, 0.05);
   --color-border: rgba(255, 255, 255, 0.1);
@@ -39,9 +39,9 @@
     from 0deg,
     transparent 0deg,
     transparent 150deg,
-    #c7c42a 180deg,
+    #cfcb11 180deg,
     #d8d538 210deg,
-    #c7c42a 240deg,
+    #cfcb11 240deg,
     transparent 270deg,
     transparent 360deg
   );

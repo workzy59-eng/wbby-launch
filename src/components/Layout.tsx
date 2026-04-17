@@ -160,7 +160,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
             <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#FACC15]">Contact</h4>
             <div className="space-y-6">
               <a 
-                href="mailto:webbylaunch@gmail.com?subject=Project Inquiry&body=Hi WebbyLaunch, I'm interested in starting a project."
+                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${PROFESSIONAL_EMAIL}`}
+                target="_blank"
+                rel="noreferrer"
                 className="flex items-center gap-4 group cursor-pointer"
               >
                 <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-[#FACC15] group-hover:text-black transition-all">

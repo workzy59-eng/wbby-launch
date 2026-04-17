@@ -82,13 +82,40 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
             Call Us
           </button>
         </section>
-        <div className="p-4 grid grid-cols-2 gap-2">
-           {(data.selectedFeatures || []).slice(0, 4).map((f: any, i: number) => (
-              <div key={i} className="p-2 bg-gray-50 rounded-lg border border-gray-100 text-center">
-                 <div className="text-[7px] font-black uppercase truncate">{f}</div>
+
+        {/* Portfolio Section */}
+        <section className="py-8 px-4 space-y-4 bg-white border-t border-gray-50">
+          <div className="space-y-0.5">
+             <h2 className="text-[7px] font-black uppercase tracking-[0.3em] text-center text-gray-400">Portfolio</h2>
+             <p className="text-sm font-bold text-center tracking-tight italic uppercase">View Our Works</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="aspect-[4/3] bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center">
+                 <Layout size={14} style={{ color: data.primaryColor }} />
               </div>
-           ))}
-        </div>
+            ))}
+          </div>
+          <div className="flex justify-center">
+             <button className="px-4 py-1.5 rounded-full font-bold text-[6px] uppercase tracking-widest shadow-md transition-all hover:shadow-lg active:scale-95 flex items-center gap-1.5" style={{ backgroundColor: data.primaryColor || '#c7c42a', color: data.secondaryColor || '#000000' }}>
+                See All Projects <ArrowRight size={8} />
+             </button>
+          </div>
+        </section>
+
+        <section className="p-4 space-y-1 bg-white border-t border-gray-50">
+          <h2 className="text-[7px] font-black uppercase tracking-[0.2em] text-center text-gray-400">Features</h2>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {(data.selectedFeatures || []).slice(0, 4).map((f: any, i: number) => (
+                <div key={i} className="p-2 bg-gray-50 rounded-lg border border-gray-100 text-center flex flex-col items-center justify-center gap-1">
+                   <div className="w-4 h-4 rounded bg-white border border-gray-100 flex items-center justify-center">
+                     <Zap size={8} style={{ color: data.primaryColor }} />
+                   </div>
+                   <div className="text-[6px] font-black uppercase truncate max-w-full">{f}</div>
+                </div>
+            ))}
+          </div>
+        </section>
         <footer className="py-6 px-4 bg-gray-900 text-white text-[7px] text-center uppercase tracking-widest opacity-50">
            © 2024 {data.businessName || 'Business'}
         </footer>
@@ -2008,6 +2035,8 @@ ${viewingProject.description}
                     onClick={() => {
                       const prompt = `
 Build me a fully responsive website for my ${viewingProject.businessType} business.
+
+Description: ${viewingProject.description}
 
 Features required:
 ${(viewingProject.selectedFeatures || []).join(', ')}

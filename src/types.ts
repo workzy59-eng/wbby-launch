@@ -16,6 +16,7 @@ export interface UserProfile {
   commissionEarned?: number;
   salesCode?: string; // For sales users
   referralCode?: string; // For clients who used a sales code
+  isOtpVerified?: boolean; // For preventing multiple OTPs
   // ... rest of the fields
   
   // Settings & Preferences

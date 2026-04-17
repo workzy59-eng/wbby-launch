@@ -257,7 +257,9 @@ export default function BlogPost() {
                   View Pricing
                 </Link>
                 <a 
-                  href={`mailto:workzy59@gmail.com`}
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=workzy59@gmail.com`}
+                  target="_blank"
+                  rel="noreferrer"
                   className="px-16 py-7 border-2 border-black text-black rounded-full font-black uppercase italic tracking-[0.2em] text-sm hover:bg-black hover:text-white transition-all"
                 >
                   Email Us
