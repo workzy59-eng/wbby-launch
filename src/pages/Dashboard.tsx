@@ -625,13 +625,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               <p className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? 'text-black/70' : 'text-white/50'}`}>{p.businessType}</p>
                               <div className="flex items-center justify-between">
                                 <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                  selectedProject?.id === p.id ? 'bg-black text-[#FACC15]' : 'bg-white/10 text-white'
-                                }`}>
+                                  selectedProject?.id === p.id ? 'bg-black' : 'bg-white/10 text-white'
+                                }`}
+                                style={selectedProject?.id === p.id ? { color: primaryColor } : {}}
+                                >
                                   {p.status}
                                 </div>
                                 <span className={`text-xs font-black italic ${selectedProject?.id === p.id ? 'text-black' : 'text-white'}`}>{p.progress}%</span>
                               </div>
-                            </button>
+                            </div>
                           ))}
                         </div>
                       </div>
