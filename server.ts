@@ -24,32 +24,32 @@ if (!admin.apps.length) {
   if (privateKey) {
     // Remove wrapping quotes if they exist
     privateKey = privateKey.trim();
-    if ((privateKey.startsWith('"') && privateKey.endsWith('"')) || 
-        (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      try {
+        // Handle double-escaped keys by parsing as JSON string
+        privateKey = JSON.parse(privateKey);
+      } catch (e) {
+        privateKey = privateKey.substring(1, privateKey.length - 1);
+      }
+    } else if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
       privateKey = privateKey.substring(1, privateKey.length - 1);
     }
     
     // Replace literal \n strings with actual newline characters
     privateKey = privateKey.replace(/\\n/g, '\n');
     
-    // If the key is a single line (flattened), reformat it properly
-    if (privateKey.includes('-----BEGIN PRIVATE KEY-----') && !privateKey.includes('\n', privateKey.indexOf('-----BEGIN PRIVATE KEY-----') + 25)) {
+    // Reformat to standard PEM if it looks like one
+    if (privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
       const header = '-----BEGIN PRIVATE KEY-----';
       const footer = '-----END PRIVATE KEY-----';
       
       let content = privateKey
-        .replace(header, '')
+        .substring(privateKey.indexOf(header) + header.length)
         .replace(footer, '')
-        .replace(/\s/g, ''); // Remove all whitespace from content
+        .replace(/\s/g, ''); // Remove all whitespace
         
-      // Reconstruct with proper newlines (every 64 chars is standard for PEM)
       const lines = content.match(/.{1,64}/g) || [];
       privateKey = `${header}\n${lines.join('\n')}\n${footer}\n`;
-    }
-    
-    // Final check: ensure it starts and ends with the correct markers
-    if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-      console.warn("FIREBASE_PRIVATE_KEY is missing the BEGIN header.");
     }
   }
   

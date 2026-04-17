@@ -1,5 +1,6 @@
 {
-  "name": "WebbyLaunch – Premium Mobile-First Web Solutions",
+  "name": "WebbyLaunch – Premium  Website Devlopers",
   "description": "Premium SaaS platform for web solutions with real-time chat, secure OTP auth, and admin-controlled workflow.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

@@ -687,7 +687,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-32 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-[120]"
           >
-            <div className="bg-[#4A5D4E] p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-4">
+            <div className="bg-black/90 backdrop-blur-xl p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading Files...</h4>
                 <Loader color="white" />
@@ -750,7 +750,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-[#4A5D4E] p-10 rounded-[3rem] border border-white/10 w-full max-w-sm shadow-2xl space-y-8"
+              className="bg-black/90 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 w-full max-w-sm shadow-2xl space-y-8"
             >
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Delete Message?</h3>

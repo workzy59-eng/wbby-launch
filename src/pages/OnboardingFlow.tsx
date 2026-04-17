@@ -29,6 +29,127 @@ import { useAuth } from '../context/AuthContext';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
+import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck } from 'lucide-react';
+
+const AVAILABLE_FEATURES = [
+  'Google Login System',
+  'Booking System',
+  'Contact Form',
+  'WhatsApp Chat Integration',
+  'Admin Dashboard',
+  'SEO Optimization',
+  'Mobile Responsive Design',
+  'Image Gallery',
+  'Payment Integration (Stripe)',
+  'Fast Loading Performance'
+];
+
+const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
+  const containerClasses = {
+    desktop: 'w-full h-[500px]',
+    tablet: 'w-[450px] h-[600px] mx-auto',
+    mobile: 'w-[300px] h-[550px] mx-auto',
+  };
+
+  return (
+    <div className={`bg-white rounded-t-3xl border-x-8 border-t-8 border-gray-800 transition-all duration-500 overflow-hidden shadow-2xl relative ${containerClasses[device]}`}>
+      <div className="h-6 bg-gray-800 flex items-center justify-center gap-1.5 sticky top-0 z-20">
+        <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+      </div>
+      <div className="h-full overflow-y-auto bg-white text-black font-sans no-scrollbar">
+        {/* Mock Toolbar */}
+        <div className="bg-gray-100 px-4 py-2 border-b flex items-center gap-2">
+          <div className="flex gap-1">
+             <div className="w-2 h-2 rounded-full bg-gray-300" />
+             <div className="w-2 h-2 rounded-full bg-gray-300" />
+          </div>
+          <div className="flex-1 bg-white rounded h-4 flex items-center px-2 text-[8px] text-gray-400 truncate">
+             https://{data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.com
+          </div>
+        </div>
+
+        {/* Navbar */}
+        <nav className="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-primary rounded shadow-inner flex items-center justify-center text-white font-bold text-[10px]">
+              {(data.businessName || 'B')[0]}
+            </div>
+            <span className="font-bold text-[10px] tracking-tight truncate max-w-[100px]">{data.businessName || 'Business Name'}</span>
+          </div>
+          <div className="flex gap-2">
+             <div className="w-8 h-2 bg-gray-100 rounded" />
+             <div className="w-8 h-2 bg-gray-100 rounded" />
+          </div>
+        </nav>
+
+        {/* Hero */}
+        <section className="py-16 px-6 text-center space-y-4 relative overflow-hidden" style={{ backgroundColor: data.primaryColor || '#c7c42a' }}>
+          <div className="relative z-10">
+            <h1 className="text-2xl font-black uppercase tracking-tighter leading-[0.9]" style={{ color: data.secondaryColor || '#000000' }}>
+              Premium {data.businessType || 'Solutions'} for {data.businessName || 'Next level'}
+            </h1>
+            <p className="text-[10px] font-medium mt-4 max-w-[200px] mx-auto opacity-80" style={{ color: data.secondaryColor || '#000000' }}>
+              {data.description || 'Welcome to our professional platform. We provide top-tier services tailored for your business growth.'}
+            </p>
+            <div className="mt-8 flex justify-center gap-3">
+              <button className="px-6 py-2 rounded-full font-bold text-[8px] uppercase tracking-widest shadow-xl transition-transform hover:scale-105" style={{ backgroundColor: data.secondaryColor || '#000000', color: data.primaryColor || '#c7c42a' }}>
+                Explore Now
+              </button>
+            </div>
+          </div>
+          {/* Decorative accents */}
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full opacity-20" style={{ backgroundColor: data.secondaryColor || '#000' }} />
+        </section>
+
+        {/* Features Preview */}
+        <section className="py-12 px-6 space-y-6 bg-white">
+          <div className="space-y-1">
+             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-center text-gray-400">Our Services</h2>
+             <p className="text-xl font-bold text-center tracking-tight">What we offer</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {(data.selectedFeatures || []).slice(0, 4).map((f: string, i: number) => (
+              <div key={i} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center gap-3 text-center transition-all hover:shadow-md">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: data.primaryColor + '20', color: data.primaryColor }}>
+                  <Zap size={16} />
+                </div>
+                <div className="text-[9px] font-black uppercase tracking-[0.1em] leading-tight text-gray-800">{f}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section className="py-12 px-6 bg-gray-50 border-t border-gray-100">
+           <div className="space-y-6">
+              <div className="space-y-2">
+                 <h2 className="text-lg font-bold tracking-tight">Contact Us</h2>
+                 <p className="text-[10px] text-gray-500 font-medium">Ready to start your next big project? Reach out to us today.</p>
+              </div>
+              <div className="space-y-3">
+                 <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100">
+                    <Mail size={14} className="text-gray-400" />
+                    <span className="text-[10px] font-medium">{data.businessEmail || 'contact@business.com'}</span>
+                 </div>
+                 <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100">
+                    <MessageSquare size={14} className="text-gray-400" />
+                    <span className="text-[10px] font-medium">{data.businessPhone || '+91 98765 43210'}</span>
+                 </div>
+              </div>
+           </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-8 px-6 bg-gray-900 text-white text-center">
+          <div className="text-xs font-bold tracking-tight mb-2">Webby<span className="text-primary">Launch</span></div>
+          <div className="text-[8px] font-medium opacity-50 uppercase tracking-widest">© 2024 {data.businessName || 'Business'}. All rights reserved.</div>
+        </footer>
+      </div>
+    </div>
+  );
+};
 
 interface OnboardingFlowProps {
   user: FirebaseUser | null;
@@ -59,10 +180,18 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       description: '',
       location: '',
       websiteName: '',
-      primaryColor: '#FACC15',
+      primaryColor: '#c7c42a',
       secondaryColor: '#000000',
       tertiaryColor: '',
       logoUrl: '',
+      selectedFeatures: [
+        'Contact Form',
+        'WhatsApp Chat Integration',
+        'Admin Dashboard',
+        'SEO Optimization',
+        'Mobile Responsive Design',
+        'Fast Loading Performance'
+      ],
       plan: 'basic' as 'basic' | 'standard' | 'pro',
       billingCycle: 'one-time' as 'one-time' | 'subscription',
       referenceWebsite: '',
@@ -91,6 +220,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     const saved = localStorage.getItem('onboarding_step');
     return saved ? parseInt(saved, 10) : 1;
   });
+
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   const [otp, setOtp] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
@@ -244,21 +375,27 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.pincode) invalid.push('pincode');
         if (req.description && !formData.description) invalid.push('description');
         break;
-      case 4: // Domain Preferences
+      case 4: // Features Select
+        if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
+        break;
+      case 5: // Domain Preferences
         if (!domainData.businessName || domainData.businessName.length < 3) invalid.push('businessNameDomain');
         if (domainData.preferences.some(p => !p)) invalid.push('preferences');
         break;
-      case 5: // Design
+      case 6: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
         if (!formData.secondaryColor) invalid.push('secondaryColor');
         break;
-      case 6: // Choose Plan
+      case 7: // Preview
+        // No fields to validate for preview step itself
+        break;
+      case 8: // Choose Plan
         if (!formData.plan) invalid.push('plan');
         break;
-      case 7: // Terms and Conditions
+      case 9: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
-      case 8: // Finalize
+      case 10: // Finalize
         if (!paymentOption) invalid.push('paymentOption');
         break;
     }
@@ -339,6 +476,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         primaryColor: formData.primaryColor,
         secondaryColor: formData.secondaryColor,
         tertiaryColor: formData.tertiaryColor,
+        selectedFeatures: formData.selectedFeatures,
         plan: formData.plan,
         paymentStatus: 'pending' as 'pending' | 'paid',
         referenceWebsite: formData.referenceWebsite,
@@ -495,6 +633,14 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       domainPreferences: domainPrefs
     }));
     setStep(5);
+  };
+
+  const toggleFeature = (feature: string) => {
+    const current = formData.selectedFeatures || [];
+    const updated = current.includes(feature)
+      ? current.filter(f => f !== feature)
+      : [...current, feature];
+    handleInputChange('selectedFeatures', updated);
   };
 
   const renderStep = () => {
@@ -890,6 +1036,53 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
+              <h3 className="text-4xl font-bold tracking-tight text-text">Select Features</h3>
+              <p className="text-subtext font-medium italic">Customize your platform with premium features</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {AVAILABLE_FEATURES.map((feature) => {
+                const isSelected = (formData.selectedFeatures || []).includes(feature);
+                return (
+                  <button
+                    key={feature}
+                    onClick={() => toggleFeature(feature)}
+                    className={`p-6 rounded-2xl border transition-all text-left flex items-start gap-4 ${
+                      isSelected 
+                        ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
+                        : 'bg-card border-border text-subtext hover:border-primary/50'
+                    }`}
+                  >
+                    <div className={`mt-1 w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${
+                      isSelected ? 'bg-white border-white text-primary' : 'border-border text-transparent'
+                    }`}>
+                      <Check size={14} strokeWidth={4} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold uppercase tracking-widest">{feature}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
+              <button onClick={handleNext} className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">Next</button>
+            </div>
+          </motion.div>
+        );
+      case 5:
+        return (
+          <motion.div 
+            key="step5"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-2">
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Domain Preferences</h3>
             </div>
 
@@ -977,7 +1170,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Design for your website</h3>
             </div>
 
@@ -1047,10 +1240,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 6:
+      case 7:
         return (
           <motion.div 
-            key="step6"
+            key="step7"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1058,7 +1251,61 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 7</h2>
+                <h3 className="text-4xl font-bold tracking-tight text-text">Website Preview</h3>
+                <p className="text-subtext font-medium italic">See how your website will look on different devices</p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-card p-1.5 rounded-2xl border border-border">
+                <button 
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`p-3 rounded-xl transition-all ${previewDevice === 'desktop' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                >
+                  <Monitor size={20} />
+                </button>
+                <button 
+                  onClick={() => setPreviewDevice('tablet')}
+                  className={`p-3 rounded-xl transition-all ${previewDevice === 'tablet' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                >
+                  <Tablet size={20} />
+                </button>
+                <button 
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`p-3 rounded-xl transition-all ${previewDevice === 'mobile' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                >
+                  <Smartphone size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="min-h-[500px] flex items-center justify-center bg-card/30 rounded-[3rem] border border-border/50 p-8 border-dashed">
+              <WebsitePreview data={formData} device={previewDevice} />
+            </div>
+
+            <div className="bg-primary/10 border border-primary/20 p-6 rounded-2xl">
+               <p className="text-xs font-bold text-primary uppercase tracking-widest text-center italic">
+                 ⚠️ This is only a sample preview. Final website will be 100% more professional and better.
+               </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
+              <button onClick={handleNext} className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">Next</button>
+            </div>
+          </motion.div>
+        );
+      case 8:
+        return (
+          <motion.div 
+            key="step8"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+              <div className="space-y-2">
+                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 8</h2>
                 <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
               </div>
 
@@ -1083,19 +1330,19 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 { 
                   id: 'basic', 
                   name: 'Basic', 
-                  price: formData.billingCycle === 'one-time' ? '₹5,000/-' : '₹999/-', 
+                  price: formData.billingCycle === 'one-time' ? '₹1,499/-' : '₹999/-', 
                   features: ['5 Pages', 'Basic SEO', 'Email Support'] 
                 },
                 { 
                   id: 'standard', 
                   name: 'Standard', 
-                  price: formData.billingCycle === 'one-time' ? '₹15,000/-' : '₹5,999/-', 
+                  price: formData.billingCycle === 'one-time' ? '₹3,499/-' : '₹5,999/-', 
                   features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] 
                 },
                 { 
                   id: 'pro', 
                   name: 'Pro', 
-                  price: formData.billingCycle === 'one-time' ? '₹30,000/-' : '₹9,999/-', 
+                  price: formData.billingCycle === 'one-time' ? '₹9,999/-' : '₹9,999/-', 
                   features: ['Everything in Standard', 'E-commerce', 'AI features'] 
                 }
               ].map((plan) => (
@@ -1134,17 +1381,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 7:
+      case 9:
         return (
           <motion.div 
-            key="step7"
+            key="step9"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 7</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 9</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Terms & Conditions</h3>
             </div>
 
@@ -1210,17 +1457,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 8:
+      case 10:
         return (
           <motion.div 
-            key="step8"
+            key="step10"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 8</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 10</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Finalize Project</h3>
             </div>
             
@@ -1397,6 +1644,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                         websiteName: formData.websiteName,
                         primaryColor: formData.primaryColor,
                         secondaryColor: formData.secondaryColor,
+                        selectedFeatures: formData.selectedFeatures,
                         logoUrl: finalLogoUrl,
                         documentsUrl: finalDocsUrl,
                         plan: formData.plan,
@@ -1454,15 +1702,24 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="h-1.5 w-32 bg-border rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${(step / 8) * 100}%` }}
+                animate={{ width: `${(step / 10) * 100}%` }}
                 className="h-full bg-primary"
               />
             </div>
-            <div className="text-xs font-bold text-primary uppercase tracking-wider">Step {step} of 8</div>
+            <div className="text-xs font-bold text-primary uppercase tracking-wider">Step {step} of 10</div>
           </div>
         </div>
       </header>
-      <main className="max-w-3xl mx-auto px-10 py-16">
+      <main className="max-w-4xl mx-auto px-10 py-16">
+        <div className="mb-8">
+           <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${(step / 10) * 100}%` }}
+                className="h-full bg-primary"
+              />
+            </div>
+        </div>
         <AnimatePresence mode="wait">
           {renderStep()}
         </AnimatePresence>

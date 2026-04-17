@@ -45,6 +45,57 @@ import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import { MeetingList } from '../components/meetings/MeetingList';
 import Papa from 'papaparse';
+import { Monitor, Smartphone, Tablet, ExternalLink, Zap, Mail, MessageSquare } from 'lucide-react';
+
+const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
+  const containerClasses = {
+    desktop: 'w-full h-[500px]',
+    tablet: 'w-[400px] h-[600px] mx-auto',
+    mobile: 'w-[280px] h-[500px] mx-auto',
+  };
+
+  return (
+    <div className={`bg-white rounded-t-2xl border-x-4 border-t-4 border-gray-800 transition-all duration-500 overflow-hidden shadow-2xl relative ${containerClasses[device]}`}>
+      <div className="h-4 bg-gray-800 flex items-center justify-center gap-1 sticky top-0 z-20">
+        <div className="w-1 h-1 rounded-full bg-red-500" />
+        <div className="w-1 h-1 rounded-full bg-yellow-500" />
+        <div className="w-1 h-1 rounded-full bg-green-500" />
+      </div>
+      <div className="h-full overflow-y-auto bg-white text-black font-sans no-scrollbar">
+        <nav className="p-3 border-b flex justify-between items-center bg-white/90 backdrop-blur-md sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 bg-[#c7c42a] rounded flex items-center justify-center text-white font-bold text-[8px]">
+              {(data.businessName || 'B')[0]}
+            </div>
+            <span className="font-bold text-[8px] truncate max-w-[80px]">{data.businessName || 'Business'}</span>
+          </div>
+          <div className="w-6 h-1 bg-gray-100 rounded" />
+        </nav>
+        <section className="py-10 px-4 text-center space-y-3" style={{ backgroundColor: data.primaryColor || '#c7c42a' }}>
+          <h1 className="text-xl font-black uppercase tracking-tighter leading-none" style={{ color: data.secondaryColor || '#000' }}>
+            {data.businessName || 'Business Name'}
+          </h1>
+          <p className="text-[8px] font-medium opacity-70" style={{ color: data.secondaryColor || '#000' }}>
+            {data.description || 'Welcome to our platform.'}
+          </p>
+          <button className="px-4 py-1.5 rounded-full font-bold text-[7px] uppercase tracking-widest shadow-lg" style={{ backgroundColor: data.secondaryColor || '#000', color: data.primaryColor || '#c7c42a' }}>
+            Call Us
+          </button>
+        </section>
+        <div className="p-4 grid grid-cols-2 gap-2">
+           {(data.selectedFeatures || []).slice(0, 4).map((f: any, i: number) => (
+              <div key={i} className="p-2 bg-gray-50 rounded-lg border border-gray-100 text-center">
+                 <div className="text-[7px] font-black uppercase truncate">{f}</div>
+              </div>
+           ))}
+        </div>
+        <footer className="py-6 px-4 bg-gray-900 text-white text-[7px] text-center uppercase tracking-widest opacity-50">
+           © 2024 {data.businessName || 'Business'}
+        </footer>
+      </div>
+    </div>
+  );
+};
 
 import { ADMIN_EMAIL } from '../constants';
 
@@ -73,7 +124,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [showProjectDetailModal, setShowProjectDetailModal] = useState(false);
   const [editingProjectDetails, setEditingProjectDetails] = useState<Project | null>(null);
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
-  const [modalTab, setModalTab] = useState<'overview' | 'inputs'>('overview');
+  const [modalTab, setModalTab] = useState<'overview' | 'preview'>('overview');
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [reasonToShow, setReasonToShow] = useState('');
   const [projectSearch, setProjectSearch] = useState('');
@@ -797,7 +849,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
         <h2 className="text-6xl font-bold tracking-tighter text-white">USER METRICS</h2>
       </div>
 
-      <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+      <div className="bg-black/40 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
         <div className="flex justify-between items-center mb-12">
           <div>
             <h3 className="text-2xl font-bold text-white tracking-tight">Platform Engagement</h3>
@@ -882,7 +934,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
         </div>
 
         {/* Projects Table */}
-        <div className="bg-[#5E7162]/30 backdrop-blur-md rounded-[3rem] border border-white/10 overflow-hidden">
+        <div className="bg-white/5 backdrop-blur-md rounded-[3rem] border border-white/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -1396,7 +1448,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
           {/* Left Column */}
           <div className="space-y-12">
             {/* Pricing Section */}
-            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+            <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <TrendingUp size={24} />
@@ -1444,7 +1496,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             </div>
 
             {/* Required Fields */}
-            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+            <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <FileText size={24} />
@@ -1472,7 +1524,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
           {/* Right Column */}
           <div className="space-y-12">
             {/* Global Switches */}
-            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+            <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <Settings size={24} />
@@ -1508,7 +1560,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             </div>
 
             {/* Notifications */}
-            <div className="bg-[#5E7162]/30 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+            <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
                   <Bell size={24} />
@@ -1798,7 +1850,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xl bg-[#4A5D4E] h-full shadow-2xl flex flex-col border-l border-white/5"
+              className="bg-black/95 backdrop-blur-2xl border-l border-white/10 shadow-2xl rounded-l-[3rem] flex flex-col relative w-full max-w-xl h-full"
             >
               <div className="p-10 border-b border-white/5 flex justify-between items-center">
                 <div>
@@ -1902,21 +1954,46 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   <button 
                     onClick={() => {
                       const details = `
+WEBBYLAUNCH PROJECT DETAILS
+===========================
 Project: ${viewingProject.businessName}
-Client: ${viewingProject.userName}
-Email: ${viewingProject.userEmail}
-Phone: ${viewingProject.userPhone || 'N/A'}
-Type: ${viewingProject.businessType}
-Plan: ${viewingProject.plan || 'N/A'}
 Status: ${viewingProject.status}
-Description: ${viewingProject.description}
-Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingProject.domain || 'N/A'}
+Plan: ${viewingProject.plan || 'N/A'}
+Price: ${viewingProject.plan === 'basic' ? '₹1,499/-' : viewingProject.plan === 'standard' ? '₹3,499/-' : '₹9,999/-'}
+
+CLIENT DETAILS
+--------------
+Client Name: ${viewingProject.userName}
+Client Email: ${viewingProject.userEmail}
+Client Phone: ${viewingProject.userPhone || 'N/A'}
+
+BUSINESS DETAILS
+----------------
+Business Name: ${viewingProject.businessName}
+Business Type: ${viewingProject.businessType}
+Business Phone: ${viewingProject.businessPhone || 'N/A'}
+Business Email: ${viewingProject.businessEmail || 'N/A'}
+Location: ${viewingProject.businessLocation || 'N/A'}
+Address: ${viewingProject.addressLine || 'N/A'}
+GST: ${viewingProject.gstNumber || 'Not provided'}
+
+DESIGN & FEATURES
+-----------------
+Primary Color: ${viewingProject.primaryColor}
+Secondary Color: ${viewingProject.secondaryColor}
+Domain Requested: ${viewingProject.domain || viewingProject.domainPreferences?.join(', ') || 'N/A'}
+
+SELECTED FEATURES:
+${(viewingProject.selectedFeatures || []).map((f: string) => `- ${f}`).join('\n') || 'None selected'}
+
+DESCRIPTION:
+${viewingProject.description}
                       `;
                       const blob = new Blob([details], { type: 'text/plain' });
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement('a');
                       link.href = url;
-                      link.download = `${viewingProject.businessName}_details.txt`;
+                      link.download = `${viewingProject.businessName}_full_details.txt`;
                       link.click();
                       toast.success('Project details downloaded');
                     }}
@@ -1924,8 +2001,49 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                     title="Download All Details"
                   >
                     <Download size={20} />
-                    <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Download Details</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Details</span>
                   </button>
+
+                  <button 
+                    onClick={() => {
+                      const prompt = `
+Build me a fully responsive website for my ${viewingProject.businessType} business.
+
+Features required:
+${(viewingProject.selectedFeatures || []).join(', ')}
+
+Business Details:
+- Business Name: ${viewingProject.businessName}
+- Phone: ${viewingProject.userPhone || viewingProject.businessPhone}
+- Email: ${viewingProject.userEmail || viewingProject.businessEmail}
+- Address: ${viewingProject.addressLine || 'Not provided'}
+- GST: ${viewingProject.gstNumber || 'Not provided'}
+
+Requirements:
+- Responsive on all devices
+- Modern UI (Colors: ${viewingProject.primaryColor}, ${viewingProject.secondaryColor})
+- Fast loading
+- SEO friendly
+${(viewingProject.selectedFeatures || []).includes('Booking System') ? '- Booking system integration required' : ''}
+${(viewingProject.selectedFeatures || []).includes('Google Login System') ? '- Google login integration required' : ''}
+
+Make it highly professional and better than basic templates.
+                      `;
+                      const blob = new Blob([prompt], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `${viewingProject.businessName}_ai_prompt.txt`;
+                      link.click();
+                      toast.success('AI Prompt downloaded');
+                    }}
+                    className="p-4 bg-[#00F2FF] text-black rounded-full hover:scale-110 transition-all flex items-center gap-2"
+                    title="Download AI Prompt"
+                  >
+                    <ExternalLink size={20} />
+                    <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">AI Prompt</span>
+                  </button>
+
                   <button onClick={() => setShowProjectDetailModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
                     <X size={24} />
                   </button>
@@ -1941,10 +2059,10 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                   Overview
                 </button>
                 <button 
-                  onClick={() => setModalTab('inputs')}
-                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'inputs' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
+                  onClick={() => setModalTab('preview')}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'preview' ? 'bg-[#FACC15] text-black' : 'text-white/40 hover:text-white'}`}
                 >
-                  User Inputs
+                  Preview
                 </button>
               </div>
 
@@ -2049,6 +2167,18 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                     </section>
 
                     <section>
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Selected Features</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(viewingProject.selectedFeatures || []).map((feature: string, i: number) => (
+                           <div key={i} className="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-3">
+                              <Check size={12} className="text-[#FACC15]" />
+                              <span className="text-[10px] font-bold text-white uppercase tracking-wider">{feature}</span>
+                           </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Internal Notes</h4>
                       <div className="bg-[#FACC15]/5 p-6 rounded-3xl border border-[#FACC15]/10">
                         <p className="text-xs font-medium text-[#FACC15]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
@@ -2075,68 +2205,37 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
                   </div>
                 </div>
               ) : (
-                <div className="space-y-12">
-                  <section>
-                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">Personal Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">User Name</span>
-                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.userName}</span>
-                      </div>
-                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">User Phone</span>
-                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.userPhone || 'Not Provided'}</span>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">Business Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Name</span>
-                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.businessName}</span>
-                      </div>
-                      <div className="bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Phone</span>
-                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.businessPhone || viewingProject.businessNumber || 'Not Provided'}</span>
-                      </div>
-                      <div className="md:col-span-2 bg-black/30 p-8 rounded-3xl border border-white/5 flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Business Address (Location)</span>
-                        <span className="text-2xl font-black text-white uppercase italic tracking-tighter">{viewingProject.businessLocation || 'Not Provided'}</span>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">Domain Preferences</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {[0, 1, 2].map((idx) => (
-                        <div 
-                          key={idx} 
-                          className={`p-8 rounded-3xl border transition-all flex flex-col gap-2 ${
-                            idx === 0 
-                              ? 'bg-[#FACC15]/10 border-[#FACC15]/30 shadow-[0_0_30px_rgba(250,204,21,0.1)]' 
-                              : 'bg-black/30 border-white/5'
-                          }`}
+                <div className="space-y-8 animate-in fade-in zoom-in duration-500">
+                  <div className="flex justify-between items-center mb-8">
+                     <div>
+                        <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-1 italic">Visual Mockup</h4>
+                        <p className="text-2xl font-black text-white italic tracking-tighter">WEBSITE PREVIEW</p>
+                     </div>
+                     <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/5">
+                        <button 
+                          onClick={() => setPreviewDevice('desktop')}
+                          className={`p-3 rounded-xl transition-all ${previewDevice === 'desktop' ? 'bg-[#FACC15] text-black' : 'text-white/40'}`}
                         >
-                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                            {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
-                          </div>
-                          <div className={`text-xl font-black uppercase italic tracking-tighter ${idx === 0 ? 'text-[#FACC15]' : 'text-white'}`}>
-                            {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-[10px] font-black text-[#FACC15] uppercase tracking-[0.4em] mb-6 italic">User Description</h4>
-                    <div className="bg-black/30 p-8 rounded-3xl border border-white/5">
-                      <p className="text-sm font-medium text-white/70 leading-relaxed italic">{viewingProject.description}</p>
-                    </div>
-                  </section>
+                          <Monitor size={16} />
+                        </button>
+                        <button 
+                          onClick={() => setPreviewDevice('tablet')}
+                          className={`p-3 rounded-xl transition-all ${previewDevice === 'tablet' ? 'bg-[#FACC15] text-black' : 'text-white/40'}`}
+                        >
+                          <Tablet size={16} />
+                        </button>
+                        <button 
+                          onClick={() => setPreviewDevice('mobile')}
+                          className={`p-3 rounded-xl transition-all ${previewDevice === 'mobile' ? 'bg-[#FACC15] text-black' : 'text-white/40'}`}
+                        >
+                          <Smartphone size={16} />
+                        </button>
+                     </div>
+                  </div>
+                  
+                  <div className="min-h-[600px] flex items-center justify-center bg-black/40 rounded-[3rem] border border-white/5 p-12 border-dashed">
+                    <WebsitePreview data={viewingProject} device={previewDevice} />
+                  </div>
                 </div>
               )}
               
@@ -2330,7 +2429,7 @@ Domain Preferences: ${viewingProject.domainPreferences?.join(', ') || viewingPro
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-md w-full shadow-2xl border border-red-500/20"
+              className="relative bg-black border-white/10 shadow-2xl rounded-[3rem] p-12 max-w-md w-full border border-red-500/20"
             >
               <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
                 <X size={40} className="text-red-500" strokeWidth={3} />

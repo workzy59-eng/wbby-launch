@@ -213,6 +213,7 @@ export interface Project {
   logoUrl?: string;
   documentsUrl?: string;
   referenceWebsite?: string;
+  selectedFeatures?: string[];
   templateId: string;
   domain?: string;
   domainPreferences?: string[];
