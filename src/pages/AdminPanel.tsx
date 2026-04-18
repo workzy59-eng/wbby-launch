@@ -58,7 +58,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
     <div className={`bg-white rounded-t-2xl border-x-4 border-t-4 border-gray-800 transition-all duration-500 overflow-hidden shadow-2xl relative ${containerClasses[device]}`}>
       <div className="h-4 bg-gray-800 flex items-center justify-center gap-1 sticky top-0 z-20">
         <div className="w-1 h-1 rounded-full bg-red-500" />
-        <div className="w-1 h-1 rounded-full bg-yellow-500" />
+        <div className="w-1 h-1 rounded-full bg-#c7c42a" />
         <div className="w-1 h-1 rounded-full bg-green-500" />
       </div>
       <div className="h-full overflow-y-auto bg-white text-black font-sans no-scrollbar">
@@ -491,18 +491,18 @@ Generated on: ${new Date().toLocaleString()}
   const renderDashboard = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Overview</span>
+        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Overview</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#FACC15]' },
-          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#FACC15]' },
-          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#FACC15]' },
-          { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#FACC15]' },
+          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#c7c42a]' },
+          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#c7c42a]' },
+          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]' },
+          { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#c7c42a]' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all">
+          <div key={i} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all">
             <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
               <stat.icon size={24} className={stat.color} />
             </div>
@@ -516,14 +516,14 @@ Generated on: ${new Date().toLocaleString()}
         <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">Recent Activity</h3>
-            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">Live Feed</span>
+            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Live Feed</span>
           </div>
           <div className="space-y-4">
             {projects.slice(0, 5).map((p, i) => (
               <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#FACC15]/10 flex items-center justify-center">
-                    <FileText size={16} className="text-[#FACC15]" />
+                  <div className="w-10 h-10 rounded-full bg-[#c7c42a]/10 flex items-center justify-center">
+                    <FileText size={16} className="text-[#c7c42a]" />
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">{p.businessName}</div>
@@ -539,7 +539,7 @@ Generated on: ${new Date().toLocaleString()}
         <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-white">System Health</h3>
-            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">Stable</span>
+            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Stable</span>
           </div>
           <div className="space-y-6">
             {[
@@ -556,7 +556,7 @@ Generated on: ${new Date().toLocaleString()}
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${item.value}%` }}
-                    className="h-full bg-[#FACC15]"
+                    className="h-full bg-[#c7c42a]"
                   />
                 </div>
               </div>
@@ -570,19 +570,19 @@ Generated on: ${new Date().toLocaleString()}
   const renderRequests = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Incoming</span>
+        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Incoming</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">PROJECT REQUESTS</h2>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => (p.status === 'Waiting for Review' || p.status === 'Rejected') && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#FACC15]/30 transition-all">
+          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#c7c42a]/30 transition-all">
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-widest">{p.businessType}</div>
+                    <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">{p.businessType}</div>
                     <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black text-white/60 uppercase tracking-widest border border-white/5">
                       Template: {p.templateId}
                     </div>
@@ -599,7 +599,7 @@ Generated on: ${new Date().toLocaleString()}
                       className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${
                         p.paymentStatus === 'paid' 
                           ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                          : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                          : 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
                       }`}
                     >
                       Payment: {p.paymentStatus || 'pending'}
@@ -610,7 +610,7 @@ Generated on: ${new Date().toLocaleString()}
                     <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
                       p.status === 'Rejected' 
                         ? 'bg-red-500/20 text-red-400 border-red-500/30' 
-                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        : 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
                     }`}>
                       Status: {p.status}
                     </div>
@@ -633,7 +633,7 @@ Generated on: ${new Date().toLocaleString()}
               <div className="flex gap-2">
                 <button 
                   onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
-                  className="p-4 bg-white/5 rounded-full text-[#FACC15] hover:bg-[#FACC15] hover:text-black transition-all"
+                  className="p-4 bg-white/5 rounded-full text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all"
                   title="View Details"
                 >
                   <ArrowRight size={20} />
@@ -644,7 +644,7 @@ Generated on: ${new Date().toLocaleString()}
             <div className="flex gap-3">
               <button 
                 onClick={() => handleAccept(p.id)}
-                className="flex-1 bg-[#FACC15] text-black py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
+                className="flex-1 bg-[#c7c42a] text-black py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
               >
                 Accept Project
               </button>
@@ -669,14 +669,14 @@ Generated on: ${new Date().toLocaleString()}
   const renderActiveProjects = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">In Progress</span>
+        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">In Progress</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Active Operations</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status) && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#FACC15]/30 transition-all relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#FACC15]/5 rounded-full blur-3xl"></div>
+          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl"></div>
             
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
@@ -688,14 +688,14 @@ Generated on: ${new Date().toLocaleString()}
                     className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${
                       p.paymentStatus === 'paid' 
                         ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        : 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
                     }`}
                   >
                     {p.paymentStatus || 'pending'}
                   </button>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="px-3 py-1 bg-[#FACC15]/10 rounded-full text-[8px] font-black text-[#FACC15] uppercase tracking-widest border border-[#FACC15]/20">
+                  <div className="px-3 py-1 bg-[#c7c42a]/10 rounded-full text-[8px] font-black text-[#c7c42a] uppercase tracking-widest border border-[#c7c42a]/20">
                     {p.status}
                   </div>
                   <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest">
@@ -706,14 +706,14 @@ Generated on: ${new Date().toLocaleString()}
               <div className="flex gap-2">
                 <button 
                   onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
-                  className="p-4 bg-white/5 rounded-full text-[#FACC15] hover:bg-[#FACC15] hover:text-black transition-all shadow-lg"
+                  className="p-4 bg-white/5 rounded-full text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all shadow-lg"
                   title="View Details"
                 >
                   <ArrowRight size={20} />
                 </button>
                 <button 
                   onClick={() => { setSelectedProject(p); setShowChat(true); }}
-                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#FACC15] hover:text-black transition-all shadow-lg"
+                  className="p-4 bg-white/5 rounded-full text-white hover:bg-[#c7c42a] hover:text-black transition-all shadow-lg"
                   title="Project Chat"
                 >
                   <MessageCircle size={20} />
@@ -724,13 +724,13 @@ Generated on: ${new Date().toLocaleString()}
             <div className="mb-10 relative z-10">
               <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-3">
                 <span>Current Progress</span>
-                <span className="text-[#FACC15]">{p.progress}%</span>
+                <span className="text-[#c7c42a]">{p.progress}%</span>
               </div>
               <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${p.progress}%` }}
-                  className="h-full bg-[#FACC15] rounded-full shadow-[0_0_10px_rgba(250,204,21,0.3)]" 
+                  className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_10px_rgba(199, 196, 42,0.3)]" 
                 />
               </div>
             </div>
@@ -788,12 +788,12 @@ Generated on: ${new Date().toLocaleString()}
       <div className="space-y-12">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">CRM</span>
+            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">CRM</span>
             <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Client Base</h2>
           </div>
           <button 
             onClick={downloadClientsCSV}
-            className="px-8 py-4 bg-[#FACC15] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(250,204,21,0.2)]"
+            className="px-8 py-4 bg-[#c7c42a] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(199, 196, 42,0.2)]"
           >
             <Download size={18} />
             Export CSV
@@ -847,9 +847,20 @@ Generated on: ${new Date().toLocaleString()}
                       </span>
                     </td>
                     <td className="p-8 text-right">
-                      <button 
-                        onClick={() => {
-                          const details = `
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => {
+                            setSelectedUser(c);
+                            setShowDirectChat(true);
+                          }}
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#c7c42a] hover:text-black transition-all"
+                          title="Message Client"
+                        >
+                          <MessageCircle size={16} />
+                        </button>
+                        <button 
+                          onClick={() => {
+                            const details = `
 Client Name: ${c.displayName}
 Email: ${c.email}
 Phone: ${c.phone || 'N/A'}
@@ -867,11 +878,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           URL.revokeObjectURL(url);
                           toast.success('Client details downloaded');
                         }}
-                        className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#FACC15] hover:text-black transition-all"
+                        className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#c7c42a] hover:text-black transition-all"
+                        title="Download Client Info"
                       >
                         <Download size={16} />
                       </button>
-                    </td>
+                    </div>
+                  </td>
                   </tr>
                 ))}
               </tbody>
@@ -885,7 +898,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderAnalytics = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Data</span>
+        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Data</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">USER METRICS</h2>
       </div>
 
@@ -895,7 +908,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             <h3 className="text-2xl font-bold text-white tracking-tight">Platform Engagement</h3>
             <p className="text-xs text-white/40 uppercase tracking-widest mt-1">Users Visited Per Day</p>
           </div>
-          <div className="text-[10px] font-bold text-[#FACC15] border border-[#FACC15]/20 px-4 py-2 rounded-full uppercase tracking-widest">Last 7 Days</div>
+          <div className="text-[10px] font-bold text-[#c7c42a] border border-[#c7c42a]/20 px-4 py-2 rounded-full uppercase tracking-widest">Last 7 Days</div>
         </div>
         <div className="h-80 flex items-end justify-between gap-4">
           {[40, 60, 30, 80, 50, 90, 70].map((h, i) => (
@@ -903,9 +916,9 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <motion.div 
                 initial={{ height: 0 }}
                 animate={{ height: `${h}%` }}
-                className="w-full bg-[#FACC15] rounded-t-2xl absolute bottom-0 transition-all group-hover:brightness-125"
+                className="w-full bg-[#c7c42a] rounded-t-2xl absolute bottom-0 transition-all group-hover:brightness-125"
               />
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all text-[10px] font-bold text-[#FACC15] tabular-nums">
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all text-[10px] font-bold text-[#c7c42a] tabular-nums">
                 {h * 10}
               </div>
             </div>
@@ -930,12 +943,12 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       <div className="space-y-12">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Management</span>
+            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Management</span>
             <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Project Details</h2>
           </div>
           <button 
             onClick={() => { setEditingProjectDetails(null); setShowProjectModal(true); }}
-            className="px-8 py-4 bg-[#FACC15] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(250,204,21,0.2)]"
+            className="px-8 py-4 bg-[#c7c42a] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(199,196,42,0.2)]"
           >
             <Plus size={18} />
             Add New Project
@@ -951,7 +964,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               placeholder="Search by project or user name..."
               value={projectSearch}
               onChange={(e) => setProjectSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-white font-bold uppercase tracking-widest outline-none focus:border-[#FACC15]/50 transition-all placeholder:text-white/10"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-white font-bold uppercase tracking-widest outline-none focus:border-[#c7c42a]/50 transition-all placeholder:text-white/10"
             />
           </div>
           <div className="relative">
@@ -959,7 +972,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             <select 
               value={projectStatusFilter}
               onChange={(e) => setProjectStatusFilter(e.target.value as any)}
-              className="appearance-none bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-12 text-white font-bold uppercase tracking-widest outline-none focus:border-[#FACC15]/50 transition-all"
+              className="appearance-none bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-12 text-white font-bold uppercase tracking-widest outline-none focus:border-[#c7c42a]/50 transition-all"
             >
               <option value="all">All Status</option>
               <option value="Waiting for Review">Waiting for Review</option>
@@ -1001,7 +1014,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                         p.status === 'Completed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
                         p.status === 'Development Started' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
                         p.status === 'Rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                        'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
                       }`}>
                         {p.status}
                       </div>
@@ -1015,7 +1028,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <td className="p-8">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-white uppercase italic tracking-tighter">{p.businessType}</span>
-                        <span className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest mt-1">{p.plan || 'N/A'}</span>
+                        <span className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest mt-1">{p.plan || 'N/A'}</span>
                       </div>
                     </td>
                     <td className="p-8">
@@ -1024,7 +1037,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           <Calendar size={10} />
                           <span>Start: {p.startDate ? new Date(p.startDate as any).toLocaleDateString() : 'N/A'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-[8px] font-bold text-[#FACC15] uppercase tracking-widest">
+                        <div className="flex items-center gap-2 text-[8px] font-bold text-[#c7c42a] uppercase tracking-widest">
                           <Clock size={10} />
                           <span>End: {p.deadline ? new Date(p.deadline as any).toLocaleDateString() : 'N/A'}</span>
                         </div>
@@ -1033,15 +1046,30 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <td className="p-8 text-right">
                       <div className="flex justify-end gap-2">
                         <button 
+                          onClick={() => {
+                            const client = users.find(u => u.uid === p.userId);
+                            if (client) {
+                              setSelectedUser(client);
+                              setShowDirectChat(true);
+                            } else {
+                              toast.error('Client profile not found');
+                            }
+                          }}
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#c7c42a] hover:text-black transition-all"
+                          title="Message Client"
+                        >
+                          <MessageCircle size={16} />
+                        </button>
+                        <button 
                           onClick={() => { setViewingProject(p); setModalTab('overview'); setShowProjectDetailModal(true); }}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#FACC15] hover:text-black transition-all"
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#c7c42a] hover:text-black transition-all"
                           title="View Details"
                         >
                           <ArrowRight size={16} />
                         </button>
                         <button 
                           onClick={() => { setEditingProjectDetails(p); setShowProjectModal(true); }}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#FACC15] hover:text-black transition-all"
+                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-[#c7c42a] hover:text-black transition-all"
                           title="Edit Project"
                         >
                           <Edit2 size={16} />
@@ -1075,13 +1103,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderRecycleBin = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Archive</span>
+        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Archive</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white">RECYCLE BIN</h2>
       </div>
 
       <div className="space-y-4">
         {projects.filter(p => p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#FACC15]/30 transition-all">
+          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#c7c42a]/30 transition-all">
             <div>
               <h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.businessName}</h3>
               <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deleted Project • {p.businessType}</div>
@@ -1132,9 +1160,9 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
     });
 
     return (
-      <div className="h-full flex flex-col bg-[#0B141A] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
+      <div className="h-full flex flex-col bg-[transparent] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
         {/* Chat Header */}
-        <div className="p-6 flex items-center justify-between bg-[#202C33]">
+        <div className="p-6 flex items-center justify-between bg-[rgba(255,255,255,0.05)]">
           <h2 className="text-2xl font-bold text-[#E9EDEF]">Chats</h2>
           <div className="flex items-center gap-6 text-[#8696A0]">
             <MoreVertical className="cursor-pointer hover:text-white transition-colors" size={24} />
@@ -1148,7 +1176,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             <input 
               type="text"
               placeholder="Search or start a new chat"
-              className="w-full bg-[#202C33] border-none rounded-xl py-2 pl-12 pr-4 text-sm text-[#E9EDEF] outline-none focus:ring-1 focus:ring-[#00A884] transition-all placeholder:text-[#8696A0]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border-none rounded-xl py-2 pl-12 pr-4 text-sm text-[#E9EDEF] outline-none focus:ring-1 focus:ring-[#c7c42a] transition-all placeholder:text-[#8696A0]"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
             />
@@ -1167,8 +1195,8 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               onClick={() => setMessageFilter(f.id as any)}
               className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 messageFilter === f.id 
-                  ? 'bg-[#00A884]/20 text-[#00A884]' 
-                  : 'bg-[#202C33] text-[#8696A0] hover:bg-[#2A3942]'
+                  ? 'bg-[#c7c42a]/20 text-[#c7c42a]' 
+                  : 'bg-[rgba(255,255,255,0.05)] text-[#8696A0] hover:bg-[#2A3942]'
               }`}
             >
               {f.label}
@@ -1177,7 +1205,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
         </div>
 
         {/* Chat List */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#0B141A]">
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-[transparent]">
           {sortedConversations.length > 0 ? (
             sortedConversations.map((conv) => {
               const otherParticipantId = conv.participants.find((id: string) => id !== user.uid);
@@ -1212,7 +1240,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderLeads = () => (
     <div className="space-y-12">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Sales</span>
+        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Sales</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Global Leads</h2>
       </div>
 
@@ -1291,19 +1319,19 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
     <div className="space-y-12">
       <div className="flex justify-between items-end">
         <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Recruitment</span>
+          <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Recruitment</span>
           <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Applications</h2>
         </div>
         <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
           <button 
             onClick={() => setAppTab('developer')}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'developer' ? 'bg-[#FACC15] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'developer' ? 'bg-[#c7c42a] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
             Developers
           </button>
           <button 
             onClick={() => setAppTab('sales')}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'sales' ? 'bg-[#FACC15] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'sales' ? 'bg-[#c7c42a] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
             Sales
           </button>
@@ -1321,7 +1349,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
                 app.status === 'approved' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
                 app.status === 'rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
               }`}>
                 {app.status}
               </span>
@@ -1340,7 +1368,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   </div>
                   <div>
                     <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Portfolio</p>
-                    <a href={app.portfolio} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#FACC15] hover:underline">View Link</a>
+                    <a href={app.portfolio} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#c7c42a] hover:underline">View Link</a>
                   </div>
                   <div>
                     <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Availability</p>
@@ -1376,7 +1404,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="flex gap-4 pt-4">
                 <button 
                   onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_applications' : 'sales_applications', app.id, 'approved')}
-                  className="flex-1 bg-[#FACC15] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
+                  className="flex-1 bg-[#c7c42a] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
                 >
                   Approve
                 </button>
@@ -1478,7 +1506,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   const renderSystem = () => (
     <div className="space-y-12 pb-20">
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Configuration</span>
+        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Configuration</span>
         <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">SYSTEM SETTINGS</h2>
         <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-2 italic">Global platform configuration and pricing management.</p>
       </div>
@@ -1490,7 +1518,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Pricing Section */}
             <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
+                <div className="w-12 h-12 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                   <TrendingUp size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Pricing Configuration</h3>
@@ -1499,36 +1527,36 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Starter Launch Price</label>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FACC15] font-black">$</span>
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a] font-black">$</span>
                     <input 
                       type="number"
                       value={systemSettings.pricing?.starter || 1499}
                       onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, starter: parseInt(e.target.value) } })}
-                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-black text-xl"
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-black text-xl"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Pro Growth Price</label>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FACC15] font-black">$</span>
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a] font-black">$</span>
                     <input 
                       type="number"
                       value={systemSettings.pricing?.pro || 2999}
                       onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, pro: parseInt(e.target.value) } })}
-                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-black text-xl"
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-black text-xl"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Enterprise Price</label>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#FACC15] font-black">$</span>
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a] font-black">$</span>
                     <input 
                       type="number"
                       value={systemSettings.pricing?.enterprise || 9999}
                       onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, enterprise: parseInt(e.target.value) } })}
-                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-black text-xl"
+                      className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-black text-xl"
                     />
                   </div>
                 </div>
@@ -1538,7 +1566,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Required Fields */}
             <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
+                <div className="w-12 h-12 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                   <FileText size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Registration Fields</h3>
@@ -1551,7 +1579,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       onClick={() => handleUpdateSettings({
                         requiredFields: { ...systemSettings.requiredFields, [field as keyof SystemSettings['requiredFields']]: !isRequired }
                       })}
-                      className={`w-12 h-6 rounded-full transition-all relative ${isRequired ? 'bg-[#FACC15]' : 'bg-white/10'}`}
+                      className={`w-12 h-6 rounded-full transition-all relative ${isRequired ? 'bg-[#c7c42a]' : 'bg-white/10'}`}
                     >
                       <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${isRequired ? 'right-1' : 'left-1'}`} />
                     </button>
@@ -1566,7 +1594,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Global Switches */}
             <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
+                <div className="w-12 h-12 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                   <Settings size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Platform Controls</h3>
@@ -1591,7 +1619,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   </div>
                   <button 
                     onClick={() => handleUpdateSettings({ allowNewRegistrations: !systemSettings.allowNewRegistrations })}
-                    className={`w-14 h-7 rounded-full transition-all relative ${systemSettings.allowNewRegistrations ? 'bg-[#FACC15]' : 'bg-white/10'}`}
+                    className={`w-14 h-7 rounded-full transition-all relative ${systemSettings.allowNewRegistrations ? 'bg-[#c7c42a]' : 'bg-white/10'}`}
                   >
                     <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all ${systemSettings.allowNewRegistrations ? 'right-1' : 'left-1'}`} />
                   </button>
@@ -1602,7 +1630,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {/* Notifications */}
             <div className="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-[#FACC15]/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
+                <div className="w-12 h-12 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                   <Bell size={24} />
                 </div>
                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase italic">Admin Notifications</h3>
@@ -1615,7 +1643,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       onClick={() => handleUpdateSettings({
                         notifications: { ...systemSettings.notifications, [key as keyof SystemSettings['notifications']]: !enabled }
                       })}
-                      className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#FACC15]' : 'bg-white/10'}`}
+                      className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#c7c42a]' : 'bg-white/10'}`}
                     >
                       <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${enabled ? 'right-1' : 'left-1'}`} />
                     </button>
@@ -1647,18 +1675,18 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
   );
 
   return (
-    <div className="min-h-screen bg-black font-sans flex flex-col md:flex-row text-white selection:bg-[#FACC15] selection:text-black">
+    <div className="min-h-screen bg-black font-sans flex flex-col md:flex-row text-white selection:bg-[#c7c42a] selection:text-black">
       {/* Sidebar */}
       <aside className="w-full md:w-80 bg-black border-r border-white/5 flex flex-col sticky top-0 h-screen z-20">
         <div className="p-10 border-b border-white/5 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="px-2 py-0.5 bg-[#FACC15] rounded flex items-center justify-center">
+              <div className="px-2 py-0.5 bg-[#c7c42a] rounded flex items-center justify-center">
                 <span className="text-black font-black text-[8px] tracking-tighter">{HYPHENATED_NAME}</span>
               </div>
               <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
             </div>
-            <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
+            <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
           </div>
         </div>
         <nav className="flex-1 p-6 space-y-3">
@@ -1681,7 +1709,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               onClick={() => setActiveTab(item.id as any)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${
                 activeTab === item.id 
-                  ? 'bg-[#FACC15] text-black shadow-[0_0_30px_rgba(250,204,21,0.2)]' 
+                  ? 'bg-[#c7c42a] text-black shadow-[0_0_30px_rgba(199, 196, 42,0.2)]' 
                   : 'text-white/40 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -1729,7 +1757,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {activeTab === 'meetings' && (
               <div className="space-y-12">
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.3em]">Scheduling</span>
+                  <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Scheduling</span>
                   <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Meeting Manager</h2>
                 </div>
                 <MeetingList user={user} profile={profile!} allClients={users.filter(u => u.role === 'client')} />
@@ -1810,13 +1838,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <h3 className="text-4xl font-bold tracking-tighter text-white mb-2">Reject Project</h3>
               <p className="text-white/40 text-sm font-bold uppercase tracking-widest mb-8">Specify Reason</p>
               <textarea 
-                className="w-full p-6 rounded-3xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 h-40 mb-8 resize-none placeholder:text-white/20"
+                className="w-full p-6 rounded-3xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 h-40 mb-8 resize-none placeholder:text-white/20"
                 placeholder="Reason for rejection..."
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
               />
               <div className="flex flex-col gap-4">
-                <button onClick={handleReject} className="w-full bg-[#FACC15] text-black py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <button onClick={handleReject} className="w-full bg-[#c7c42a] text-black py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
                   Confirm Rejection
                 </button>
                 <button onClick={() => setShowRejectModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -1854,7 +1882,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   min="0"
                   max="100"
                   step="5"
-                  className="w-full h-2 bg-black/20 rounded-full appearance-none cursor-pointer accent-[#FACC15]"
+                  className="w-full h-2 bg-black/20 rounded-full appearance-none cursor-pointer accent-[#c7c42a]"
                   value={newProgress}
                   onChange={(e) => setNewProgress(parseInt(e.target.value))}
                 />
@@ -1862,7 +1890,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               </div>
 
               <div className="flex flex-col gap-4">
-                <button onClick={handleUpdateProgress} className="w-full bg-[#FACC15] text-black py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <button onClick={handleUpdateProgress} className="w-full bg-[#c7c42a] text-black py-5 rounded-full font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
                   Save Progress
                 </button>
                 <button onClick={() => setShowProgressModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -1895,7 +1923,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="p-10 border-b border-white/5 flex justify-between items-center">
                 <div>
                   <h2 className="text-4xl font-bold tracking-tighter text-white">PROJECT CHAT</h2>
-                  <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">{selectedProject.businessName}</div>
+                  <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">{selectedProject.businessName}</div>
                 </div>
                 <button onClick={() => setShowChat(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
                   <X size={24} />
@@ -1936,7 +1964,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5 backdrop-blur-md">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FACC15] to-yellow-600 flex items-center justify-center text-black font-black text-lg">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#c7c42a] to-#c7c42a flex items-center justify-center text-black font-black text-lg">
                       {selectedUser.displayName?.[0] || 'U'}
                     </div>
                     <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#0F172A] rounded-full ${
@@ -1988,7 +2016,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="flex justify-between items-start mb-10">
                 <div>
                   <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{viewingProject.businessName}</h3>
-                  <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">Project Details</div>
+                  <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">Project Details</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <button 
@@ -2037,7 +2065,7 @@ ${viewingProject.description}
                       link.click();
                       toast.success('Project details downloaded');
                     }}
-                    className="p-4 bg-[#FACC15] text-black rounded-full hover:scale-110 transition-all flex items-center gap-2"
+                    className="p-4 bg-[#c7c42a] text-black rounded-full hover:scale-110 transition-all flex items-center gap-2"
                     title="Download All Details"
                   >
                     <Download size={20} />
@@ -2143,7 +2171,7 @@ ${viewingProject.description}
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span>
-                          <span className="text-xs font-bold text-[#FACC15] uppercase">{viewingProject.plan || 'N/A'}</span>
+                          <span className="text-xs font-bold text-[#c7c42a] uppercase">{viewingProject.plan || 'N/A'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Status</span>
@@ -2158,13 +2186,13 @@ ${viewingProject.description}
 
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Preferences</h4>
-                      <div className="bg-[#FACC15]/5 p-6 rounded-3xl border border-[#FACC15]/10 space-y-3">
+                      <div className="bg-[#c7c42a]/5 p-6 rounded-3xl border border-[#c7c42a]/10 space-y-3">
                         {[0, 1, 2].map((idx) => (
                           <div key={idx} className="flex justify-between items-center">
                             <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
                               {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
                             </span>
-                            <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#FACC15]' : 'text-white/60'}`}>
+                            <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#c7c42a]' : 'text-white/60'}`}>
                               {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
                             </span>
                           </div>
@@ -2218,7 +2246,7 @@ ${viewingProject.description}
                       <div className="grid grid-cols-2 gap-3">
                         {(viewingProject.selectedFeatures || []).map((feature: string, i: number) => (
                            <div key={i} className="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-3">
-                              <Check size={12} className="text-[#FACC15]" />
+                              <Check size={12} className="text-[#c7c42a]" />
                               <span className="text-[10px] font-bold text-white uppercase tracking-wider">{feature}</span>
                            </div>
                         ))}
@@ -2227,8 +2255,8 @@ ${viewingProject.description}
 
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Internal Notes</h4>
-                      <div className="bg-[#FACC15]/5 p-6 rounded-3xl border border-[#FACC15]/10">
-                        <p className="text-xs font-medium text-[#FACC15]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
+                      <div className="bg-[#c7c42a]/5 p-6 rounded-3xl border border-[#c7c42a]/10">
+                        <p className="text-xs font-medium text-[#c7c42a]/70 leading-relaxed italic">{viewingProject.internalNotes || 'No internal notes added.'}</p>
                       </div>
                     </section>
 
@@ -2237,7 +2265,7 @@ ${viewingProject.description}
                       <div className="grid grid-cols-2 gap-4">
                         {viewingProject.logoUrl && (
                           <a href={viewingProject.logoUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
-                            <FileText size={24} className="text-[#FACC15]" />
+                            <FileText size={24} className="text-[#c7c42a]" />
                             <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Logo</span>
                           </a>
                         )}
@@ -2261,19 +2289,19 @@ ${viewingProject.description}
                      <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/5">
                         <button 
                           onClick={() => setPreviewDevice('desktop')}
-                          className={`p-3 rounded-xl transition-all ${previewDevice === 'desktop' ? 'bg-[#FACC15] text-black' : 'text-white/40'}`}
+                          className={`p-3 rounded-xl transition-all ${previewDevice === 'desktop' ? 'bg-[#c7c42a] text-black' : 'text-white/40'}`}
                         >
                           <Monitor size={16} />
                         </button>
                         <button 
                           onClick={() => setPreviewDevice('tablet')}
-                          className={`p-3 rounded-xl transition-all ${previewDevice === 'tablet' ? 'bg-[#FACC15] text-black' : 'text-white/40'}`}
+                          className={`p-3 rounded-xl transition-all ${previewDevice === 'tablet' ? 'bg-[#c7c42a] text-black' : 'text-white/40'}`}
                         >
                           <Tablet size={16} />
                         </button>
                         <button 
                           onClick={() => setPreviewDevice('mobile')}
-                          className={`p-3 rounded-xl transition-all ${previewDevice === 'mobile' ? 'bg-[#FACC15] text-black' : 'text-white/40'}`}
+                          className={`p-3 rounded-xl transition-all ${previewDevice === 'mobile' ? 'bg-[#c7c42a] text-black' : 'text-white/40'}`}
                         >
                           <Smartphone size={16} />
                         </button>
@@ -2289,7 +2317,7 @@ ${viewingProject.description}
               <div className="mt-12 pt-10 border-t border-white/5 flex gap-4">
                 <button 
                   onClick={() => { setEditingProjectDetails(viewingProject); setShowProjectDetailModal(false); setShowProjectModal(true); }}
-                  className="flex-1 bg-[#FACC15] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                  className="flex-1 bg-[#c7c42a] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                 >
                   Edit Project
                 </button>
@@ -2325,7 +2353,7 @@ ${viewingProject.description}
               <div className="flex justify-between items-start mb-10">
                 <div>
                   <h3 className="text-5xl font-bold tracking-tighter text-white uppercase italic">{editingProjectDetails ? 'Edit Project' : 'Add New Project'}</h3>
-                  <div className="text-[10px] font-bold text-[#FACC15] uppercase tracking-[0.4em] mt-2">Configuration</div>
+                  <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">Configuration</div>
                 </div>
                 <button onClick={() => setShowProjectModal(false)} className="p-4 hover:bg-white/5 rounded-full text-white transition-all">
                   <X size={24} />
@@ -2345,7 +2373,7 @@ ${viewingProject.description}
                       name="businessName"
                       defaultValue={editingProjectDetails?.businessName}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2354,7 +2382,7 @@ ${viewingProject.description}
                       name="userName"
                       defaultValue={editingProjectDetails?.userName}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2364,7 +2392,7 @@ ${viewingProject.description}
                       type="email"
                       defaultValue={editingProjectDetails?.userEmail}
                       required
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -2374,7 +2402,7 @@ ${viewingProject.description}
                         name="businessType"
                         defaultValue={editingProjectDetails?.businessType}
                         required
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                     <div className="space-y-2">
@@ -2382,7 +2410,7 @@ ${viewingProject.description}
                       <select 
                         name="plan"
                         defaultValue={editingProjectDetails?.plan}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest appearance-none"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest appearance-none"
                       >
                         <option value="Basic">Basic</option>
                         <option value="Standard">Standard</option>
@@ -2400,7 +2428,7 @@ ${viewingProject.description}
                         name="startDate"
                         type="date"
                         defaultValue={editingProjectDetails?.startDate ? new Date(editingProjectDetails.startDate as any).toISOString().split('T')[0] : ''}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                     <div className="space-y-2">
@@ -2409,7 +2437,7 @@ ${viewingProject.description}
                         name="deadline"
                         type="date"
                         defaultValue={editingProjectDetails?.deadline ? new Date(editingProjectDetails.deadline as any).toISOString().split('T')[0] : ''}
-                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest"
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest"
                       />
                     </div>
                   </div>
@@ -2418,7 +2446,7 @@ ${viewingProject.description}
                     <select 
                       name="status"
                       defaultValue={editingProjectDetails?.status}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest appearance-none"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest appearance-none"
                     >
                       <option value="Waiting for Review">Waiting for Review</option>
                       <option value="Under Review">Under Review</option>
@@ -2433,7 +2461,7 @@ ${viewingProject.description}
                     <textarea 
                       name="description"
                       defaultValue={editingProjectDetails?.description}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest h-32 resize-none"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest h-32 resize-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -2441,14 +2469,14 @@ ${viewingProject.description}
                     <textarea 
                       name="internalNotes"
                       defaultValue={editingProjectDetails?.internalNotes}
-                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-[#FACC15] focus:outline-none focus:border-[#FACC15]/50 font-bold uppercase tracking-widest h-32 resize-none placeholder:text-[#FACC15]/20"
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-[#c7c42a] focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest h-32 resize-none placeholder:text-[#c7c42a]/20"
                       placeholder="Admin only notes..."
                     />
                   </div>
                 </div>
 
                 <div className="col-span-full mt-8 flex gap-4">
-                  <button type="submit" className="flex-1 bg-[#FACC15] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl">
+                  <button type="submit" className="flex-1 bg-[#c7c42a] text-black py-5 rounded-full font-black uppercase italic text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl">
                     {editingProjectDetails ? 'Update Project' : 'Create Project'}
                   </button>
                   <button type="button" onClick={() => setShowProjectModal(false)} className="flex-1 bg-white/5 text-white py-5 rounded-full font-black uppercase italic text-sm hover:bg-white/10 transition-all">
@@ -2540,7 +2568,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenCha
       onClick={onOpenChat}
       className={`
         px-4 py-3 flex items-center gap-4 cursor-pointer transition-all border-b border-white/5
-        hover:bg-[#202C33] active:bg-[#2A3942]
+        hover:bg-[rgba(255,255,255,0.05)] active:bg-[#2A3942]
       `}
     >
       <div className="relative shrink-0">
@@ -2552,7 +2580,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenCha
           )}
         </div>
         {u.status === 'online' && (
-          <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 border-2 border-[#0B141A] rounded-full bg-[#00A884]"></div>
+          <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 border-2 border-[transparent] rounded-full bg-[#c7c42a]"></div>
         )}
       </div>
 
@@ -2561,7 +2589,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenCha
           <h3 className="text-[17px] font-medium text-[#E9EDEF] truncate">
             {u.displayName || 'User'}
           </h3>
-          <span className={`text-xs ${msgCount > 0 ? 'text-[#00A884]' : 'text-[#8696A0]'}`}>
+          <span className={`text-xs ${msgCount > 0 ? 'text-[#c7c42a]' : 'text-[#8696A0]'}`}>
             {lastMessage ? formatTime(lastMessage.createdAt) : ''}
           </span>
         </div>
@@ -2569,7 +2597,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenCha
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 min-w-0 flex-1">
             {lastMessage?.senderId === adminId && (
-              <CheckCheck size={16} className={lastMessage.seen ? 'text-[#53BDEB]' : 'text-[#8696A0]'} />
+              <CheckCheck size={16} className={lastMessage.seen ? 'text-[#c7c42a]' : 'text-[#8696A0]'} />
             )}
             {lastMessage?.attachments?.length > 0 && (
               <Camera size={14} className="text-[#8696A0] shrink-0" />
@@ -2580,7 +2608,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenCha
           </div>
           
           {msgCount > 0 && (
-            <div className="bg-[#00A884] text-[#0B141A] text-xs font-bold min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full shrink-0 ml-2">
+            <div className="bg-[#c7c42a] text-[transparent] text-xs font-bold min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full shrink-0 ml-2">
               {msgCount}
             </div>
           )}

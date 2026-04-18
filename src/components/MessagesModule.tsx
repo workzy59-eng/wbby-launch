@@ -451,7 +451,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[#233138] p-1 rounded-xl border border-white/10 shadow-2xl`}
+                    className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[rgba(255,255,255,0.08)] p-1 rounded-xl border border-white/10 shadow-2xl`}
                   >
                     <button 
                       onClick={() => setReplyingTo(m)}
@@ -491,8 +491,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
               <div className={`relative p-3 rounded-2xl text-sm font-medium leading-relaxed shadow-xl ${
                 isMe 
-                  ? 'bg-[#005c4b] text-white rounded-tr-none' 
-                  : 'bg-[#202c33] text-white border border-white/5 rounded-tl-none'
+                  ? 'bg-[#c7c42a] text-black rounded-tr-none' 
+                  : 'bg-[rgba(255,255,255,0.05)] text-white border border-white/5 rounded-tl-none'
               }`}>
                 {m.isDeleted ? (
                   <p className="text-[10px] italic text-white/40 flex items-center gap-2">
@@ -502,7 +502,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 ) : (
                   <>
                     {m.replyTo && (
-                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#c7c42a]' : 'border-yellow-600'}`}>
+                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#c7c42a]' : 'border-#c7c42a'}`}>
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
                           {m.replyTo.senderName}
                         </p>
@@ -621,17 +621,17 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <div className="relative">
                   <div className={`w-14 h-14 rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg ${
                     conv.isProject 
-                      ? 'bg-gradient-to-br from-blue-500 to-yellow-600' 
+                      ? 'bg-gradient-to-br from-blue-500 to-#c7c42a' 
                       : conv.recipientProfile?.displayName === 'SAI ROSHAN'
                         ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]'
-                        : 'bg-gradient-to-br from-[#c7c42a] to-yellow-600'
+                        : 'bg-gradient-to-br from-[#c7c42a] to-#c7c42a'
                   }`}>
                     {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U'))}
                   </div>
                   {!conv.isProject && (
                     <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-[#020617] rounded-full ${
                       conv.recipientProfile?.status === 'online' ? 'bg-green-500' : 
-                      conv.recipientProfile?.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+                      conv.recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
                     }`}></div>
                   )}
                 </div>
@@ -683,7 +683,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   >
                     <ChevronLeft size={24} />
                   </button>
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-yellow-600 flex items-center justify-center text-black font-black text-lg">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-#c7c42a flex items-center justify-center text-black font-black text-lg">
                     <Briefcase size={20} />
                   </div>
                   <div>
@@ -724,13 +724,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center text-black font-black text-lg ${
                     activeConversation.recipientProfile?.displayName === 'SAI ROSHAN'
                       ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]'
-                      : 'bg-gradient-to-br from-[#c7c42a] to-yellow-600'
+                      : 'bg-gradient-to-br from-[#c7c42a] to-#c7c42a'
                   }`}>
                     {activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} /> : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
                   <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#020617] rounded-full ${
                     activeConversation.recipientProfile?.status === 'online' ? 'bg-green-500' : 
-                    activeConversation.recipientProfile?.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+                    activeConversation.recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
                   }`}></div>
                 </div>
                 <div>
@@ -765,7 +765,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </Link>
                 <button 
                   onClick={() => setShowSearch(!showSearch)}
-                  className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#FACC15] text-black' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}
+                  className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#c7c42a] text-black' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}
                 >
                   <Search size={20} />
                 </button>
@@ -786,7 +786,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <input 
                     type="text"
                     placeholder="Search messages..."
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white outline-none focus:border-[#FACC15]/30 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white outline-none focus:border-[#c7c42a]/30 transition-all"
                     value={messageSearchQuery}
                     onChange={(e) => setMessageSearchQuery(e.target.value)}
                     autoFocus
@@ -798,20 +798,20 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             {/* Messages Area */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-[#0b141a] relative"
+              className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
               style={{
                 backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
                 backgroundRepeat: 'repeat',
                 backgroundSize: '400px',
                 backgroundBlendMode: 'overlay',
-                backgroundColor: '#0b141a'
+                backgroundColor: '#rgba(255,255,255,0.05)'
               }}
             >
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full space-y-6">
-                  <div className="w-24 h-24 bg-[#FACC15]/10 rounded-full flex items-center justify-center relative">
-                    <MessageCircle size={48} className="text-[#FACC15]" />
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#FACC15] rounded-full flex items-center justify-center text-black">
+                  <div className="w-24 h-24 bg-[#c7c42a]/10 rounded-full flex items-center justify-center relative">
+                    <MessageCircle size={48} className="text-[#c7c42a]" />
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#c7c42a] rounded-full flex items-center justify-center text-black">
                       <Sparkles size={14} />
                     </div>
                   </div>
@@ -825,11 +825,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               )}
               {renderMessages()}
               {typingUsers.length > 0 && (
-                <div className="flex items-center gap-2 text-[10px] text-[#FACC15] font-black uppercase tracking-widest italic animate-pulse">
+                <div className="flex items-center gap-2 text-[10px] text-[#c7c42a] font-black uppercase tracking-widest italic animate-pulse">
                   <div className="flex gap-1">
-                    <span className="w-1 h-1 bg-[#FACC15] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-1 h-1 bg-[#FACC15] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-1 h-1 bg-[#FACC15] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <span className="w-1 h-1 bg-[#c7c42a] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1 h-1 bg-[#c7c42a] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1 h-1 bg-[#c7c42a] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                   {activeConversation.recipientProfile?.displayName} is typing
                 </div>
@@ -848,9 +848,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     className="absolute bottom-full left-0 right-0 p-4 bg-[#1e293b] border-t border-white/10 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <div className={`w-1 h-10 rounded-full ${editingMessage ? 'bg-[#FACC15]' : 'bg-blue-500'}`} />
+                      <div className={`w-1 h-10 rounded-full ${editingMessage ? 'bg-[#c7c42a]' : 'bg-blue-500'}`} />
                       <div className="overflow-hidden">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[#FACC15]">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
                           {editingMessage ? 'Editing Message' : `Replying to ${replyingTo?.senderName}`}
                         </p>
                         <p className="text-xs text-white/60 truncate italic">
@@ -892,7 +892,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <button 
                   type="button"
                   onClick={() => document.getElementById('direct-image-upload')?.click()}
-                  className="p-3 text-[#FACC15] hover:bg-[#FACC15]/10 rounded-xl transition-all"
+                  className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
                   title="Upload Image"
                 >
                   <ImageIcon size={24} />
@@ -901,7 +901,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <button 
                   type="button"
                   onClick={() => document.getElementById('direct-file-upload')?.click()}
-                  className="p-3 text-[#FACC15] hover:bg-[#FACC15]/10 rounded-xl transition-all"
+                  className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
                   title="Upload File"
                 >
                   <Paperclip size={24} />
@@ -911,7 +911,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <input 
                     type="text"
                     placeholder="Type a message..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-sm text-white outline-none focus:border-[#FACC15]/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all"
                     value={inputText}
                     onChange={handleInputChange}
                   />
@@ -920,7 +920,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     disabled={!inputText.trim() || isSending}
                     className={`absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all ${
                       inputText.trim() && !isSending 
-                        ? 'bg-[#FACC15] text-black shadow-lg shadow-[#FACC15]/20' 
+                        ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' 
                         : 'bg-white/5 text-white/20 cursor-not-allowed'
                     }`}
                   >
@@ -946,7 +946,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <div className="bg-[#1e293b] p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading...</h4>
-                      <div className="w-4 h-4 border-2 border-[#FACC15] border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-[#c7c42a] border-t-transparent rounded-full animate-spin" />
                     </div>
                     <div className="space-y-3">
                       {Object.entries(uploadProgress).map(([name, progress]) => (
@@ -959,7 +959,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${progress}%` }}
-                              className="h-full bg-[#FACC15]"
+                              className="h-full bg-[#c7c42a]"
                             />
                           </div>
                         </div>
@@ -974,7 +974,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
               <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
-                <MessageCircle size={48} strokeWidth={1.5} className="text-[#FACC15]" />
+                <MessageCircle size={48} strokeWidth={1.5} className="text-[#c7c42a]" />
               </div>
               <div className="text-center">
                 <h3 className="text-xl font-black text-white/40 uppercase italic tracking-tighter">Select a conversation</h3>
@@ -1006,7 +1006,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <input 
                     type="text"
                     placeholder="Search users..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#FACC15]/50 transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all"
                   />
                 </div>
               </div>
@@ -1023,7 +1023,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       </div>
                       <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#0f172a] rounded-full ${
                         user.status === 'online' ? 'bg-green-500' : 
-                        user.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+                        user.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
                       }`}></div>
                     </div>
                     <div className="text-left">

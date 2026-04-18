@@ -151,11 +151,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <nav className="flex-1 flex flex-col gap-6">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages', hidden: !hasAcceptedProject },
+            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
             { id: 'meetings', icon: Video, label: 'Meetings' },
             { id: 'payments', icon: CreditCard, label: 'Payments' },
             { id: 'settings', icon: Settings, label: 'Settings', link: '/settings' },
-          ].filter(tab => !tab.hidden).map((tab) => (
+          ].map((tab) => (
             <button 
               key={tab.id}
               onClick={() => tab.link ? navigate(tab.link) : setActiveTab(tab.id as any)}
@@ -234,12 +234,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
       {/* Mobile Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-around items-center z-40">
-        {[
-          { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-          { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Chat (${unreadCount})` : 'Chat', hidden: !hasAcceptedProject },
-          { id: 'meetings', icon: Video, label: 'Meetings' },
-          { id: 'settings', icon: Settings, label: 'Settings' },
-        ].filter(tab => !tab.hidden).map((tab) => (
+          {[
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Chat (${unreadCount})` : 'Chat' },
+            { id: 'meetings', icon: Video, label: 'Meetings' },
+            { id: 'settings', icon: Settings, label: 'Settings' },
+          ].map((tab) => (
           <button 
             key={tab.id}
             onClick={() => tab.id === 'settings' ? navigate('/settings') : setActiveTab(tab.id as any)}
@@ -294,7 +294,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-yellow-500 text-black p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-black/10 relative overflow-hidden"
+              className="bg-#c7c42a text-black p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-black/10 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full blur-3xl -mr-32 -mt-32" />
               <div className="flex items-center gap-8 text-center md:text-left relative z-10">
@@ -333,7 +333,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </div>
             <div className="flex flex-col items-end gap-4">
               <div className="flex items-center gap-4">
-              {hasAcceptedProject && adminProfile && (
+              {adminProfile && (
                 <button 
                   onClick={() => setShowDirectChat(true)}
                   className="flex items-center gap-3 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl hover:bg-white/10 transition-all group"
@@ -565,7 +565,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               initial={{ opacity: 0, y: 10, scale: 0.95 }}
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                              className="absolute top-full left-0 right-0 mt-4 z-30 bg-[#202c33] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden"
+                              className="absolute top-full left-0 right-0 mt-4 z-30 bg-[#rgba(255,255,255,0.05)] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden"
                             >
                               <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                 {stat.items.length > 0 ? stat.items.map((item, idx) => (
@@ -619,7 +619,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   p.status === 'active' ? 'bg-blue-500' :
                                   p.status === 'completed' ? 'bg-green-500' :
                                   p.status === 'rejected' ? 'bg-red-500' :
-                                  'bg-yellow-500'
+                                  'bg-#c7c42a'
                                 }`} />
                               </div>
                               <p className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? 'text-black/70' : 'text-white/50'}`}>{p.businessType}</p>
@@ -789,7 +789,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none">Need help with<br />your plan?</h3>
                             <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 mb-8">Our experts are ready to assist you in building the perfect web presence.</p>
                           </div>
-                          {selectedProject && (selectedProject.status === 'Accepted' || selectedProject.status === 'Development Started') ? (
+                          {adminProfile ? (
                             <button 
                               onClick={() => setShowDirectChat(true)}
                               className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all flex items-center justify-center gap-3"

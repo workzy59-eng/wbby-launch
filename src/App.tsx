@@ -95,7 +95,7 @@ export default function App() {
               toastOptions={{
                 style: {
                   background: '#000000',
-                  color: '#FACC15',
+                  color: '#c7c42a',
                   border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '1rem',
                   fontSize: '12px',

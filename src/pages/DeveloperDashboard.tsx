@@ -317,9 +317,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { label: 'My Projects', value: projects.length, icon: Briefcase, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+                { label: 'My Projects', value: projects.length, icon: Briefcase, color: 'text-#c7c42a', bg: 'bg-#c7c42a/10' },
                 { label: 'Attendance', value: attendance.length > 0 ? `${Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100)}%` : '0%', icon: Clock, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10' },
-                { label: 'Messages', value: '0', icon: MessageSquare, color: 'text-yellow-200', bg: 'bg-yellow-500/10' },
+                { label: 'Messages', value: '0', icon: MessageSquare, color: 'text-yellow-200', bg: 'bg-#c7c42a/10' },
               ].map((stat, i) => (
                 <motion.div 
                   key={i}
@@ -412,7 +412,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                     <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                       req.status === 'approved' ? 'bg-green-500/20 text-green-400' :
                       req.status === 'declined' ? 'bg-red-500/20 text-red-400' :
-                      'bg-yellow-500/20 text-yellow-400'
+                      'bg-#c7c42a/20 text-#c7c42a'
                     }`}>
                       {req.status}
                     </div>
@@ -452,7 +452,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                       className={`aspect-square rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${
                         status === 'present' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
                         status === 'absent' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                        status === 'leave' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+                        status === 'leave' ? 'bg-#c7c42a/10 border-#c7c42a/20 text-#c7c42a' :
                         'bg-white/5 border-white/5 text-white/40'
                       }`}
                     >
@@ -684,7 +684,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               <div className="text-sm font-black text-white uppercase italic">{profile?.displayName}</div>
               <div className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">{profile?.status || 'Active'}</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#c7c42a] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#c7c42a] to-#c7c42a flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)]">
               {profile?.displayName?.[0] || 'D'}
             </div>
           </div>

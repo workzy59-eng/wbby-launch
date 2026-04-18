@@ -73,7 +73,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
 
   const getStatusColor = (status: MeetingStatus) => {
     switch (status) {
-      case 'Pending': return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30';
+      case 'Pending': return 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30';
       case 'Accepted': return 'bg-green-500/20 text-green-500 border-green-500/30';
       case 'Rejected': return 'bg-red-500/20 text-red-500 border-red-500/30';
       case 'Reschedule Requested': return 'bg-purple-500/20 text-purple-500 border-purple-500/30';

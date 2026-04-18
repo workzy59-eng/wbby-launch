@@ -279,7 +279,7 @@ Generated on: ${new Date().toLocaleString()}
                 { label: 'Total Clients', value: profiles.filter(p => p.role === 'client').length, icon: User, color: 'text-blue-400', bg: 'bg-blue-500/10' },
                 { label: 'Total Developers', value: profiles.filter(p => p.role === 'developer').length, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
                 { label: 'Active Projects', value: projects.length, icon: Briefcase, color: 'text-[#00F2FF]', bg: 'bg-[#00F2FF]/10' },
-                { label: 'Pending Leaves', value: leaveRequests.filter(r => r.status === 'pending').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+                { label: 'Pending Leaves', value: leaveRequests.filter(r => r.status === 'pending').length, icon: Clock, color: 'text-#c7c42a', bg: 'bg-#c7c42a/10' },
               ].map((stat, i) => (
                 <motion.div 
                   key={i}
@@ -422,7 +422,7 @@ Generated on: ${new Date().toLocaleString()}
                 {leaveRequests.map((req, idx) => (
                   <div key={idx} className="flex items-center justify-between p-8 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 transition-all">
                     <div className="flex items-center gap-6">
-                      <div className="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-400">
+                      <div className="w-14 h-14 bg-#c7c42a/10 rounded-2xl flex items-center justify-center text-#c7c42a">
                         <Clock size={28} />
                       </div>
                       <div>
@@ -435,7 +435,7 @@ Generated on: ${new Date().toLocaleString()}
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                         req.status === 'approved' ? 'bg-green-500/20 text-green-400' :
                         req.status === 'declined' ? 'bg-red-500/20 text-red-400' :
-                        'bg-yellow-500/20 text-yellow-400'
+                        'bg-#c7c42a/20 text-#c7c42a'
                       }`}>
                         {req.status}
                       </div>
@@ -495,7 +495,7 @@ Generated on: ${new Date().toLocaleString()}
                     <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                       dev.status === 'approved' ? 'bg-green-500/20 text-green-400' :
                       dev.status === 'declined' ? 'bg-red-500/20 text-red-400' :
-                      'bg-yellow-500/20 text-yellow-400'
+                      'bg-#c7c42a/20 text-#c7c42a'
                     }`}>
                       {dev.status}
                     </div>
@@ -548,7 +548,7 @@ Generated on: ${new Date().toLocaleString()}
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                         project.status === 'completed' ? 'bg-green-500/20 text-green-400' :
                         project.status === 'in-progress' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-yellow-500/20 text-yellow-400'
+                        'bg-#c7c42a/20 text-#c7c42a'
                       }`}>
                         {project.status}
                       </div>
@@ -827,7 +827,7 @@ Requirements:
                           <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
                             record.status === 'present' ? 'bg-green-500/20 text-green-400' :
                             record.status === 'absent' ? 'bg-red-500/20 text-red-400' :
-                            'bg-yellow-500/20 text-yellow-400'
+                            'bg-#c7c42a/20 text-#c7c42a'
                           }`}>
                             {record.status}
                           </span>
@@ -941,7 +941,7 @@ Requirements:
               <div className="text-sm font-black text-white uppercase italic">System Admin</div>
               <div className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">Online</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#c7c42a] to-yellow-600 flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#c7c42a] to-#c7c42a flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)]">
               A
             </div>
           </div>

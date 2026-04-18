@@ -398,7 +398,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             {isDirect && (
               <div className={`absolute -bottom-1 -right-1 w-5 h-5 border-4 border-black rounded-full ${
                 recipientProfile?.status === 'online' ? 'bg-green-500' : 
-                recipientProfile?.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
+                recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
               }`}></div>
             )}
           </div>
@@ -437,13 +437,13 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       {/* Messages Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 py-8 space-y-6 scrollbar-hide bg-[#0b141a] relative"
+        className="flex-1 overflow-y-auto px-6 py-8 space-y-6 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
         style={{
           backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
           backgroundRepeat: 'repeat',
           backgroundSize: '400px',
           backgroundBlendMode: 'overlay',
-          backgroundColor: '#0b141a'
+          backgroundColor: '#rgba(255,255,255,0.05)'
         }}
       >
         {messages.length === 0 ? (
@@ -467,7 +467,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
               <React.Fragment key={m.id}>
                 {showDate && (
                   <div className="flex justify-center my-8">
-                    <div className="bg-[#202c33]/50 backdrop-blur-md px-4 py-1.5 rounded-lg border border-white/5">
+                    <div className="bg-[#rgba(255,255,255,0.05)]/50 backdrop-blur-md px-4 py-1.5 rounded-lg border border-white/5">
                       <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">
                         {formatDate(m.createdAt, 'MMMM d, yyyy')}
                       </span>
@@ -491,8 +491,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                     }}
                     className={`p-4 rounded-2xl text-sm font-bold leading-relaxed shadow-lg relative group cursor-pointer transition-all ${
                       isMe 
-                        ? 'bg-[#005c4b] text-white rounded-tr-none' 
-                        : 'bg-[#202c33] text-white rounded-tl-none border border-white/5'
+                        ? 'bg-[#c7c42a] text-black rounded-tr-none' 
+                        : 'bg-[rgba(255,255,255,0.05)] text-white rounded-tl-none border border-white/5'
                     } ${m.isDeleted ? 'italic opacity-50 cursor-default' : ''}`}
                   >
                     {/* Message Actions Dropdown */}
@@ -502,7 +502,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
-                          className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[#233138] p-1 rounded-xl border border-white/10 shadow-2xl`}
+                          className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[#rgba(255,255,255,0.05)] p-1 rounded-xl border border-white/10 shadow-2xl`}
                         >
                           <button 
                             onClick={(e) => { e.stopPropagation(); setReplyingTo(m); }}
@@ -652,7 +652,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                             Sent: {formatDate(m.createdAt, 'MMM d, h:mm:ss a')}
                           </p>
                           {m.seen && (
-                            <p className="text-[8px] font-black uppercase tracking-widest text-yellow-400">
+                            <p className="text-[8px] font-black uppercase tracking-widest text-#c7c42a">
                               Seen: {m.seenTime ? formatDate(m.seenTime, 'MMM d, h:mm:ss a') : 'Recently'}
                             </p>
                           )}
@@ -780,7 +780,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       </AnimatePresence>
 
       {/* Input Area */}
-      <footer className="px-6 py-6 border-t border-white/10 bg-[#202c33] relative">
+      <footer className="px-6 py-6 border-t border-white/10 bg-[#rgba(255,255,255,0.05)] relative">
         {/* Reply/Edit Preview */}
         <AnimatePresence>
           {(replyingTo || editingMessage) && (
@@ -838,7 +838,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="button"
             onClick={() => document.getElementById('chat-image-upload')?.click()}
-            className="p-3 text-[#FACC15] hover:bg-[#FACC15]/10 rounded-xl transition-all"
+            className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
             title="Upload Image"
           >
             <ImageIcon size={24} />
@@ -847,7 +847,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="button"
             onClick={() => document.getElementById('chat-file-upload')?.click()}
-            className="p-3 text-[#FACC15] hover:bg-[#FACC15]/10 rounded-xl transition-all"
+            className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
             title="Upload File"
           >
             <Paperclip size={24} />
@@ -868,7 +868,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             disabled={(!inputText.trim() && Object.keys(uploadProgress).length === 0) || isSending}
             className={`p-3 rounded-xl transition-all ${
               (inputText.trim() || Object.keys(uploadProgress).length > 0) && !isSending
-                ? 'bg-[#FACC15] text-black shadow-lg shadow-[#FACC15]/20'
+                ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20'
                 : 'bg-white/5 text-white/20 cursor-not-allowed'
             }`}
           >

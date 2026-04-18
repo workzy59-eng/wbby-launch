@@ -377,7 +377,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                        request.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' :
+                        request.status === 'pending' ? 'bg-#c7c42a/10 text-#c7c42a' :
                         request.status === 'accepted' ? 'bg-green-500/10 text-green-500' :
                         request.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
                         'bg-blue-500/10 text-blue-500'

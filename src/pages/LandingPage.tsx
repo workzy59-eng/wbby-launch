@@ -449,7 +449,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 className="group relative bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden hover:border-[#c7c42a]/30 transition-all perspective-1000"
               >
                 {/* Holographic Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#c7c42a]/10 via-transparent to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#c7c42a]/10 via-transparent to-#c7c42a/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20" />
                 
                 <div className="aspect-[4/3] overflow-hidden relative">
                   <img 
@@ -1019,7 +1019,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           <div className="max-w-7xl mx-auto">
             <div className="bg-white/5 border border-white/10 rounded-[4rem] p-12 md:p-24 relative overflow-hidden">
               <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>
-              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-yellow-500 rounded-full blur-[120px] opacity-10"></div>
+              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-#c7c42a rounded-full blur-[120px] opacity-10"></div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                 <div className="space-y-8">

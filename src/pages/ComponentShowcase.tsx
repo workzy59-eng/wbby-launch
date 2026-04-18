@@ -35,7 +35,7 @@ const TESTIMONIAL_DATA: Testimonial[] = [
 
 export default function ComponentShowcase() {
   return (
-    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#FACC15] selection:text-black p-10 lg:p-20 overflow-hidden">
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black p-10 lg:p-20 overflow-hidden">
       <div className="max-w-7xl mx-auto space-y-32">
         
         {/* Header Section */}
@@ -44,12 +44,12 @@ export default function ComponentShowcase() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FACC15]/10 border border-[#FACC15]/20 text-[#FACC15] text-[10px] font-black uppercase tracking-[0.3em] italic">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#c7c42a]/10 border border-[#c7c42a]/20 text-[#c7c42a] text-[10px] font-black uppercase tracking-[0.3em] italic">
             <Sparkles size={14} />
             New Components Integrated
           </div>
           <h1 className="text-7xl lg:text-9xl font-black tracking-tighter uppercase italic leading-none">
-            UI <span className="text-[#FACC15]">REFINEMENT</span>
+            UI <span className="text-[#c7c42a]">REFINEMENT</span>
           </h1>
           <p className="max-w-2xl mx-auto text-white/40 font-medium italic text-lg lg:text-xl">
             Integrating high-performance React components with custom theme styling for WebbyLaunch.
@@ -59,7 +59,7 @@ export default function ComponentShowcase() {
         {/* Nav Header Showcase */}
         <section className="space-y-12">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#FACC15]/10 flex items-center justify-center text-[#FACC15]">
+            <div className="w-12 h-12 rounded-2xl bg-[#c7c42a]/10 flex items-center justify-center text-[#c7c42a]">
               <Layout size={24} />
             </div>
             <h2 className="text-4xl font-black uppercase italic tracking-tighter">Navigation Menu</h2>
@@ -72,7 +72,7 @@ export default function ComponentShowcase() {
         {/* Testimonials Showcase */}
         <section className="space-y-12">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#FACC15]/10 flex items-center justify-center text-[#FACC15]">
+            <div className="w-12 h-12 rounded-2xl bg-[#c7c42a]/10 flex items-center justify-center text-[#c7c42a]">
               <Code size={24} />
             </div>
             <h2 className="text-4xl font-black uppercase italic tracking-tighter">Testimonial Carousel</h2>
@@ -85,16 +85,16 @@ export default function ComponentShowcase() {
         {/* Loader Showcase */}
         <section className="space-y-12">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#FACC15]/10 flex items-center justify-center text-[#FACC15]">
+            <div className="w-12 h-12 rounded-2xl bg-[#c7c42a]/10 flex items-center justify-center text-[#c7c42a]">
               <Smartphone size={24} />
             </div>
             <h2 className="text-4xl font-black uppercase italic tracking-tighter">System Loaders</h2>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {[16, 24, 32, 48].map((size) => (
-              <div key={size} className="p-12 bg-white/5 rounded-[2.5rem] border border-white/10 flex flex-col items-center justify-center gap-6 group hover:border-[#FACC15]/30 transition-all">
+              <div key={size} className="p-12 bg-white/5 rounded-[2.5rem] border border-white/10 flex flex-col items-center justify-center gap-6 group hover:border-[#c7c42a]/30 transition-all">
                 <Loader size={size} />
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30 italic group-hover:text-[#FACC15]">Size {size}px</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/30 italic group-hover:text-[#c7c42a]">Size {size}px</span>
               </div>
             ))}
           </div>
