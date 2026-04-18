@@ -196,7 +196,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           <button 
             onClick={() => setView('upcoming')}
             className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              view === 'upcoming' ? 'bg-[#cfcb11] text-black' : 'text-white/40 hover:text-white'
+              view === 'upcoming' ? 'bg-[#c7c42a] text-black' : 'text-white/40 hover:text-white'
             }`}
           >
             Upcoming
@@ -204,7 +204,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           <button 
             onClick={() => setView('past')}
             className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              view === 'past' ? 'bg-[#cfcb11] text-black' : 'text-white/40 hover:text-white'
+              view === 'past' ? 'bg-[#c7c42a] text-black' : 'text-white/40 hover:text-white'
             }`}
           >
             Past
@@ -212,7 +212,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           <button 
             onClick={() => setView('requests')}
             className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${
-              view === 'requests' ? 'bg-[#cfcb11] text-black' : 'text-white/40 hover:text-white'
+              view === 'requests' ? 'bg-[#c7c42a] text-black' : 'text-white/40 hover:text-white'
             }`}
           >
             Requests
@@ -226,20 +226,20 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
 
         <div className="flex flex-wrap items-center gap-4">
           <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#cfcb11] transition-colors" size={16} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#c7c42a] transition-colors" size={16} />
             <input 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search meetings..."
-              className="bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-3 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all w-full md:w-64"
+              className="bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-3 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all w-full md:w-64"
             />
           </div>
 
           <select 
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
-            className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all appearance-none"
+            className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all appearance-none"
           >
             <option value="All" className="bg-[#0A0A0A]">All Status</option>
             <option value="Pending" className="bg-[#0A0A0A]">Pending</option>
@@ -264,7 +264,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                 setEditingMeeting(undefined);
                 setShowForm(true);
               }}
-              className="flex items-center gap-2 px-6 py-3 bg-[#cfcb11] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(207,203,17,0.2)]"
+              className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
             >
               <Plus size={16} />
               Schedule
@@ -278,7 +278,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative overflow-hidden bg-[#cfcb11] p-8 rounded-[2.5rem] group cursor-pointer"
+          className="relative overflow-hidden bg-[#c7c42a] p-8 rounded-[2.5rem] group cursor-pointer"
           onClick={() => {
             const el = document.getElementById(`meeting-${nextMeeting.id}`);
             el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -290,7 +290,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-black text-[#cfcb11] rounded-full text-[8px] font-black uppercase tracking-widest">
+                <span className="px-3 py-1 bg-black text-[#c7c42a] rounded-full text-[8px] font-black uppercase tracking-widest">
                   Next Upcoming
                 </span>
                 <h3 className="text-3xl font-black text-black uppercase italic tracking-tighter">{nextMeeting.title}</h3>
@@ -372,7 +372,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 hover:border-[#cfcb11]/30 transition-all group"
+                  className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 hover:border-[#c7c42a]/30 transition-all group"
                 >
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
@@ -401,11 +401,11 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                   )}
 
                   {request.adminResponse && (
-                    <div className="bg-[#cfcb11]/5 rounded-2xl p-4 border border-[#cfcb11]/10">
-                      <p className="text-[#cfcb11] text-[10px] font-black uppercase tracking-widest mb-1">Admin Response</p>
+                    <div className="bg-[#c7c42a]/5 rounded-2xl p-4 border border-[#c7c42a]/10">
+                      <p className="text-[#c7c42a] text-[10px] font-black uppercase tracking-widest mb-1">Admin Response</p>
                       <p className="text-white/80 text-xs leading-relaxed">{request.adminResponse}</p>
                       {request.status === 'suggested' && (
-                        <p className="text-[#cfcb11] text-xs font-black mt-2">
+                        <p className="text-[#c7c42a] text-xs font-black mt-2">
                           Suggested: {format(new Date(request.suggestedDate!), 'MMM dd')} @ {request.suggestedTime}
                         </p>
                       )}
@@ -416,7 +416,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                     <div className="flex items-center gap-3 pt-4">
                       <button
                         onClick={() => handleRequestAction(request, 'accept')}
-                        className="flex-1 bg-[#cfcb11] text-black py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                        className="flex-1 bg-[#c7c42a] text-black py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
                       >
                         Accept
                       </button>

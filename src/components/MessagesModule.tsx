@@ -37,9 +37,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#cfcb11]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#c7c42a]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#cfcb11]'} animate-pulse italic`}>Loading...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#c7c42a]'} animate-pulse italic`}>Loading...</span>
   </div>
 );
 import { FirebaseUser } from '../firebase';
@@ -455,7 +455,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   >
                     <button 
                       onClick={() => setReplyingTo(m)}
-                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#cfcb11] transition-all"
+                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#c7c42a] transition-all"
                       title="Reply"
                     >
                       <CornerUpLeft size={16} />
@@ -466,7 +466,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           setEditingMessage(m);
                           setInputText(m.text);
                         }}
-                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#cfcb11] transition-all"
+                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#c7c42a] transition-all"
                         title="Edit"
                       >
                         <Edit size={16} />
@@ -502,7 +502,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 ) : (
                   <>
                     {m.replyTo && (
-                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#cfcb11]' : 'border-yellow-600'}`}>
+                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#c7c42a]' : 'border-yellow-600'}`}>
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
                           {m.replyTo.senderName}
                         </p>
@@ -512,7 +512,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       </div>
                     )}
                     {!isMe && activeConversation.isProject && (
-                      <p className="text-[10px] font-black text-[#cfcb11] uppercase tracking-widest mb-1">
+                      <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest mb-1">
                         {m.senderName}
                       </p>
                     )}
@@ -533,7 +533,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   {isMe && (
                     <span>
                       {m.status === 'seen' ? (
-                        <CheckCheck size={14} className="text-[#cfcb11]" />
+                        <CheckCheck size={14} className="text-[#c7c42a]" />
                       ) : m.status === 'delivered' ? (
                         <CheckCheck size={14} className="text-white/60" />
                       ) : (
@@ -579,7 +579,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <input 
               type="text"
               placeholder="Search chats..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -606,7 +606,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </div>
               <button 
                 onClick={profile?.role === 'admin' ? () => setShowUserList(true) : handleMessageAdmin}
-                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[#cfcb11] text-[10px] font-black uppercase tracking-widest hover:bg-[#cfcb11] hover:text-black hover:border-transparent transition-all"
+                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[#c7c42a] text-[10px] font-black uppercase tracking-widest hover:bg-[#c7c42a] hover:text-black hover:border-transparent transition-all"
               >
                 {profile?.role === 'admin' ? 'Start a new chat' : 'Message Admin'}
               </button>
@@ -623,8 +623,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     conv.isProject 
                       ? 'bg-gradient-to-br from-blue-500 to-yellow-600' 
                       : conv.recipientProfile?.displayName === 'SAI ROSHAN'
-                        ? 'bg-transparent border border-[#cfcb11]/30 text-[#cfcb11]'
-                        : 'bg-gradient-to-br from-[#cfcb11] to-yellow-600'
+                        ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]'
+                        : 'bg-gradient-to-br from-[#c7c42a] to-yellow-600'
                   }`}>
                     {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U'))}
                   </div>
@@ -663,7 +663,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         <div className="p-4 border-t border-white/5">
           <button 
             onClick={() => setShowUserList(true)}
-            className="w-full py-4 bg-[#cfcb11] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(207,203,17,0.2)]"
+            className="w-full py-4 bg-[#c7c42a] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
           >
             New Message
           </button>
@@ -723,8 +723,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <div className="relative">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center text-black font-black text-lg ${
                     activeConversation.recipientProfile?.displayName === 'SAI ROSHAN'
-                      ? 'bg-transparent border border-[#cfcb11]/30 text-[#cfcb11]'
-                      : 'bg-gradient-to-br from-[#cfcb11] to-yellow-600'
+                      ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]'
+                      : 'bg-gradient-to-br from-[#c7c42a] to-yellow-600'
                   }`}>
                     {activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} /> : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
@@ -737,7 +737,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <h3 className="font-black text-white uppercase tracking-tight">{activeConversation.recipientProfile?.displayName}</h3>
                   <div className="flex items-center gap-2">
                     {typingUsers.length > 0 ? (
-                      <p className="text-[10px] text-[#cfcb11] font-black uppercase tracking-widest animate-pulse">typing...</p>
+                      <p className="text-[10px] text-[#c7c42a] font-black uppercase tracking-widest animate-pulse">typing...</p>
                     ) : (
                       <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
                         activeConversation.recipientProfile?.status === 'online' ? 'text-green-400' : 'text-white/30'

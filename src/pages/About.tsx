@@ -19,7 +19,7 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter"
           >
-            We Build <span className="text-[#cfcb11]">Digital Success.</span>
+            We Build <span className="text-[#c7c42a]">Digital Success.</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -76,7 +76,7 @@ export default function About() {
               viewport={{ once: true }}
               className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] space-y-6"
             >
-              <div className="w-12 h-12 bg-[#cfcb11] rounded-xl flex items-center justify-center text-black">
+              <div className="w-12 h-12 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black">
                 <item.icon size={24} />
               </div>
               <div className="space-y-2">

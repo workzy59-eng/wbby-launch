@@ -23,20 +23,20 @@ export default function Careers() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-[#cfcb11] selection:text-black">
+    <div className="min-h-screen bg-black text-white selection:bg-[#c7c42a] selection:text-black">
       <SEO 
         title="Join WebbyLaunch Team | Careers" 
         description="Work with WebbyLaunch as a Developer or Sales Executive. Build the future of the web with us."
       />
 
       <section className="relative pt-40 pb-20 px-10 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#cfcb11]/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#c7c42a]/10 rounded-full blur-[120px] animate-pulse" />
         
         <div className="max-w-7xl mx-auto relative z-10 text-center space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#cfcb11]"
+            className="inline-flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#c7c42a]"
           >
             Careers
           </motion.div>
@@ -48,7 +48,7 @@ export default function Careers() {
             className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-none"
           >
             Join the <br />
-            <span className="text-[#cfcb11]">WebbyLaunch Team.</span>
+            <span className="text-[#c7c42a]">WebbyLaunch Team.</span>
           </motion.h1>
 
           <motion.p 
@@ -71,11 +71,11 @@ export default function Careers() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-8 hover:border-[#cfcb11]/30 transition-all relative overflow-hidden"
+              className="group bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-8 hover:border-[#c7c42a]/30 transition-all relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#cfcb11]/5 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-[#cfcb11]/10 transition-all" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#c7c42a]/5 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-[#c7c42a]/10 transition-all" />
               
-              <div className="w-16 h-16 bg-[#cfcb11]/10 rounded-2xl flex items-center justify-center text-[#cfcb11]">
+              <div className="w-16 h-16 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                 <role.icon size={32} />
               </div>
 
@@ -89,7 +89,7 @@ export default function Careers() {
               <div className="space-y-4">
                 {role.perks.map(perk => (
                   <div key={perk} className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/60">
-                    <CheckCircle2 size={16} className="text-[#cfcb11]" />
+                    <CheckCircle2 size={16} className="text-[#c7c42a]" />
                     {perk}
                   </div>
                 ))}
@@ -97,7 +97,7 @@ export default function Careers() {
 
               <Link 
                 to={role.path}
-                className="inline-flex items-center gap-3 bg-[#cfcb11] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(207,203,17,0.2)]"
+                className="inline-flex items-center gap-3 bg-[#c7c42a] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(199,196,42,0.2)]"
               >
                 Apply Now
                 <ArrowRight size={18} />
@@ -111,7 +111,7 @@ export default function Careers() {
         <div className="max-w-4xl mx-auto text-center space-y-12">
           <div className="space-y-4">
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic">
-              Interview <span className="text-[#cfcb11]">Process.</span>
+              Interview <span className="text-[#c7c42a]">Process.</span>
             </h2>
             <p className="text-white/40 text-lg font-medium italic">
               Shortlisted candidates will be invited for an interview. Selection is based on skills, communication, and professionalism.
@@ -125,7 +125,7 @@ export default function Careers() {
               { step: '03', title: 'Interview', desc: 'A quick call to discuss your skills and fit.' }
             ].map((s, i) => (
               <div key={i} className="space-y-4 p-8 bg-white/5 rounded-[2rem] border border-white/10">
-                <div className="text-4xl font-black text-[#cfcb11] italic">{s.step}</div>
+                <div className="text-4xl font-black text-[#c7c42a] italic">{s.step}</div>
                 <h4 className="text-xl font-black uppercase italic tracking-tighter">{s.title}</h4>
                 <p className="text-white/40 text-xs font-bold uppercase tracking-widest leading-relaxed">{s.desc}</p>
               </div>

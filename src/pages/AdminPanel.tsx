@@ -2101,13 +2101,13 @@ ${viewingProject.description}
               <div className="flex gap-4 mb-10 border-b border-white/5 pb-4">
                 <button 
                   onClick={() => setModalTab('overview')}
-                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'overview' ? 'bg-[#cfcb11] text-black' : 'text-white/40 hover:text-white'}`}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'overview' ? 'bg-[#c7c42a] text-black' : 'text-white/40 hover:text-white'}`}
                 >
                   Overview
                 </button>
                 <button 
                   onClick={() => setModalTab('preview')}
-                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'preview' ? 'bg-[#cfcb11] text-black' : 'text-white/40 hover:text-white'}`}
+                  className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${modalTab === 'preview' ? 'bg-[#c7c42a] text-black' : 'text-white/40 hover:text-white'}`}
                 >
                   Preview
                 </button>

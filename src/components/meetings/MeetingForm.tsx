@@ -84,7 +84,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <h2 className="text-3xl font-black uppercase italic tracking-tighter">
-                {initialData ? 'Edit' : 'Schedule'} <span className="text-[#cfcb11]">Meeting.</span>
+                {initialData ? 'Edit' : 'Schedule'} <span className="text-[#c7c42a]">Meeting.</span>
               </h2>
               <p className="text-white/40 text-sm font-medium italic">Set up a video call with your client.</p>
             </div>
@@ -107,7 +107,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   required
                   value={formData.clientId}
                   onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all appearance-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all appearance-none"
                 >
                   <option value="" className="bg-[#0A0A0A]">Choose a client</option>
                   {clients.map(client => (
@@ -129,7 +129,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g. Project Kickoff"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all"
                 />
               </div>
 
@@ -143,7 +143,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all [color-scheme:dark]"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all [color-scheme:dark]"
                 />
               </div>
 
@@ -157,7 +157,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all [color-scheme:dark]"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -177,7 +177,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   className={`w-full bg-white/5 border rounded-2xl px-6 py-4 text-sm text-white outline-none transition-all pr-32 ${
                     formData.meetingLink 
                       ? validation.isValid ? 'border-green-500/30 focus:border-green-500/50' : 'border-red-500/30 focus:border-red-500/50'
-                      : 'border-white/10 focus:border-[#cfcb11]/50'
+                      : 'border-white/10 focus:border-[#c7c42a]/50'
                   }`}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -192,7 +192,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                     <button 
                       type="button"
                       onClick={() => window.open(formData.meetingLink, '_blank')}
-                      className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-[#cfcb11] transition-all"
+                      className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-[#c7c42a] transition-all"
                       title="Test Link"
                     >
                       <ExternalLink size={14} />
@@ -217,7 +217,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Any specific agenda or instructions..."
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#cfcb11]/50 transition-all resize-none"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all resize-none"
                 rows={3}
               />
             </div>
@@ -225,7 +225,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
             <button 
               type="submit"
               disabled={!validation.isValid || !formData.meetingLink || !formData.clientId || !formData.title || !formData.date || !formData.time}
-              className="w-full py-6 bg-[#cfcb11] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(207,203,17,0.2)] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3"
+              className="w-full py-6 bg-[#c7c42a] text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3"
             >
               <Video size={18} />
               {initialData ? 'Update Meeting' : 'Schedule Meeting'}

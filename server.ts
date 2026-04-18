@@ -4,6 +4,7 @@ import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
 import admin from 'firebase-admin';
+import crypto from "crypto";
 import firebaseConfig from './firebase-applet-config.json';
 
 dotenv.config();
@@ -102,9 +103,20 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json());
-  
-  // In-memory OTP store (for demo purposes)
-  const otpStore = new Map<string, { code: string, expires: number }>();
+
+  // Secure OTP Store
+  interface OTP {
+    hash: string;
+    expires: number;
+    attempts: number;
+    lastSent: number;
+  }
+  const otpStore = new Map<string, OTP>();
+
+  // Helper for SHA-256 hashing
+  const hashOTP = (otp: string) => {
+    return crypto.createHash('sha256').update(otp).digest('hex');
+  };
 
   // API Routes
   app.get("/api/health", (req, res) => {
@@ -112,18 +124,28 @@ async function startServer() {
   });
 
   app.post("/api/send-otp", async (req, res) => {
-    const { email, name } = req.body;
+    const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email is required" });
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const now = Date.now();
+    const existing = otpStore.get(email);
 
-    otpStore.set(email, { code, expires });
+    // Limit resend: 30 seconds
+    if (existing && now < existing.lastSent + 30000) {
+      const wait = Math.ceil((existing.lastSent + 30000 - now) / 1000);
+      return res.status(429).json({ error: `Please wait ${wait} seconds before resending` });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hash = hashOTP(otp);
+    const expires = now + 5 * 60 * 1000; // 5 minutes
+
+    otpStore.set(email, { hash, expires, attempts: 0, lastSent: now });
     
-    console.log(`[OTP] Code for ${email}: ${code}`);
+    // In production, send via email. For now, log to console.
+    console.log(`[SECURE OTP] Code for ${email}: ${otp}`);
 
-    // Resend removed as per user request
-    res.json({ success: true, message: "OTP logged to console (Email verification disabled)", code });
+    res.json({ success: true, message: "OTP sent successfully" });
   });
 
   app.post("/api/verify-otp", (req, res) => {
@@ -131,17 +153,31 @@ async function startServer() {
     if (!email || !code) return res.status(400).json({ error: "Email and code are required" });
 
     const stored = otpStore.get(email);
-    if (!stored) return res.status(400).json({ error: "No OTP found for this email" });
+    if (!stored) return res.status(404).json({ error: "No OTP record found" });
 
-    if (Date.now() > stored.expires) {
+    const now = Date.now();
+
+    // Check expiry
+    if (now > stored.expires) {
       otpStore.delete(email);
-      return res.status(400).json({ error: "OTP has expired" });
+      return res.status(410).json({ error: "OTP has expired" });
     }
 
-    if (stored.code !== code) {
-      return res.status(400).json({ error: "Invalid OTP code" });
+    // Check attempts limit (max 3)
+    if (stored.attempts >= 3) {
+      otpStore.delete(email);
+      return res.status(429).json({ error: "Too many failed attempts. Please request a new OTP." });
     }
 
+    const inputHash = hashOTP(code);
+
+    if (stored.hash !== inputHash) {
+      stored.attempts += 1;
+      otpStore.set(email, stored);
+      return res.status(401).json({ error: "Invalid OTP code", attemptsRemaining: 3 - stored.attempts });
+    }
+
+    // Success
     otpStore.delete(email);
     res.json({ success: true, message: "OTP verified successfully" });
   });

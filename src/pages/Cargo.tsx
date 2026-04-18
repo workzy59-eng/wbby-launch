@@ -3,7 +3,7 @@ import { Ship, ArrowRight, Globe, Shield, Clock, Phone, Mail, MapPin, Play, Star
 import { Link } from 'react-router-dom';
 
 export default function Cargo() {
-  const primaryColor = '#cfcb11';
+  const primaryColor = '#c7c42a';
 
   return (
     <div className={`min-h-screen bg-[#0a1a2f] text-white font-sans selection:bg-[${primaryColor}] selection:text-black overflow-x-hidden`}>

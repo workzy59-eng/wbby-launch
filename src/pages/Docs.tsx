@@ -137,7 +137,7 @@ export default function Docs() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-[#cfcb11] selection:text-black">
+    <div className="min-h-screen bg-black text-white selection:bg-[#c7c42a] selection:text-black">
       <SEO 
         title="Documentation | WebbyLaunch Help Center" 
         description="Learn how to use WebbyLaunch, manage your projects, and work with our team. Comprehensive guides for clients, developers, and sales."
@@ -155,7 +155,7 @@ export default function Docs() {
                 placeholder="Search guides..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-[#cfcb11]/50 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-[#c7c42a]/50 transition-all"
               />
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function Docs() {
                 onClick={() => setActiveSection(key)}
                 className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                   activeSection === key 
-                    ? 'bg-[#cfcb11] text-black shadow-[0_0_30px_rgba(207,203,17,0.2)]' 
+                    ? 'bg-[#c7c42a] text-black shadow-[0_0_30px_rgba(199,196,42,0.2)]' 
                     : 'text-white/40 hover:bg-white/5 hover:text-white'
                 }`}
               >
@@ -190,7 +190,7 @@ export default function Docs() {
               className="space-y-12"
             >
               <div className="space-y-4">
-                <div className="w-16 h-16 bg-[#cfcb11]/10 rounded-2xl flex items-center justify-center text-[#cfcb11]">
+                <div className="w-16 h-16 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                   {React.createElement(DOCS_CONTENT[activeSection as keyof typeof DOCS_CONTENT].icon, { size: 32 })}
                 </div>
                 <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
@@ -201,7 +201,7 @@ export default function Docs() {
               <div className="space-y-12">
                 {DOCS_CONTENT[activeSection as keyof typeof DOCS_CONTENT].sections.map((section, i) => (
                   <div key={i} className="space-y-6 group">
-                    <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-[#cfcb11] transition-colors">
+                    <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-[#c7c42a] transition-colors">
                       {section.subtitle}
                     </h3>
                     <div className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] text-white/60 font-medium italic leading-relaxed whitespace-pre-line">
@@ -224,7 +224,7 @@ export default function Docs() {
           </AnimatePresence>
 
           {/* CTA */}
-          <section className="bg-[#cfcb11] rounded-[3rem] p-12 text-black space-y-8 relative overflow-hidden">
+          <section className="bg-[#c7c42a] rounded-[3rem] p-12 text-black space-y-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2" />
             <div className="relative z-10 space-y-4">
               <h3 className="text-4xl font-black uppercase italic tracking-tighter">Still have questions?</h3>

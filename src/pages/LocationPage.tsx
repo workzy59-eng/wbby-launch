@@ -23,13 +23,13 @@ export default function LocationPage() {
       />
 
       <section className="relative pt-40 pb-20 px-10 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#cfcb11]/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#c7c42a]/10 rounded-full blur-[120px] animate-pulse" />
         
         <div className="max-w-7xl mx-auto relative z-10 text-center space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#cfcb11]"
+            className="inline-flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#c7c42a]"
           >
             <MapPin size={12} />
             Serving {cityName}
@@ -42,7 +42,7 @@ export default function LocationPage() {
             className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-none text-white"
           >
             Web Development <br />
-            <span className="text-[#cfcb11]">in {cityName}.</span>
+            <span className="text-[#c7c42a]">in {cityName}.</span>
           </motion.h1>
 
           <motion.p 
@@ -62,7 +62,7 @@ export default function LocationPage() {
           >
             <Link 
               to="/auth"
-              className="group bg-[#cfcb11] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(207,203,17,0.3)] flex items-center gap-3"
+              className="group bg-[#c7c42a] text-black px-10 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(199,196,42,0.3)] flex items-center gap-3"
             >
               Start Your Project
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -74,8 +74,8 @@ export default function LocationPage() {
       <section className="py-32 px-10 bg-white/5">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((f, i) => (
-            <div key={i} className="bg-black/40 border border-white/10 p-12 rounded-[3rem] space-y-6 hover:border-[#cfcb11]/30 transition-all">
-              <div className="w-16 h-16 bg-[#cfcb11]/10 rounded-2xl flex items-center justify-center text-[#cfcb11]">
+            <div key={i} className="bg-black/40 border border-white/10 p-12 rounded-[3rem] space-y-6 hover:border-[#c7c42a]/30 transition-all">
+              <div className="w-16 h-16 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                 <f.icon size={32} />
               </div>
               <h3 className="text-2xl font-black uppercase italic tracking-tighter">{f.title}</h3>
@@ -89,7 +89,7 @@ export default function LocationPage() {
         <div className="max-w-4xl mx-auto text-center space-y-12">
           <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic">
             Why {cityName} Businesses <br />
-            <span className="text-[#cfcb11]">Choose Webby Launch.</span>
+            <span className="text-[#c7c42a]">Choose Webby Launch.</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
             {[
@@ -101,7 +101,7 @@ export default function LocationPage() {
               'Secure HTTPS Hosting'
             ].map((text, i) => (
               <div key={i} className="flex items-center gap-4 text-white/60 font-bold uppercase tracking-widest text-xs">
-                <CheckCircle2 size={18} className="text-[#cfcb11]" />
+                <CheckCircle2 size={18} className="text-[#c7c42a]" />
                 {text}
               </div>
             ))}
@@ -109,7 +109,7 @@ export default function LocationPage() {
         </div>
       </section>
 
-      <section className="py-20 px-10 bg-[#cfcb11]">
+      <section className="py-20 px-10 bg-[#c7c42a]">
         <div className="max-w-5xl mx-auto text-center space-y-8">
           <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-black uppercase italic leading-none">
             Ready to grow your <br /> business in {cityName}?

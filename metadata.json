@@ -1,6 +1,9 @@
 {
-  "name": "WebbyLaunch – Premium  Website Devlopers",
-  "description": "Premium SaaS platform for web solutions with real-time chat, secure OTP auth, and admin-controlled workflow.",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
+  "name": "WebbyLaunch",
+  "description": "Premium SaaS platform for modern website development with real-time tracking, secure OTP verification, and integrated payments.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
 }

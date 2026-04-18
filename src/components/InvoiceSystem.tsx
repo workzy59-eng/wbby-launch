@@ -99,7 +99,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
         {/* Actions Header */}
         <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-black/50 backdrop-blur-md sticky top-0 z-20">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-[#cfcb11] rounded-xl flex items-center justify-center text-black">
+            <div className="w-10 h-10 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black">
               <FileText size={20} />
             </div>
             <div>
@@ -110,7 +110,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
           <div className="flex items-center gap-3">
             <button 
               onClick={downloadPDF}
-              className="flex items-center gap-2 bg-[#cfcb11] text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(207,203,17,0.2)]"
+              className="flex items-center gap-2 bg-[#c7c42a] text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
             >
               <Download size={18} />
               <span className="hidden sm:inline">Download PDF</span>
@@ -141,7 +141,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
               </div>
             </div>
             <div className="text-right space-y-2">
-              <div className="inline-block px-4 py-1.5 bg-[#cfcb11]/10 border border-[#cfcb11]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#cfcb11]">
+              <div className="inline-block px-4 py-1.5 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
                 {project.status === 'Completed' ? 'PAID' : 'PENDING'}
               </div>
               <div className="text-xs font-bold text-white/40 uppercase tracking-widest">
@@ -154,7 +154,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
           {/* Client Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 p-10 bg-white/5 rounded-[2.5rem] border border-white/5">
             <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-[#cfcb11] uppercase tracking-[0.3em]">Bill To</h3>
+              <h3 className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em]">Bill To</h3>
               <div>
                 <p className="text-2xl font-black uppercase italic text-white">{project.businessName}</p>
                 <p className="text-sm font-bold text-white/50 mt-1">{profile?.displayName || 'Valued Client'}</p>
@@ -165,7 +165,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
               </div>
             </div>
             <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-[#cfcb11] uppercase tracking-[0.3em]">Project Details</h3>
+              <h3 className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em]">Project Details</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Globe size={14} className="text-white/40" />
@@ -186,7 +186,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
           {/* Plan Selected */}
           <div className="space-y-6">
             <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Selected Plan</h3>
-            <div className="p-8 bg-[#cfcb11] rounded-[2.5rem] text-black flex flex-col md:flex-row justify-between items-center gap-8 shadow-[0_0_40px_rgba(207,203,17,0.1)]">
+            <div className="p-8 bg-[#c7c42a] rounded-[2.5rem] text-black flex flex-col md:flex-row justify-between items-center gap-8 shadow-[0_0_40px_rgba(199,196,42,0.1)]">
               <div className="space-y-2 text-center md:text-left">
                 <h4 className="text-4xl font-black uppercase italic tracking-tighter">{selectedPlan.name}</h4>
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
@@ -221,10 +221,10 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
                 <span className="text-lg font-black text-white italic">₹{setupFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center pt-8">
-                <span className="text-2xl font-black text-[#cfcb11] uppercase italic tracking-tighter">Total Amount</span>
+                <span className="text-2xl font-black text-[#c7c42a] uppercase italic tracking-tighter">Total Amount</span>
                 <div className="relative group">
-                  <div className="absolute -inset-4 bg-[#cfcb11] rounded-full opacity-20 blur-xl animate-pulse" />
-                  <span className="text-5xl font-black text-[#cfcb11] italic tracking-tighter relative z-10">₹{totalAmount.toLocaleString()}/-</span>
+                  <div className="absolute -inset-4 bg-[#c7c42a] rounded-full opacity-20 blur-xl animate-pulse" />
+                  <span className="text-5xl font-black text-[#c7c42a] italic tracking-tighter relative z-10">₹{totalAmount.toLocaleString()}/-</span>
                 </div>
               </div>
             </div>
@@ -236,11 +236,11 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
               <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Payment Methods</h3>
               <div className="space-y-4">
                 <div className="p-6 bg-white/5 rounded-2xl border border-white/5 space-y-2">
-                  <p className="text-[10px] font-black text-[#cfcb11] uppercase tracking-widest">UPI Payment</p>
+                  <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">UPI Payment</p>
                   <p className="text-lg font-black text-white tracking-tighter">quicweb@upi</p>
                 </div>
                 <div className="p-6 bg-white/5 rounded-2xl border border-white/5 space-y-2">
-                  <p className="text-[10px] font-black text-[#cfcb11] uppercase tracking-widest">Bank Transfer</p>
+                  <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">Bank Transfer</p>
                   <div className="text-xs font-bold text-white/60 space-y-1 uppercase tracking-widest">
                     <p>A/C: 98765432101234</p>
                     <p>IFSC: QUIC0001234</p>
@@ -274,7 +274,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
                 'Support available 24/7'
               ].map((term, i) => (
                 <li key={i} className="flex items-start gap-3 text-[10px] font-bold text-white/30 uppercase tracking-widest">
-                  <div className="w-1.5 h-1.5 bg-[#cfcb11] rounded-full mt-1 shrink-0" />
+                  <div className="w-1.5 h-1.5 bg-[#c7c42a] rounded-full mt-1 shrink-0" />
                   {term}
                 </li>
               ))}

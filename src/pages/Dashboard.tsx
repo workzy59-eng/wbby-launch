@@ -138,10 +138,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   // Removed old statusSteps and currentStepIndex from here
 
-  const primaryColor = '#cfcb11';
+  const primaryColor = '#c7c42a';
 
   return (
-    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#cfcb11] selection:text-black">
+    <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black">
       <MeetingReminder meetings={meetings} />
       {/* Sidebar Navigation */}
       <aside className="fixed left-0 top-0 bottom-0 w-24 bg-black/20 backdrop-blur-3xl border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
@@ -178,7 +178,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           {profile?.role === 'admin' && (
             <Link 
               to="/admin"
-              className="p-4 rounded-2xl text-white/30 hover:text-[#cfcb11] hover:bg-white/5 transition-all"
+              className="p-4 rounded-2xl text-white/30 hover:text-[#c7c42a] hover:bg-white/5 transition-all"
             >
               <LayoutDashboard size={24} />
             </Link>
@@ -373,24 +373,24 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               ) : activeTab === 'meetings' ? (
                 <div className="space-y-12">
                   <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#cfcb11]">Scheduling</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Scheduling</span>
                     <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Meetings</h2>
                   </div>
                   <MeetingList user={user} profile={profile!} />
                 </div>
               ) : activeTab === 'settings' ? (
                 <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl text-center space-y-8">
-                  <div className="w-24 h-24 bg-[#cfcb11] rounded-full flex items-center justify-center text-black mx-auto shadow-[0_0_50px_rgba(207,203,17,0.2)]">
+                  <div className="w-24 h-24 bg-[#c7c42a] rounded-full flex items-center justify-center text-black mx-auto shadow-[0_0_50px_rgba(199,196,42,0.2)]">
                     <Settings size={48} />
                   </div>
                   <div className="space-y-4">
-                    <h2 className="text-5xl font-black tracking-tighter uppercase italic text-[#cfcb11]">Professional Settings</h2>
+                    <h2 className="text-5xl font-black tracking-tighter uppercase italic text-[#c7c42a]">Professional Settings</h2>
                     <p className="text-white/50 text-xl max-w-md mx-auto font-medium italic">Manage your profile, business details, and platform controls in our new dedicated settings portal.</p>
                   </div>
                   <div className="pt-8">
                     <Link 
                       to="/settings" 
-                      className="inline-block bg-[#cfcb11] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(207,203,17,0.2)]"
+                      className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
                     >
                       Open Settings Portal
                     </Link>
@@ -400,7 +400,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 <div className="space-y-10">
                   <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                     <div className="space-y-4">
-                      <h2 className="text-xs font-black text-[#cfcb11] uppercase tracking-[0.4em]">Billing & Subscription</h2>
+                      <h2 className="text-xs font-black text-[#c7c42a] uppercase tracking-[0.4em]">Billing & Subscription</h2>
                       <h3 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Payments</h3>
                     </div>
                     
@@ -426,16 +426,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Active Plan Card */}
                     <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#cfcb11]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#cfcb11]/10 transition-all" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#c7c42a]/10 transition-all" />
                       
                       <div className="flex justify-between items-start relative z-10">
                         <div className="space-y-1">
-                          <div className="text-[10px] font-black uppercase tracking-widest text-[#cfcb11]">Current Plan</div>
+                          <div className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Current Plan</div>
                           <h4 className="text-3xl font-black uppercase italic tracking-tighter">
                             {selectedProject?.plan || 'Basic'} {billingType === 'one-time' ? '(One-Time)' : '(Subscription)'}
                           </h4>
                         </div>
-                        <div className="px-4 py-1.5 bg-[#cfcb11]/10 border border-[#cfcb11]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#cfcb11]">
+                        <div className="px-4 py-1.5 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
                           Active
                         </div>
                       </div>
@@ -483,7 +483,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         <p className="text-white/40 text-xs font-medium italic">Your subscription is in good standing. No action required.</p>
                       </div>
                       <div className="pt-4">
-                        <button className="text-[10px] font-black uppercase tracking-widest text-[#cfcb11] hover:underline">
+                        <button className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] hover:underline">
                           Update Payment Method
                         </button>
                       </div>
@@ -514,7 +514,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             <tr key={i} className="group hover:bg-white/5 transition-all">
                               <td className="px-8 py-6 text-xs font-bold text-white/60">{tx.date}</td>
                               <td className="px-8 py-6 text-xs font-black uppercase italic tracking-tighter">{tx.desc}</td>
-                              <td className="px-8 py-6 text-xs font-black text-[#cfcb11] italic">{tx.amount}</td>
+                              <td className="px-8 py-6 text-xs font-black text-[#c7c42a] italic">{tx.amount}</td>
                               <td className="px-8 py-6">
                                 <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-500/20">
                                   {tx.status}
@@ -537,10 +537,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   {/* Stats Grid - 4 Boxes */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                      { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-[#cfcb11]', bg: 'bg-[#cfcb11]/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
-                      { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-[#cfcb11]', bg: 'bg-[#cfcb11]/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
-                      { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-[#cfcb11]', bg: 'bg-[#cfcb11]/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
-                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#cfcb11]', bg: 'bg-[#cfcb11]/10', items: ['Basic Plan'] },
+                      { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
+                      { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
+                      { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
+                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: ['Basic Plan'] },
                     ].map((stat, i) => (
                       <div key={stat.id} className="relative">
                         <motion.button 
@@ -548,7 +548,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.1 }}
                           onClick={() => setExpandedBox(expandedBox === stat.id ? null : stat.id)}
-                          className={`w-full bg-black/20 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#cfcb11]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#cfcb11]/50' : ''}`}
+                          className={`w-full bg-black/20 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#c7c42a]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#c7c42a]/50' : ''}`}
                         >
                           <div className="flex justify-between items-start mb-6">
                             <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
@@ -587,9 +587,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
                   {projects.length === 0 ? (
                     <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
-                      <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#cfcb11]">No projects yet</h2>
+                      <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">No projects yet</h2>
                       <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
-                      <Link to="/onboarding" className="inline-block bg-[#cfcb11] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(207,203,17,0.2)]">
+                      <Link to="/onboarding" className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]">
                         Start Your Project
                       </Link>
                     </div>
@@ -599,7 +599,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       <div className="lg:col-span-1 space-y-6">
                         <div className="flex items-center justify-between px-4">
                           <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">Your Projects</h2>
-                          <Link to="/onboarding" className="text-[10px] font-black uppercase tracking-widest text-[#cfcb11] hover:underline">New +</Link>
+                          <Link to="/onboarding" className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] hover:underline">New +</Link>
                         </div>
                         <div className="space-y-4">
                           {projects.map((p) => (
@@ -648,11 +648,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-10 lg:p-16 border border-white/5 shadow-2xl relative overflow-hidden"
                           >
                             {/* Atmospheric Glow */}
-                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#cfcb11] rounded-full blur-[120px] opacity-10"></div>
+                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>
 
                             <div className="flex justify-between items-start mb-16 relative z-10">
                               <div>
-                                <h2 className="text-6xl font-black tracking-tighter mb-4 uppercase italic text-[#cfcb11]">Project Status</h2>
+                                <h2 className="text-6xl font-black tracking-tighter mb-4 uppercase italic text-[#c7c42a]">Project Status</h2>
                                 <p className="text-2xl text-white/70 font-black uppercase italic tracking-tighter">{selectedProject.businessName}</p>
                                 <div className="mt-2 text-[10px] font-bold text-white/40 uppercase tracking-widest flex flex-wrap gap-x-4 gap-y-1">
                                   <span>{selectedProject.businessType}</span>
@@ -665,7 +665,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                       const el = document.getElementById('dev-phase');
                                       if (el) el.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className="flex items-center gap-2 bg-[#cfcb11]/10 border border-[#cfcb11]/20 px-6 py-3 rounded-xl text-[#cfcb11] hover:bg-[#cfcb11] hover:text-black transition-all group"
+                                    className="flex items-center gap-2 bg-[#c7c42a]/10 border border-[#c7c42a]/20 px-6 py-3 rounded-xl text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all group"
                                   >
                                     <Clock size={16} className="group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">View Full Process</span>
@@ -680,7 +680,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Selected Template</h3>
                                 <div className="p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between">
                                   <div>
-                                    <div className="text-xl font-black uppercase italic text-[#cfcb11]">
+                                    <div className="text-xl font-black uppercase italic text-[#c7c42a]">
                                       {selectedProject.templateId === 'food-court' ? 'Food Court' : 
                                        selectedProject.templateId === 'autos' ? 'Global Autos' : 
                                        selectedProject.templateId === 'clothing' ? 'Wearism Fashion' : 
@@ -693,7 +693,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   {['food-court', 'autos', 'clothing'].includes(selectedProject.templateId) && (
                                     <Link 
                                       to={`/portfolio/${selectedProject.templateId === 'food-court' ? 'food-court' : selectedProject.templateId === 'autos' ? 'autos' : 'clothing'}`}
-                                      className="bg-white/5 hover:bg-[#cfcb11] hover:text-black p-3 rounded-xl transition-all"
+                                      className="bg-white/5 hover:bg-[#c7c42a] hover:text-black p-3 rounded-xl transition-all"
                                     >
                                       <ArrowRight size={20} />
                                     </Link>
@@ -715,15 +715,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   <div key={step} className="flex flex-col items-center min-w-[120px] text-center gap-4">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
                                       i < currentStepIndex 
-                                        ? 'bg-[#cfcb11] border-[#cfcb11] text-black' 
+                                        ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
                                         : i === currentStepIndex
-                                          ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#cfcb11] border-[#cfcb11] text-black'
+                                          ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#c7c42a] border-[#c7c42a] text-black'
                                           : 'bg-transparent border-white/20 text-white/20'
                                     }`}>
                                       {i < currentStepIndex ? <Check size={24} /> : step === 'Declined' ? <X size={24} /> : <span className="font-black text-lg">{i + 1}</span>}
                                     </div>
                                     <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                      i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#cfcb11]' : 'text-white/20'
+                                      i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#c7c42a]' : 'text-white/20'
                                     }`}>
                                       {step}
                                     </span>
@@ -733,14 +733,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               
                               <div className="space-y-6">
                                 <div className="flex justify-between items-end">
-                                  <span className="text-2xl font-black uppercase italic text-[#cfcb11]">Progress: {selectedProject.progress}%</span>
+                                  <span className="text-2xl font-black uppercase italic text-[#c7c42a]">Progress: {selectedProject.progress}%</span>
                                   <span className="text-xs font-black text-white/40 uppercase tracking-widest">Est. Completion: {formatDate(selectedProject.estimatedCompletion)}</span>
                                 </div>
                                 <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
                                   <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${selectedProject.progress}%` }}
-                                    className="h-full bg-[#cfcb11] rounded-full shadow-[0_0_15px_rgba(207,203,17,0.5)]"
+                                    className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_15px_rgba(199,196,42,0.5)]"
                                   />
                                 </div>
                               </div>
@@ -774,7 +774,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               { step: '04', title: 'Launch', desc: 'Final testing and production deployment.', done: false },
                             ].map((phase, i) => (
                               <div key={i} className="flex gap-6 items-start">
-                                <div className={`text-xl font-black italic ${phase.done ? 'text-[#cfcb11]' : 'text-white/20'}`}>{phase.step}</div>
+                                <div className={`text-xl font-black italic ${phase.done ? 'text-[#c7c42a]' : 'text-white/20'}`}>{phase.step}</div>
                                 <div>
                                   <h4 className={`font-black uppercase italic tracking-tighter ${phase.done ? 'text-white' : 'text-white/40'}`}>{phase.title}</h4>
                                   <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{phase.desc}</p>
@@ -784,7 +784,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           </div>
                         </div>
                         
-                        <div className="bg-[#cfcb11] p-10 rounded-[3rem] text-black flex flex-col justify-between shadow-[0_0_40px_rgba(207,203,17,0.1)]">
+                        <div className="bg-[#c7c42a] p-10 rounded-[3rem] text-black flex flex-col justify-between shadow-[0_0_40px_rgba(199,196,42,0.1)]">
                           <div>
                             <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none">Need help with<br />your plan?</h3>
                             <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 mb-8">Our experts are ready to assist you in building the perfect web presence.</p>
@@ -854,9 +854,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#cfcb11]/10"
+              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#c7c42a]/10"
             >
-              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#cfcb11]">Cancel Project?</h3>
+              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">Cancel Project?</h3>
               <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>
               <div className="flex flex-col gap-4">
                 <button onClick={handleCancelProject} className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all">

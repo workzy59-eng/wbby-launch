@@ -17,9 +17,9 @@ const Loader = ({ color = "black" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'black' ? 'black' : '[#FACC15]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'black' ? 'black' : '[#c7c42a]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#FACC15]'} animate-pulse italic`}>Processing...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#c7c42a]'} animate-pulse italic`}>Processing...</span>
   </div>
 );
 import { jsPDF } from 'jspdf';
@@ -40,7 +40,6 @@ const AVAILABLE_FEATURES = [
   'Admin Dashboard',
   'SEO Optimization',
   'Mobile Responsive Design',
-  'Work Portfolio',
   'Image Gallery',
   'Payment Integration (Stripe)',
   'Fast Loading Performance'
@@ -48,145 +47,121 @@ const AVAILABLE_FEATURES = [
 
 const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
   const containerClasses = {
-    desktop: 'w-full h-[500px]',
-    tablet: 'w-[450px] h-[600px] mx-auto',
-    mobile: 'w-[300px] h-[550px] mx-auto',
+    desktop: 'w-full h-[600px]',
+    tablet: 'w-[768px] h-[700px] mx-auto scale-[0.8] origin-top',
+    mobile: 'w-[375px] h-[667px] mx-auto scale-[0.9] origin-top',
   };
 
   return (
-    <div className={`bg-white rounded-t-3xl border-x-8 border-t-8 border-gray-800 transition-all duration-500 overflow-hidden shadow-2xl relative ${containerClasses[device]}`}>
-      <div className="h-6 bg-gray-800 flex items-center justify-center gap-1.5 sticky top-0 z-20">
-        <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-      </div>
-      <div className="h-full overflow-y-auto bg-white text-black font-sans no-scrollbar">
-        {/* Mock Toolbar */}
-        <div className="bg-gray-100 px-4 py-2 border-b flex items-center gap-2">
-          <div className="flex gap-1">
-             <div className="w-2 h-2 rounded-full bg-gray-300" />
-             <div className="w-2 h-2 rounded-full bg-gray-300" />
+    <div className={`transition-all duration-700 ease-in-out ${containerClasses[device]}`}>
+      <div className="bg-white rounded-t-3xl border-8 border-gray-800 shadow-2xl relative h-full flex flex-col overflow-hidden">
+        {/* Mock Address Bar */}
+        <div className="bg-gray-100 px-4 py-2 border-b flex items-center gap-4">
+          <div className="flex gap-1.5">
+             <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+             <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+             <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
           </div>
-          <div className="flex-1 bg-white rounded h-4 flex items-center px-2 text-[8px] text-gray-400 truncate">
-             https://{data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.com
+          <div className="flex-1 bg-white rounded-full h-6 flex items-center px-4 text-[10px] text-gray-400 font-mono italic shadow-inner">
+             https://{data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.webbylaunch.com
           </div>
         </div>
 
-        {/* Navbar */}
-        <nav className="p-4 border-b flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary rounded shadow-inner flex items-center justify-center text-white font-bold text-[10px]">
-              {(data.businessName || 'B')[0]}
-            </div>
-            <span className="font-bold text-[10px] tracking-tight truncate max-w-[100px]">{data.businessName || 'Business Name'}</span>
-          </div>
-          <div className="flex gap-2">
-             <div className="w-8 h-2 bg-gray-100 rounded" />
-             <div className="w-8 h-2 bg-gray-100 rounded" />
-          </div>
-        </nav>
-
-        {/* Hero */}
-        <section className="py-16 px-6 text-center space-y-4 relative overflow-hidden" style={{ backgroundColor: data.primaryColor || '#cfcb11' }}>
-          <div className="relative z-10">
-            <h1 className="text-2xl font-black uppercase tracking-tighter leading-[0.9]" style={{ color: data.secondaryColor || '#000000' }}>
-              Premium {data.businessType || 'Solutions'} for {data.businessName || 'Next level'}
-            </h1>
-            <p className="text-[10px] font-medium mt-4 max-w-[200px] mx-auto opacity-80" style={{ color: data.secondaryColor || '#000000' }}>
-              {data.description || 'Welcome to our professional platform. We provide top-tier services tailored for your business growth.'}
-            </p>
-            <div className="mt-8 flex justify-center gap-3">
-              <button className="px-6 py-2 rounded-full font-bold text-[8px] uppercase tracking-widest shadow-xl transition-transform hover:scale-105" style={{ backgroundColor: data.secondaryColor || '#000000', color: data.primaryColor || '#cfcb11' }}>
-                Explore Now
-              </button>
-            </div>
-          </div>
-          {/* Decorative accents */}
-          <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full opacity-20" style={{ backgroundColor: data.secondaryColor || '#000' }} />
-        </section>
-
-        {/* Portfolio Section */}
-        <section className="py-12 px-6 space-y-6 bg-white border-t border-gray-50">
-          <div className="space-y-1">
-             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-center text-gray-400">Portfolio</h2>
-             <p className="text-xl font-bold text-center tracking-tight italic uppercase">View Our Works</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4, 5].map(i => {
-              const isLogistics = i === 4 || i === 5;
-              return (
-                <div key={i} className={`aspect-[4/3] rounded-2xl border overflow-hidden group h-full relative ${isLogistics ? (i === 4 ? 'bg-[#0B141A] border-purple-500/20' : 'bg-white border-blue-900/10') : 'bg-gray-50 border-gray-100'}`}>
-                  <div className={`w-full h-full flex flex-col items-center justify-center gap-2 transition-all duration-500 group-hover:scale-110 ${isLogistics ? (i === 4 ? 'bg-gradient-to-br from-purple-900/20 to-transparent' : 'bg-white shadow-inner') : ''}`}>
-                     <div 
-                       className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:rotate-12 ${isLogistics ? (i === 4 ? 'bg-[#A855F7] text-white shadow-purple-500/20' : 'bg-blue-900 text-white') : ''}`}
-                       style={!isLogistics ? { backgroundColor: data.primaryColor || '#cfcb11', color: data.secondaryColor || '#000000' } : {}}
-                     >
-                        {isLogistics ? (i === 4 ? <Activity size={24} /> : <Ship size={24} />) : <Layout size={24} />}
-                     </div>
-                     <div className={`w-16 h-1.5 rounded-full ${isLogistics ? (i === 4 ? 'bg-[#A855F7]/30' : 'bg-blue-900/10') : 'bg-gray-200'}`} />
-                     {isLogistics && (
-                       <div className={`absolute inset-0 transition-opacity flex items-center justify-center backdrop-blur-[2px] opacity-0 group-hover:opacity-100 ${i === 4 ? 'bg-purple-900/10' : 'bg-blue-900/5'}`}>
-                         <div className="text-center p-2 rounded-lg bg-black/40 border border-white/10">
-                           <span className={`text-[6px] font-black uppercase tracking-widest block ${i === 4 ? 'text-[#A855F7]' : 'text-blue-900'}`}>{i === 4 ? 'Global Logistics' : 'Industrial Master'}</span>
-                           <span className="text-[4px] text-white/60 font-medium block mt-1">{i === 4 ? 'SaaS Tech-Noir' : 'Corporate Branding'}</span>
-                         </div>
-                       </div>
-                     )}
-                  </div>
+        <div className="flex-1 overflow-y-auto bg-white text-black font-sans no-scrollbar flex flex-col">
+          {/* Navbar */}
+          <nav className="p-5 border-b flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-md z-30">
+            <div className="flex items-center gap-3">
+              {data.logoUrl ? (
+                <img src={data.logoUrl} alt="Logo" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-lg" style={{ backgroundColor: data.primaryColor || '#c7c42a' }}>
+                  {(data.businessName || 'W')[0].toUpperCase()}
                 </div>
-              );
-            })}
-          </div>
-          <div className="flex justify-center mt-6">
-             <button className="px-8 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest shadow-xl transition-all hover:shadow-2xl hover:scale-105 active:scale-95 flex items-center gap-3" style={{ backgroundColor: data.primaryColor || '#cfcb11', color: data.secondaryColor || '#000000' }}>
-                See All Projects <ArrowRight size={14} className="group-hover:translate-x-1" />
-             </button>
-          </div>
-        </section>
+              )}
+              <span className="font-black text-sm uppercase tracking-tighter leading-none">{data.businessName || 'WEBBYLAUNCH'}</span>
+            </div>
+            <div className="flex gap-6 items-center">
+               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Home</span>
+               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">About</span>
+               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Contact</span>
+            </div>
+          </nav>
 
-        {/* Features Preview */}
-        <section className="py-12 px-6 space-y-6 bg-white">
-          <div className="space-y-1">
-             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-center text-gray-400">Our Services</h2>
-             <p className="text-xl font-bold text-center tracking-tight">What we offer</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {(data.selectedFeatures || []).slice(0, 4).map((f: string, i: number) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center gap-3 text-center transition-all hover:shadow-md">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: data.primaryColor + '20', color: data.primaryColor }}>
-                  <Zap size={16} />
+          {/* Hero */}
+          <section className="flex-1 min-h-[400px] flex items-center justify-center p-12 text-center relative overflow-hidden transition-colors duration-1000" style={{ backgroundColor: data.primaryColor || '#000000' }}>
+            <div className="relative z-10 max-w-lg mx-auto space-y-8">
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-[0.85] italic" 
+                style={{ color: data.secondaryColor || '#c7c42a' }}
+              >
+                Premium {data.businessType || 'Solutions'} <br /> For Your Business
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-xs font-semibold max-w-sm mx-auto opacity-70 leading-relaxed uppercase tracking-wider" 
+                style={{ color: data.secondaryColor || '#c7c42a' }}
+              >
+                {data.description || 'Elevate your digital presence with high-end development and precision engineering.'}
+              </motion.p>
+              <div className="pt-4 drop-shadow-2xl">
+                <button 
+                  className="px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95" 
+                  style={{ backgroundColor: data.secondaryColor || '#c7c42a', color: data.primaryColor || '#000000' }}
+                >
+                  Get Started
+                </button>
+              </div>
+            </div>
+            
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(${data.secondaryColor} 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
+          </section>
+
+          {/* Features Grid */}
+          <section className="py-20 px-10 bg-white grid grid-cols-2 gap-6">
+            {data.selectedFeatures?.slice(0, 4).map((feature: string, i: number) => (
+              <div key={i} className="p-8 rounded-[2rem] border border-gray-100 bg-gray-50 flex flex-col items-center gap-4 text-center group hover:bg-white hover:shadow-xl transition-all">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform" style={{ backgroundColor: data.primaryColor || '#c7c42a', color: data.secondaryColor || '#000000' }}>
+                  <Zap size={24} />
                 </div>
-                <div className="text-[9px] font-black uppercase tracking-[0.1em] leading-tight text-gray-800">{f}</div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-900">{feature}</span>
               </div>
             ))}
-          </div>
-        </section>
+          </section>
 
-        {/* Contact Section */}
-        <section className="py-12 px-6 bg-gray-50 border-t border-gray-100">
-           <div className="space-y-6">
-              <div className="space-y-2">
-                 <h2 className="text-lg font-bold tracking-tight">Contact Us</h2>
-                 <p className="text-[10px] text-gray-500 font-medium">Ready to start your next big project? Reach out to us today.</p>
-              </div>
-              <div className="space-y-3">
-                 <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100">
-                    <Mail size={14} className="text-gray-400" />
-                    <span className="text-[10px] font-medium">{data.businessEmail || 'contact@business.com'}</span>
-                 </div>
-                 <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100">
-                    <MessageSquare size={14} className="text-gray-400" />
-                    <span className="text-[10px] font-medium">{data.businessPhone || '+91 98765 43210'}</span>
-                 </div>
-              </div>
-           </div>
-        </section>
+          {/* Contact Bar */}
+          <section className="py-12 px-10 border-t border-gray-100 flex flex-col items-center gap-8 bg-gray-50">
+             <div className="flex gap-10">
+                <div className="flex items-center gap-3">
+                  <Mail size={16} className="text-gray-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">{data.businessEmail || 'hello@webbylaunch.com'}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Smartphone size={16} className="text-gray-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">{data.businessPhone || '+91 88000 00000'}</span>
+                </div>
+             </div>
+          </section>
 
-        {/* Footer */}
-        <footer className="py-8 px-6 bg-gray-900 text-white text-center">
-          <div className="text-xs font-bold tracking-tight mb-2">Webby<span className="text-primary">Launch</span></div>
-          <div className="text-[8px] font-medium opacity-50 uppercase tracking-widest">© 2024 {data.businessName || 'Business'}. All rights reserved.</div>
-        </footer>
+          {/* Footer */}
+          <footer className="p-10 bg-black text-white text-center">
+            <div className="text-xl font-black italic tracking-tighter uppercase mb-4">Webby<span style={{ color: data.primaryColor || '#c7c42a' }}>Launch</span></div>
+            <p className="text-[8px] font-bold uppercase tracking-[0.3em] opacity-40">© 2026 {data.businessName || 'Business'}. Precision Built by WebbyLaunch.</p>
+          </footer>
+        </div>
+        
+        {/* Device specific artifacts */}
+        {device === 'mobile' && <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-800 rounded-full z-40" />}
+      </div>
+      
+      <div className="mt-8 text-center">
+        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">
+          * This is a sample preview. Final website will be significantly more professional and optimized.
+        </p>
       </div>
     </div>
   );
@@ -221,7 +196,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       description: '',
       location: '',
       websiteName: '',
-      primaryColor: '#cfcb11',
+      primaryColor: '#c7c42a',
       secondaryColor: '#000000',
       tertiaryColor: '',
       logoUrl: '',
@@ -262,10 +237,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   const [otp, setOtp] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
-
+  const [otpError, setOtpError] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -307,80 +281,69 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   }, [otpTimer]);
 
   const sendOTP = async () => {
-    console.log("🚀 sendOTP triggered");
     if (!formData.email) {
       toast.error("Please enter an email first");
       return;
     }
 
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log("🔢 Generated OTP:", newOtp);
-    setGeneratedOtp(newOtp);
-    localStorage.setItem("otp", newOtp);
-    localStorage.setItem("otp_expiry", (Date.now() + 5 * 60 * 1000).toString());
-
     try {
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_swbnsgq';
-      const templateId = import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID || import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_y8iz6zl';
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'vOnX0vXEzyWfWDgQL';
-
-      console.log("EMAIL VALUE:", formData.email);
-      console.log("📧 EmailJS Config:", {
-        serviceId: serviceId ? "✅ Present" : "❌ Missing",
-        templateId: templateId ? "✅ Present" : "❌ Missing",
-        publicKey: publicKey ? "✅ Present" : "❌ Missing"
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
       });
-
-      // Configuration is now handled with fallbacks
-
-      console.log("📤 Sending Email via EmailJS...");
-      const response = await emailjs.send(serviceId, templateId, {
-        email: formData.email,
-        otp: newOtp,
-      }, publicKey);
       
-      console.log("OTP SENT ✅", response);
+      const resData = await response.json();
+      if (!response.ok) throw new Error(resData.error || "Failed to send OTP");
+
       toast.success("OTP sent to your email!");
       setIsOtpSent(true);
       setOtpTimer(30);
+      setOtpError(false);
     } catch (err: any) {
-      console.error("FULL ERROR:", err);
+      console.error("OTP Error:", err);
       toast.error(err.message || "Failed to send OTP. Please try again.");
     }
   };
 
-  const verifyOTP = async () => {
-    console.log("🔐 verifyOTP triggered. Input:", otp);
-    const storedOtp = localStorage.getItem("otp") || generatedOtp;
-    const expiry = localStorage.getItem("otp_expiry");
+  const verifyOTP = async (codeOverride?: string) => {
+    const codeToVerify = codeOverride || otp;
+    if (codeToVerify.length !== 6) return;
 
-    console.log("📦 Stored OTP Info:", {
-      storedOtp,
-      expiry,
-      now: Date.now(),
-      isExpired: expiry ? Date.now() > parseInt(expiry) : true
-    });
+    try {
+      const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code: codeToVerify })
+      });
 
-    const isExpired = expiry ? Date.now() > parseInt(expiry) : false;
-    const isValid = storedOtp && (expiry ? !isExpired : true);
-
-    if (isValid) {
-      if (otp === storedOtp) {
-        console.log("✅ OTP Match (Local)");
-        toast.success("Email verified successfully!");
-        if (user) {
-          await createUserProfile(user, { isOtpVerified: true });
-        }
-        setStep(3);
+      const resData = await response.json();
+      if (!response.ok) {
+        setOtpError(true);
+        toast.error(resData.error || "Invalid OTP");
         return;
-      } else {
-        console.log("❌ OTP Mismatch (Local)");
-        toast.error("Invalid OTP. Please try again.");
       }
-    } else {
-      toast.error("OTP expired or not found. Please resend.");
+
+      toast.success("Email verified successfully!");
+      if (user) {
+        await createUserProfile(user, { isOtpVerified: true });
+      }
+      setStep(3);
+      setInvalidFields([]);
+    } catch (err: any) {
+      setOtpError(true);
+      toast.error("Verification failed. Please try again.");
     }
   };
+
+  // Auto-verify when 6 digits are entered
+  useEffect(() => {
+    if (otp.length === 6) {
+      verifyOTP();
+    } else {
+      setOtpError(false);
+    }
+  }, [otp]);
 
   const getInvalidFieldsForStep = (currentStep: number) => {
     if (!systemSettings) return [];
@@ -836,71 +799,83 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
+            className="space-y-12"
           >
-            <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text">Verify Email</h3>
-              <p className="text-subtext font-medium italic">We've sent a 6-digit OTP to <span className="text-primary">{formData.email}</span></p>
+            <div className="space-y-2 text-center">
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Security</h2>
+              <h3 className="text-4xl font-black tracking-tighter text-text uppercase italic">Verify Identity</h3>
+              <p className="text-subtext font-medium text-sm">We've sent a 6-digit code to <span className="text-primary font-bold">{formData.email}</span></p>
             </div>
 
-            <div className="space-y-6">
-              <div className="flex justify-center gap-2">
+            <div className="space-y-10">
+              <div className={`flex justify-center gap-3 transition-all duration-300 ${otpError ? 'animate-shake' : ''}`}>
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <input
                     key={i}
+                    id={`otp-input-${i}`}
                     type="text"
                     maxLength={1}
-                    className="w-12 h-16 bg-card border border-border rounded-xl text-center text-2xl font-black text-primary focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all"
+                    className={`w-12 h-16 bg-card border rounded-2xl text-center text-2xl font-black text-primary focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all ${otpError ? 'otp-error-glow' : 'border-border'}`}
                     value={otp[i] || ''}
+                    autoFocus={i === 0}
                     onChange={(e) => {
-                      const val = e.target.value;
-                      if (/^\d*$/.test(val)) {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      if (val) {
                         const newOtp = otp.split('');
-                        newOtp[i] = val;
-                        setOtp(newOtp.join(''));
-                        if (val && e.target.nextSibling) {
-                          (e.target.nextSibling as HTMLInputElement).focus();
+                        newOtp[i] = val[val.length - 1]; // Take the last character entered
+                        const joined = newOtp.join('');
+                        setOtp(joined);
+                        
+                        // Focus next input
+                        if (i < 5) {
+                          const nextInput = document.getElementById(`otp-input-${i + 1}`);
+                          nextInput?.focus();
                         }
                       }
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Backspace' && !otp[i] && (e.target as HTMLInputElement).previousSibling) {
-                        (e.target as HTMLInputElement).previousSibling && ( (e.target as HTMLInputElement).previousSibling as HTMLInputElement).focus();
+                      if (e.key === 'Backspace') {
+                        e.preventDefault();
+                        const newOtp = otp.split('');
+                        newOtp[i] = '';
+                        setOtp(newOtp.join(''));
+                        
+                        if (i > 0) {
+                          const prevInput = document.getElementById(`otp-input-${i - 1}`);
+                          prevInput?.focus();
+                        }
                       }
                     }}
                   />
                 ))}
               </div>
 
-              <div className="text-center">
+              {otpError && (
+                <motion.p 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center text-error text-[10px] font-black uppercase tracking-[0.2em] animate-pulse"
+                >
+                  Wrong OTP
+                </motion.p>
+              )}
+
+              <div className="text-center space-y-6">
                 <button 
                   onClick={sendOTP}
                   disabled={otpTimer > 0}
-                  className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 disabled:text-subtext transition-colors"
+                  className="group relative inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary hover:text-white transition-colors disabled:text-subtext"
                 >
-                  {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : 'Resend OTP'}
+                  <motion.span animate={otpTimer > 0 ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}>
+                    <Zap size={12} />
+                  </motion.span>
+                  {otpTimer > 0 ? `Resend in ${otpTimer}s` : 'Resend Code'}
                 </button>
-                <div className="mt-4">
-                  <button 
-                    onClick={() => setStep(3)}
-                    className="text-[8px] font-bold uppercase tracking-[0.2em] text-subtext hover:text-primary transition-colors"
-                  >
-                    Skip Verification (Test Mode)
-                  </button>
-                </div>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
-              <button 
-                onClick={verifyOTP}
-                disabled={otp.length !== 6}
-                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-              >
-                Verify & Continue
-              </button>
+              <button onClick={handleBack} className="flex-1 glass text-white py-6 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Back</button>
             </div>
           </motion.div>
         );

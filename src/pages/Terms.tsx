@@ -18,7 +18,7 @@ export default function Terms() {
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl font-black uppercase italic tracking-tighter"
           >
-            Terms of <span className="text-[#cfcb11]">Service.</span>
+            Terms of <span className="text-[#c7c42a]">Service.</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}

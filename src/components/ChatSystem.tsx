@@ -33,9 +33,9 @@ const Loader = ({ color = "white" }: { color?: string }) => (
         repeat: Infinity,
         ease: "easeInOut"
       }}
-      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#cfcb11]'} border-t-transparent rounded-full`}
+      className={`w-6 h-6 border-2 border-${color === 'white' ? 'white' : '[#c7c42a]'} border-t-transparent rounded-full`}
     />
-    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#cfcb11]'} animate-pulse italic`}>Processing...</span>
+    <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'white' ? 'white' : '[#c7c42a]'} animate-pulse italic`}>Processing...</span>
   </div>
 );
 import { FirebaseUser } from '../firebase';
@@ -392,7 +392,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       <header className="px-10 py-8 border-b border-white/10 flex items-center justify-between bg-white/5">
         <div className="flex items-center gap-6">
           <div className="relative">
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(207,203,17,0.2)] ${recipientUser?.displayName === 'SAI ROSHAN' ? 'bg-transparent border border-[#cfcb11]/30 text-[#cfcb11]' : 'bg-[#cfcb11]'}`}>
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)] ${recipientUser?.displayName === 'SAI ROSHAN' ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]' : 'bg-[#c7c42a]'}`}>
               {recipientUser?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={32} /> : (recipientUser?.displayName?.[0] || (projectId ? 'P' : 'U'))}
             </div>
             {isDirect && (
@@ -406,7 +406,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">{recipientUser?.displayName || (projectId ? 'Project Chat' : 'Chat')}</h2>
             <div className="flex items-center gap-2">
               {typingUsers.length > 0 ? (
-                <p className="text-[10px] text-[#cfcb11] font-black uppercase tracking-widest animate-pulse italic">typing...</p>
+                <p className="text-[10px] text-[#c7c42a] font-black uppercase tracking-widest animate-pulse italic">typing...</p>
               ) : (
                 <>
                   <div className={`w-2 h-2 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)] ${
@@ -448,8 +448,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full space-y-6">
-            <div className="w-24 h-24 bg-[#cfcb11]/10 rounded-full flex items-center justify-center relative">
-              <MessageCircle size={48} className="text-[#cfcb11]" />
+            <div className="w-24 h-24 bg-[#c7c42a]/10 rounded-full flex items-center justify-center relative">
+              <MessageCircle size={48} className="text-[#c7c42a]" />
             </div>
             <div className="text-center space-y-2">
               <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Secure Channel</h3>
@@ -506,7 +506,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         >
                           <button 
                             onClick={(e) => { e.stopPropagation(); setReplyingTo(m); }}
-                            className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#cfcb11] transition-all"
+                            className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#c7c42a] transition-all"
                             title="Reply"
                           >
                             <CornerUpLeft size={16} />
@@ -518,7 +518,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                                 setEditingMessage(m);
                                 setInputText(m.text);
                               }}
-                              className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#cfcb11] transition-all"
+                              className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#c7c42a] transition-all"
                               title="Edit"
                             >
                               <Edit size={16} />
@@ -543,7 +543,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                     </AnimatePresence>
 
                     {m.replyTo && (
-                      <div className="mb-2 p-2 rounded-lg border-l-4 bg-black/20 border-[#cfcb11]">
+                      <div className="mb-2 p-2 rounded-lg border-l-4 bg-black/20 border-[#c7c42a]">
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
                           {m.replyTo.senderName}
                         </p>
@@ -636,7 +636,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                         {formatDate(m.createdAt, 'h:mm a')}
                       </span>
                       {isMe && (
-                        m.seen ? <CheckCheck size={12} className="text-[#cfcb11]" /> : <Check size={12} />
+                        m.seen ? <CheckCheck size={12} className="text-[#c7c42a]" /> : <Check size={12} />
                       )}
                     </div>
 
@@ -667,11 +667,11 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         })
       )}
         {typingUsers.length > 0 && (
-          <div className="flex items-center gap-3 text-[10px] text-[#cfcb11] font-black uppercase tracking-widest italic animate-pulse">
+          <div className="flex items-center gap-3 text-[10px] text-[#c7c42a] font-black uppercase tracking-widest italic animate-pulse">
             <div className="flex gap-1">
-              <span className="w-1.5 h-1.5 bg-[#cfcb11] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-              <span className="w-1.5 h-1.5 bg-[#cfcb11] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-              <span className="w-1.5 h-1.5 bg-[#cfcb11] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              <span className="w-1.5 h-1.5 bg-[#c7c42a] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+              <span className="w-1.5 h-1.5 bg-[#c7c42a] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+              <span className="w-1.5 h-1.5 bg-[#c7c42a] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
             </div>
             Someone is typing...
           </div>
@@ -703,7 +703,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       <motion.div 
                          initial={{ width: 0 }}
                          animate={{ width: `${progress}%` }}
-                         className="h-full bg-[#cfcb11]"
+                         className="h-full bg-[#c7c42a]"
                        />
                     </div>
                   </div>
@@ -791,9 +791,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
               className="absolute bottom-full left-0 right-0 p-4 bg-[#1e293b] border-t border-white/10 flex items-center justify-between"
             >
               <div className="flex items-center gap-3 overflow-hidden">
-                <div className={`w-1 h-10 rounded-full bg-[#cfcb11]`} />
+                <div className={`w-1 h-10 rounded-full bg-[#c7c42a]`} />
                 <div className="overflow-hidden">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#cfcb11]">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
                     {editingMessage ? 'Editing Message' : `Replying to ${replyingTo?.senderName}`}
                   </p>
                   <p className="text-xs text-white/60 truncate italic">
