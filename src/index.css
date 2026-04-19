@@ -14,22 +14,7 @@
   --color-error: #ff0000;
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-.animate-shake {
-  animation: shake 0.2s ease-in-out 0s 2;
-}
-
-.otp-error-glow {
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.7), inset 0 0 10px rgba(255, 0, 0, 0.5);
-  border-color: #ff0000 !important;
-}
-
-.accent-glow {
+.glow {
   box-shadow: 0 0 20px rgba(199, 196, 42, 0.3);
 }
 

@@ -24,6 +24,7 @@ const Loader = ({ color = "black" }: { color?: string }) => (
 );
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
+import emailjs from '@emailjs/browser';
 import { useAuth } from '../context/AuthContext';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
@@ -234,7 +235,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   });
 
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-
+  const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
   const [otp, setOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
@@ -285,23 +286,44 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       return;
     }
 
-    try {
-      const response = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
-      });
-      
-      const resData = await response.json();
-      if (!response.ok) throw new Error(resData.error || "Failed to send OTP");
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    
+    // FOR TESTING: Log to console
+    console.log(`[DEVELOPMENT] Your OTP Code: ${code}`);
 
-      toast.success("OTP sent to your email!");
+    try {
+      // 1. Try EmailJS first
+      if (import.meta.env.VITE_EMAILJS_SERVICE_ID && 
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID && 
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY) {
+        
+        await emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID,
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+          {
+            to_email: formData.email,
+            otp_code: code,
+            app_name: APP_NAME
+          },
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+        );
+        toast.success("OTP sent to your email!");
+      } else {
+        // Fallback or warning if no keys
+        toast.success("OTP generated! (Check console for code)");
+      }
+
       setIsOtpSent(true);
       setOtpTimer(30);
       setOtpError(false);
     } catch (err: any) {
       console.error("OTP Error:", err);
-      toast.error(err.message || "Failed to send OTP. Please try again.");
+      toast.error("Failed to send email. Check console for code.");
+      
+      // Still allow them to proceed if it generated
+      setIsOtpSent(true);
+      setOtpTimer(30);
     }
   };
 
@@ -309,36 +331,23 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     const codeToVerify = codeOverride || otp;
     if (codeToVerify.length !== 6) return;
 
-    try {
-      const response = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, code: codeToVerify })
-      });
-
-      const resData = await response.json();
-      if (!response.ok) {
-        setOtpError(true);
-        toast.error(resData.error || "Invalid OTP");
-        
-        // Delay clearing so user sees the neon red and shake
-        setTimeout(() => {
-          setOtp('');
-          const firstInput = document.getElementById('otp-input-0');
-          firstInput?.focus();
-        }, 1000);
-        return;
-      }
-
+    if (codeToVerify === generatedOtp) {
       toast.success("Email verified successfully!");
       if (user) {
         await createUserProfile(user, { isOtpVerified: true });
       }
       setStep(3);
       setInvalidFields([]);
-    } catch (err: any) {
+    } else {
       setOtpError(true);
-      toast.error("Verification failed. Please try again.");
+      toast.error("Invalid OTP code. Please try again.");
+      
+      // Delay clearing so user sees the neon red and shake
+      setTimeout(() => {
+        setOtp('');
+        const firstInput = document.getElementById('otp-input-0');
+        firstInput?.focus();
+      }, 1000);
     }
   };
 
@@ -800,79 +809,46 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
 
             <div className="space-y-10">
-              <div className={`flex justify-center gap-3 transition-all duration-300 ${otpError ? 'animate-shake' : ''}`}>
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <input
-                    key={i}
-                    id={`otp-input-${i}`}
-                    type="text"
-                    maxLength={1}
-                    className={`w-12 h-16 bg-card border rounded-2xl text-center text-2xl font-black text-primary focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all ${otpError ? 'otp-error-glow' : 'border-border'}`}
-                    value={otp[i] || ''}
-                    autoFocus={i === 0}
-                    onPaste={(e) => {
-                      e.preventDefault();
-                      const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-                      if (pastedData.length > 0) {
-                        setOtp(pastedData);
-                        // Focus the correct box or the last one
-                        const focusIdx = Math.min(pastedData.length, 5);
-                        document.getElementById(`otp-input-${focusIdx}`)?.focus();
-                      }
-                    }}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/[^0-9]/g, '');
-                      if (val) {
-                        const newOtp = otp.split('');
-                        newOtp[i] = val[val.length - 1]; // Take the last character entered
-                        const joined = newOtp.join('');
-                        setOtp(joined);
-                        
-                        // Focus next input
-                        if (i < 5) {
-                          const nextInput = document.getElementById(`otp-input-${i + 1}`);
-                          nextInput?.focus();
-                        }
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Backspace') {
-                        e.preventDefault();
-                        const newOtp = otp.split('');
-                        newOtp[i] = '';
-                        setOtp(newOtp.join(''));
-                        
-                        if (i > 0) {
-                          const prevInput = document.getElementById(`otp-input-${i - 1}`);
-                          prevInput?.focus();
-                        }
-                      }
-                    }}
-                  />
-                ))}
+              <div className="relative">
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="000000"
+                  className={getInputClass('otp', "w-full p-6 h-20 rounded-2xl bg-card border text-center text-4xl font-black text-primary tracking-[1em] focus:outline-none focus:border-primary")}
+                  value={otp}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+                    setOtp(val);
+                  }}
+                  autoFocus
+                />
               </div>
 
-              {otpError && (
-                <motion.p 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center text-error text-[10px] font-black uppercase tracking-[0.2em] animate-pulse"
-                >
-                  Wrong OTP
-                </motion.p>
-              )}
-
-              <div className="text-center space-y-6">
+              <div className="flex flex-col gap-4 pt-4">
                 <button 
-                  onClick={sendOTP}
-                  disabled={otpTimer > 0}
-                  className="group relative inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary hover:text-white transition-colors disabled:text-subtext"
+                  onClick={() => verifyOTP()}
+                  disabled={otp.length !== 6}
+                  className="w-full bg-primary text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
                 >
-                  <motion.span animate={otpTimer > 0 ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}>
-                    <Zap size={12} />
-                  </motion.span>
-                  {otpTimer > 0 ? `Resend in ${otpTimer}s` : 'Resend Code'}
+                  Verify Code
                 </button>
+                
+                <div className="flex justify-center items-center gap-4">
+                  <button 
+                    onClick={sendOTP}
+                    disabled={otpTimer > 0}
+                    className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline disabled:text-subtext"
+                  >
+                    {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend"}
+                  </button>
+                  <span className="w-1 h-1 rounded-full bg-white/10" />
+                  <button 
+                    onClick={() => setStep(1)}
+                    className="text-subtext text-[10px] font-black uppercase tracking-widest hover:text-white"
+                  >
+                    Change Email
+                  </button>
+                </div>
               </div>
             </div>
 
