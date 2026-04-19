@@ -142,8 +142,89 @@ async function startServer() {
 
     otpStore.set(email, { hash, expires, attempts: 0, lastSent: now });
     
-    // In production, send via email. For now, log to console.
-    console.log(`[SECURE OTP] Code for ${email}: ${otp}`);
+    // Send via email if configuration exists
+    const sendEmail = async () => {
+      // 1. Try Resend first if available
+      if (process.env.RESEND_API_KEY) {
+        try {
+          const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+            },
+            body: JSON.stringify({
+              from: process.env.RESEND_FROM_EMAIL || 'support@webbylaunch.com',
+              to: [email],
+              subject: 'Your OTP Code – WebbyLaunch',
+              html: `
+                <div style="font-family: 'Arial', sans-serif; background:#0f0f0f; padding:30px; color:#ffffff;">
+                  <div style="max-width:500px; margin:auto; background:#1a1a1a; border-radius:12px; padding:25px; text-align:center;">
+                    <h2 style="color:#c7c42a; margin-bottom:5px;">WebbyLaunch</h2>
+                    <p style="font-size:13px; color:#aaa; margin-bottom:20px;">Secure OTP Verification</p>
+                    <p style="font-size:14px; color:#ddd;">Hi,<br><br>Your verification code is:</p>
+                    <div style="margin:25px 0; padding:15px; background:#000; border-radius:10px; border:1px solid #c7c42a;">
+                      <span style="font-size:30px; letter-spacing:6px; font-weight:bold; color:#c7c42a;">${otp}</span>
+                    </div>
+                    <p style="font-size:13px; color:#bbb;">This code is valid for <b>5 minutes</b>.</p>
+                    <p style="font-size:12px; color:#777; margin-top:15px;">If you didn’t request this, you can safely ignore this email.</p>
+                    <hr style="border:none; border-top:1px solid #333; margin:20px 0;" />
+                    <p style="font-size:11px; color:#555;">© 2026 WebbyLaunch. All rights reserved.</p>
+                  </div>
+                </div>
+              `
+            })
+          });
+          if (res.ok) {
+            console.log(`[RESEND] Email sent to ${email}`);
+            return true;
+          }
+        } catch (e) {
+          console.error('[RESEND ERROR]', e);
+        }
+      }
+
+      // 2. Try EmailJS if available (Secure REST API call)
+      if (process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_PUBLIC_KEY) {
+        try {
+          const data = {
+            service_id: process.env.EMAILJS_SERVICE_ID,
+            template_id: process.env.EMAILJS_TEMPLATE_ID,
+            user_id: process.env.EMAILJS_PUBLIC_KEY,
+            accessToken: process.env.EMAILJS_PRIVATE_KEY, // Optional but recommended for server-side
+            template_params: {
+              otp: otp,
+              to_email: email
+            }
+          };
+
+          const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          if (res.ok) {
+            console.log(`[EMAILJS] Email sent to ${email}`);
+            return true;
+          } else {
+            const err = await res.text();
+            console.error('[EMAILJS ERROR RESPONSE]', err);
+          }
+        } catch (e) {
+          console.error('[EMAILJS ERROR]', e);
+        }
+      }
+
+      return false;
+    };
+
+    // Trigger email send (don't await to avoid blocking response)
+    sendEmail().then(sent => {
+      if (!sent) {
+        console.log(`[SECURE OTP FALLBACK] Code for ${email}: ${otp}`);
+      }
+    });
 
     res.json({ success: true, message: "OTP sent successfully" });
   });

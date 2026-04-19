@@ -24,7 +24,6 @@ const Loader = ({ color = "black" }: { color?: string }) => (
 );
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
-import emailjs from '@emailjs/browser';
 import { useAuth } from '../context/AuthContext';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';

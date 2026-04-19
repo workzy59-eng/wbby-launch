@@ -15,10 +15,10 @@ const SEO: React.FC<SEOProps> = ({
   description = "Webby Launch builds fast, SEO-friendly websites in India. Get responsive design, Google indexing & affordable plans for your business.", 
   keywords = "website development company in India, affordable web design services India, SEO services for small businesses India, fast website development India, startup website builder India, mobile responsive website India",
   image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200&h=630",
-  url = "https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/",
+  url = window.location.origin + "/",
   canonical
 }) => {
-  const seoUrl = url;
+  const seoUrl = url || (typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '');
   const seoCanonical = canonical || seoUrl;
 
   return (
