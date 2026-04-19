@@ -320,6 +320,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       if (!response.ok) {
         setOtpError(true);
         toast.error(resData.error || "Invalid OTP");
+        
+        // Delay clearing so user sees the neon red and shake
+        setTimeout(() => {
+          setOtp('');
+          const firstInput = document.getElementById('otp-input-0');
+          firstInput?.focus();
+        }, 1000);
         return;
       }
 
@@ -339,7 +346,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   useEffect(() => {
     if (otp.length === 6) {
       verifyOTP();
-    } else {
+    } else if (otp.length > 0) {
+      // Clear error state as soon as user starts typing again
       setOtpError(false);
     }
   }, [otp]);
@@ -802,6 +810,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     className={`w-12 h-16 bg-card border rounded-2xl text-center text-2xl font-black text-primary focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all ${otpError ? 'otp-error-glow' : 'border-border'}`}
                     value={otp[i] || ''}
                     autoFocus={i === 0}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+                      if (pastedData.length > 0) {
+                        setOtp(pastedData);
+                        // Focus the correct box or the last one
+                        const focusIdx = Math.min(pastedData.length, 5);
+                        document.getElementById(`otp-input-${focusIdx}`)?.focus();
+                      }
+                    }}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       if (val) {

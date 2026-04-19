@@ -23,35 +23,18 @@ if (!admin.apps.length) {
 
   let privateKey = rawKey;
   if (privateKey) {
-    // Remove wrapping quotes if they exist
+    // 1. Basic trim and quote removal
     privateKey = privateKey.trim();
-    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-      try {
-        // Handle double-escaped keys by parsing as JSON string
-        privateKey = JSON.parse(privateKey);
-      } catch (e) {
-        privateKey = privateKey.substring(1, privateKey.length - 1);
-      }
-    } else if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
-      privateKey = privateKey.substring(1, privateKey.length - 1);
+    if ((privateKey.startsWith('"') && privateKey.endsWith('"')) || 
+        (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+      privateKey = privateKey.slice(1, -1);
     }
     
-    // Replace literal \n strings with actual newline characters
+    // 2. Critical: Replace literal \n with real newlines
     privateKey = privateKey.replace(/\\n/g, '\n');
     
-    // Reformat to standard PEM if it looks like one
-    if (privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-      const header = '-----BEGIN PRIVATE KEY-----';
-      const footer = '-----END PRIVATE KEY-----';
-      
-      let content = privateKey
-        .substring(privateKey.indexOf(header) + header.length)
-        .replace(footer, '')
-        .replace(/\s/g, ''); // Remove all whitespace
-        
-      const lines = content.match(/.{1,64}/g) || [];
-      privateKey = `${header}\n${lines.join('\n')}\n${footer}\n`;
-    }
+    // 3. If it's a multi-line string with dashes, it's ready. 
+    // No more aggressive regex reformatting to avoid truncating the key.
   }
   
   const hasValidKey = privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----');
@@ -112,6 +95,16 @@ async function startServer() {
     lastSent: number;
   }
   const otpStore = new Map<string, OTP>();
+  
+  // Cleanup expired OTPs every hour
+  setInterval(() => {
+    const now = Date.now();
+    for (const [email, data] of otpStore.entries()) {
+      if (now > data.expires) {
+        otpStore.delete(email);
+      }
+    }
+  }, 60 * 60 * 1000);
 
   // Helper for SHA-256 hashing
   const hashOTP = (otp: string) => {
