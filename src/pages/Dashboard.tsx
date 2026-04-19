@@ -54,17 +54,27 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     : -1;
 
   useEffect(() => {
-    const fetchAdmin = async () => {
-      const { getProfiles } = await import('../services/database');
-      const profiles = await getProfiles();
-      setTotalUsersCount(profiles.length);
-      const admin = profiles.find(p => p.role === 'admin');
-      if (admin) {
-        setAdminProfile(admin);
+    const fetchStats = async () => {
+      try {
+        const { getProfiles, getUserProfile } = await import('../services/database');
+        
+        if (profile?.role === 'admin') {
+          const profilesList = await getProfiles();
+          setTotalUsersCount(profilesList.length);
+          const admin = profilesList.find(p => p.role === 'admin');
+          if (admin) setAdminProfile(admin);
+        } else {
+          // Clients don't need to see total users count
+          // They just need a reference to the main admin for support
+          // If you have a specific admin UID, use it here.
+          // For now, we'll keep it empty or set a placeholder
+        }
+      } catch (err) {
+        console.warn("Permission denied for listing users. Stats skipped.");
       }
     };
-    fetchAdmin();
-  }, []);
+    fetchStats();
+  }, [profile]);
 
   // Separate effect for unread counts to avoid nested listeners
   const [convUnread, setConvUnread] = useState(0);

@@ -92,6 +92,16 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // LEGACY OTP - Help debug cached JS bundles
+  app.post("/api/send-otp", (req, res) => {
+    console.warn("LEGACY API HIT: /api/send-otp. This app now uses Frontend-Only OTP. Please HARD REFRESH your browser (Ctrl+F5/Cmd+Shift+R).");
+    res.status(410).json({ error: "API DEPRECATED: Please hard reload your browser (Ctrl+F5) to use the new frontend OTP logic." });
+  });
+
+  app.post("/api/verify-otp", (req, res) => {
+    res.status(410).json({ error: "API DEPRECATED: Please hard reload your browser (Ctrl+F5) to use the new frontend OTP logic." });
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

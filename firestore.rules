@@ -211,8 +211,8 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      // PII Protection: Only owner or admin can read full profile
-      allow get: if isOwner(userId) || isAdmin();
+      // Allow getting profile: if owner, admin, or if it's an admin profile
+      allow get: if isOwner(userId) || isAdmin() || (isAuthenticated() && resource.data.get('role', '') == 'admin');
       // Only admin can list all users
       allow list: if isAdmin();
       

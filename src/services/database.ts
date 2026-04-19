@@ -113,11 +113,12 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
 export const updateUserStatus = async (uid: string, status: 'online' | 'offline' | 'away') => {
   const path = `users/${uid}`;
   try {
-    await updateDoc(doc(db, 'users', uid), {
+    // Use setDoc with merge to ensure document exists
+    await setDoc(doc(db, 'users', uid), {
       status,
       lastSeen: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    }, { merge: true });
   } catch (error) {
     // Silently fail for status updates to avoid UI noise
     console.warn('Status update failed:', error);
