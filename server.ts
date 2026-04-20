@@ -121,9 +121,9 @@ async function startServer() {
 
       // Send OTP via EmailJS REST API
       const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_swbnsgq';
-      const templateId = 'template_ashsijc'; // Provided by user
-      const publicKey = 'vOnX0vXEzyWfWDgQL'; // Provided by user
-      const privateKey = 'GP8QbhOyjwCHLoOBtyra2'; // Provided by user
+      const templateId = 'template_ashsijc'; 
+      const publicKey = 'vOnX0vXEzyWfWDgQL'; 
+      const privateKey = 'GP8QbhOyjwCHLoOBtyra2'; 
 
       const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
@@ -149,11 +149,9 @@ async function startServer() {
       if (!emailResponse.ok) {
         const errorText = await emailResponse.text();
         console.error("EmailJS Error:", errorText);
-        // We still return 200 for now to allow testing with logs if email fails
-        return res.json({ 
-          success: true, 
-          message: "OTP generated. (Email sending failed: " + errorText + "). Check server logs for code.",
-          debug: true
+        return res.status(500).json({ 
+          error: "Failed to send email", 
+          debug: errorText 
         });
       }
 
@@ -162,6 +160,10 @@ async function startServer() {
       console.error("Send OTP Error:", err);
       res.status(500).json({ error: "Internal server error" });
     }
+  });
+
+  app.get("/api/send-otp", (req, res) => {
+    res.status(405).json({ error: "Method not allowed. Please use POST." });
   });
 
   app.post("/api/verify-otp", (req, res) => {
@@ -194,14 +196,8 @@ async function startServer() {
     }
   });
 
-  // LEGACY OTP - Help debug cached JS bundles
-  app.post("/api/send-otp", (req, res) => {
-    console.warn("LEGACY API HIT: /api/send-otp. This app now uses Frontend-Only OTP. Please HARD REFRESH your browser (Ctrl+F5/Cmd+Shift+R).");
-    res.status(410).json({ error: "API DEPRECATED: Please hard reload your browser (Ctrl+F5) to use the new frontend OTP logic." });
-  });
-
-  app.post("/api/verify-otp", (req, res) => {
-    res.status(410).json({ error: "API DEPRECATED: Please hard reload your browser (Ctrl+F5) to use the new frontend OTP logic." });
+  app.get("/api/verify-otp", (req, res) => {
+    res.status(405).json({ error: "Method not allowed. Please use POST." });
   });
 
   // Vite middleware for development
