@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import admin from 'firebase-admin';
 import crypto from "crypto";
+import { Resend } from 'resend';
 import firebaseConfig from './firebase-applet-config.json';
 
 dotenv.config();
@@ -88,6 +89,7 @@ async function startServer() {
   app.use(express.json());
 
   const dbAdmin = admin.firestore();
+  const resend = new Resend(process.env.RESEND_API_KEY || 're_MddR7kGm_8aE7G7aZJnPBXdLyRT7WNYqt');
 
   // API Routes
   app.get("/api/health", (req, res) => {
@@ -119,37 +121,34 @@ async function startServer() {
       console.log(`👉 CODE:    ${otp}`);
       console.log("=".repeat(30) + "\n");
 
-      // Send OTP via EmailJS REST API
-      const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_swbnsgq';
-      const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_ashsijc'; 
-      const publicKey = process.env.EMAILJS_PUBLIC_KEY || 'vOnX0vXEzyWfWDgQL'; 
-      const privateKey = process.env.EMAILJS_PRIVATE_KEY || 'GP8QbhOyjwCHLoOBtyra2'; 
-
-      const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_id: serviceId,
-          template_id: templateId,
-          user_id: publicKey,
-          accessToken: privateKey,
-          template_params: {
-            to_email: email,
-            email: email,
-            otp_code: otp,
-            otp: otp,
-            code: otp,
-            app_name: 'WebbyLaunch'
-          }
-        })
+      // Send OTP via Resend
+      const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+      
+      const { data, error } = await resend.emails.send({
+        from: `WebbyLaunch <${fromEmail}>`,
+        to: [email],
+        subject: `Your Verification Code: ${otp}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #333; text-align: center;">Verify Your Email</h2>
+            <p style="font-size: 16px; color: #555;">Hello,</p>
+            <p style="font-size: 16px; color: #555;">Your verification code for <strong>WebbyLaunch</strong> is:</p>
+            <div style="background: #f4f4f4; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #000; border-radius: 5px; margin: 20px 0;">
+              ${otp}
+            </div>
+            <p style="font-size: 14px; color: #888;">This code will expire in 5 minutes.</p>
+            <p style="font-size: 14px; color: #888;">If you did not request this code, please ignore this email.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+            <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2026 WebbyLaunch. All rights reserved.</p>
+          </div>
+        `,
       });
 
-      if (!emailResponse.ok) {
-        const errorText = await emailResponse.text();
-        console.error("EmailJS Error:", errorText);
+      if (error) {
+        console.error("Resend Error:", error);
         return res.status(500).json({ 
           error: "Failed to send email", 
-          debug: errorText 
+          debug: error 
         });
       }
 
