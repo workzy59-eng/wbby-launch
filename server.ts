@@ -97,7 +97,7 @@ async function startServer() {
   });
 
   // OTP Endpoints
-  app.post("/api/send-otp", (req, res) => {
+  app.post("/api/send-otp", async (req, res) => {
     try {
       const { email } = req.body;
       if (!email || !email.includes('@')) {
@@ -119,7 +119,45 @@ async function startServer() {
       console.log(`👉 CODE:    ${otp}`);
       console.log("=".repeat(30) + "\n");
 
-      res.status(200).json({ success: true, message: "OTP sent (check server logs for code)" });
+      // Send OTP via EmailJS REST API
+      const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_swbnsgq';
+      const templateId = 'template_ashsijc'; // Provided by user
+      const publicKey = 'vOnX0vXEzyWfWDgQL'; // Provided by user
+      const privateKey = 'GP8QbhOyjwCHLoOBtyra2'; // Provided by user
+
+      const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          service_id: serviceId,
+          template_id: templateId,
+          user_id: publicKey,
+          accessToken: privateKey,
+          template_params: {
+            to_email: email,
+            email: email,
+            otp_code: otp,
+            otp: otp,
+            code: otp,
+            app_name: 'WebbyLaunch'
+          }
+        })
+      });
+
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text();
+        console.error("EmailJS Error:", errorText);
+        // We still return 200 for now to allow testing with logs if email fails
+        return res.json({ 
+          success: true, 
+          message: "OTP generated. (Email sending failed: " + errorText + "). Check server logs for code.",
+          debug: true
+        });
+      }
+
+      res.status(200).json({ success: true, message: "OTP sent to your email!" });
     } catch (err) {
       console.error("Send OTP Error:", err);
       res.status(500).json({ error: "Internal server error" });

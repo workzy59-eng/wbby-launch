@@ -61,17 +61,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const sendOTP = async (email: string) => {
-    console.log("🚀 AuthContext: sendOTP triggered for", email);
-    // On Vercel, server-side API routes in server.ts are not available in static deployments.
-    // OTP is now handled client-side in OnboardingFlow.tsx using EmailJS.
-    toast.error("OTP verification is currently handled during the onboarding process.");
-    throw new Error('OTP service is moved to Onboarding Flow.');
+    console.log("🚀 AuthContext: sendOTP triggered via backend for", email);
+    try {
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to send OTP');
+      toast.success(data.message || "OTP sent successfully!");
+    } catch (err: any) {
+      console.error("OTP Error:", err);
+      toast.error(err.message || "Failed to send OTP");
+      throw err;
+    }
   };
 
   const verifyOTP = async (email: string, code: string) => {
-    console.log("🔐 AuthContext: verifyOTP triggered for", email, "with code", code);
-    toast.error("OTP verification is currently handled during the onboarding process.");
-    throw new Error('OTP service is moved to Onboarding Flow.');
+    console.log("🔐 AuthContext: verifyOTP triggered via backend for", email);
+    try {
+      const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: code })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Invalid OTP');
+      
+      // Update profile in Firebase
+      if (auth.currentUser) {
+        await createUserProfile(auth.currentUser, { isOtpVerified: true });
+      }
+      
+      toast.success("Verification successful!");
+    } catch (err: any) {
+      console.error("Verification Error:", err);
+      toast.error(err.message || "Verification failed");
+      throw err;
+    }
   };
 
   return (

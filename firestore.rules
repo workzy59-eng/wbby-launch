@@ -171,7 +171,7 @@ service cloud.firestore {
     }
 
     function isValidMessage(data) {
-      return hasOnlyAllowedFields(['id', 'projectId', 'conversationId', 'senderId', 'senderName', 'text', 'attachments', 'attachmentUrl', 'imageUrl', 'createdAt', 'seen', 'isDeleted', 'hiddenFor', 'status', 'fileData', 'deletedForEveryone', 'seenTime']) &&
+      return hasOnlyAllowedFields(['id', 'projectId', 'conversationId', 'senderId', 'senderName', 'receiverId', 'text', 'type', 'fileUrl', 'attachments', 'attachmentUrl', 'imageUrl', 'createdAt', 'updatedAt', 'seen', 'isDeleted', 'hiddenFor', 'status', 'fileData', 'deletedForEveryone', 'seenTime', 'replyTo', 'deliveredTime', 'edited']) &&
              (data.get('projectId', '') != '' || data.get('conversationId', '') != '') && 
              data.senderId is string && 
              data.text is string && data.text.size() <= 5000 &&

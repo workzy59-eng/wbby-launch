@@ -12,7 +12,7 @@ import { subscribeToMeetings } from '../services/meetingService';
 import { Meeting } from '../types';
 import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations } from '../services/database';
 import { formatDate } from '../lib/utils';
-import { APP_NAME, HYPHENATED_NAME } from '../constants';
+import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
 import InvoiceSystem from '../components/InvoiceSystem';
 
 interface DashboardProps {
@@ -54,9 +54,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     : -1;
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchStatsOrAdmin = async () => {
       try {
-        const { getProfiles, getUserProfile } = await import('../services/database');
+        const { getProfiles, getAdmins } = await import('../services/database');
         
         if (profile?.role === 'admin') {
           const profilesList = await getProfiles();
@@ -64,16 +64,19 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           const admin = profilesList.find(p => p.role === 'admin');
           if (admin) setAdminProfile(admin);
         } else {
-          // Clients don't need to see total users count
-          // They just need a reference to the main admin for support
-          // If you have a specific admin UID, use it here.
-          // For now, we'll keep it empty or set a placeholder
+          // Clients need to find an admin to chat with
+          const admins = await getAdmins();
+          if (admins.length > 0) {
+            // Find the primary admin (workzy59@gmail.com) if available
+            const primaryAdmin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
+            setAdminProfile(primaryAdmin);
+          }
         }
       } catch (err) {
-        console.warn("Permission denied for listing users. Stats skipped.");
+        console.warn("Error fetching profiles/admins:", err);
       }
     };
-    fetchStats();
+    fetchStatsOrAdmin();
   }, [profile]);
 
   // Separate effect for unread counts to avoid nested listeners

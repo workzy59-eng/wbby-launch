@@ -24,7 +24,6 @@ const Loader = ({ color = "black" }: { color?: string }) => (
 );
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
-import emailjs from '@emailjs/browser';
 import { useAuth } from '../context/AuthContext';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
@@ -173,7 +172,7 @@ interface OnboardingFlowProps {
 }
 
 export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, sendOTP: sendOTPViaAuth, verifyOTP: verifyOTPViaAuth } = useAuth();
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem('onboarding_data');
     const defaults = {
@@ -288,25 +287,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
     setIsOtpLoading(true);
     try {
-      const response = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("OTP sent to your email!");
-        setIsOtpSent(true);
-        setOtpTimer(30);
-        setOtpError(false);
-      } else {
-        toast.error(data.error || "Failed to send OTP");
-      }
+      await sendOTPViaAuth(formData.email);
+      setIsOtpSent(true);
+      setOtpTimer(30);
+      setOtpError(false);
     } catch (err: any) {
-      console.error("OTP Send Error:", err);
-      toast.error("Network error. Please try again later.");
+      // Error handled in AuthContext toast
     } finally {
       setIsOtpLoading(false);
     }
@@ -318,38 +304,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
     setIsOtpLoading(true);
     try {
-      const response = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: formData.email,
-          otp: codeToVerify 
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Email verified successfully!");
-        if (user) {
-          await createUserProfile(user, { isOtpVerified: true });
-        }
-        setStep(3);
-        setInvalidFields([]);
-      } else {
-        setOtpError(true);
-        toast.error(data.error || "Invalid OTP code");
-        
-        // Delay clearing
-        setTimeout(() => {
-          setOtp('');
-          const firstInput = document.getElementById('otp-input-0');
-          firstInput?.focus();
-        }, 1000);
-      }
+      await verifyOTPViaAuth(formData.email, codeToVerify);
+      setStep(3);
+      setInvalidFields([]);
     } catch (err: any) {
-      console.error("OTP Verify Error:", err);
-      toast.error("Verification failed. Please try again.");
+      setOtpError(true);
+      // Delay clearing
+      setTimeout(() => {
+        setOtp('');
+        const firstInput = document.getElementById('otp-input-0');
+        firstInput?.focus();
+      }, 1000);
     } finally {
       setIsOtpLoading(false);
     }
