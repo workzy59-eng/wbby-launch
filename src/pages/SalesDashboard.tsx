@@ -46,7 +46,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
   });
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !profile || profile.role !== 'sales') return;
 
     // Fetch Leads assigned to this sales person
     const leadsQuery = query(
@@ -57,6 +57,9 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
     const unsubscribeLeads = onSnapshot(leadsQuery, (snapshot) => {
       const leadsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Lead));
       setLeads(leadsData.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
+      setLoading(false);
+    }, (error) => {
+      console.error("Sales Leads Snapshot Error:", error);
       setLoading(false);
     });
 
@@ -69,6 +72,8 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
     const unsubscribeCommissions = onSnapshot(commissionsQuery, (snapshot) => {
       const commissionsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Commission));
       setCommissions(commissionsData);
+    }, (error) => {
+      console.error("Sales Commissions Snapshot Error:", error);
     });
 
     return () => {

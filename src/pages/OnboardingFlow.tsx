@@ -235,9 +235,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   });
 
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
   const [otp, setOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpLoading, setIsOtpLoading] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
   const [otpError, setOtpError] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -286,44 +286,29 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       return;
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(code);
-    
-    // FOR TESTING: Log to console
-    console.log(`[DEVELOPMENT] Your OTP Code: ${code}`);
-
+    setIsOtpLoading(true);
     try {
-      // 1. Try EmailJS first
-      if (import.meta.env.VITE_EMAILJS_SERVICE_ID && 
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID && 
-          import.meta.env.VITE_EMAILJS_PUBLIC_KEY) {
-        
-        await emailjs.send(
-          import.meta.env.VITE_EMAILJS_SERVICE_ID,
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-          {
-            to_email: formData.email,
-            otp_code: code,
-            app_name: APP_NAME
-          },
-          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-        );
-        toast.success("OTP sent to your email!");
-      } else {
-        // Fallback or warning if no keys
-        toast.success("OTP generated! (Check console for code)");
-      }
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
+      });
 
-      setIsOtpSent(true);
-      setOtpTimer(30);
-      setOtpError(false);
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("OTP sent to your email!");
+        setIsOtpSent(true);
+        setOtpTimer(30);
+        setOtpError(false);
+      } else {
+        toast.error(data.error || "Failed to send OTP");
+      }
     } catch (err: any) {
-      console.error("OTP Error:", err);
-      toast.error("Failed to send email. Check console for code.");
-      
-      // Still allow them to proceed if it generated
-      setIsOtpSent(true);
-      setOtpTimer(30);
+      console.error("OTP Send Error:", err);
+      toast.error("Network error. Please try again later.");
+    } finally {
+      setIsOtpLoading(false);
     }
   };
 
@@ -331,23 +316,42 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     const codeToVerify = codeOverride || otp;
     if (codeToVerify.length !== 6) return;
 
-    if (codeToVerify === generatedOtp) {
-      toast.success("Email verified successfully!");
-      if (user) {
-        await createUserProfile(user, { isOtpVerified: true });
+    setIsOtpLoading(true);
+    try {
+      const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: formData.email,
+          otp: codeToVerify 
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Email verified successfully!");
+        if (user) {
+          await createUserProfile(user, { isOtpVerified: true });
+        }
+        setStep(3);
+        setInvalidFields([]);
+      } else {
+        setOtpError(true);
+        toast.error(data.error || "Invalid OTP code");
+        
+        // Delay clearing
+        setTimeout(() => {
+          setOtp('');
+          const firstInput = document.getElementById('otp-input-0');
+          firstInput?.focus();
+        }, 1000);
       }
-      setStep(3);
-      setInvalidFields([]);
-    } else {
-      setOtpError(true);
-      toast.error("Invalid OTP code. Please try again.");
-      
-      // Delay clearing so user sees the neon red and shake
-      setTimeout(() => {
-        setOtp('');
-        const firstInput = document.getElementById('otp-input-0');
-        firstInput?.focus();
-      }, 1000);
+    } catch (err: any) {
+      console.error("OTP Verify Error:", err);
+      toast.error("Verification failed. Please try again.");
+    } finally {
+      setIsOtpLoading(false);
     }
   };
 
@@ -827,19 +831,19 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <div className="flex flex-col gap-4 pt-4">
                 <button 
                   onClick={() => verifyOTP()}
-                  disabled={otp.length !== 6}
-                  className="w-full bg-primary text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
+                  disabled={otp.length !== 6 || isOtpLoading}
+                  className="w-full bg-primary text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  Verify Code
+                  {isOtpLoading ? <Loader color="black" /> : "Verify Code"}
                 </button>
                 
                 <div className="flex justify-center items-center gap-4">
                   <button 
                     onClick={sendOTP}
-                    disabled={otpTimer > 0}
-                    className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline disabled:text-subtext"
+                    disabled={otpTimer > 0 || isOtpLoading}
+                    className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline disabled:text-subtext flex items-center gap-2"
                   >
-                    {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend"}
+                    {isOtpLoading ? 'Sending...' : (otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend")}
                   </button>
                   <span className="w-1 h-1 rounded-full bg-white/10" />
                   <button 

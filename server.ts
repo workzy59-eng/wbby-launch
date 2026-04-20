@@ -87,9 +87,73 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
+  // In-memory OTP store (email -> { otp, expiry })
+  // Using global to persist across potential server restarts during development
+  (global as any).otpStore = (global as any).otpStore || {};
+
   // API Routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // OTP Endpoints
+  app.post("/api/send-otp", (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ error: "Valid email required" });
+      }
+
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store OTP with 5-minute expiry
+      (global as any).otpStore[email.toLowerCase()] = {
+        otp,
+        expiry: Date.now() + 5 * 60 * 1000
+      };
+
+      // 🔥 OTP DEBUG LOG - VERY VISIBLE
+      console.log("\n" + "=".repeat(30));
+      console.log(`🔑 OTP FOR: ${email}`);
+      console.log(`👉 CODE:    ${otp}`);
+      console.log("=".repeat(30) + "\n");
+
+      res.status(200).json({ success: true, message: "OTP sent (check server logs for code)" });
+    } catch (err) {
+      console.error("Send OTP Error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/verify-otp", (req, res) => {
+    try {
+      const { email, otp } = req.body;
+      if (!email || !otp) {
+        return res.status(400).json({ error: "Email and OTP required" });
+      }
+
+      const stored = (global as any).otpStore[email.toLowerCase()];
+
+      if (!stored) {
+        return res.status(400).json({ error: "No OTP found for this email. Please request a new one." });
+      }
+
+      if (Date.now() > stored.expiry) {
+        delete (global as any).otpStore[email.toLowerCase()];
+        return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+      }
+
+      if (stored.otp === otp) {
+        delete (global as any).otpStore[email.toLowerCase()]; // Clear after success
+        return res.status(200).json({ success: true });
+      }
+
+      return res.status(400).json({ error: "Invalid OTP code" });
+    } catch (err) {
+      console.error("Verify OTP Error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
   });
 
   // LEGACY OTP - Help debug cached JS bundles

@@ -166,19 +166,6 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     setUnreadTotal(directTotal + projectTotal);
   }, [userUnreadCounts, projectUnreadCounts]);
 
-  useEffect(() => {
-    // Listen to all projects for unread counts
-    const unsub = getProjects((projectsData) => {
-      const counts: Record<string, number> = {};
-      projectsData.forEach(p => {
-        if (p.unreadCount && p.unreadCount['admin']) {
-          counts[p.id] = p.unreadCount['admin'];
-        }
-      });
-      setProjectUnreadCounts(counts);
-    });
-    return () => unsub();
-  }, []);
 
   const updateUnreadCount = (userId: string, count: number) => {
     setUserUnreadCounts(prev => ({ ...prev, [userId]: count }));
@@ -210,11 +197,26 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   }
 
   useEffect(() => {
+    // Only set up admin snapshots if user is admin
+    if (!isUserAdmin) return;
+
+    // Listen to all projects for unread counts
+    const unsubUnread = getProjects((projectsData) => {
+      const counts: Record<string, number> = {};
+      projectsData.forEach(p => {
+        if (p.unreadCount && p.unreadCount['admin']) {
+          counts[p.id] = p.unreadCount['admin'];
+        }
+      });
+      setProjectUnreadCounts(counts);
+    });
+
     const unsubscribeProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
       setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
     }, (error) => {
       console.error("Admin Projects Snapshot Error:", error);
     });
+
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
       setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
     }, (error) => {
@@ -227,18 +229,26 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
     const unsubscribeLeads = onSnapshot(collection(db, 'leads'), (snapshot) => {
       setLeads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.error("Admin Leads Snapshot Error:", error);
     });
 
     const unsubscribeDevApps = onSnapshot(collection(db, 'developer_applications'), (snapshot) => {
       setDeveloperApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.error("Admin DevApps Snapshot Error:", error);
     });
 
     const unsubscribeSalesApps = onSnapshot(collection(db, 'sales_applications'), (snapshot) => {
       setSalesApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.error("Admin SalesApps Snapshot Error:", error);
     });
 
     const unsubscribeCommissions = onSnapshot(collection(db, 'commissions'), (snapshot) => {
       setCommissions(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.error("Admin Commissions Snapshot Error:", error);
     });
     
     getSystemSettings().then(settings => {
@@ -246,6 +256,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     });
 
     return () => {
+      unsubUnread();
       unsubscribeProjects();
       unsubscribeUsers();
       unsubscribeConversations();
@@ -254,7 +265,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       unsubscribeSalesApps();
       unsubscribeCommissions();
     };
-  }, [user.uid]);
+  }, [user.uid, isUserAdmin]);
 
   const handleAccept = async (projectId: string) => {
     try {

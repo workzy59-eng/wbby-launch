@@ -213,8 +213,8 @@ service cloud.firestore {
     match /users/{userId} {
       // Allow getting profile: if owner, admin, or if it's an admin profile
       allow get: if isOwner(userId) || isAdmin() || (isAuthenticated() && resource.data.get('role', '') == 'admin');
-      // Only admin can list all users
-      allow list: if isAdmin();
+      // Allow authenticated users to search for admins
+      allow list: if isAdmin() || (isAuthenticated() && resource.data.get('role', '') == 'admin');
       
       allow create: if isOwner(userId) && isValidUser(request.resource.data);
       allow update: if (isOwner(userId) || isAdmin()) && 

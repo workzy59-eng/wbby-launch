@@ -31,6 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setProfile(docSnap.data() as UserProfile);
           }
           setLoading(false);
+        }, (error) => {
+          console.error("Auth Profile Snapshot Error:", error);
+          setLoading(false);
         });
         return () => profileUnsubscribe();
       } else {

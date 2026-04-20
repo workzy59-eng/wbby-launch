@@ -142,8 +142,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   }, [profile]);
 
   useEffect(() => {
-    if (user?.uid) {
-      const fetchDevData = async () => {
+    if (!user?.uid || !profile || profile.role !== 'developer') return;
+
+    const fetchDevData = async () => {
         setLoading(true);
         const [leaves, att, projs, admins] = await Promise.all([
           getLeaveRequests(user.uid),
@@ -160,8 +161,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         setLoading(false);
       };
       fetchDevData();
-    }
-  }, [user]);
+  }, [user, profile]);
 
   const handleOnboardingSubmit = async () => {
     if (!onboardingData.name || !onboardingData.experience || !onboardingData.devRole) return;
