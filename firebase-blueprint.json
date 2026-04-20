@@ -256,6 +256,17 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["clientId", "preferredDate", "preferredTime", "status"]
+    },
+    "OTP": {
+      "title": "OTP",
+      "description": "Temporary One-Time Password for verification.",
+      "type": "object",
+      "properties": {
+        "otp": { "type": "string" },
+        "expiry": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["otp", "expiry"]
     }
   },
   "firestore": {
@@ -318,6 +329,10 @@
     "/commissions/{commissionId}": {
       "schema": "Commission",
       "description": "Sales commissions."
+    },
+    "/otps/{email}": {
+      "schema": "OTP",
+      "description": "Temporary OTP records (backend managed)."
     }
   }
 }

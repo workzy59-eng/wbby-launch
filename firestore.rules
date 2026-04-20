@@ -327,5 +327,9 @@ service cloud.firestore {
       allow read, list: if isAdmin() || (isSales() && resource.data.salesId == request.auth.uid);
       allow create, update, delete: if isAdmin();
     }
+
+    match /otps/{email} {
+      allow read, write: if false; // Only manageable via Firebase Admin SDK (Backend)
+    }
   }
 }

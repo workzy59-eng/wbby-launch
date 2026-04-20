@@ -87,9 +87,7 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // In-memory OTP store (email -> { otp, expiry })
-  // Using global to persist across potential server restarts during development
-  (global as any).otpStore = (global as any).otpStore || {};
+  const dbAdmin = admin.firestore();
 
   // API Routes
   app.get("/api/health", (req, res) => {
@@ -106,12 +104,14 @@ async function startServer() {
 
       // Generate 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // Store OTP with 5-minute expiry
-      (global as any).otpStore[email.toLowerCase()] = {
+      const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+      // Store OTP in Firestore for persistence across serverless environments
+      await dbAdmin.collection('otps').doc(email.toLowerCase()).set({
         otp,
-        expiry: Date.now() + 5 * 60 * 1000
-      };
+        expiry,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
 
       // 🔥 OTP DEBUG LOG - VERY VISIBLE
       console.log("\n" + "=".repeat(30));
@@ -121,15 +121,13 @@ async function startServer() {
 
       // Send OTP via EmailJS REST API
       const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_swbnsgq';
-      const templateId = 'template_ashsijc'; 
-      const publicKey = 'vOnX0vXEzyWfWDgQL'; 
-      const privateKey = 'GP8QbhOyjwCHLoOBtyra2'; 
+      const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_ashsijc'; 
+      const publicKey = process.env.EMAILJS_PUBLIC_KEY || 'vOnX0vXEzyWfWDgQL'; 
+      const privateKey = process.env.EMAILJS_PRIVATE_KEY || 'GP8QbhOyjwCHLoOBtyra2'; 
 
       const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           service_id: serviceId,
           template_id: templateId,
@@ -166,26 +164,30 @@ async function startServer() {
     res.status(405).json({ error: "Method not allowed. Please use POST." });
   });
 
-  app.post("/api/verify-otp", (req, res) => {
+  app.post("/api/verify-otp", async (req, res) => {
     try {
       const { email, otp } = req.body;
       if (!email || !otp) {
         return res.status(400).json({ error: "Email and OTP required" });
       }
 
-      const stored = (global as any).otpStore[email.toLowerCase()];
+      const docRef = dbAdmin.collection('otps').doc(email.toLowerCase());
+      const doc = await docRef.get();
 
-      if (!stored) {
+      if (!doc.exists) {
         return res.status(400).json({ error: "No OTP found for this email. Please request a new one." });
       }
 
-      if (Date.now() > stored.expiry) {
-        delete (global as any).otpStore[email.toLowerCase()];
+      const data = doc.data();
+      if (!data) return res.status(400).json({ error: "Invalid OTP data" });
+
+      if (Date.now() > data.expiry) {
+        await docRef.delete();
         return res.status(400).json({ error: "OTP has expired. Please request a new one." });
       }
 
-      if (stored.otp === otp) {
-        delete (global as any).otpStore[email.toLowerCase()]; // Clear after success
+      if (data.otp === otp) {
+        await docRef.delete(); // Clear after success
         return res.status(200).json({ success: true });
       }
 
