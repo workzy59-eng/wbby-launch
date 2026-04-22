@@ -9,6 +9,7 @@ import {
   Paperclip, 
   Search,
   MessageCircle,
+  MessageSquare,
   MoreVertical,
   Smile,
   FileText,
@@ -514,11 +515,17 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 )}
               </AnimatePresence>
 
-              <div className={`relative px-3 py-2 rounded-xl text-[14.2px] leading-[19px] shadow-sm ${
+              <div className={`relative px-4 py-2.5 rounded-2xl text-[14.5px] leading-[20px] shadow-sm ${
                 isMe 
-                  ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none' 
-                  : 'bg-[#202c33] text-[#e9edef] border border-white/5 rounded-tl-none'
-              } ${!isFirstOfGroup ? (isMe ? 'rounded-tr-xl' : 'rounded-tl-xl') : ''}`}>
+                  ? 'bg-[#1e1e1e] text-white rounded-tr-none border border-white/5' 
+                  : 'bg-[#262626] text-white border border-white/5 rounded-tl-none'
+              } ${!isFirstOfGroup ? (isMe ? 'rounded-tr-2xl' : 'rounded-tl-2xl') : ''}`}>
+                
+                {!isMe && isFirstOfGroup && (
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700] mb-1">
+                    {m.senderName === 'SAI ROSHAN' ? 'Webby Launch' : m.senderName}
+                  </p>
+                )}
                 
                 {/* Tail placeholder if needed, but rounded-none handles it well enough visually */}
 
@@ -594,8 +601,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   };
 
   const containerClasses = fullScreen 
-    ? "fixed inset-0 z-[200] bg-[#0b141a] flex flex-col md:flex-row overflow-hidden font-sans"
-    : "relative w-full h-[calc(100vh-180px)] bg-[#0b141a] rounded-3xl border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
+    ? "fixed inset-0 z-[200] bg-[#121212] flex flex-col md:flex-row overflow-hidden font-sans"
+    : "relative w-full h-[calc(100vh-180px)] bg-[#121212] rounded-3xl border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
 
   return (
     <motion.div 
@@ -605,32 +612,32 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       className={containerClasses}
     >
       {/* Sidebar / List View */}
-      <div className={`w-full md:w-[450px] border-r border-[#202c33] flex flex-col bg-[#111b21] ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[#e9edef]">Chats</h2>
+      <div className={`w-full md:w-[400px] border-r border-[#ffffff05] flex flex-col bg-[#121212] ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
+        <div className="p-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white tracking-tight">Chats</h2>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setShowUserList(true)}
-              className="p-2 hover:bg-[#202c33] rounded-full text-[#aebac1] transition-all"
+              className="p-2.5 hover:bg-white/5 rounded-full text-[#aebac1] transition-all"
             >
               <Plus size={20} />
             </button>
             <button 
               onClick={onClose}
-              className={`p-2 hover:bg-[#202c33] rounded-full text-[#aebac1] transition-all ${!fullScreen ? 'lg:hidden' : ''}`}
+              className={`p-2.5 hover:bg-white/5 rounded-full text-[#aebac1] transition-all ${!fullScreen ? 'lg:hidden' : ''}`}
             >
               <X size={20} />
             </button>
           </div>
         </div>
 
-        <div className="px-4 py-2 space-y-4">
+        <div className="px-6 py-2 space-y-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8696a0]" size={16} />
             <input 
               type="text"
               placeholder="Search or start a new chat"
-              className="w-full bg-[#202c33] border-none rounded-xl py-2 pl-12 pr-4 text-sm text-[#d1d7db] outline-none focus:ring-0 placeholder-[#8696a0]"
+              className="w-full bg-[#1e1e1e] border-none rounded-xl py-3 pl-12 pr-4 text-sm text-[#d1d7db] outline-none focus:ring-0 placeholder-[#8696a0]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -641,17 +648,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               <button
                 key={f}
                 onClick={() => setActiveFilter(f as any)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-all whitespace-nowrap ${
+                className={`px-4 py-2 rounded-full text-xs font-semibold capitalize transition-all whitespace-nowrap ${
                   activeFilter === f 
-                    ? 'bg-[#00a884]/20 text-[#00a884]' 
-                    : 'bg-[#202c33] text-[#8696a0] hover:bg-[#2a3942]'
+                    ? 'bg-white text-black' 
+                    : 'bg-[#1e1e1e] text-[#8696a0] hover:bg-[#2a3942]'
                 }`}
               >
-                {f} {f === 'unread' && conversations.reduce((acc, c) => acc + (c.unreadCount?.[currentUser.uid] || 0), 0) > 0 && (
-                  <span className="ml-1 opacity-60">
-                    {conversations.reduce((acc, c) => acc + (c.unreadCount?.[currentUser.uid] || 0), 0)}
-                  </span>
-                )}
+                {f}
               </button>
             ))}
           </div>
@@ -686,12 +689,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                    "Start a chat with Webby Launch to get updates on your premium project."}
                 </p>
                 {(!searchQuery && activeFilter === 'all') && (
-                  <button 
-                    onClick={handleMessageAdmin}
-                    className="mt-4 bg-[#00a884] text-black px-8 py-3 rounded-xl font-black uppercase italic text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(0,168,132,0.3)]"
-                  >
-                    Start Chatting
-                  </button>
+                  null
                 )}
               </div>
             </div>
@@ -703,17 +701,17 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#202c33] transition-all border-b border-[#202c33]/30 ${activeConversation?.id === conv.id ? 'bg-[#2a3942]' : ''}`}
               >
                 <div className="relative shrink-0">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-black font-bold text-lg ${
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner ${
                     conv.isProject 
-                      ? 'bg-blue-500' 
+                      ? 'bg-blue-500 text-white' 
                       : conv.recipientProfile?.displayName === 'SAI ROSHAN'
-                        ? 'bg-transparent border border-[#00a884]/30 text-[#00a884]'
-                        : 'bg-[#00a884]'
+                        ? 'bg-[#FFD700] text-black'
+                        : 'bg-[#00a884] text-black'
                   }`}>
-                    {conv.isProject ? <Briefcase size={22} /> : (conv.recipientProfile?.displayName?.[0] || 'U')}
+                    {conv.isProject ? <Briefcase size={22} /> : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? 'WL' : (conv.recipientProfile?.displayName?.[0] || 'U'))}
                   </div>
                   {!conv.isProject && conv.recipientProfile?.status === 'online' && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#00a884] border-2 border-[#111b21] rounded-full"></div>
+                    <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-[#121212] rounded-full"></div>
                   )}
                 </div>
                 <div className="flex-1 text-left min-w-0">
@@ -757,58 +755,46 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         {activeConversation ? (
           <div className="flex-1 flex flex-col overflow-hidden relative z-10">
             {/* Chat Header */}
-            <header className="px-4 py-2 border-b border-[#202c33] flex items-center justify-between bg-[#202c33] relative z-20">
-              <div className="flex items-center gap-3 cursor-pointer">
+            <header className="px-6 py-4 border-b border-[#ffffff05] flex items-center justify-between bg-[#121212] relative z-20">
+              <div className="flex items-center gap-4 cursor-pointer">
                 <button 
                   onClick={() => setActiveConversation(null)}
-                  className="p-1 hover:bg-white/5 rounded-full text-[#aebac1] md:hidden"
+                  className="p-1 hover:bg-white/5 rounded-full text-white/40 md:hidden"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <div className="relative">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-black font-bold text-lg ${
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg ${
                     activeConversation.isProject ? 'bg-blue-500 text-white' : 
                     activeConversation.recipientProfile?.displayName === 'SAI ROSHAN'
-                      ? 'bg-transparent border border-[#00a884]/30 text-[#00a884]'
-                      : 'bg-[#00a884]'
+                      ? 'bg-[#FFD700] text-black'
+                      : 'bg-[#00a884] text-black'
                   }`}>
-                    {activeConversation.isProject ? <Briefcase size={20} /> : activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} /> : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
+                    {activeConversation.isProject ? <Briefcase size={24} /> : activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? 'WL' : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
                   {!activeConversation.isProject && activeConversation.recipientProfile?.status === 'online' && (
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#00a884] border-2 border-[#111b21] rounded-full"></div>
+                    <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-[#121212] rounded-full"></div>
                   )}
                 </div>
                 <div>
-                  <h3 className="font-medium text-[#e9edef] text-sm">
+                  <h3 className="font-bold text-white text-base tracking-tight">
                     {activeConversation.isProject ? activeConversation.project?.businessName : (activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? 'Webby Launch' : activeConversation.recipientProfile?.displayName)}
                   </h3>
                   <div className="flex items-center gap-2">
                     {typingUsers.length > 0 ? (
-                      <p className="text-[10px] text-[#00a884] font-medium animate-pulse">typing...</p>
+                      <p className="text-xs text-[#00a884] font-medium animate-pulse">typing...</p>
                     ) : (
-                      <p className={`text-[10px] font-medium ${
-                        !activeConversation.isProject && activeConversation.recipientProfile?.status === 'online' ? 'text-[#00a884]' : 'text-[#8696a0]'
+                      <p className={`text-[11px] font-medium ${
+                        !activeConversation.isProject && activeConversation.recipientProfile?.status === 'online' ? 'text-green-500' : 'text-white/40'
                       }`}>
-                        {activeConversation.isProject ? 'Project Channel' : (activeConversation.recipientProfile?.status === 'online' ? 'Online' : `Last seen ${activeConversation.recipientProfile?.lastSeen ? formatDate(activeConversation.recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`)}
+                        {activeConversation.isProject ? 'Project Channel' : (activeConversation.recipientProfile?.status === 'online' ? 'Online' : `last seen ${activeConversation.recipientProfile?.lastSeen ? formatDate(activeConversation.recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`)}
                       </p>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-[#aebac1]">
-                <button className="p-2 hover:bg-[#2a3942] rounded-full transition-all">
-                  <Video size={18} />
-                </button>
-                <button 
-                  onClick={() => setShowSearch(!showSearch)}
-                  className={`p-2 rounded-full transition-all ${showSearch ? 'bg-[#00a884]/20 text-[#00a884]' : 'hover:bg-[#2a3942]'}`}
-                >
-                  <Search size={18} />
-                </button>
-                <button className="p-2 hover:bg-[#2a3942] rounded-full transition-all">
-                  <MoreVertical size={18} />
-                </button>
+              <div className="flex items-center gap-4 text-[#aebac1]">
               </div>
             </header>
 
@@ -865,7 +851,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             </div>
 
             {/* Input Area */}
-            <footer className="p-6 bg-white/5 border-t border-white/5 relative">
+            <footer className="p-6 bg-[#121212] relative z-20">
               {/* Reply/Edit Preview */}
               <AnimatePresence>
                 {(replyingTo || editingMessage) && (
@@ -873,15 +859,15 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute bottom-full left-0 right-0 p-4 bg-[#1e293b] border-t border-white/10 flex items-center justify-between"
+                    className="absolute bottom-full left-6 right-6 p-4 bg-[#1e1e1e] border-t border-white/10 flex items-center justify-between rounded-t-2xl"
                   >
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <div className={`w-1 h-10 rounded-full ${editingMessage ? 'bg-[#c7c42a]' : 'bg-blue-500'}`} />
+                      <div className={`w-1.5 h-10 rounded-full ${editingMessage ? 'bg-[#FFD700]' : 'bg-blue-500'}`} />
                       <div className="overflow-hidden">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700]">
                           {editingMessage ? 'Editing Message' : `Replying to ${replyingTo?.senderName}`}
                         </p>
-                        <p className="text-xs text-white/60 truncate italic">
+                        <p className="text-xs text-white/80 truncate">
                           {editingMessage ? editingMessage.text : replyingTo?.text}
                         </p>
                       </div>
@@ -900,7 +886,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 )}
               </AnimatePresence>
 
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-4xl mx-auto">
+              <form onSubmit={handleSendMessage} className="flex items-center gap-3 bg-[#1e1e1e] p-2 rounded-full border border-white/5 mx-auto w-full">
                 <input 
                   type="file" 
                   id="direct-image-upload" 
@@ -920,36 +906,28 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <button 
                   type="button"
                   onClick={() => document.getElementById('direct-image-upload')?.click()}
-                  className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
-                  title="Upload Image"
+                  className="p-2 text-[#8696a0] hover:text-white transition-all ml-2"
                 >
-                  <ImageIcon size={24} />
-                </button>
-                
-                <button 
-                  type="button"
-                  onClick={() => document.getElementById('direct-file-upload')?.click()}
-                  className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
-                  title="Upload File"
-                >
-                  <Paperclip size={24} />
+                  <Plus size={24} />
                 </button>
 
                 <div className="flex-1 relative">
                   <input 
                     type="text"
                     placeholder="Type a message..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all"
+                    className="w-full bg-transparent border-none py-3 px-2 text-sm text-white outline-none placeholder-[#8696a0]"
                     value={inputText}
                     onChange={handleInputChange}
                   />
-                  <button 
-                    type="submit"
+                </div>
+
+                <div className="flex items-center gap-1 pr-1">
+                   <button 
                     disabled={!inputText.trim() || isSending}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all ${
+                    className={`p-2.5 rounded-full transition-all ${
                       inputText.trim() && !isSending 
-                        ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' 
-                        : 'bg-white/5 text-white/20 cursor-not-allowed'
+                        ? 'bg-[#FFD700] text-black shadow-lg shadow-[#FFD700]/20' 
+                        : 'text-[#8696a0]'
                     }`}
                   >
                     {isSending ? (
@@ -999,13 +977,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             </AnimatePresence>
           </div>
         ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
-              <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
-                <MessageCircle size={48} strokeWidth={1.5} className="text-[#c7c42a]" />
+            <div className="flex-1 flex flex-col items-center justify-center text-white/5 space-y-8 relative z-10">
+              <div className="w-32 h-32 rounded-3xl bg-[#1e1e1e] border border-white/5 flex items-center justify-center shadow-2xl rotate-3">
+                <MessageSquare size={64} strokeWidth={1.5} className="text-[#FFD700] -rotate-3" />
               </div>
-              <div className="text-center">
-                <h3 className="text-xl font-black text-white/40 uppercase italic tracking-tighter">Select a conversation</h3>
-                <p className="text-xs font-bold uppercase tracking-widest opacity-40">Choose someone to start chatting</p>
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl font-bold text-white tracking-tight">Select a conversation</h3>
+                <p className="text-sm text-white/30 font-medium">Choose a chat to start messaging</p>
               </div>
             </div>
           )}
@@ -1016,46 +994,50 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         {showUserList && (
           <div className="fixed inset-0 z-[210] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden shadow-2xl"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#121212] border border-white/10 rounded-[2.5rem] w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden shadow-2xl"
             >
               <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">New Message</h3>
-                <button onClick={() => setShowUserList(false)} className="text-white/40 hover:text-white">
+                <h3 className="text-2xl font-bold text-white tracking-tight">New Message</h3>
+                <button onClick={() => setShowUserList(false)} className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all">
                   <X size={24} />
                 </button>
               </div>
-              <div className="p-4 border-b border-white/5">
+              <div className="p-6 border-b border-white/5 bg-[#121212]">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                   <input 
                     type="text"
                     placeholder="Search users..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all"
+                    className="w-full bg-[#1e1e1e] border-none rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:ring-0 placeholder-white/20 transition-all"
                   />
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar bg-[#121212]">
                 {allProfiles.map((user) => (
                   <button
                     key={user.uid}
                     onClick={() => startNewChat(user)}
-                    className="w-full p-4 flex items-center gap-4 hover:bg-white/5 rounded-2xl transition-all border border-transparent hover:border-white/5"
+                    className="w-full p-4 flex items-center gap-4 hover:bg-white/5 rounded-2xl transition-all group"
                   >
                     <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white font-black">
-                        {user.displayName?.[0] || 'U'}
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg ${
+                        user.displayName === 'SAI ROSHAN'
+                          ? 'bg-[#FFD700] text-black'
+                          : 'bg-[#00a884] text-black'
+                      }`}>
+                        {user.displayName === 'SAI ROSHAN' ? 'WL' : (user.displayName?.[0] || 'U')}
                       </div>
-                      <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#0f172a] rounded-full ${
+                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-2 border-[#121212] rounded-full ${
                         user.status === 'online' ? 'bg-green-500' : 
-                        user.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
+                        user.status === 'away' ? 'bg-[#FFD700]' : 'bg-gray-500'
                       }`}></div>
                     </div>
                     <div className="text-left">
-                      <p className="font-black text-white uppercase tracking-tight text-sm">{user.displayName}</p>
-                      <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{user.role}</p>
+                      <p className="font-bold text-white tracking-tight">{user.displayName === 'SAI ROSHAN' ? 'Webby Launch' : user.displayName}</p>
+                      <p className="text-[11px] text-white/40 font-medium">{user.role || (user.displayName === 'SAI ROSHAN' ? 'Admin' : 'Client')}</p>
                     </div>
                   </button>
                 ))}

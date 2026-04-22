@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FirebaseUser, logOut } from '../firebase';
+import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { db, FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
 import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper, Video, CreditCard, ShieldCheck, AlertCircle, Mail } from 'lucide-react';
 import ChatSystem from '../components/ChatSystem';
@@ -12,6 +13,7 @@ import { subscribeToMeetings } from '../services/meetingService';
 import { Meeting } from '../types';
 import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations } from '../services/database';
 import { formatDate } from '../lib/utils';
+import { toast } from 'react-hot-toast';
 import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
 import InvoiceSystem from '../components/InvoiceSystem';
 
