@@ -430,7 +430,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       const stripeLinks = {
         'one-time': {
           basic: 'https://buy.stripe.com/test_eVqcN45is5n6bTudhRbAs0a',
-          standard: 'https://buy.stripe.com/test_6oU6oGdOY8zi7Deb9JbAs0b',
+          standard: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
           pro: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
         },
         'subscription': {
@@ -1246,19 +1246,19 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 { 
                   id: 'basic', 
                   name: 'Basic', 
-                  price: formData.billingCycle === 'one-time' ? '₹1,499/-' : '₹999/-', 
+                  price: formData.billingCycle === 'one-time' ? '₹5,000/-' : '₹1,499/-', 
                   features: ['5 Pages', 'Basic SEO', 'Email Support'] 
                 },
                 { 
                   id: 'standard', 
                   name: 'Standard', 
-                  price: formData.billingCycle === 'one-time' ? '₹3,499/-' : '₹5,999/-', 
+                  price: formData.billingCycle === 'one-time' ? '₹15,000/-' : '₹3,499/-', 
                   features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] 
                 },
                 { 
                   id: 'pro', 
                   name: 'Pro', 
-                  price: formData.billingCycle === 'one-time' ? '₹9,999/-' : '₹9,999/-', 
+                  price: formData.billingCycle === 'one-time' ? '₹30,000/-' : '₹9,999/-', 
                   features: ['Everything in Standard', 'E-commerce', 'AI features'] 
                 }
               ].map((plan) => (
@@ -1468,11 +1468,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     <div>
                       <div className="text-[10px] font-bold text-subtext uppercase tracking-widest mb-1">Selected Plan</div>
                       <div className="text-xl font-bold text-primary">
-                        {formData.plan === 'basic' ? 'Basic' : formData.plan === 'standard' ? 'Standard' : 'Premium'}
+                        {formData.plan === 'basic' ? 'Basic' : formData.plan === 'standard' ? 'Standard' : 'Pro'}
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-text">
-                      {formData.plan === 'basic' ? '₹1,499/-' : formData.plan === 'standard' ? '₹3,499/-' : '₹9,999/-'}
+                      {formData.billingCycle === 'one-time' ? (
+                        formData.plan === 'basic' ? '₹5,000/-' : formData.plan === 'standard' ? '₹15,000/-' : '₹30,000/-'
+                      ) : (
+                        formData.plan === 'basic' ? '₹1,499/-' : formData.plan === 'standard' ? '₹3,499/-' : '₹9,999/-'
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -1589,8 +1593,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                         secondaryColor: formData.secondaryColor || '#000000',
                         tertiaryColor: formData.tertiaryColor || '',
                         selectedFeatures: formData.selectedFeatures || [],
-                        logoUrl: '',
-                        documentsUrl: '',
+                        logoUrl: formData.logoUrl || '',
+                        documentsUrl: formData.documentsUrl || '',
                         plan: formData.plan || 'basic',
                         paymentStatus: 'pending' as 'pending' | 'paid',
                         referenceWebsite: formData.referenceWebsite || '',
