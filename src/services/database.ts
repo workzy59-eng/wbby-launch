@@ -25,17 +25,29 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// Corrected upload helper using Firebase Storage
+// Corrected upload helper using Cloudinary (via Express backend)
 export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
-  console.log(`Uploading ${file.name} to ${folder}...`);
+  console.log(`Uploading ${file.name} to ${folder} via Cloudinary...`);
   try {
-    const fileRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
-    const snapshot = await uploadBytes(fileRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Upload failed');
+    }
+
+    const data = await response.json();
+    return data.url;
   } catch (error) {
     console.error('File upload error:', error);
-    // Fallback to Base64 if storage fails for some reason (to ensure flow continues)
+    // Fallback to Base64 (to ensure flow continues)
     try {
       return await convertFileToBase64(file);
     } catch (e) {

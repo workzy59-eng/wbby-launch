@@ -267,6 +267,20 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["otp", "expiry"]
+    },
+    "SystemSettings": {
+      "title": "System Settings",
+      "description": "Global application configuration and feature flags.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "requiredFields": { "type": "object" },
+        "notifications": { "type": "object" },
+        "maintenanceMode": { "type": "boolean" },
+        "allowNewRegistrations": { "type": "boolean" },
+        "baseWebsiteCost": { "type": "number" }
+      },
+      "required": ["requiredFields", "notifications", "maintenanceMode", "allowNewRegistrations", "baseWebsiteCost"]
     }
   },
   "firestore": {
@@ -333,6 +347,10 @@
     "/otps/{email}": {
       "schema": "OTP",
       "description": "Temporary OTP records (backend managed)."
+    },
+    "/system_settings/{settingId}": {
+      "schema": "SystemSettings",
+      "description": "Global application configuration."
     }
   }
 }

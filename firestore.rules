@@ -15,15 +15,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() &&
-        (
-          (request.auth.token.email == "workzy59@gmail.com" &&
-           request.auth.token.email_verified == true) ||
-          (
-            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
-          )
-        );
+      return isAuthenticated() && (
+        request.auth.token.email == "workzy59@gmail.com" ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+      );
     }
 
     function isNotBlocked() {
@@ -60,6 +56,11 @@ service cloud.firestore {
 
     match /_system_/connectivity_test {
       allow read, write: if true;
+    }
+
+    match /system_settings/default {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /system_settings/{settingId} {

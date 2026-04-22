@@ -6,8 +6,36 @@ import cors from "cors";
 import admin from 'firebase-admin';
 import crypto from "crypto";
 import firebaseConfig from './firebase-applet-config.json';
+import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 dotenv.config();
+
+// Initialize Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure Multer for Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req: any, file: any) => {
+    return {
+      folder: 'webbylaunch',
+      resource_type: 'auto',
+      allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt'],
+      public_id: `${Date.now()}-${file.originalname.split('.')[0]}`
+    };
+  },
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
@@ -92,6 +120,18 @@ async function startServer() {
   // API Routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  app.post("/api/upload", upload.single("file"), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      res.json({ url: (req.file as any).path || (req.file as any).secure_url });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: error.message || "Upload failed" });
+    }
   });
 
   // Vite middleware for development
