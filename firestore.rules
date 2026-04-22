@@ -29,7 +29,7 @@ service cloud.firestore {
     function isNotBlocked() {
       return !isAuthenticated() ||
         !exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isBlocked != true;
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isBlocked', false) != true;
     }
 
     function isValidEmail(email) {
@@ -48,12 +48,10 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      // Adjusted to match actual codebase project structure
-      // Required fields from database.ts:createProject and projectData
-      return data.keys().hasAll(['businessName','status','progress','userId','createdAt']) &&
-        data.businessName is string &&
-        data.userId is string &&
-        data.createdAt is timestamp;
+      // Relaxed validation during create to ensure compatibility with client spread
+      return data.userId is string &&
+        data.userId == request.auth.uid &&
+        data.businessName is string;
     }
 
     // ============================
@@ -75,7 +73,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data);
+      allow create: if isAuthenticated() && isOwner(userId); // Simplified create for user profile
       allow update: if isNotBlocked() && (isOwner(userId) || isAdmin());
       allow delete: if isAdmin();
     }
