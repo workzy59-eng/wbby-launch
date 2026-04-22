@@ -932,7 +932,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       </section>
 
       {/* Advantage Section */}
-      <section className="py-32 px-10 bg-[#050505] border-t border-white/5 technical-grid">
+      <section className="py-32 px-10 bg-[#050505] border-t border-white/5">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-32">
             <span className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">The Edge</span>
@@ -942,7 +942,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5 border border-white/5 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { title: "Affordable Plans", value: "Starting from ₹1499/mo", desc: "Premium engineering at startup-friendly scale." },
               { title: "Fast Delivery", value: "3–7 Days", desc: "From concept to deployment in under a week." },
@@ -951,14 +951,21 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               { title: "Trust Backed", value: "Risk Neutral", desc: "Satisfaction guaranteed or setup cost reversed." },
               { title: "Ongoing Support", value: "Continuous", desc: "Long-term partnership beyond the initial launch." }
             ].map((item, idx) => (
-              <div key={idx} className="bg-[#050505] p-12 space-y-6 hover:bg-[#0a0a0a] transition-all group">
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-[#0a0a0a] p-12 space-y-6 rounded-[2.5rem] border border-white/5 hover:border-[#c7c42a]/30 transition-all group"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 bg-[#c7c42a]" />
                   <h4 className="text-lg font-black uppercase italic tracking-tighter text-white/40 group-hover:text-white transition-colors">{item.title}</h4>
                 </div>
                 <p className="text-3xl font-black text-[#c7c42a] tracking-tighter uppercase italic leading-none">{item.value}</p>
                 <p className="text-white/20 text-xs font-medium italic leading-relaxed">{item.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

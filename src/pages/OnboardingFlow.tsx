@@ -372,36 +372,38 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
       const projectData = {
         userId: user?.uid,
-        userName: formData.name,
-        userEmail: formData.email,
-        userPhone: formData.phone,
-        businessName: formData.businessName,
-        businessNumber: formData.businessNumber,
-        businessEmail: formData.businessEmail,
-        businessPhone: formData.businessPhone,
-        gstNumber: formData.gstNumber,
-        addressLine: formData.addressLine,
-        city: formData.city,
-        state: formData.state,
-        pincode: formData.pincode,
-        country: formData.country,
-        businessType: finalBusinessType,
-        businessLocation: formData.location,
-        description: formData.description,
-        websiteName: formData.websiteName,
-        domain: formData.domain,
-        domainPreferences: formData.domainPreferences,
-        primaryColor: formData.primaryColor,
-        secondaryColor: formData.secondaryColor,
-        tertiaryColor: formData.tertiaryColor,
-        selectedFeatures: formData.selectedFeatures,
-        plan: formData.plan,
+        userName: formData.name || '',
+        userEmail: formData.email || '',
+        userPhone: formData.phone || '',
+        businessName: formData.businessName || '',
+        businessNumber: formData.businessNumber || '',
+        businessEmail: formData.businessEmail || '',
+        businessPhone: formData.businessPhone || '',
+        gstNumber: formData.gstNumber || '',
+        addressLine: formData.addressLine || '',
+        city: formData.city || '',
+        state: formData.state || '',
+        pincode: formData.pincode || '',
+        country: formData.country || 'India',
+        businessType: finalBusinessType || '',
+        businessLocation: formData.location || '',
+        description: formData.description || '',
+        websiteName: formData.websiteName || '',
+        domain: formData.domain || '',
+        domainPreferences: formData.domainPreferences || ['', '', ''],
+        primaryColor: formData.primaryColor || '#c7c42a',
+        secondaryColor: formData.secondaryColor || '#000000',
+        tertiaryColor: formData.tertiaryColor || '',
+        selectedFeatures: formData.selectedFeatures || [],
+        plan: formData.plan || 'basic',
         paymentStatus: 'pending' as 'pending' | 'paid',
-        referenceWebsite: formData.referenceWebsite,
+        referenceWebsite: formData.referenceWebsite || '',
         templateId: 'custom-dev',
         estimatedCompletion: null,
-        referralSource: formData.referralSource,
-        salesCode: formData.salesCode
+        referralSource: formData.referralSource || '',
+        salesCode: formData.salesCode || '',
+        logoUrl: '',
+        documentsUrl: ''
       };
 
       const projectId = await createProject(projectData);
@@ -925,41 +927,73 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text">Domain Preferences</h3>
-              <p className="text-subtext font-medium italic">Suggest 3 domain names you'd like (e.g. yourbusiness.com)</p>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
+              <h3 className="text-4xl font-bold tracking-tight text-text italic">Domain Selection</h3>
+              <p className="text-subtext font-medium italic">Select your preferred domain extensions for your business name</p>
             </div>
 
-            <div className="space-y-6">
-              {[0, 1, 2].map((idx) => (
-                <div key={idx} className="space-y-4">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Preference {idx + 1}</label>
-                  <input 
-                    type="text"
-                    value={formData.domainPreferences[idx]}
-                    onChange={(e) => {
-                      const newPrefs = [...formData.domainPreferences];
-                      newPrefs[idx] = e.target.value;
-                      handleInputChange('domainPreferences', newPrefs);
-                    }}
-                    placeholder={`e.g. ${formData.businessName.toLowerCase().replace(/\s/g, '')}${idx === 0 ? '.com' : idx === 1 ? '.in' : '.net'}`}
-                    className={getInputClass(`domainPreference${idx}`)}
-                  />
-                </div>
-              ))}
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Confirm Business Name for Domain</label>
+                <input 
+                  type="text"
+                  value={formData.businessName.toLowerCase().replace(/\s/g, '')}
+                  readOnly
+                  className="w-full p-6 rounded-2xl bg-card border border-border text-subtext focus:outline-none font-bold italic opacity-50"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[0, 1, 2].map((idx) => (
+                  <div key={idx} className="space-y-4">
+                    <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Preference {idx + 1}</label>
+                    <div className="relative group">
+                      <select
+                        className={getInputClass(`domainPreference${idx}`, "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-bold italic appearance-none cursor-pointer")}
+                        value={formData.domainPreferences[idx]?.replace(formData.businessName.toLowerCase().replace(/\s/g, ''), '') || ''}
+                        onChange={(e) => {
+                          const ext = e.target.value;
+                          const newPrefs = [...formData.domainPreferences];
+                          const bName = formData.businessName.toLowerCase().replace(/\s/g, '');
+                          newPrefs[idx] = bName + ext;
+                          handleInputChange('domainPreferences', newPrefs);
+                          if (idx === 0) handleInputChange('domain', bName + ext);
+                        }}
+                      >
+                        <option value="">Select Extension</option>
+                        <option value=".com">.com</option>
+                        <option value=".in">.in</option>
+                        <option value=".net">.net</option>
+                        <option value=".org">.org</option>
+                        <option value=".co.in">.co.in</option>
+                        <option value=".online">.online</option>
+                        <option value=".store">.store</option>
+                      </select>
+                      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <ArrowRight size={16} className="text-primary rotate-90" style={{ color: formData.primaryColor }} />
+                      </div>
+                    </div>
+                    {formData.domainPreferences[idx] && (
+                        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] ml-4 animate-pulse italic">
+                          {formData.domainPreferences[idx]}
+                        </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="flex gap-4">
               <button 
                 onClick={handleBack} 
-                className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all"
+                className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all uppercase italic"
                 style={{ borderColor: formData.primaryColor, color: formData.primaryColor }}
               >
                 Back
               </button>
               <button 
                 onClick={handleNext} 
-                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 uppercase italic"
                 style={{ backgroundColor: formData.primaryColor }}
               >
                 Next
@@ -1467,35 +1501,38 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
                       const projectData = {
                         userId: user?.uid,
-                        userName: formData.name,
-                        userEmail: formData.email,
-                        userPhone: formData.phone,
-                        businessName: formData.businessName,
-                        businessNumber: formData.businessNumber,
-                        businessEmail: formData.businessEmail,
-                        businessPhone: formData.businessPhone,
-                        gstNumber: formData.gstNumber,
-                        addressLine: formData.addressLine,
-                        city: formData.city,
-                        state: formData.state,
-                        pincode: formData.pincode,
-                        country: formData.country,
-                        businessType: finalBusinessType,
-                        businessLocation: formData.location,
-                        description: formData.description,
-                        websiteName: formData.websiteName,
-                        primaryColor: formData.primaryColor,
-                        secondaryColor: formData.secondaryColor,
-                        selectedFeatures: formData.selectedFeatures,
-                        logoUrl: finalLogoUrl,
-                        documentsUrl: finalDocsUrl,
-                        plan: formData.plan,
+                        userName: formData.name || '',
+                        userEmail: formData.email || '',
+                        userPhone: formData.phone || '',
+                        businessName: formData.businessName || '',
+                        businessNumber: formData.businessNumber || '',
+                        businessEmail: formData.businessEmail || '',
+                        businessPhone: formData.businessPhone || '',
+                        gstNumber: formData.gstNumber || '',
+                        addressLine: formData.addressLine || '',
+                        city: formData.city || '',
+                        state: formData.state || '',
+                        pincode: formData.pincode || '',
+                        country: formData.country || 'India',
+                        businessType: finalBusinessType || '',
+                        businessLocation: formData.location || '',
+                        description: formData.description || '',
+                        websiteName: formData.websiteName || '',
+                        domain: formData.domain || '',
+                        domainPreferences: formData.domainPreferences || ['', '', ''],
+                        primaryColor: formData.primaryColor || '#c7c42a',
+                        secondaryColor: formData.secondaryColor || '#000000',
+                        tertiaryColor: formData.tertiaryColor || '',
+                        selectedFeatures: formData.selectedFeatures || [],
+                        logoUrl: '',
+                        documentsUrl: '',
+                        plan: formData.plan || 'basic',
                         paymentStatus: 'pending' as 'pending' | 'paid',
-                        referenceWebsite: formData.referenceWebsite,
+                        referenceWebsite: formData.referenceWebsite || '',
                         templateId: 'custom-dev',
                         estimatedCompletion: null,
-                        referralSource: formData.referralSource,
-                        salesCode: formData.salesCode
+                        referralSource: formData.referralSource || '',
+                        salesCode: formData.salesCode || ''
                       };
 
                       await createProject(projectData);

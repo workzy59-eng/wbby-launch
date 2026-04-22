@@ -118,7 +118,7 @@ export default function Pricing() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-[#050505] selection:bg-[#c7c42a] selection:text-black py-40 px-10 technical-grid"
+      className="min-h-screen bg-[#050505] selection:bg-[#c7c42a] selection:text-black py-40 px-10"
     >
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-8 mb-32">
@@ -168,33 +168,40 @@ export default function Pricing() {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5 border border-white/5 overflow-hidden mb-32">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              className={`bg-[#050505] p-16 space-y-12 flex flex-col justify-between relative group ${plan.popular ? 'z-10 bg-[#0a0a0a]' : ''}`}
+              className={`relative group bg-[#0a0a0a] border-white/10 p-12 rounded-[3.5rem] border transition-all duration-500 hover:scale-[1.02] flex flex-col h-full ${
+                plan.popular ? 'border-[#c7c42a]/50 shadow-[0_0_80px_rgba(199,196,42,0.1)]' : 'hover:border-[#c7c42a]/30'
+              }`}
             >
-              {plan.popular && <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />}
+              {plan.popular && (
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#c7c42a] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-widest italic shadow-xl">
+                  Most Deployed
+                </div>
+              )}
               
-              <div className="space-y-12">
-                <div className="flex justify-between items-start">
-                  <h3 className={`text-4xl font-black uppercase italic tracking-tighter ${plan.popular ? 'text-[#c7c42a]' : 'text-white/40'}`}>{plan.name}</h3>
-                  {plan.popular && <span className="text-[8px] font-black uppercase tracking-[0.3em] text-[#c7c42a] px-2 py-1 border border-[#c7c42a]/30 italic">Primary Choice</span>}
-                </div>
+              <div className="space-y-12 flex-1">
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <h3 className={`text-4xl font-black uppercase italic tracking-tighter ${plan.popular ? 'text-[#c7c42a]' : 'text-white/40'}`}>{plan.name}</h3>
+                  </div>
 
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-serif italic text-white/10">₹</span>
-                  <span className="text-9xl font-black tracking-tighter text-white">
-                    {plan.price.replace('₹', '')}
-                  </span>
-                  <span className="text-xs font-black uppercase tracking-widest text-white/20 italic ml-2">{plan.period}</span>
-                </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-serif italic text-white/10">₹</span>
+                    <span className="text-9xl font-black tracking-tighter text-white">
+                      {plan.price.replace('₹', '')}
+                    </span>
+                    <span className="text-xs font-black uppercase tracking-widest text-white/20 italic ml-2">{plan.period}</span>
+                  </div>
 
-                <p className="text-base font-medium italic text-white/30 leading-relaxed max-w-xs">{plan.description}</p>
+                  <p className="text-base font-medium italic text-white/30 leading-relaxed max-w-xs">{plan.description}</p>
+                </div>
 
                 <div className="w-12 h-px bg-white/10" />
 
@@ -215,7 +222,7 @@ export default function Pricing() {
                 </div>
                 <button 
                   onClick={() => handleSubscribe(plan.stripeLink)}
-                  className={`w-full py-8 text-center font-black uppercase italic text-sm tracking-widest transition-all ${plan.popular ? 'bg-[#c7c42a] text-black shadow-[0_30px_60px_rgba(199,196,42,0.1)]' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
+                  className={`w-full py-8 text-center font-black uppercase italic text-sm tracking-widest transition-all rounded-2xl ${plan.popular ? 'bg-[#c7c42a] text-black shadow-[0_30px_60px_rgba(199,196,42,0.1)]' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
                 >
                   Initiate Build
                 </button>
@@ -237,7 +244,7 @@ export default function Pricing() {
               </p>
             </div>
             
-            <div className="p-16 bg-[#0a0a0a] border border-white/10 technical-grid text-center space-y-12">
+            <div className="p-16 bg-[#0a0a0a] border border-white/10 rounded-[4rem] text-center space-y-12">
               <h3 className="text-3xl font-black uppercase italic tracking-tighter">Custom <span className="text-[#c7c42a]">Engineering?</span></h3>
               <p className="text-white/40 font-medium italic">For projects requiring dedicated clusters, AI integrations, or custom ERP logic.</p>
               <a 

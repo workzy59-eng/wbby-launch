@@ -126,39 +126,47 @@ export default function Services() {
       {/* Services Grid */}
       <section className="py-32 px-10 relative">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5 border border-white/5 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className={`group bg-[#050505] p-16 space-y-12 relative flex flex-col justify-between h-[600px] hover:bg-[#0a0a0a] transition-all`}
+                transition={{ delay: idx * 0.1 }}
+                className={`group relative p-12 rounded-[3rem] border transition-all duration-500 flex flex-col h-full bg-[#0a0a0a] border-white/10 hover:border-[#c7c42a]/30 hover:scale-[1.02] ${
+                  service.featured ? 'shadow-[0_0_50px_rgba(199,196,42,0.1)]' : ''
+                }`}
               >
-                {service.featured && <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />}
-                
-                <div className="space-y-12">
-                  <div className="flex justify-between items-start">
-                    <div className="text-[#c7c42a]">
-                      <service.icon size={48} strokeWidth={1} />
-                    </div>
-                    {service.featured && <span className="text-[8px] font-black uppercase tracking-[0.3em] px-2 py-1 border border-[#c7c42a]/30 italic text-[#c7c42a]">Elite Grade</span>}
+                {service.featured && (
+                  <div className="absolute -top-4 left-10 bg-[#c7c42a] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest italic">
+                    Premium Feature
+                  </div>
+                )}
+
+                <div className="space-y-8 flex-1">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 ${
+                    service.featured ? 'bg-[#c7c42a] text-black' : 'bg-[#c7c42a]/10 text-[#c7c42a] group-hover:bg-[#c7c42a] group-hover:text-black'
+                  }`}>
+                    <service.icon size={32} />
                   </div>
 
-                  <div className="space-y-6">
-                    <h3 className="text-4xl font-black uppercase italic tracking-tighter leading-none">{service.title}</h3>
-                    <p className="text-white/20 text-lg font-medium italic leading-relaxed">{service.desc}</p>
+                  <div className="space-y-4">
+                    <h3 className="text-3xl font-black uppercase italic tracking-tighter">{service.title}</h3>
+                    <p className="text-white/40 text-sm font-medium leading-relaxed italic">{service.desc}</p>
                   </div>
                 </div>
 
-                <div className="pt-12">
-                   <div className="w-12 h-px bg-white/10 mb-8" />
-                   <Link 
+                <div className="pt-10">
+                  <Link 
                     to="/auth"
-                    className="text-xs font-black uppercase tracking-widest text-white/40 hover:text-[#c7c42a] transition-colors inline-flex items-center gap-4 group/link"
+                    className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                      service.featured 
+                        ? 'bg-[#c7c42a] text-black hover:scale-[1.02]' 
+                        : 'bg-white/5 text-white hover:bg-white/10'
+                    }`}
                   >
-                    Select Module <ArrowRight size={14} className="group-hover/link:translate-x-2 transition-transform" />
+                    Select Module <ArrowRight size={14} />
                   </Link>
                 </div>
               </motion.div>
@@ -168,7 +176,7 @@ export default function Services() {
       </section>
 
       {/* Protocol Section */}
-      <section className="py-64 px-10 border-t border-white/5 bg-[#050505] technical-grid">
+      <section className="py-64 px-10 border-t border-white/5 bg-[#050505]">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
           <div className="space-y-12">
             <span className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Standard Runtime</span>
@@ -181,16 +189,20 @@ export default function Services() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {whatYouGet.map((item, idx) => (
               <motion.div
                 key={idx}
-                className="p-12 border border-white/5 bg-[#0a0a0a] hover:bg-[#c7c42a] transition-all duration-700 group"
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="p-10 bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] hover:border-[#c7c42a]/30 transition-all group"
               >
-                <div className="text-[#c7c42a] group-hover:text-black mb-8 transition-colors">
+                <div className="text-[#c7c42a] group-hover:scale-110 transition-transform mb-6">
                   <ShieldCheck size={32} />
                 </div>
-                <span className="text-lg font-black uppercase italic tracking-tighter text-white group-hover:text-black transition-colors">{item}</span>
+                <span className="text-xl font-black uppercase italic tracking-tighter text-white">{item}</span>
               </motion.div>
             ))}
           </div>
@@ -207,18 +219,18 @@ export default function Services() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-white/5 border border-white/5 overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {whoIsThisFor.map((item, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-[#050505] p-20 space-y-10 hover:bg-[#0a0a0a] transition-all group"
+                className="bg-[#0a0a0a] border border-white/10 p-16 rounded-[3rem] space-y-10 hover:bg-white/10 transition-all group cursor-default"
               >
-                <div className="w-24 h-24 bg-[#c7c42a]/5 border border-[#c7c42a]/10 rounded-full flex items-center justify-center text-[#c7c42a] mx-auto group-hover:bg-[#c7c42a] group-hover:text-black transition-all">
-                  <item.icon size={40} strokeWidth={1} />
+                <div className="w-24 h-24 bg-[#c7c42a]/5 border border-[#c7c42a]/10 rounded-full flex items-center justify-center text-[#c7c42a] mx-auto group-hover:scale-110 transition-all">
+                  <item.icon size={48} strokeWidth={1} />
                 </div>
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter">{item.title}</h3>
               </motion.div>

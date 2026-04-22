@@ -715,40 +715,54 @@ export const getConversations = (userId: string, callback: (conversations: any[]
 // System Settings Operations
 export const getSystemSettings = async () => {
   const path = 'system_settings/default';
+  const defaultSettings: SystemSettings = {
+    id: 'default',
+    requiredFields: {
+      phone: true,
+      businessName: true,
+      businessType: true,
+      businessNumber: true,
+      businessLocation: true,
+      description: true,
+      websiteName: true,
+      primaryColor: true,
+      secondaryColor: true,
+      logo: false,
+      documents: false,
+      referenceWebsite: false,
+    },
+    notifications: {
+      newMessages: true,
+      newProjects: true,
+    },
+    maintenanceMode: false,
+    allowNewRegistrations: true,
+    baseWebsiteCost: 1499,
+  };
+
   try {
     const docSnap = await getDoc(doc(db, 'system_settings', 'default'));
     if (docSnap.exists()) {
       return docSnap.data() as SystemSettings;
     } else {
-      const defaultSettings: SystemSettings = {
-        id: 'default',
-        requiredFields: {
-          phone: true,
-          businessName: true,
-          businessType: true,
-          businessNumber: true,
-          businessLocation: true,
-          description: true,
-          websiteName: true,
-          primaryColor: true,
-          secondaryColor: true,
-          logo: false,
-          documents: false,
-          referenceWebsite: false,
-        },
-        notifications: {
-          newMessages: true,
-          newProjects: true,
-        },
-        maintenanceMode: false,
-        allowNewRegistrations: true,
-        baseWebsiteCost: 1499,
-      };
-      await setDoc(doc(db, 'system_settings', 'default'), defaultSettings);
+      // Only admins can create settings if they don't exist
+      try {
+        if (auth.currentUser) {
+          // Check if admin before attempting setDoc to avoid noisy permission errors
+          const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+          if (userDoc.exists() && userDoc.data().role === 'admin') {
+            await setDoc(doc(db, 'system_settings', 'default'), defaultSettings);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not initialize system settings:', e);
+      }
       return defaultSettings;
     }
   } catch (error) {
-    handleFirestoreError(error, OperationType.GET, path);
+    console.error('Error fetching system settings, using defaults:', error);
+    // Don't throw here to allow the app to boot even if settings are inaccessible
+    return defaultSettings;
   }
 };
 

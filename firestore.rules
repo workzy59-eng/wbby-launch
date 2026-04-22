@@ -1,6 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
     // ===============================================================
     // Assumed Data Model
@@ -55,12 +59,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      let email = request.auth.token.email;
-      let isVerified = request.auth.token.email_verified == true;
-      let isHardcodedAdmin = (email == "workzy59@gmail.com" || (email == "webbylaunch@gmail.com" && isVerified));
-      
       return isAuthenticated() && (
-        isHardcodedAdmin || 
+        request.auth.token.email == "workzy59@gmail.com" || 
+        (request.auth.token.email == "webbylaunch@gmail.com" && request.auth.token.email_verified == true) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
@@ -210,6 +211,17 @@ service cloud.firestore {
     // Rules
     // ===============================================================
 
+    // Publicly readable collections
+    match /system_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /blog_posts/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /users/{userId} {
       // Allow getting profile: if owner, admin, or if it's an admin profile
       allow get: if isOwner(userId) || isAdmin() || (isAuthenticated() && resource.data.get('role', '') == 'admin');
@@ -264,16 +276,6 @@ service cloud.firestore {
 
     match /attendance/{attendanceId} {
       allow read, list: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /blog_posts/{postId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /system_settings/{settingId} {
-      allow read: if true;
       allow create, update, delete: if isAdmin();
     }
 
