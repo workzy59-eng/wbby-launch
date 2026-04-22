@@ -51,16 +51,19 @@ service cloud.firestore {
     }
 
     // ============================
+    // SYSTEM SETTINGS (PRIORITY)
+    // ============================
+    match /system_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ============================
     // SYSTEM
     // ============================
 
     match /_system_/connectivity_test {
       allow read, write: if true;
-    }
-
-    match /system_settings/default {
-      allow read: if true;
-      allow write: if isAdmin();
     }
 
     match /system_settings/{settingId} {
@@ -137,8 +140,7 @@ service cloud.firestore {
       }
 
       match /typing/{uid} {
-        // Relaxing typing indicators to prevent listing errors
-        allow read: if isAuthenticated();
+        allow get, list: if isAuthenticated();
         allow write: if isOwner(uid);
       }
     }
@@ -148,22 +150,22 @@ service cloud.firestore {
     // ============================
 
     match /leads/{leadId} {
-      allow read, write: if isAdmin();
+      allow get, list, write: if isAdmin();
     }
 
     match /commissions/{commissionId} {
-      allow read: if isAuthenticated() && (isAdmin() || resource.data.salesId == request.auth.uid);
+      allow get, list: if isAuthenticated() && (isAdmin() || resource.data.salesId == request.auth.uid);
       allow write: if isAdmin();
     }
 
     match /developer_applications/{appId} {
-      allow read: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow get, list: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
       allow create: if true; // Public applications allowed
       allow update, delete: if isAdmin();
     }
 
     match /sales_applications/{appId} {
-      allow read: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow get, list: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
       allow create: if true; // Public applications allowed
       allow update, delete: if isAdmin();
     }

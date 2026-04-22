@@ -180,22 +180,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           }
         }));
         
-        let finalConvs = enrichedConvs;
-        
-        // Add project conversations
-        const projectConvs: Conversation[] = projects.map(p => ({
-          id: p.id,
-          lastMessage: p.lastMessage || 'Project Chat',
-          lastMessageAt: p.lastMessageAt || p.createdAt,
-          lastSenderId: p.lastSenderId || '',
-          participants: [p.userId, p.developerId].filter(id => id && typeof id === 'string') as string[],
-          isProject: true,
-          project: p,
-          unreadCount: p.unreadCount
-        }));
-
         // Sort by date
-        const allConvs = [...projectConvs, ...finalConvs].sort((a, b) => {
+        const allConvs = enrichedConvs.sort((a, b) => {
           const dateA = a.lastMessageAt?.toMillis?.() || a.lastMessageAt || 0;
           const dateB = b.lastMessageAt?.toMillis?.() || b.lastMessageAt || 0;
           return dateB - dateA;
@@ -235,29 +221,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (!activeConversation) return;
 
     // Mark as seen when opening
-    if (activeConversation.isProject) {
-      markProjectAsSeen(activeConversation.id, currentUser.uid);
-    } else if (activeConversation.id !== 'new') {
+    if (activeConversation.id !== 'new') {
       markConversationAsSeen(activeConversation.id, currentUser.uid);
-    }
-
-    if (activeConversation.isProject) {
-      const q = query(
-        collection(db, 'projects', activeConversation.id, 'messages'),
-        orderBy('createdAt', 'asc')
-      );
-      const unsub = onSnapshot(q, (snapshot) => {
-        const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
-        setMessages(msgs);
-        
-        // Mark as delivered for incoming messages
-        msgs.forEach(async (m) => {
-          if (m.senderId !== currentUser.uid && m.status === 'sent') {
-            await markMessageAsDelivered(m.id, undefined, activeConversation.id);
-          }
-        });
-      });
-      return () => unsub();
     }
 
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
@@ -307,21 +272,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     
     setIsSending(true);
     try {
-      if (activeConversation.isProject) {
-        const messageData = {
-          senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
-          text: messageText,
-          status: 'sent',
-          replyTo: currentReplyingTo ? {
-            id: currentReplyingTo.id,
-            text: currentReplyingTo.text,
-            senderName: currentReplyingTo.senderName
-          } : null
-        };
-        await sendMessage(activeConversation.id, messageData);
-        setReplyingTo(null);
-      } else if (currentEditingMessage) {
+      if (currentEditingMessage) {
         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
         if (recipientId) {
           await updateDirectMessage(recipientId, currentEditingMessage.id, {
@@ -426,26 +377,15 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         }
       }
 
-      if (attachments.length > 0) {
-        if (activeConversation.isProject) {
-          await sendMessage(activeConversation.id, {
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || profile?.displayName || 'User',
-            text: isImage ? 'Sent images' : 'Sent attachments',
-            fileData: attachments[0].url,
-            attachments,
-            status: 'sent'
-          });
-        } else if (recipientId) {
-          await sendDirectMessage(recipientId, {
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || profile?.displayName || 'User',
-            text: isImage ? 'Sent images' : 'Sent attachments',
-            fileData: attachments[0].url,
-            attachments,
-            status: 'sent'
-          });
-        }
+      if (attachments.length > 0 && recipientId) {
+        await sendDirectMessage(recipientId, {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
+          text: isImage ? 'Sent images' : 'Sent attachments',
+          fileData: attachments[0].url,
+          attachments,
+          status: 'sent'
+        });
       }
     } catch (error) {
       console.error('Upload failed:', error);

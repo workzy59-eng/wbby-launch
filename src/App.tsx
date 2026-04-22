@@ -132,7 +132,10 @@ export default function App() {
                 <Route path="/preview-builder" element={<PreviewBuilder />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/join-developer" element={<JoinDeveloper />} />
+                <Route 
+                  path="/join-developer" 
+                  element={<Navigate to="https://discord.gg/EDZb5Aefb" replace />} 
+                />
                 <Route path="/join-sales" element={<JoinSales />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />

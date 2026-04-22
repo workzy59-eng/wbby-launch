@@ -450,8 +450,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       }
 
       if (paymentUrl) {
-        // Append projectId as client_reference_id for tracking
-        const finalUrl = `${paymentUrl}?client_reference_id=${projectId}`;
+        // Append projectId for backend and search params for client return
+        const finalUrl = `${paymentUrl}?client_reference_id=${projectId}&success=true&projectId=${projectId}`;
         
         localStorage.removeItem('onboarding_data');
         localStorage.removeItem('onboarding_step');
@@ -746,12 +746,30 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               )}
             </div>
 
-            <button
-              onClick={handleNext}
-              className="w-full bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
-            >
-              Next
-            </button>
+            <div className="flex gap-4">
+              {!user ? (
+                <button 
+                  onClick={async () => {
+                    try {
+                      await signInWithGoogle();
+                    } catch (err: any) {
+                      toast.error("Login failed: " + err.message);
+                    }
+                  }}
+                  className="flex-1 bg-white text-black py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 shadow-lg shadow-white/10"
+                >
+                  <img src="https://www.google.com/favicon.ico" className="w-6 h-6" alt="Google" />
+                  Sign in with Google to Continue
+                </button>
+              ) : (
+                <button 
+                  onClick={handleNext} 
+                  className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                >
+                  Next
+                </button>
+              )}
+            </div>
           </motion.div>
         );
       case 2:

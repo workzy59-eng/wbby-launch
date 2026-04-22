@@ -31,6 +31,31 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  
+  // Handle Payment Success
+  useEffect(() => {
+    const handlePaymentSuccess = async () => {
+      const searchParams = new URLSearchParams(location.search);
+      const isSuccess = searchParams.get('success') === 'true';
+      const projectId = searchParams.get('client_reference_id') || searchParams.get('projectId');
+      
+      if (isSuccess && projectId) {
+        try {
+          await updateProject(projectId, { 
+            paymentStatus: 'paid',
+            status: 'Under Review', // Progress from Waiting for Review to Under Review
+            updatedAt: serverTimestamp() 
+          });
+          toast.success("Payment confirmed! Your project is now being reviewed.");
+          // Clean the URL
+          navigate('/dashboard', { replace: true });
+        } catch (err) {
+          console.error("Error updating project after payment:", err);
+        }
+      }
+    };
+    handlePaymentSuccess();
+  }, [location.search, navigate]);
   const [showChat, setShowChat] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 

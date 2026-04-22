@@ -1,6 +1,6 @@
 import { 
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit,
-  ref, uploadBytes, getDownloadURL, storage
+  ref, uploadBytes, getDownloadURL, storage, getDocFromServer
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings } from '../types';
@@ -316,6 +316,7 @@ export const getAllAttendance = async () => {
 export const createProject = async (projectData: any) => {
   const path = 'projects';
   try {
+    // 1. Create the project document
     const docRef = await addDoc(collection(db, 'projects'), {
       ...projectData,
       createdAt: serverTimestamp(),
@@ -323,35 +324,39 @@ export const createProject = async (projectData: any) => {
       status: 'Waiting for Review',
       progress: 0,
       isDeleted: false,
-      isLocked: true, // Default to locked
+      isLocked: true,
     });
 
-    // Send automated message from admin to client
+    const projectId = docRef.id;
+
+    // 2. Setup initial conversation and welcome message
     try {
-      const q = query(collection(db, 'users'), where('role', '==', 'admin'), limit(1));
-      const adminSnap = await getDocs(q);
-      if (!adminSnap.empty) {
-        const adminUid = adminSnap.docs[0].id;
+      const admins = await getAdmins();
+      if (admins.length > 0) {
+        // Use primary admin if available, otherwise first admin found
+        const admin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
+        const adminUid = admin.uid;
         const clientUid = projectData.userId;
         const clientName = projectData.userName || 'Client';
-        const conversationId = getConversationId(adminUid, clientUid);
         
-        const welcomeMessage = `Hi ${clientName},\n\nGreat news! 🎉 Your project has been received by our team.\nWe’re excited to start building your website and will keep you updated throughout the process.\nWe can chat here \nIf you have any additional details, feel free to reply anytime.\n\n– Team Webbylaunch`;
+        const conversationId = getConversationId(adminUid, clientUid);
+        const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${projectData.businessName}" has been successfully received. We've assigned our team to review your requirements.\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
 
-        // Create/Update conversation metadata - ENSURE PARENT DOC EXISTS
-        const convRef = doc(db, 'conversations', conversationId);
-        await setDoc(convRef, {
+        // Create the conversation document FIRST
+        await setDoc(doc(db, 'conversations', conversationId), {
           participants: [adminUid, clientUid],
           lastMessage: welcomeMessage,
           lastMessageAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           unreadCount: {
-            [clientUid]: 1
+            [clientUid]: 1,
+            [adminUid]: 0
           },
-          lastSenderId: adminUid
+          lastSenderId: adminUid,
+          projectId: projectId // Optionally link to the project
         }, { merge: true });
 
-        // Add the actual message to subcollection
+        // Add the welcome message to the subcollection
         await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
           text: welcomeMessage,
           senderId: adminUid,
@@ -363,10 +368,10 @@ export const createProject = async (projectData: any) => {
         });
       }
     } catch (msgError) {
-      console.error("Error sending automated message:", msgError);
+      console.error("Error creating conversation or welcome message:", msgError);
     }
 
-    return docRef.id;
+    return projectId;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
   }
@@ -773,26 +778,34 @@ export const getSystemSettings = async () => {
   };
 
   try {
-    const docSnap = await getDoc(doc(db, 'system_settings', 'default'));
+    const docSnap = await getDocFromServer(doc(db, 'system_settings', 'default'));
     if (docSnap.exists()) {
       return docSnap.data() as SystemSettings;
     } else {
+      console.log('System settings doc does not exist, creating default...');
       // Only admins can create settings if they don't exist
       try {
         if (auth.currentUser) {
           // Check if admin before attempting setDoc to avoid noisy permission errors
+          console.log('Checking if user is admin to initialize settings...', auth.currentUser.uid);
           const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
           if (userDoc.exists() && userDoc.data().role === 'admin') {
             await setDoc(doc(db, 'system_settings', 'default'), defaultSettings);
+            console.log('System settings initialized successfully');
+          } else {
+            console.log('User is not an admin, skipping settings initialization');
           }
         }
       } catch (e) {
-        console.warn('Could not initialize system settings:', e);
+        console.warn('Could not initialize system settings (permission or other):', e);
       }
       return defaultSettings;
     }
   } catch (error) {
     console.error('Error fetching system settings, using defaults:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
     // Don't throw here to allow the app to boot even if settings are inaccessible
     return defaultSettings;
   }

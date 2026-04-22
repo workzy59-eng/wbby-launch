@@ -256,9 +256,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             </Link>
             
             <div className="flex gap-4">
-              <Link to="/join-developer" className="p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-full group">
+              <a href="https://discord.gg/EDZb5Aefb" target="_blank" rel="noopener noreferrer" className="p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-full group">
                 <Briefcase size={20} className="text-[#c7c42a] group-hover:scale-125 transition-transform" />
-              </Link>
+              </a>
               <Link to="/join-sales" className="p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-full group">
                 <User size={20} className="text-[#c7c42a] group-hover:scale-125 transition-transform" />
               </Link>

@@ -42,6 +42,6 @@ export const signUpWithEmail = (email: string, pass: string) => createUserWithEm
 
 export { 
   collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, onAuthStateChanged, limit,
-  ref, uploadBytes, getDownloadURL, uploadBytesResumable
+  ref, uploadBytes, getDownloadURL, uploadBytesResumable, getDocFromServer
 };
 export type { FirebaseUser };
