@@ -261,6 +261,7 @@ export interface Message {
   imageUrl?: string;
   attachmentUrl?: string;
   fileData?: string; // Base64 string
+  fileName?: string;
   createdAt: string | Timestamp;
   status: 'sent' | 'delivered' | 'seen';
   seen: boolean;

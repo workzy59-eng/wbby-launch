@@ -348,7 +348,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               <div className="flex items-center gap-4">
               {adminProfile && (
                 <button 
-                  onClick={() => setShowDirectChat(true)}
+                  onClick={() => setActiveTab('messages')}
                   className="flex items-center gap-3 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl hover:bg-white/10 transition-all group"
                   style={{ color: primaryColor, borderColor: primaryColor + '40' }}
                 >
@@ -375,6 +375,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   onClose={() => setActiveTab('dashboard')}
                   fullScreen={false}
                   projects={projects}
+                  initialRecipientId={adminProfile?.uid}
                 />
               ) : activeTab === 'meetings' ? (
                 <div className="space-y-12">
@@ -797,7 +798,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           </div>
                           {adminProfile ? (
                             <button 
-                              onClick={() => setShowDirectChat(true)}
+                              onClick={() => setActiveTab('messages')}
                               className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
                             >
                               <MessageCircle size={20} /> Chat with Admin
@@ -822,18 +823,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       </main>
 
 
-
-      <AnimatePresence>
-        {showDirectChat && adminProfile && (
-          <ChatSystem 
-            isDirect={true}
-            recipientUser={{ uid: adminProfile.uid, displayName: adminProfile.displayName || 'System Admin' }}
-            profile={profile}
-            currentUser={user}
-            onClose={() => setShowDirectChat(false)}
-          />
-        )}
-      </AnimatePresence>
 
       <AnimatePresence>
         {showInvoice && selectedProject && (

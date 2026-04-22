@@ -13,16 +13,21 @@ import {
   Smile,
   FileText,
   ChevronLeft,
-  Briefcase,
-  User as UserIcon,
-  Circle,
-  Sparkles,
-  ArrowLeft,
-  Trash2,
-  ShieldCheck,
+  Users,
+  Video,
+  Mic,
+  Plus,
+  StickyNote,
   CornerUpLeft,
-  Edit
+  Edit,
+  Trash2,
+  Briefcase,
+  ShieldCheck,
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 import { Link } from 'react-router-dom';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
@@ -46,6 +51,7 @@ import { FirebaseUser } from '../firebase';
 import { UserProfile, Message, Project, Attachment } from '../types';
 import { 
   sendDirectMessage, 
+  sendMessage,
   getDirectMessages, 
   updateDirectMessage,
   getConversations,
@@ -71,6 +77,7 @@ interface MessagesModuleProps {
   onClose: () => void;
   fullScreen?: boolean;
   projects?: Project[];
+  initialRecipientId?: string;
 }
 
 interface Conversation {
@@ -89,9 +96,32 @@ interface UploadProgress {
   [fileName: string]: number;
 }
 
-export default function MessagesModule({ currentUser, profile, onClose, fullScreen = true, projects = [] }: MessagesModuleProps) {
+export default function MessagesModule({ currentUser, profile, onClose, fullScreen = true, projects = [], initialRecipientId }: MessagesModuleProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  
+  useEffect(() => {
+    if (initialRecipientId && conversations.length > 0) {
+      const existing = conversations.find(c => c.participants.includes(initialRecipientId));
+      if (existing) {
+        setActiveConversation(existing);
+      } else {
+        getUserProfile(initialRecipientId).then(p => {
+          if (p) {
+            setActiveConversation({
+              id: 'new',
+              lastMessage: '',
+              lastMessageAt: null,
+              lastSenderId: '',
+              participants: [currentUser.uid, initialRecipientId],
+              recipientProfile: p as UserProfile
+            });
+          }
+        });
+      }
+    }
+  }, [initialRecipientId, conversations.length]);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,6 +136,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [showActions, setShowActions] = useState<string | null>(null);
+  
+  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'favorites'>('all');
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -148,20 +180,17 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin' || c.participants.includes(currentUser.uid));
         }
         
-        // Add project conversations (REMOVED)
-        const projectConvs: Conversation[] = [];
-        /*
+        // Add project conversations
         const projectConvs: Conversation[] = projects.map(p => ({
           id: p.id,
           lastMessage: p.lastMessage || 'Project Chat',
           lastMessageAt: p.lastMessageAt || p.createdAt,
           lastSenderId: p.lastSenderId || '',
-          participants: [p.userId, p.developerId].filter(Boolean) as string[],
+          participants: [p.userId, p.developerId].filter(id => id && typeof id === 'string') as string[],
           isProject: true,
           project: p,
           unreadCount: p.unreadCount
         }));
-        */
 
         // Sort by date
         const allConvs = [...projectConvs, ...finalConvs].sort((a, b) => {
@@ -210,7 +239,24 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       markConversationAsSeen(activeConversation.id, currentUser.uid);
     }
 
-    if (activeConversation.isProject) return;
+    if (activeConversation.isProject) {
+      const q = query(
+        collection(db, 'projects', activeConversation.id, 'messages'),
+        orderBy('createdAt', 'asc')
+      );
+      const unsub = onSnapshot(q, (snapshot) => {
+        const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+        setMessages(msgs);
+        
+        // Mark as delivered for incoming messages
+        msgs.forEach(async (m) => {
+          if (m.senderId !== currentUser.uid && m.status === 'sent') {
+            await markMessageAsDelivered(m.id, undefined, activeConversation.id);
+          }
+        });
+      });
+      return () => unsub();
+    }
 
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
@@ -251,7 +297,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!inputText.trim() && Object.keys(uploadProgress).length === 0) || !activeConversation || isSending || activeConversation.isProject) return;
+    if ((!inputText.trim() && Object.keys(uploadProgress).length === 0) || !activeConversation || isSending) return;
 
     const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
@@ -262,7 +308,21 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const currentEditingMessage = editingMessage;
     
     try {
-      if (currentEditingMessage) {
+      if (activeConversation.isProject) {
+        const messageData = {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
+          text: messageText,
+          status: 'sent',
+          replyTo: currentReplyingTo ? {
+            id: currentReplyingTo.id,
+            text: currentReplyingTo.text,
+            senderName: currentReplyingTo.senderName
+          } : null
+        };
+        await sendMessage(activeConversation.id, messageData);
+        setReplyingTo(null);
+      } else if (currentEditingMessage) {
         await updateDirectMessage(recipientId, currentEditingMessage.id, {
           text: messageText,
           edited: true,
@@ -285,7 +345,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       }
       setInputText('');
       // Clear typing status
-      if (activeConversation.id !== 'new') {
+      if (activeConversation.id !== 'new' && !activeConversation.isProject) {
         setUserTyping(activeConversation.id, currentUser.uid, false);
       }
     } catch (error) {
@@ -309,10 +369,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   };
 
   const handleFileUpload = async (files: FileList | null, isImage: boolean) => {
-    if (!files || files.length === 0 || !activeConversation || isSending || activeConversation.isProject) return;
+    if (!files || files.length === 0 || !activeConversation || isSending) return;
     
-    const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-    if (!recipientId) return;
+    let recipientId: string | undefined;
+    if (!activeConversation.isProject) {
+      recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+      if (!recipientId) return;
+    }
 
     setIsSending(true);
     const attachments: Attachment[] = [];
@@ -359,14 +422,25 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       }
 
       if (attachments.length > 0) {
-        await sendDirectMessage(recipientId, {
-          senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
-          text: isImage ? 'Sent images' : 'Sent attachments',
-          fileData: attachments[0].url,
-          attachments,
-          status: 'sent'
-        });
+        if (activeConversation.isProject) {
+          await sendMessage(activeConversation.id, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: isImage ? 'Sent images' : 'Sent attachments',
+            fileData: attachments[0].url,
+            attachments,
+            status: 'sent'
+          });
+        } else if (recipientId) {
+          await sendDirectMessage(recipientId, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: isImage ? 'Sent images' : 'Sent attachments',
+            fileData: attachments[0].url,
+            attachments,
+            status: 'sent'
+          });
+        }
       }
     } catch (error) {
       console.error('Upload failed:', error);
@@ -413,10 +487,19 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   };
 
   const filteredConversations = conversations.filter(c => {
-    if (c.isProject) {
-      return c.project?.businessName.toLowerCase().includes(searchQuery.toLowerCase());
+    // Search
+    const matchesSearch = c.isProject 
+      ? c.project?.businessName.toLowerCase().includes(searchQuery.toLowerCase())
+      : c.recipientProfile?.displayName.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    // Filter
+    if (activeFilter === 'unread') {
+      return (c.unreadCount?.[currentUser.uid] || 0) > 0;
     }
-    return c.recipientProfile?.displayName.toLowerCase().includes(searchQuery.toLowerCase());
+    // Favorites could be implemented later with a field, for now just show all if favorites selected
+    return true;
   });
 
   const renderMessages = () => {
@@ -428,22 +511,23 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       const isMe = m.senderId === currentUser.uid;
       const showDate = idx === 0 || (m.createdAt && messages[idx - 1].createdAt && !isSameDay(m.createdAt, messages[idx - 1].createdAt));
       const isActionsVisible = showActions === m.id;
+      const isFirstOfGroup = idx === 0 || messages[idx-1].senderId !== m.senderId;
       
       return (
         <React.Fragment key={m.id}>
           {showDate && (
             <div className="flex justify-center my-6">
-              <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black text-white/60 uppercase tracking-widest border border-white/5 shadow-lg">
+              <span className="px-4 py-1.5 bg-[#182229] border border-[#ffffff10] rounded-lg text-[11px] font-medium text-[#8696a0] uppercase tracking-widest shadow-sm">
                 {formatDate(m.createdAt, 'separator')}
               </span>
             </div>
           )}
           <div 
-            className={`flex items-end gap-2 mb-1 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
+            className={`flex items-end mb-0.5 group ${isMe ? 'justify-end' : 'justify-start'}`}
             onMouseEnter={() => setShowActions(m.id)}
             onMouseLeave={() => setShowActions(null)}
           >
-            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[70%] relative`}>
+            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[65%] relative`}>
               {/* Message Actions Dropdown */}
               <AnimatePresence>
                 {isActionsVisible && !m.isDeleted && (
@@ -451,12 +535,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[rgba(255,255,255,0.08)] p-1 rounded-xl border border-white/10 shadow-2xl`}
+                    className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[#2a3942] p-1 rounded-xl border border-white/10 shadow-2xl`}
                   >
                     <button 
                       onClick={() => setReplyingTo(m)}
-                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#c7c42a] transition-all"
-                      title="Reply"
+                      className="p-2 hover:bg-white/5 rounded-lg text-[#8696a0] hover:text-[#00a884] transition-all"
                     >
                       <CornerUpLeft size={16} />
                     </button>
@@ -466,8 +549,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           setEditingMessage(m);
                           setInputText(m.text);
                         }}
-                        className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-[#c7c42a] transition-all"
-                        title="Edit"
+                        className="p-2 hover:bg-white/5 rounded-lg text-[#8696a0] hover:text-[#00a884] transition-all"
                       >
                         <Edit size={16} />
                       </button>
@@ -476,12 +558,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       onClick={async () => {
                         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
                         if (recipientId) {
-                          const forEveryone = isMe;
-                          await deleteDirectMessage(recipientId, m.id, forEveryone, currentUser.uid);
+                          await deleteDirectMessage(recipientId, m.id, isMe, currentUser.uid);
                         }
                       }}
-                      className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-red-400 transition-all"
-                      title="Delete"
+                      className="p-2 hover:bg-white/5 rounded-lg text-[#8696a0] hover:text-red-400 transition-all"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -489,55 +569,73 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 )}
               </AnimatePresence>
 
-              <div className={`relative p-3 rounded-2xl text-sm font-medium leading-relaxed shadow-xl ${
+              <div className={`relative px-3 py-2 rounded-xl text-[14.2px] leading-[19px] shadow-sm ${
                 isMe 
-                  ? 'bg-[#c7c42a] text-black rounded-tr-none' 
-                  : 'bg-[rgba(255,255,255,0.05)] text-white border border-white/5 rounded-tl-none'
-              }`}>
+                  ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none' 
+                  : 'bg-[#202c33] text-[#e9edef] border border-white/5 rounded-tl-none'
+              } ${!isFirstOfGroup ? (isMe ? 'rounded-tr-xl' : 'rounded-tl-xl') : ''}`}>
+                
+                {/* Tail placeholder if needed, but rounded-none handles it well enough visually */}
+
                 {m.isDeleted ? (
-                  <p className="text-[10px] italic text-white/40 flex items-center gap-2">
+                  <p className="text-[12px] italic text-[#8696a0] flex items-center gap-2">
                     <Trash2 size={12} />
                     This message was deleted
                   </p>
                 ) : (
                   <>
                     {m.replyTo && (
-                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-black/20 ${isMe ? 'border-[#c7c42a]' : 'border-#c7c42a'}`}>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">
+                      <div className={`mb-2 p-2 rounded-lg border-l-4 bg-[#00000020] ${isMe ? 'border-[#00a884]' : 'border-[#8696a0]'}`}>
+                        <p className="text-[11px] font-bold text-[#00a884] mb-0.5">
                           {m.replyTo.senderName}
                         </p>
-                        <p className="text-[10px] text-white/40 truncate italic">
+                        <p className="text-[12px] text-[#8696a0] truncate">
                           {m.replyTo.text}
                         </p>
                       </div>
                     )}
-                    {!isMe && activeConversation.isProject && (
-                      <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest mb-1">
-                        {m.senderName}
-                      </p>
+                    
+                    {/* Attachment preview */}
+                    {m.fileData && (
+                      <div className="mb-2 rounded-lg overflow-hidden cursor-pointer bg-[#182229] border border-white/5" onClick={() => window.open(m.fileData, '_blank')}>
+                         {m.type === 'image' || m.text === 'Sent an image' || (m.fileData.match(/\.(jpeg|jpg|gif|png)$/) != null) ? (
+                           <img src={m.fileData} alt="Attachment" className="max-w-full h-auto rounded-lg" />
+                         ) : (
+                           <div className="p-3 flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-lg bg-[#202c33] flex items-center justify-center text-[#8696a0]">
+                               <FileText size={20} />
+                             </div>
+                             <div className="flex-1 min-w-0">
+                               <p className="text-xs font-medium text-[#e9edef] truncate">{m.fileName || 'Document'}</p>
+                               <p className="text-[10px] text-[#8696a0] uppercase font-bold tracking-tighter">File</p>
+                             </div>
+                           </div>
+                         )}
+                      </div>
                     )}
+
                     <p className="whitespace-pre-wrap break-words">
                       {m.text}
+                      {m.edited && (
+                        <span className="text-[10px] text-[#8696a0] ml-2 italic">
+                          (edited)
+                        </span>
+                      )}
                     </p>
-                    {m.edited && (
-                      <span className="text-[8px] text-white/20 font-black uppercase tracking-widest ml-2 italic">
-                        (edited)
-                      </span>
-                    )}
                   </>
                 )}
-                <div className={`flex items-center gap-1.5 mt-1 justify-end ${isMe ? 'opacity-60' : 'opacity-40'}`}>
-                  <span className="text-[9px] font-bold uppercase tracking-widest">
-                    {formatDate(m.createdAt, 'chat')}
+                <div className="flex items-center gap-1 mt-1 justify-end">
+                   <span className="text-[11px] text-[#8696a0]">
+                    {formatDate(m.createdAt, 'h:mm a')}
                   </span>
-                  {isMe && (
+                  {isMe && !m.isDeleted && (
                     <span>
                       {m.status === 'seen' ? (
-                        <CheckCheck size={14} className="text-[#c7c42a]" />
+                        <CheckCheck size={15} className="text-[#53bdeb]" />
                       ) : m.status === 'delivered' ? (
-                        <CheckCheck size={14} className="text-white/60" />
+                        <CheckCheck size={15} className="text-[#8696a0]" />
                       ) : (
-                        <Check size={14} className="text-white/40" />
+                        <Check size={15} className="text-[#8696a0]" />
                       )}
                     </span>
                   )}
@@ -551,8 +649,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   };
 
   const containerClasses = fullScreen 
-    ? "fixed inset-0 z-[200] bg-[#020617] flex flex-col md:flex-row overflow-hidden font-sans"
-    : "relative w-full h-[calc(100vh-180px)] bg-[#020617]/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
+    ? "fixed inset-0 z-[200] bg-[#0b141a] flex flex-col md:flex-row overflow-hidden font-sans"
+    : "relative w-full h-[calc(100vh-180px)] bg-[#0b141a] rounded-3xl border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
 
   return (
     <motion.div 
@@ -562,94 +660,104 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       className={containerClasses}
     >
       {/* Sidebar / List View */}
-      <div className={`w-full md:w-96 border-r border-white/5 flex flex-col bg-slate-900/40 backdrop-blur-3xl ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-6 border-b border-white/5 flex items-center justify-between">
-          <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Messages</h2>
-          <button 
-            onClick={onClose}
-            className={`p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all ${!fullScreen ? 'lg:hidden' : ''}`}
-          >
-            <X size={24} />
-          </button>
+      <div className={`w-full md:w-[450px] border-r border-[#202c33] flex flex-col bg-[#111b21] ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
+        <div className="p-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#e9edef]">Chats</h2>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowUserList(true)}
+              className="p-2 hover:bg-[#202c33] rounded-full text-[#aebac1] transition-all"
+            >
+              <Plus size={20} />
+            </button>
+            <button 
+              onClick={onClose}
+              className={`p-2 hover:bg-[#202c33] rounded-full text-[#aebac1] transition-all ${!fullScreen ? 'lg:hidden' : ''}`}
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
-        <div className="p-4">
+        <div className="px-4 py-2 space-y-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8696a0]" size={16} />
             <input 
               type="text"
-              placeholder="Search chats..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all"
+              placeholder="Search or start a new chat"
+              className="w-full bg-[#202c33] border-none rounded-xl py-2 pl-12 pr-4 text-sm text-[#d1d7db] outline-none focus:ring-0 placeholder-[#8696a0]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            {['all', 'unread', 'favorites'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setActiveFilter(f as any)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-all whitespace-nowrap ${
+                  activeFilter === f 
+                    ? 'bg-[#00a884]/20 text-[#00a884]' 
+                    : 'bg-[#202c33] text-[#8696a0] hover:bg-[#2a3942]'
+                }`}
+              >
+                {f} {f === 'unread' && conversations.reduce((acc, c) => acc + (c.unreadCount?.[currentUser.uid] || 0), 0) > 0 && (
+                  <span className="ml-1 opacity-60">
+                    {conversations.reduce((acc, c) => acc + (c.unreadCount?.[currentUser.uid] || 0), 0)}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className="flex-1 overflow-y-auto custom-scrollbar mt-2">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
               <Loader color="white" />
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-10 text-center space-y-6">
-              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto">
-                <MessageCircle className="text-white/10" size={40} />
-              </div>
-              <div className="space-y-2">
-                <p className="text-white/60 text-sm font-black uppercase italic tracking-tight">No conversations yet</p>
-                <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                  {profile?.role === 'admin' 
-                    ? 'Start a conversation with one of your clients or developers.' 
-                    : 'Need help? Start a conversation with our support team.'}
-                </p>
-              </div>
-              <button 
-                onClick={profile?.role === 'admin' ? () => setShowUserList(true) : handleMessageAdmin}
-                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[#c7c42a] text-[10px] font-black uppercase tracking-widest hover:bg-[#c7c42a] hover:text-black hover:border-transparent transition-all"
-              >
-                {profile?.role === 'admin' ? 'Start a new chat' : 'Message Admin'}
-              </button>
+            <div className="p-10 text-center space-y-4">
+              <div className="text-[#8696a0] text-sm font-medium">No chats found.</div>
             </div>
           ) : (
             filteredConversations.map((conv) => (
               <button
                 key={conv.id}
                 onClick={() => setActiveConversation(conv)}
-                className={`w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-all border-b border-white/5 ${activeConversation?.id === conv.id ? 'bg-white/10' : ''}`}
+                className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#202c33] transition-all border-b border-[#202c33]/30 ${activeConversation?.id === conv.id ? 'bg-[#2a3942]' : ''}`}
               >
-                <div className="relative">
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg ${
+                <div className="relative shrink-0">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-black font-bold text-lg ${
                     conv.isProject 
-                      ? 'bg-gradient-to-br from-blue-500 to-#c7c42a' 
+                      ? 'bg-blue-500' 
                       : conv.recipientProfile?.displayName === 'SAI ROSHAN'
-                        ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]'
-                        : 'bg-gradient-to-br from-[#c7c42a] to-#c7c42a'
+                        ? 'bg-transparent border border-[#00a884]/30 text-[#00a884]'
+                        : 'bg-[#00a884]'
                   }`}>
-                    {conv.isProject ? <Briefcase size={24} /> : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={24} /> : (conv.recipientProfile?.displayName?.[0] || 'U'))}
+                    {conv.isProject ? <Briefcase size={22} /> : (conv.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
-                  {!conv.isProject && (
-                    <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-[#020617] rounded-full ${
-                      conv.recipientProfile?.status === 'online' ? 'bg-green-500' : 
-                      conv.recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
-                    }`}></div>
+                  {!conv.isProject && conv.recipientProfile?.status === 'online' && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#00a884] border-2 border-[#111b21] rounded-full"></div>
                   )}
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="font-black text-white truncate uppercase tracking-tight text-sm">
-                      {conv.isProject ? conv.project?.businessName : conv.recipientProfile?.displayName}
+                  <div className="flex justify-between items-baseline mb-0.5">
+                    <span className="font-medium text-[#e9edef] truncate text-base">
+                      {conv.isProject ? conv.project?.businessName : (conv.recipientProfile?.displayName === 'SAI ROSHAN' ? 'Webby Launch' : conv.recipientProfile?.displayName)}
                     </span>
-                    <span className="text-[10px] text-white/30 font-bold shrink-0">
+                    <span className={`text-[10px] font-medium shrink-0 ${conv.unreadCount?.[currentUser.uid] ? 'text-[#00a884]' : 'text-[#8696a0]'}`}>
                       {conv.lastMessageAt ? formatDate(conv.lastMessageAt, 'h:mm a') : ''}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-white/40 truncate font-medium pr-2 italic">
-                      {conv.lastSenderId === currentUser.uid ? 'You: ' : ''}{conv.lastMessage}
+                    <p className={`text-sm truncate font-normal pr-2 ${conv.unreadCount?.[currentUser.uid] ? 'text-[#e9edef]' : 'text-[#8696a0]'}`}>
+                      {conv.lastSenderId === currentUser.uid && <CheckCheck size={14} className="inline mr-1 text-[#53bdeb]" />}
+                      {conv.lastMessage}
                     </p>
                     {conv.unreadCount?.[currentUser.uid] ? (
-                      <div className="bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] shrink-0">
+                      <div className="bg-[#00a884] text-black text-[11px] font-bold min-w-[20px] h-5 rounded-full flex items-center justify-center px-1 shadow-md shrink-0">
                         {conv.unreadCount[currentUser.uid]}
                       </div>
                     ) : null}
@@ -659,134 +767,85 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             ))
           )}
         </div>
-
-        <div className="p-4 border-t border-white/5">
-          <button 
-            onClick={() => setShowUserList(true)}
-            className="w-full py-4 bg-[#c7c42a] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
-          >
-            New Message
-          </button>
-        </div>
       </div>
 
       {/* Main Chat View */}
-      <div className={`flex-1 flex flex-col bg-slate-900/20 backdrop-blur-xl relative ${!activeConversation ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`flex-1 flex flex-col bg-[#0b141a] relative ${!activeConversation ? 'hidden md:flex' : 'flex'}`}>
+        <div 
+          className="absolute inset-0 opacity-[0.06] pointer-events-none"
+          style={{
+            backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
+            backgroundRepeat: 'repeat',
+            backgroundSize: '400px',
+          }}
+        />
+        
         {activeConversation ? (
-          activeConversation.isProject ? (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <header className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md">
-                <div className="flex items-center gap-4">
-                  <button 
-                    onClick={() => setActiveConversation(null)}
-                    className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white md:hidden"
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-#c7c42a flex items-center justify-center text-black font-black text-lg">
-                    <Briefcase size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-white uppercase tracking-tight">{activeConversation.project?.businessName}</h3>
-                    <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest flex items-center gap-1.5">
-                      Project Chat
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  onClick={onClose}
-                  className="p-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all hidden md:block"
-                >
-                  <X size={20} />
-                </button>
-              </header>
-              <div className="flex-1 overflow-hidden">
-                <ChatSystem 
-                  projectId={activeConversation.project?.id || ''} 
-                  user={currentUser} 
-                  profile={profile} 
-                  currentUser={currentUser} 
-                />
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Chat Header */}
-            <header className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md">
-              <div className="flex items-center gap-4">
+          <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+            {/* Chat Header */}
+            <header className="px-4 py-2 border-b border-[#202c33] flex items-center justify-between bg-[#202c33] relative z-20">
+              <div className="flex items-center gap-3 cursor-pointer">
                 <button 
                   onClick={() => setActiveConversation(null)}
-                  className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white md:hidden"
+                  className="p-1 hover:bg-white/5 rounded-full text-[#aebac1] md:hidden"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <div className="relative">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-black font-black text-lg ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-black font-bold text-lg ${
+                    activeConversation.isProject ? 'bg-blue-500 text-white' : 
                     activeConversation.recipientProfile?.displayName === 'SAI ROSHAN'
-                      ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]'
-                      : 'bg-gradient-to-br from-[#c7c42a] to-#c7c42a'
+                      ? 'bg-transparent border border-[#00a884]/30 text-[#00a884]'
+                      : 'bg-[#00a884]'
                   }`}>
-                    {activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} /> : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
+                    {activeConversation.isProject ? <Briefcase size={20} /> : activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} /> : (activeConversation.recipientProfile?.displayName?.[0] || 'U')}
                   </div>
-                  <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#020617] rounded-full ${
-                    activeConversation.recipientProfile?.status === 'online' ? 'bg-green-500' : 
-                    activeConversation.recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
-                  }`}></div>
+                  {!activeConversation.isProject && activeConversation.recipientProfile?.status === 'online' && (
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#00a884] border-2 border-[#111b21] rounded-full"></div>
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-black text-white uppercase tracking-tight">{activeConversation.recipientProfile?.displayName}</h3>
+                  <h3 className="font-medium text-[#e9edef] text-sm">
+                    {activeConversation.isProject ? activeConversation.project?.businessName : (activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? 'Webby Launch' : activeConversation.recipientProfile?.displayName)}
+                  </h3>
                   <div className="flex items-center gap-2">
                     {typingUsers.length > 0 ? (
-                      <p className="text-[10px] text-[#c7c42a] font-black uppercase tracking-widest animate-pulse">typing...</p>
+                      <p className="text-[10px] text-[#00a884] font-medium animate-pulse">typing...</p>
                     ) : (
-                      <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
-                        activeConversation.recipientProfile?.status === 'online' ? 'text-green-400' : 'text-white/30'
+                      <p className={`text-[10px] font-medium ${
+                        !activeConversation.isProject && activeConversation.recipientProfile?.status === 'online' ? 'text-[#00a884]' : 'text-[#8696a0]'
                       }`}>
-                        {activeConversation.recipientProfile?.status === 'online' ? (
-                          <>
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                            Active Now
-                          </>
-                        ) : (
-                          `Last seen ${activeConversation.recipientProfile?.lastSeen ? formatDate(activeConversation.recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`
-                        )}
+                        {activeConversation.isProject ? 'Project Channel' : (activeConversation.recipientProfile?.status === 'online' ? 'Online' : `Last seen ${activeConversation.recipientProfile?.lastSeen ? formatDate(activeConversation.recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`)}
                       </p>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Link 
-                  to="/" 
-                  className="p-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2 mr-2"
-                >
-                  <ArrowLeft size={14} /> Back to Webby
-                </Link>
+              <div className="flex items-center gap-2 text-[#aebac1]">
+                <button className="p-2 hover:bg-[#2a3942] rounded-full transition-all">
+                  <Video size={18} />
+                </button>
                 <button 
                   onClick={() => setShowSearch(!showSearch)}
-                  className={`p-3 rounded-xl transition-all ${showSearch ? 'bg-[#c7c42a] text-black' : 'hover:bg-white/5 text-white/40 hover:text-white'}`}
+                  className={`p-2 rounded-full transition-all ${showSearch ? 'bg-[#00a884]/20 text-[#00a884]' : 'hover:bg-[#2a3942]'}`}
                 >
-                  <Search size={20} />
+                  <Search size={18} />
                 </button>
-                <div className="w-[1px] h-8 bg-white/5 mx-2"></div>
-                <button 
-                  onClick={onClose}
-                  className="p-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all hidden md:block"
-                >
-                  <X size={20} />
+                <button className="p-2 hover:bg-[#2a3942] rounded-full transition-all">
+                  <MoreVertical size={18} />
                 </button>
               </div>
             </header>
 
             {showSearch && (
-              <div className="p-4 bg-slate-900/40 border-b border-white/5 animate-in slide-in-from-top duration-300">
+              <div className="p-4 bg-[#111b21] border-b border-[#202c33] animate-in slide-in-from-top duration-300 relative z-20">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8696a0]" size={16} />
                   <input 
                     type="text"
                     placeholder="Search messages..."
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white outline-none focus:border-[#c7c42a]/30 transition-all"
+                    className="w-full bg-[#202c33] border-none rounded-xl py-2 pl-10 pr-4 text-xs text-[#d1d7db] outline-none placeholder-[#8696a0]"
                     value={messageSearchQuery}
                     onChange={(e) => setMessageSearchQuery(e.target.value)}
                     autoFocus
@@ -798,14 +857,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             {/* Messages Area */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
-              style={{
-                backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
-                backgroundRepeat: 'repeat',
-                backgroundSize: '400px',
-                backgroundBlendMode: 'overlay',
-                backgroundColor: '#rgba(255,255,255,0.05)'
-              }}
+              className="flex-1 overflow-y-auto px-4 md:px-8 py-4 space-y-1.5 scrollbar-hide relative z-10 custom-scrollbar"
             >
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full space-y-6">
@@ -969,8 +1021,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </motion.div>
               )}
             </AnimatePresence>
-            </>
-          )
+          </div>
         ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-white/20 space-y-6">
               <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
