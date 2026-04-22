@@ -84,58 +84,39 @@ export default function Services() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black overflow-x-hidden"
+      className="min-h-screen bg-[#050505] selection:bg-[#c7c42a] selection:text-black overflow-x-hidden technical-grid"
     >
-      <SEO title="Our Services – Premium Web Solutions by WebbyLaunch" />
-
-      {/* Sticky CTA */}
-      <motion.div 
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="fixed bottom-8 right-8 z-50 hidden md:block"
-      >
-        <Link 
-          to="/auth" 
-          className="bg-[#c7c42a] text-black px-8 py-4 rounded-2xl font-black uppercase italic text-xs flex items-center gap-3 shadow-[0_0_30px_rgba(199,196,42,0.3)] hover:scale-105 transition-all"
-        >
-          <MousePointer2 size={18} />
-          Get Started
-        </Link>
-      </motion.div>
+      <SEO title="Service Protocols – Premium Infrastructure by WebbyLaunch" />
 
       {/* Hero Section */}
-      <section className="relative pt-48 pb-32 px-10 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[#c7c42a]/5 rounded-full blur-[120px]" />
-        </div>
-
+      <section className="relative pt-64 pb-32 px-10 overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-12"
           >
-            <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
-              We Build Websites That <br />
-              <span className="text-[#c7c42a]">Bring You Clients</span>, <br />
-              Not Just Design
+            <span className="text-xs font-black uppercase tracking-[0.8em] text-[#c7c42a] animate-marquee">Engineering Excellence</span>
+            <h1 className="text-7xl md:text-[12vw] font-black uppercase italic tracking-tighter leading-[0.75] animate-slam-in">
+              Digital <br />
+              <span className="text-[#c7c42a]">Armor.</span>
             </h1>
-            <p className="max-w-2xl mx-auto text-white/60 text-lg md:text-xl font-medium leading-relaxed italic">
-              Modern, fast, and scalable websites with powerful dashboards and support.
+            <p className="max-w-3xl mx-auto text-white/30 text-2xl md:text-3xl font-medium leading-tight italic">
+              We deploy hyper-performance infrastructure. <span className="text-white">Precision engineered</span> for high-stakes business environments.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-12 pt-12">
               <Link 
                 to="/pricing" 
-                className="w-full sm:w-auto bg-white/5 border border-white/10 text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/10 hover:border-[#c7c42a]/30 transition-all group"
+                className="group relative flex items-center gap-4 text-xs font-black uppercase tracking-[0.4em] text-white/40 hover:text-white transition-all"
               >
-                View Pricing
+                Pricing Specifications
+                <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
               <Link 
                 to="/auth" 
-                className="w-full sm:w-auto bg-[#c7c42a] text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
+                className="bg-[#c7c42a] text-black px-16 py-8 font-black uppercase italic text-sm tracking-widest hover:scale-110 active:scale-95 transition-all shadow-[0_30px_60px_rgba(199,196,42,0.1)]"
               >
-                Get Started Now
+                Iniate Build
               </Link>
             </div>
           </motion.div>
@@ -145,88 +126,71 @@ export default function Services() {
       {/* Services Grid */}
       <section className="py-32 px-10 relative">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5 border border-white/5 overflow-hidden">
             {services.map((service, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className={`group relative p-10 rounded-[3rem] border transition-all duration-500 flex flex-col h-full ${
-                  service.featured 
-                    ? 'bg-white/10 border-[#c7c42a]/30 shadow-[0_0_50px_rgba(199,196,42,0.1)]' 
-                    : 'bg-white/5 border-white/10 hover:border-[#c7c42a]/30'
-                }`}
+                transition={{ delay: idx * 0.05 }}
+                className={`group bg-[#050505] p-16 space-y-12 relative flex flex-col justify-between h-[600px] hover:bg-[#0a0a0a] transition-all`}
               >
-                {service.featured && (
-                  <div className="absolute -top-4 left-10 bg-[#c7c42a] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest italic">
-                    {service.badge}
+                {service.featured && <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />}
+                
+                <div className="space-y-12">
+                  <div className="flex justify-between items-start">
+                    <div className="text-[#c7c42a]">
+                      <service.icon size={48} strokeWidth={1} />
+                    </div>
+                    {service.featured && <span className="text-[8px] font-black uppercase tracking-[0.3em] px-2 py-1 border border-[#c7c42a]/30 italic text-[#c7c42a]">Elite Grade</span>}
                   </div>
-                )}
 
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 ${
-                  service.featured ? 'bg-[#c7c42a] text-black' : 'bg-[#c7c42a]/10 text-[#c7c42a] group-hover:bg-[#c7c42a] group-hover:text-black'
-                }`}>
-                  <service.icon size={32} />
+                  <div className="space-y-6">
+                    <h3 className="text-4xl font-black uppercase italic tracking-tighter leading-none">{service.title}</h3>
+                    <p className="text-white/20 text-lg font-medium italic leading-relaxed">{service.desc}</p>
+                  </div>
                 </div>
 
-                <div className="flex-1 space-y-4">
-                  <h3 className="text-2xl font-black uppercase italic tracking-tighter">{service.title}</h3>
-                  <p className="text-white/40 text-sm font-medium leading-relaxed italic">{service.desc}</p>
-                </div>
-
-                <div className="pt-10">
-                  <a 
-                    href={`mailto:${PROFESSIONAL_EMAIL}`}
-                    className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                      service.featured 
-                        ? 'bg-[#c7c42a] text-black hover:scale-[1.02]' 
-                        : 'bg-white/5 text-white hover:bg-white/10'
-                    }`}
+                <div className="pt-12">
+                   <div className="w-12 h-px bg-white/10 mb-8" />
+                   <Link 
+                    to="/auth"
+                    className="text-xs font-black uppercase tracking-widest text-white/40 hover:text-[#c7c42a] transition-colors inline-flex items-center gap-4 group/link"
                   >
-                    Email Us <ArrowRight size={14} />
-                  </a>
+                    Select Module <ArrowRight size={14} className="group-hover/link:translate-x-2 transition-transform" />
+                  </Link>
                 </div>
-
-                {service.featured && (
-                  <div className="absolute inset-0 rounded-[3rem] bg-[#c7c42a]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none blur-2xl" />
-                )}
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* What You Get Section */}
-      <section className="py-32 px-10 bg-white/5 relative overflow-hidden">
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[#c7c42a]/5 rounded-full blur-[100px] -ml-48" />
-        
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
-          <div className="space-y-8">
-            <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
-              What You Get With <br />
-              <span className="text-[#c7c42a]">Every Project</span>
+      {/* Protocol Section */}
+      <section className="py-64 px-10 border-t border-white/5 bg-[#050505] technical-grid">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
+          <div className="space-y-12">
+            <span className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Standard Runtime</span>
+            <h2 className="text-6xl md:text-[8rem] font-black uppercase italic tracking-tighter leading-[0.75]">
+              Core <br />
+              <span className="text-white/10">Invariants.</span>
             </h2>
-            <p className="text-white/40 text-lg font-medium italic leading-relaxed max-w-lg">
-              We don't just build websites; we build business tools. Every project comes with these standard features to ensure your success.
+            <p className="text-white/20 text-2xl font-medium italic leading-tight">
+              Every build is verified against our <span className="text-white">High-Speed Protocol</span>. Zero compromise on structural integrity.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             {whatYouGet.map((item, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="flex items-center gap-4 p-6 bg-black/40 border border-white/5 rounded-2xl hover:border-[#c7c42a]/30 transition-all group"
+                className="p-12 border border-white/5 bg-[#0a0a0a] hover:bg-[#c7c42a] transition-all duration-700 group"
               >
-                <div className="text-[#c7c42a] group-hover:scale-110 transition-transform">
-                  <CheckCircle2 size={24} />
+                <div className="text-[#c7c42a] group-hover:text-black mb-8 transition-colors">
+                  <ShieldCheck size={32} />
                 </div>
-                <span className="text-sm font-black uppercase italic tracking-tighter">{item}</span>
+                <span className="text-lg font-black uppercase italic tracking-tighter text-white group-hover:text-black transition-colors">{item}</span>
               </motion.div>
             ))}
           </div>
@@ -234,90 +198,56 @@ export default function Services() {
       </section>
 
       {/* Who Is This For */}
-      <section className="py-32 px-10">
-        <div className="max-w-7xl mx-auto text-center space-y-20">
-          <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">
-            Who Is This <span className="text-[#c7c42a]">For?</span>
-          </h2>
+      <section className="py-32 px-10 bg-[#050505]">
+        <div className="max-w-7xl mx-auto text-center space-y-32">
+          <div className="space-y-4">
+             <span className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Target Sectors</span>
+            <h2 className="text-6xl md:text-9xl font-black uppercase italic tracking-tighter">
+              The <span className="text-white/10">Clientele.</span>
+            </h2>
+          </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-white/5 border border-white/5 overflow-hidden">
             {whoIsThisFor.map((item, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white/5 border border-white/10 p-12 rounded-[3rem] space-y-6 hover:bg-white/10 transition-all group cursor-default"
+                className="bg-[#050505] p-20 space-y-10 hover:bg-[#0a0a0a] transition-all group"
               >
-                <div className="w-20 h-20 bg-[#c7c42a]/10 rounded-full flex items-center justify-center text-[#c7c42a] mx-auto group-hover:scale-110 transition-transform">
-                  <item.icon size={40} />
+                <div className="w-24 h-24 bg-[#c7c42a]/5 border border-[#c7c42a]/10 rounded-full flex items-center justify-center text-[#c7c42a] mx-auto group-hover:bg-[#c7c42a] group-hover:text-black transition-all">
+                  <item.icon size={40} strokeWidth={1} />
                 </div>
-                <h3 className="text-xl font-black uppercase italic tracking-tighter">{item.title}</h3>
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter">{item.title}</h3>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-32 px-10 relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white/5 border border-white/10 rounded-[4rem] p-12 md:p-24 relative overflow-hidden">
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#c7c42a]/5 rounded-full blur-[100px] -mr-48 -mb-48" />
-            
-            <div className="relative z-10 space-y-20">
-              <div className="text-center space-y-4">
-                <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">
-                  Why Choose <span className="text-[#c7c42a]">WebbyLaunch?</span>
-                </h2>
-                <p className="text-white/40 font-medium italic">The difference is in the details.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-                {whyChooseUs.map((item, idx) => (
-                  <div key={idx} className="space-y-4 text-center">
-                    <div className="text-[#c7c42a] flex justify-center">
-                      <item.icon size={48} strokeWidth={1.5} />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-lg font-black uppercase italic tracking-tighter">{item.title}</h4>
-                      <p className="text-[#c7c42a] text-xs font-black uppercase tracking-widest">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="py-32 px-10">
-        <div className="max-w-5xl mx-auto relative">
-          <div className="bg-[#c7c42a] rounded-[4rem] p-16 md:p-24 text-center space-y-12 relative overflow-hidden shadow-[0_0_100px_rgba(199,196,42,0.15)]">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent)]" />
-            
-            <div className="relative z-10 space-y-8">
-              <h2 className="text-5xl md:text-7xl font-black text-black uppercase italic tracking-tighter leading-none">
-                Have a project in mind? <br />
-                Let's build something amazing.
-              </h2>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
-                <Link 
-                  to="/auth" 
-                  className="w-full sm:w-auto bg-black text-white px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl"
-                >
-                  Get Started Now
-                </Link>
-                <a 
-                  href={`mailto:${PROFESSIONAL_EMAIL}`}
-                  className="w-full sm:w-auto bg-white text-black px-12 py-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
-                >
-                  Email Us
-                </a>
-              </div>
-            </div>
+      {/* Final Entry Section */}
+      <section className="py-64 px-10 relative overflow-hidden bg-[#050505] technical-grid border-t border-white/5">
+        <div className="max-w-5xl mx-auto text-center space-y-16">
+          <span className="text-xs font-black uppercase tracking-[0.8em] text-[#c7c42a]">Terminal Command</span>
+          <h2 className="text-6xl md:text-[8vw] font-black text-white uppercase italic tracking-tighter leading-[0.75] animate-slam-in">
+            Execute Your <br />
+            <span className="text-[#c7c42a]">Digital Strategy.</span>
+          </h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-12 pt-8">
+            <Link 
+              to="/auth" 
+              className="bg-[#c7c42a] text-black px-24 py-8 font-black uppercase italic text-sm tracking-widest hover:scale-110 active:scale-95 transition-all shadow-[0_30px_60px_rgba(199,196,42,0.1)]"
+            >
+              Initiate
+            </Link>
+            <a 
+              href={`mailto:${PROFESSIONAL_EMAIL}`}
+              className="text-xs font-black uppercase tracking-[0.4em] text-white/40 hover:text-white transition-all underline underline-offset-8"
+            >
+              Consult
+            </a>
           </div>
         </div>
       </section>

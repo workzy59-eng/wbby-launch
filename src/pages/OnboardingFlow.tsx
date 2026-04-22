@@ -172,7 +172,7 @@ interface OnboardingFlowProps {
 }
 
 export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
-  const { signInWithGoogle, sendOTP: sendOTPViaAuth, verifyOTP: verifyOTPViaAuth } = useAuth();
+  const { signInWithGoogle } = useAuth();
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem('onboarding_data');
     const defaults = {
@@ -234,11 +234,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   });
 
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [otp, setOtp] = useState('');
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [isOtpLoading, setIsOtpLoading] = useState(false);
-  const [otpTimer, setOtpTimer] = useState(0);
-  const [otpError, setOtpError] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -271,65 +266,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
   }, [profile]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (otpTimer > 0) {
-      timer = setInterval(() => setOtpTimer(prev => prev - 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [otpTimer]);
-
-  const sendOTP = async () => {
-    if (!formData.email) {
-      toast.error("Please enter an email first");
-      return;
-    }
-
-    setIsOtpLoading(true);
-    try {
-      await sendOTPViaAuth(formData.email);
-      setIsOtpSent(true);
-      setOtpTimer(30);
-      setOtpError(false);
-    } catch (err: any) {
-      // Error handled in AuthContext toast
-    } finally {
-      setIsOtpLoading(false);
-    }
-  };
-
-  const verifyOTP = async (codeOverride?: string) => {
-    const codeToVerify = codeOverride || otp;
-    if (codeToVerify.length !== 6) return;
-
-    setIsOtpLoading(true);
-    try {
-      await verifyOTPViaAuth(formData.email, codeToVerify);
-      setStep(3);
-      setInvalidFields([]);
-    } catch (err: any) {
-      setOtpError(true);
-      // Delay clearing
-      setTimeout(() => {
-        setOtp('');
-        const firstInput = document.getElementById('otp-input-0');
-        firstInput?.focus();
-      }, 1000);
-    } finally {
-      setIsOtpLoading(false);
-    }
-  };
-
-  // Auto-verify when 6 digits are entered
-  useEffect(() => {
-    if (otp.length === 6) {
-      verifyOTP();
-    } else if (otp.length > 0) {
-      // Clear error state as soon as user starts typing again
-      setOtpError(false);
-    }
-  }, [otp]);
-
   const getInvalidFieldsForStep = (currentStep: number) => {
     if (!systemSettings) return [];
     const req = systemSettings.requiredFields;
@@ -347,10 +283,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.referralSource) invalid.push('referralSource');
         if (formData.referralSource === 'I got a call' && !formData.salesCode) invalid.push('salesCode');
         break;
-      case 2: // OTP
-        if (!otp || otp.length !== 6) invalid.push('otp');
-        break;
-      case 3: // Business info
+      case 2: // Business info
         if (req.businessName && !formData.businessName) invalid.push('businessName');
         if (req.businessType && !formData.businessType) invalid.push('businessType');
         if (formData.businessType === 'Other' && !formData.otherBusinessType) invalid.push('otherBusinessType');
@@ -364,30 +297,30 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.pincode) invalid.push('pincode');
         if (req.description && !formData.description) invalid.push('description');
         break;
-      case 4: // Features Select
+      case 3: // Features Select
         if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
         break;
-      case 5: // Domain Preferences
+      case 4: // Domain Preferences
         if (formData.domainPreferences.some(p => !p)) {
           formData.domainPreferences.forEach((p, i) => {
             if (!p) invalid.push(`domainPreference${i}`);
           });
         }
         break;
-      case 6: // Design
+      case 5: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
         if (!formData.secondaryColor) invalid.push('secondaryColor');
         break;
-      case 7: // Preview
+      case 6: // Preview
         // No fields to validate for preview step itself
         break;
-      case 8: // Choose Plan
+      case 7: // Choose Plan
         if (!formData.plan) invalid.push('plan');
         break;
-      case 9: // Terms and Conditions
+      case 8: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
-      case 10: // Finalize
+      case 9: // Finalize
         if (!paymentOption) invalid.push('paymentOption');
         break;
     }
@@ -407,24 +340,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const getInputClass = (fieldName: string, baseClass: string = "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-medium") => {
     const isInvalid = invalidFields.includes(fieldName);
-    return `${baseClass} ${isInvalid ? 'border-error shadow-[0_0_12px_rgba(239,68,68,0.4)] animate-shake' : 'border-border'}`;
+    return `${baseClass} ${isInvalid ? 'border-error shadow-[0_0_12px_rgba(239,68,68,0.4)]' : 'border-border'}`;
   };
 
   const handleNext = () => {
     const invalid = getInvalidFieldsForStep(step);
     if (invalid.length === 0) {
-      if (step === 1) {
-        if (profile?.isOtpVerified) {
-          setStep(3);
-        } else {
-          sendOTP();
-          setStep(2);
-        }
-      } else if (step === 2) {
-        verifyOTP();
-      } else {
-        setStep(step + 1);
-      }
+      setStep(step + 1);
       setInvalidFields([]);
     } else {
       setInvalidFields(invalid);
@@ -628,7 +550,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       domain: domainPrefs[0],
       domainPreferences: domainPrefs
     }));
-    setStep(5);
+    setStep(4);
   };
 
   const toggleFeature = (feature: string) => {
@@ -769,74 +691,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-12"
-          >
-            <div className="space-y-2 text-center">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Security</h2>
-              <h3 className="text-4xl font-black tracking-tighter text-text uppercase italic">Verify Identity</h3>
-              <p className="text-subtext font-medium text-sm">We've sent a 6-digit code to <span className="text-primary font-bold">{formData.email}</span></p>
-            </div>
-
-            <div className="space-y-10">
-              <div className="relative">
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="000000"
-                  className={getInputClass('otp', "w-full p-6 h-20 rounded-2xl bg-card border text-center text-4xl font-black text-primary tracking-[1em] focus:outline-none focus:border-primary")}
-                  value={otp}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
-                    setOtp(val);
-                  }}
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex flex-col gap-4 pt-4">
-                <button 
-                  onClick={() => verifyOTP()}
-                  disabled={otp.length !== 6 || isOtpLoading}
-                  className="w-full bg-primary text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isOtpLoading ? <Loader color="black" /> : "Verify Code"}
-                </button>
-                
-                <div className="flex justify-center items-center gap-4">
-                  <button 
-                    onClick={sendOTP}
-                    disabled={otpTimer > 0 || isOtpLoading}
-                    className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline disabled:text-subtext flex items-center gap-2"
-                  >
-                    {isOtpLoading ? 'Sending...' : (otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend")}
-                  </button>
-                  <span className="w-1 h-1 rounded-full bg-white/10" />
-                  <button 
-                    onClick={() => setStep(1)}
-                    className="text-subtext text-[10px] font-black uppercase tracking-widest hover:text-white"
-                  >
-                    Change Email
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 glass text-white py-6 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Back</button>
-            </div>
-          </motion.div>
-        );
-      case 3:
-        return (
-          <motion.div 
-            key="step3"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 3</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Business Details</h3>
             </div>
 
@@ -1010,17 +868,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 4:
+      case 3:
         return (
           <motion.div 
-            key="step4"
+            key="step3"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 3</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Select Features</h3>
               <p className="text-subtext font-medium italic">Customize your platform with premium features</p>
             </div>
@@ -1057,17 +915,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 5:
+      case 4:
         return (
           <motion.div 
-            key="step5"
+            key="step4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Domain Preferences</h3>
               <p className="text-subtext font-medium italic">Suggest 3 domain names you'd like (e.g. yourbusiness.com)</p>
             </div>
@@ -1109,17 +967,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 6:
+      case 5:
         return (
           <motion.div 
-            key="step6"
+            key="step5"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Design for your website</h3>
             </div>
 
@@ -1189,10 +1047,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 7:
+      case 6:
         return (
           <motion.div 
-            key="step7"
+            key="step6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1200,7 +1058,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 7</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
                 <h3 className="text-4xl font-bold tracking-tight text-text">Website Preview</h3>
                 <p className="text-subtext font-medium italic">See how your website will look on different devices</p>
               </div>
@@ -1243,10 +1101,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 8:
+      case 7:
         return (
           <motion.div 
-            key="step8"
+            key="step7"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1261,7 +1119,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <div className="text-3xl font-bold tracking-tighter text-white uppercase italic">{APP_NAME}</div>
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 8</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 7</h2>
                   <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
                 </div>
               </div>
@@ -1365,17 +1223,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 9:
+      case 8:
         return (
           <motion.div 
-            key="step9"
+            key="step8"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 9</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 8</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Terms & Conditions</h3>
             </div>
 
@@ -1441,17 +1299,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 10:
+      case 9:
         return (
           <motion.div 
-            key="step10"
+            key="step9"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 10</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 9</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Finalize Project</h3>
             </div>
             

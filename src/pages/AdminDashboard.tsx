@@ -892,18 +892,10 @@ Requirements:
             </button>
           ))}
         </nav>
-
-        <div className="mt-auto p-6 bg-white/5 rounded-3xl border border-white/5">
-          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">System Status</div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-[10px] font-bold text-green-500 uppercase">All Systems Operational</span>
-          </div>
-        </div>
       </aside>
 
       {/* Mobile Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-2xl border-t border-white/5 px-6 py-4 flex justify-around items-center z-40">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-white/5 px-6 py-4 flex justify-around items-center z-40">
         {[
           { id: 'overview', icon: LayoutDashboard },
           { id: 'clients', icon: User },

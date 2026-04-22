@@ -157,7 +157,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black">
       <MeetingReminder meetings={meetings} />
       {/* Sidebar Navigation */}
-      <aside className="fixed left-0 top-0 bottom-0 w-24 bg-black/20 backdrop-blur-3xl border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
+      <aside className="fixed left-0 top-0 bottom-0 w-24 bg-[#0a0a0a] border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
         <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-xl">
           <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
         </div>
@@ -229,7 +229,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         )}
       </AnimatePresence>
 
-      <header className="lg:hidden bg-black/20 backdrop-blur-xl px-6 py-6 border-b border-white/5 sticky top-0 z-40">
+      <header className="lg:hidden bg-[#0a0a0a] px-6 py-6 border-b border-white/5 sticky top-0 z-40">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
@@ -356,13 +356,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   <span className="text-[10px] font-black uppercase tracking-widest">Chat with Admin</span>
                 </button>
               )}
-                <div className="flex flex-col items-end gap-1">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-white/30">System Status</div>
-                  <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">All Systems Operational</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -392,7 +385,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   <MeetingList user={user} profile={profile!} />
                 </div>
               ) : activeTab === 'settings' ? (
-                <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 border border-white/5 shadow-2xl text-center space-y-8">
+                <div className="bg-[#0a0a0a] rounded-[3rem] p-16 border border-white/5 shadow-2xl text-center space-y-8">
                   <div className="w-24 h-24 bg-[#c7c42a] rounded-full flex items-center justify-center text-black mx-auto shadow-[0_0_50px_rgba(199,196,42,0.2)]">
                     <Settings size={48} />
                   </div>
@@ -561,7 +554,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.1 }}
                           onClick={() => setExpandedBox(expandedBox === stat.id ? null : stat.id)}
-                          className={`w-full bg-black/20 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#c7c42a]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#c7c42a]/50' : ''}`}
+                          className={`w-full bg-[#0a0a0a] p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#c7c42a]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#c7c42a]/50' : ''}`}
                         >
                           <div className="flex justify-between items-start mb-6">
                             <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
@@ -599,7 +592,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   </div>
 
                   {projects.length === 0 ? (
-                    <div className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
+                    <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
                       <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">No projects yet</h2>
                       <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
                       <Link to="/onboarding" className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]">
@@ -658,7 +651,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             key={selectedProject.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-black/20 backdrop-blur-3xl rounded-[3rem] p-10 lg:p-16 border border-white/5 shadow-2xl relative overflow-hidden"
+                            className="bg-[#0a0a0a] rounded-[3rem] p-10 lg:p-16 border border-white/5 shadow-2xl relative overflow-hidden"
                           >
                             {/* Atmospheric Glow */}
                             <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>

@@ -118,158 +118,133 @@ export default function Pricing() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black py-20 px-6"
+      className="min-h-screen bg-[#050505] selection:bg-[#c7c42a] selection:text-black py-40 px-10 technical-grid"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="text-center space-y-6 mb-20">
+        <div className="text-center space-y-8 mb-32">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-block px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.4em] text-[#c7c42a] italic"
+            className="text-xs font-black uppercase tracking-[0.6em] text-[#c7c42a]"
           >
-            Pricing Plans
+            Pricing Architecture
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-7xl md:text-9xl font-black tracking-tighter uppercase italic leading-[0.8]"
+            className="text-7xl md:text-[10vw] font-black tracking-tighter uppercase italic leading-[0.75]"
           >
-            Simple <br />
-            <span className="text-[#c7c42a]">Affordable</span> Plans.
+            The <span className="text-[#c7c42a]">Investment.</span>
           </motion.h1>
           
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex items-center justify-center gap-2 pt-6"
-          >
-            <Shield size={14} className="text-[#c7c42a]" />
-            {/* Removed 100% Money Back Guarantee */}
-          </motion.div>
-
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex flex-col items-center gap-6 pt-10"
+            className="flex flex-col items-center gap-12 pt-10"
           >
-            <div className="flex items-center gap-3 px-6 py-2 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Only 5 project slots left this month</span>
-            </div>
-            
-            <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
+            <div className="flex items-center gap-8 border-b border-white/10 pb-8">
               <button 
                 onClick={() => setBillingType('one-time')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'bg-[#c7c42a] text-black' : 'text-white/40 hover:text-white'}`}
+                className={`text-xs font-black uppercase tracking-widest transition-all px-8 py-2 relative ${billingType === 'one-time' ? 'text-[#c7c42a]' : 'text-white/20 hover:text-white'}`}
               >
                 One-Time
+                {billingType === 'one-time' && <motion.div layoutId="billing-active" className="absolute -bottom-px left-0 w-full h-px bg-[#c7c42a]" />}
               </button>
               <button 
                 onClick={() => setBillingType('subscription')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'bg-[#c7c42a] text-black' : 'text-white/40 hover:text-white'}`}
+                className={`text-xs font-black uppercase tracking-widest transition-all px-8 py-2 relative ${billingType === 'subscription' ? 'text-[#c7c42a]' : 'text-white/20 hover:text-white'}`}
               >
                 Subscription
+                {billingType === 'subscription' && <motion.div layoutId="billing-active" className="absolute -bottom-px left-0 w-full h-px bg-[#c7c42a]" />}
               </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Limited Throughput: 3 Slots Remaining</span>
             </div>
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5 border border-white/5 overflow-hidden mb-32">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              className={`relative p-1 rounded-[3.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col h-full pricing-glow-card`}
+              className={`bg-[#050505] p-16 space-y-12 flex flex-col justify-between relative group ${plan.popular ? 'z-10 bg-[#0a0a0a]' : ''}`}
             >
-              <div className={`pricing-glow-card-inner p-12 rounded-[3.5rem] border flex flex-col h-full bg-[#0B0B0B] ${plan.popular ? 'border-[#c7c42a]' : 'border-white/10'}`}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#c7c42a] text-black rounded-full text-[10px] font-black uppercase tracking-widest italic shadow-[0_0_20px_rgba(199,196,42,0.5)] z-20">
-                    Most Popular
-                  </div>
-                )}
-
-                <div className="mb-10">
-                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-4 ${plan.popular ? 'text-[#c7c42a]' : 'text-white'}`}>{plan.name} Website</h3>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black italic text-[#c7c42a]">₹</span>
-                    <span className={`text-7xl font-black tracking-tighter relative z-10 text-[#c7c42a] ${plan.price.includes('15,000') ? 'drop-shadow-[0_0_15px_rgba(199,196,42,0.5)]' : ''}`}>
-                      {plan.price.replace('₹', '')}
-                    </span>
-                    {plan.period && (
-                      <span className={`text-sm font-black uppercase tracking-widest ml-2 ${plan.popular ? 'text-white/40' : 'text-white/40'}`}>{plan.period}</span>
-                    )}
-                  </div>
-                  <p className={`mt-6 text-sm font-medium italic leading-relaxed text-white/50`}>
-                    {plan.description}
-                  </p>
+              {plan.popular && <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />}
+              
+              <div className="space-y-12">
+                <div className="flex justify-between items-start">
+                  <h3 className={`text-4xl font-black uppercase italic tracking-tighter ${plan.popular ? 'text-[#c7c42a]' : 'text-white/40'}`}>{plan.name}</h3>
+                  {plan.popular && <span className="text-[8px] font-black uppercase tracking-[0.3em] text-[#c7c42a] px-2 py-1 border border-[#c7c42a]/30 italic">Primary Choice</span>}
                 </div>
 
-                <div className="space-y-4 flex-1 mb-12">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-serif italic text-white/10">₹</span>
+                  <span className="text-9xl font-black tracking-tighter text-white">
+                    {plan.price.replace('₹', '')}
+                  </span>
+                  <span className="text-xs font-black uppercase tracking-widest text-white/20 italic ml-2">{plan.period}</span>
+                </div>
+
+                <p className="text-base font-medium italic text-white/30 leading-relaxed max-w-xs">{plan.description}</p>
+
+                <div className="w-12 h-px bg-white/10" />
+
+                <ul className="space-y-5">
                   {plan.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-4 group">
-                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-[#c7c42a]/10 text-[#c7c42a]`}>
-                        <Check size={14} />
-                      </div>
-                      <span className={`text-xs font-bold uppercase tracking-widest group-hover:brightness-125 transition-all text-white/70`}>
-                        {feature}
-                      </span>
-                    </div>
+                    <li key={idx} className="flex items-center gap-3 text-sm font-bold uppercase italic tracking-tighter text-white/40 group-hover:text-white/60 transition-colors">
+                      <div className="w-1 h-1 bg-[#c7c42a]" />
+                      {feature}
+                    </li>
                   ))}
-                </div>
+                </ul>
+              </div>
 
-                <div className="space-y-6">
-                  <div className="flex flex-col gap-2 text-center">
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/30">
-                      <Shield size={12} /> Secure Payment via Stripe
-                    </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">Instant confirmation</div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-white/30">We will contact you within 24 hours</div>
-                  </div>
-
-                  <button 
-                    onClick={() => handleSubscribe(plan.stripeLink)}
-                    className={`w-full py-6 rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-4 transition-all ${
-                      plan.popular 
-                        ? 'bg-[#c7c42a] text-black shadow-[0_0_30px_rgba(199,196,42,0.3)] hover:scale-[1.05]' 
-                        : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    Get Started <ArrowRight size={24} />
-                  </button>
+              <div className="pt-16 space-y-8">
+                <div className="flex flex-col gap-2 text-left opacity-30 text-[10px] font-black uppercase tracking-widest italic group-hover:opacity-60 transition-opacity">
+                  <span className="flex items-center gap-2"> <Check size={10} /> Secure Node via Stripe</span>
+                  <span className="flex items-center gap-2"> <Check size={10} /> 24hr Direct Channel Entry</span>
                 </div>
+                <button 
+                  onClick={() => handleSubscribe(plan.stripeLink)}
+                  className={`w-full py-8 text-center font-black uppercase italic text-sm tracking-widest transition-all ${plan.popular ? 'bg-[#c7c42a] text-black shadow-[0_30px_60px_rgba(199,196,42,0.1)]' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
+                >
+                  Initiate Build
+                </button>
               </div>
             </motion.div>
           ))}
         </div>
 
-        <div className="mt-20 text-center max-w-2xl mx-auto">
-          <p className="text-white/40 text-sm font-medium italic leading-relaxed">
-            {billingType === 'one-time' 
-              ? "This is a one-time website development service. 7 days of free support is included after delivery. Any further updates or maintenance require a separate support plan."
-              : "One-time plans include only website development with limited support. Subscription plans include ongoing maintenance and updates."
-            }
-          </p>
-        </div>
-
-        <div className="mt-32 text-center">
-          <div className="p-12 bg-black/20 backdrop-blur-3xl rounded-[4rem] border border-white/5 max-w-4xl mx-auto relative overflow-hidden">
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>
-            <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-6">Need help choosing a plan?</h2>
-            <p className="text-white/50 mb-10 max-w-xl mx-auto font-medium italic">
-              If your project requires specialized features or enterprise-level infrastructure, let's talk.
-            </p>
-            <div className="flex flex-wrap justify-center gap-6">
+        <div className="space-y-40">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center border-t border-white/5 pt-32">
+            <div className="space-y-8">
+              <span className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Transparency</span>
+              <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.8]">Execution <br /><span className="text-white/10">Protocols.</span></h2>
+              <p className="text-xl text-white/30 font-medium italic leading-tight">
+                {billingType === 'one-time' 
+                  ? "Architected for speed. Full documentation and ownership transfer upon final balance clearance. 7-day post-launch optimization window included."
+                  : "Continuous integration models include primary maintenance, monthly architectural reviews, and high-priority optimization cycles."
+                }
+              </p>
+            </div>
+            
+            <div className="p-16 bg-[#0a0a0a] border border-white/10 technical-grid text-center space-y-12">
+              <h3 className="text-3xl font-black uppercase italic tracking-tighter">Custom <span className="text-[#c7c42a]">Engineering?</span></h3>
+              <p className="text-white/40 font-medium italic">For projects requiring dedicated clusters, AI integrations, or custom ERP logic.</p>
               <a 
-                href={`mailto:${PROFESSIONAL_EMAIL}?subject=Pricing Inquiry&body=Hi WebbyLaunch, I have a question about your pricing plans.`}
-                className="px-12 py-5 bg-[#c7c42a] text-black rounded-full font-black text-xl uppercase italic hover:scale-105 transition-all inline-flex items-center gap-4"
+                href={`mailto:${PROFESSIONAL_EMAIL}`}
+                className="inline-flex items-center gap-4 bg-white/5 border border-white/10 px-12 py-5 font-black uppercase tracking-widest italic hover:bg-[#c7c42a] hover:text-black transition-all"
               >
-                Email Us <Sparkles size={24} />
+                Inquire <ArrowRight size={20} />
               </a>
             </div>
           </div>

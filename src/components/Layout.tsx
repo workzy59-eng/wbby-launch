@@ -42,7 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
     <div className="min-h-screen bg-black text-white font-sans selection:bg-[#c7c42a] selection:text-black">
       {/* Navbar */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
+        <div className="bg-[#111] border border-white/5 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
               <span className="text-white font-black text-xl italic tracking-tighter">{APP_NAME[0]}</span>
@@ -107,7 +107,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
       )}
 
       {/* Footer */}
-      <footer className="bg-black/40 backdrop-blur-3xl border-t border-white/5 pt-32 pb-16 px-10">
+      <footer className="bg-black border-t border-white/5 pt-32 pb-16 px-10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20">
           <div className="space-y-8">
             <div className="flex items-center gap-3">
@@ -180,10 +180,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </p>
           <div className="flex items-center gap-8">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Made in India</span>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-green-500">All Systems Operational</span>
-            </div>
           </div>
         </div>
       </footer>

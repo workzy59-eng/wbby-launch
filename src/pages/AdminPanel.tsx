@@ -185,7 +185,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   if (!isUserAdmin) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full bg-white/5 backdrop-blur-xl rounded-[3rem] p-12 border border-red-500/20 shadow-2xl">
+        <div className="max-w-md w-full bg-[#111] rounded-[3rem] p-12 border border-red-500/20 shadow-2xl">
           <h2 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-red-500">Access Denied</h2>
           <p className="text-white/60 mb-10 text-lg font-bold">You do not have administrative privileges to access this panel.</p>
           <Link to="/dashboard" className="inline-block bg-white text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all">
@@ -513,7 +513,7 @@ Generated on: ${new Date().toLocaleString()}
           { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]' },
           { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#c7c42a]' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all">
+          <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all">
             <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
               <stat.icon size={24} className={stat.color} />
             </div>
@@ -587,7 +587,7 @@ Generated on: ${new Date().toLocaleString()}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => (p.status === 'Waiting for Review' || p.status === 'Rejected') && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#c7c42a]/30 transition-all">
+          <div key={p.id} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#c7c42a]/30 transition-all">
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h3 className="text-3xl font-bold tracking-tighter text-white mb-1">{p.businessName}</h3>
@@ -686,7 +686,7 @@ Generated on: ${new Date().toLocaleString()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.filter(p => ['Accepted', 'Development Started', 'Completed'].includes(p.status) && !p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
+          <div key={p.id} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl"></div>
             
             <div className="flex justify-between items-start mb-8 relative z-10">
@@ -913,7 +913,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
         <h2 className="text-6xl font-bold tracking-tighter text-white">USER METRICS</h2>
       </div>
 
-      <div className="bg-black/40 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+      <div className="bg-[#050505] p-10 rounded-[3rem] border border-white/10">
         <div className="flex justify-between items-center mb-12">
           <div>
             <h3 className="text-2xl font-bold text-white tracking-tight">Platform Engagement</h3>

@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import admin from 'firebase-admin';
 import crypto from "crypto";
-import { Resend } from 'resend';
 import firebaseConfig from './firebase-applet-config.json';
 
 dotenv.config();
@@ -89,116 +88,10 @@ async function startServer() {
   app.use(express.json());
 
   const dbAdmin = admin.firestore();
-  const resend = new Resend(process.env.RESEND_API_KEY || 're_MddR7kGm_8aE7G7aZJnPBXdLyRT7WNYqt');
 
   // API Routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
-  });
-
-  // OTP Endpoints
-  app.post("/api/send-otp", async (req, res) => {
-    try {
-      const { email } = req.body;
-      if (!email || !email.includes('@')) {
-        return res.status(400).json({ error: "Valid email required" });
-      }
-
-      // Generate 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
-
-      // Store OTP in Firestore for persistence across serverless environments
-      await dbAdmin.collection('otps').doc(email.toLowerCase()).set({
-        otp,
-        expiry,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-
-      // 🔥 OTP DEBUG LOG - VERY VISIBLE
-      console.log("\n" + "=".repeat(30));
-      console.log(`🔑 OTP FOR: ${email}`);
-      console.log(`👉 CODE:    ${otp}`);
-      console.log("=".repeat(30) + "\n");
-
-      // Send OTP via Resend
-      const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-      
-      const { data, error } = await resend.emails.send({
-        from: `WebbyLaunch <${fromEmail}>`,
-        to: [email],
-        subject: `Your Verification Code: ${otp}`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-            <h2 style="color: #333; text-align: center;">Verify Your Email</h2>
-            <p style="font-size: 16px; color: #555;">Hello,</p>
-            <p style="font-size: 16px; color: #555;">Your verification code for <strong>WebbyLaunch</strong> is:</p>
-            <div style="background: #f4f4f4; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #000; border-radius: 5px; margin: 20px 0;">
-              ${otp}
-            </div>
-            <p style="font-size: 14px; color: #888;">This code will expire in 5 minutes.</p>
-            <p style="font-size: 14px; color: #888;">If you did not request this code, please ignore this email.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2026 WebbyLaunch. All rights reserved.</p>
-          </div>
-        `,
-      });
-
-      if (error) {
-        console.error("Resend Error:", error);
-        return res.status(500).json({ 
-          error: "Failed to send email", 
-          debug: error 
-        });
-      }
-
-      res.status(200).json({ success: true, message: "OTP sent to your email!" });
-    } catch (err) {
-      console.error("Send OTP Error:", err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.get("/api/send-otp", (req, res) => {
-    res.status(405).json({ error: "Method not allowed. Please use POST." });
-  });
-
-  app.post("/api/verify-otp", async (req, res) => {
-    try {
-      const { email, otp } = req.body;
-      if (!email || !otp) {
-        return res.status(400).json({ error: "Email and OTP required" });
-      }
-
-      const docRef = dbAdmin.collection('otps').doc(email.toLowerCase());
-      const doc = await docRef.get();
-
-      if (!doc.exists) {
-        return res.status(400).json({ error: "No OTP found for this email. Please request a new one." });
-      }
-
-      const data = doc.data();
-      if (!data) return res.status(400).json({ error: "Invalid OTP data" });
-
-      if (Date.now() > data.expiry) {
-        await docRef.delete();
-        return res.status(400).json({ error: "OTP has expired. Please request a new one." });
-      }
-
-      if (data.otp === otp) {
-        await docRef.delete(); // Clear after success
-        return res.status(200).json({ success: true });
-      }
-
-      return res.status(400).json({ error: "Invalid OTP code" });
-    } catch (err) {
-      console.error("Verify OTP Error:", err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.get("/api/verify-otp", (req, res) => {
-    res.status(405).json({ error: "Method not allowed. Please use POST." });
   });
 
   // Vite middleware for development

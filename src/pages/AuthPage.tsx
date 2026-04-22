@@ -62,27 +62,21 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6 selection:bg-primary selection:text-white">
-      {/* Background Accents */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
-      </div>
-
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6 selection:bg-[#c7c42a] selection:text-black technical-grid">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-card border border-border rounded-[2rem] p-10 shadow-2xl relative z-10"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-md w-full bg-[#0a0a0a] border border-white/10 p-12 shadow-2xl relative z-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20">
-            <ShieldCheck className="text-primary" size={32} />
+        <div className="flex flex-col items-center mb-12">
+          <div className="w-16 h-16 bg-[#c7c42a]/5 border border-[#c7c42a]/10 rounded-full flex items-center justify-center mb-8 text-[#c7c42a]">
+            <ShieldCheck size={32} strokeWidth={1} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-text mb-2">
-            {isSignUp ? 'Create Account' : 'Welcome Back'}
+          <h1 className="text-4xl font-black uppercase italic tracking-tighter text-white mb-2">
+            {isSignUp ? 'Initiate Node' : 'System Entry'}
           </h1>
-          <p className="text-subtext text-center text-sm">
-            {isSignUp ? 'Join WebbyLaunch today' : 'Sign in to your account'}
+          <p className="text-white/30 text-center text-sm font-medium italic">
+            {isSignUp ? 'Configure your identity in the network' : 'Authorize your digital access'}
           </p>
         </div>
 
@@ -92,7 +86,7 @@ export default function AuthPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-6 p-4 bg-error/10 border border-error/20 rounded-xl flex items-center gap-3 text-error text-xs font-medium"
+              className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-500 text-xs font-bold uppercase tracking-widest italic"
             >
               <AlertCircle size={16} className="shrink-0" />
               <span>{error}</span>
@@ -100,32 +94,32 @@ export default function AuthPage() {
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
+        <form onSubmit={handleEmailAuth} className="space-y-6 mb-12">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-subtext uppercase tracking-widest ml-1">Email Address</label>
+            <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] ml-1 italic">Identity Email</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-subtext" size={18} />
+              <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
               <input 
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                className="w-full bg-background border border-border rounded-xl py-4 pl-12 pr-4 text-text focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                placeholder="protocol@network.com"
+                className="w-full bg-[#050505] border border-white/5 rounded-none py-6 pl-14 pr-6 text-white focus:border-[#c7c42a] focus:ring-0 outline-none transition-all font-mono text-sm"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold text-subtext uppercase tracking-widest ml-1">Password</label>
+            <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] ml-1 italic">Access Logic</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-subtext" size={18} />
+              <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
               <input 
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-background border border-border rounded-xl py-4 pl-12 pr-4 text-text focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                className="w-full bg-[#050505] border border-white/5 rounded-none py-6 pl-14 pr-6 text-white focus:border-[#c7c42a] focus:ring-0 outline-none transition-all font-mono text-sm"
                 required
               />
             </div>
@@ -134,30 +128,30 @@ export default function AuthPage() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-black py-4 rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-3 group"
+            className="w-full bg-[#c7c42a] text-black py-6 font-black text-lg uppercase italic hover:scale-105 active:scale-95 transition-all shadow-[0_30px_60px_rgba(199,196,42,0.1)] flex items-center justify-center gap-4 group"
           >
             {loading ? 'Processing...' : (
               <>
-                <span>{isSignUp ? 'Sign Up' : 'Sign In'}</span>
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                <span>{isSignUp ? 'Configure' : 'Authorize'}</span>
+                <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
               </>
             )}
           </button>
         </form>
 
-        <div className="relative mb-6">
+        <div className="relative mb-8">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
+            <div className="w-full border-t border-white/5"></div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-4 text-subtext font-bold tracking-widest">Or continue with</span>
+          <div className="relative flex justify-center text-[10px] uppercase tracking-[0.4em]">
+            <span className="bg-[#0a0a0a] px-4 text-white/20 font-black italic">External Bridge</span>
           </div>
         </div>
 
         <button 
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full bg-white text-black py-4 rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-3 group border border-border"
+          className="w-full bg-white/5 text-white py-6 border border-white/10 font-black text-lg uppercase italic hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center gap-4 group"
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24">
             <path
@@ -180,19 +174,19 @@ export default function AuthPage() {
           <span>Google</span>
         </button>
 
-        <div className="mt-8 text-center">
+        <div className="mt-12 text-center">
           <button 
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm font-bold text-subtext hover:text-primary transition-colors"
+            className="text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-[#c7c42a] transition-colors italic"
           >
-            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+            {isSignUp ? 'Switch to Authorized Entry' : "Register New Identity Protocol"}
           </button>
         </div>
 
-        <div className="mt-10 pt-8 border-t border-border text-center">
-          <p className="text-xs text-subtext">
-            By continuing, you agree to our <br />
-            <a href="/terms" className="text-text hover:text-primary transition-colors font-semibold">Terms of Service</a> & <a href="/privacy" className="text-text hover:text-primary transition-colors font-semibold">Privacy Policy</a>
+        <div className="mt-12 pt-8 border-t border-white/5 text-center">
+          <p className="text-[10px] text-white/20 uppercase tracking-widest leading-loose italic">
+            By proceeding, you accept the <br />
+            <a href="/terms" className="text-white hover:text-[#c7c42a] transition-colors font-black">Legal Terms</a> & <a href="/privacy" className="text-white hover:text-[#c7c42a] transition-colors font-black">Privacy Protocol</a>
           </p>
         </div>
       </motion.div>
