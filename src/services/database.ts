@@ -319,18 +319,20 @@ export const createProject = async (projectData: any) => {
         
         const welcomeMessage = `Hi ${clientName},\n\nGreat news! 🎉 Your project has been received by our team.\nWe’re excited to start building your website and will keep you updated throughout the process.\nWe can chat here \nIf you have any additional details, feel free to reply anytime.\n\n– Team Webbylaunch`;
 
-        // Create/Update conversation metadata
-        await setDoc(doc(db, 'conversations', conversationId), {
+        // Create/Update conversation metadata - ENSURE PARENT DOC EXISTS
+        const convRef = doc(db, 'conversations', conversationId);
+        await setDoc(convRef, {
           participants: [adminUid, clientUid],
           lastMessage: welcomeMessage,
           lastMessageAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           unreadCount: {
             [clientUid]: 1
-          }
+          },
+          lastSenderId: adminUid
         }, { merge: true });
 
-        // Add the actual message
+        // Add the actual message to subcollection
         await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
           text: welcomeMessage,
           senderId: adminUid,
@@ -476,19 +478,10 @@ export const sendMessage = async (projectId: string, messageData: any) => {
 export const sendDirectMessage = async (recipientId: string, messageData: any) => {
   if (!auth.currentUser) return;
   const conversationId = getConversationId(auth.currentUser.uid, recipientId);
-  const path = `conversations/${conversationId}/messages`;
+  const path = `conversations/${conversationId}`;
   try {
-    await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
-      ...messageData,
-      conversationId,
-      createdAt: serverTimestamp(),
-      status: 'sent',
-      seen: false,
-      attachments: messageData.attachments || [],
-    });
-    
-    // Update conversation metadata for list view and unread counts
-    const convDoc = await getDoc(doc(db, 'conversations', conversationId));
+    const convRef = doc(db, 'conversations', conversationId);
+    const convDoc = await getDoc(convRef);
     let unreadCount = {};
     if (convDoc.exists()) {
       unreadCount = convDoc.data().unreadCount || {};
@@ -497,7 +490,8 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
     // Increment unread count for recipient
     unreadCount[recipientId] = (unreadCount[recipientId] || 0) + 1;
 
-    await setDoc(doc(db, 'conversations', conversationId), {
+    // Update/Create parent conversation FIRST
+    await setDoc(convRef, {
       lastMessage: messageData.text || (messageData.attachments?.length ? 'Sent an attachment' : 'Sent an image'),
       lastMessageAt: serverTimestamp(),
       lastSenderId: auth.currentUser.uid,
@@ -505,8 +499,20 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       unreadCount,
       updatedAt: serverTimestamp(),
     }, { merge: true });
+
+    // Add message to subcollection
+    const docRef = await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
+      ...messageData,
+      conversationId,
+      createdAt: serverTimestamp(),
+      status: 'sent',
+      seen: false,
+      attachments: messageData.attachments || [],
+    });
+    
+    return docRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, path);
+    handleFirestoreError(error, OperationType.UPDATE, path);
   }
 };
 

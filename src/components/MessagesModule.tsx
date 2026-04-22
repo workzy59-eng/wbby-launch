@@ -169,9 +169,15 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const unsubConversations = getConversations(currentUser.uid, async (convs) => {
       try {
         const enrichedConvs = await Promise.all(convs.map(async (conv) => {
-          const recipientId = conv.participants.find((id: string) => id !== currentUser.uid);
-          const recipientProfile = await getUserProfile(recipientId);
-          return { ...conv, recipientProfile };
+          try {
+            const recipientId = conv.participants.find((id: string) => id !== currentUser.uid);
+            if (!recipientId) return { ...conv, recipientProfile: null };
+            const recipientProfile = await getUserProfile(recipientId);
+            return { ...conv, recipientProfile };
+          } catch (e) {
+            console.error('Error fetching recipient profile:', e);
+            return { ...conv, recipientProfile: null };
+          }
         }));
         
         let finalConvs = enrichedConvs;
