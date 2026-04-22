@@ -25,15 +25,22 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// Legacy upload helper - now uses Base64
+// Corrected upload helper using Firebase Storage
 export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
-  console.log(`Converting ${file.name} to Base64...`);
+  console.log(`Uploading ${file.name} to ${folder}...`);
   try {
-    const base64 = await convertFileToBase64(file);
-    return base64;
+    const fileRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
+    const snapshot = await uploadBytes(fileRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
   } catch (error) {
-    console.error('Base64 conversion error:', error);
-    throw error;
+    console.error('File upload error:', error);
+    // Fallback to Base64 if storage fails for some reason (to ensure flow continues)
+    try {
+      return await convertFileToBase64(file);
+    } catch (e) {
+      throw error;
+    }
   }
 };
 

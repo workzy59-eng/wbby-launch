@@ -29,7 +29,7 @@ import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
-import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown } from 'lucide-react';
 
 const AVAILABLE_FEATURES = [
   'Google Login System',
@@ -337,9 +337,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Also clear individual domain preference errors if applicable
+    if (field === 'domainPreferences') {
+      setInvalidFields(prev => prev.filter(f => !f.startsWith('domainPreference')));
+    }
     if (invalidFields.includes(field)) {
-      setInvalidFields(invalidFields.filter(f => f !== field));
+      setInvalidFields(prev => prev.filter(f => f !== field));
     }
   };
 
@@ -953,6 +957,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           </motion.div>
         );
       case 4:
+        const bName = formData.businessName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'yourbusiness';
+        const domainExtensions = ['.com', '.in', '.online', '.store', '.net', '.org', '.co.in', '.site', '.biz', '.info'];
+        
         return (
           <motion.div 
             key="step4"
@@ -963,75 +970,109 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text italic">Domain Selection</h3>
-              <p className="text-subtext font-medium italic">Select your preferred domain extensions for your business name</p>
+              <h3 className="text-4xl font-bold tracking-tight text-white italic uppercase leading-none">Domain Selection</h3>
+              <p className="text-white/40 text-sm font-medium italic">Secure your brand's digital identity</p>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-12">
               <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Confirm Business Name for Domain</label>
-                <input 
-                  type="text"
-                  value={formData.businessName.toLowerCase().replace(/\s/g, '')}
-                  readOnly
-                  className="w-full p-6 rounded-2xl bg-card border border-border text-subtext focus:outline-none font-bold italic opacity-50"
-                />
+                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Step 1: Confirm Domain Name</label>
+                <div className="relative group">
+                   <input 
+                    type="text"
+                    value={formData.websiteName || bName}
+                    onChange={(e) => {
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                      handleInputChange('websiteName', val);
+                      // Update all preferences with new base name
+                      const newPrefs = formData.domainPreferences.map(p => {
+                        const ext = p.includes('.') ? p.substring(p.indexOf('.')) : '';
+                        return val + ext;
+                      });
+                      handleInputChange('domainPreferences', newPrefs);
+                    }}
+                    placeholder="yourbusinessname"
+                    className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
+                  />
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    <div className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-black text-primary uppercase italic">Editable</div>
+                    <Edit className="text-primary/40" size={16} />
+                  </div>
+                </div>
+                <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest ml-4">Only letters and numbers allowed. No spaces.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[0, 1, 2].map((idx) => (
-                  <div key={idx} className="space-y-4">
-                    <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Preference {idx + 1}</label>
-                    <div className="relative group">
-                      <select
-                        className={getInputClass(`domainPreference${idx}`, "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-bold italic appearance-none cursor-pointer")}
-                        value={formData.domainPreferences[idx]?.replace(formData.businessName.toLowerCase().replace(/\s/g, ''), '') || ''}
-                        onChange={(e) => {
-                          const ext = e.target.value;
-                          const newPrefs = [...formData.domainPreferences];
-                          const bName = formData.businessName.toLowerCase().replace(/\s/g, '');
-                          newPrefs[idx] = bName + ext;
-                          handleInputChange('domainPreferences', newPrefs);
-                          if (idx === 0) handleInputChange('domain', bName + ext);
-                        }}
-                      >
-                        <option value="">Select Extension</option>
-                        <option value=".com">.com</option>
-                        <option value=".in">.in</option>
-                        <option value=".net">.net</option>
-                        <option value=".org">.org</option>
-                        <option value=".co.in">.co.in</option>
-                        <option value=".online">.online</option>
-                        <option value=".store">.store</option>
-                      </select>
-                      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <ArrowRight size={16} className="text-primary rotate-90" style={{ color: formData.primaryColor }} />
+              <div className="space-y-6">
+                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Step 2: Ranked Preferences</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {[0, 1, 2].map((idx) => {
+                    const currentFull = formData.domainPreferences[idx];
+                    const currentExt = currentFull?.includes('.') ? currentFull.substring(currentFull.indexOf('.')) : '';
+                    const isInvalid = invalidFields.includes(`domainPreference${idx}`);
+                    
+                    return (
+                      <div key={idx} className="relative group">
+                        <div className={`absolute -top-3 left-6 z-10 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${idx === 0 ? 'bg-primary text-black' : 'bg-white/10 text-white/40'}`}>
+                          {idx === 0 ? 'Primary' : idx === 1 ? 'Secondary' : 'Tertiary'} Choice
+                        </div>
+                        
+                        <div className={`p-8 rounded-[2.5rem] bg-white/5 border-2 transition-all ${isInvalid ? 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : currentExt ? 'border-primary/50 bg-primary/5' : 'border-white/5 hover:border-white/20'}`}>
+                          <select
+                            className="w-full bg-transparent border-none text-white focus:outline-none font-black italic text-xl uppercase tracking-tighter cursor-pointer appearance-none"
+                            value={currentExt}
+                            onChange={(e) => {
+                              const ext = e.target.value;
+                              const newPrefs = [...formData.domainPreferences];
+                              const base = formData.websiteName || bName;
+                              newPrefs[idx] = base + ext;
+                              handleInputChange('domainPreferences', newPrefs);
+                              if (idx === 0) handleInputChange('domain', base + ext);
+                            }}
+                          >
+                            <option value="" className="bg-[#0a0a0a]">Select Extension</option>
+                            {domainExtensions.map(ext => (
+                              <option key={ext} value={ext} className="bg-[#0a0a0a]">{ext}</option>
+                            ))}
+                          </select>
+                          
+                          <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4">
+                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{idx + 1}st Priority</span>
+                            {currentExt ? (
+                              <div className="px-2 py-0.5 bg-primary/20 rounded text-[9px] font-black text-primary uppercase">{currentExt}</div>
+                            ) : (
+                              <ChevronDown size={14} className="text-white/20" />
+                            )}
+                          </div>
+                        </div>
+
+                        {currentFull && (
+                          <div className="mt-3 px-6 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[10px] font-black text-primary uppercase tracking-widest italic truncate">
+                              {currentFull}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    {formData.domainPreferences[idx] && (
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] ml-4 animate-pulse italic">
-                          {formData.domainPreferences[idx]}
-                        </p>
-                    )}
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-6 pt-8">
               <button 
                 onClick={handleBack} 
-                className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all uppercase italic"
-                style={{ borderColor: formData.primaryColor, color: formData.primaryColor }}
+                className="flex-[0.4] border-2 border-white/10 text-white/60 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
               >
                 Back
               </button>
               <button 
                 onClick={handleNext} 
-                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 uppercase italic"
+                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter"
                 style={{ backgroundColor: formData.primaryColor }}
               >
-                Next
+                Continue
               </button>
             </div>
           </motion.div>
