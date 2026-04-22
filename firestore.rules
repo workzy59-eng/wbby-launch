@@ -130,7 +130,72 @@ service cloud.firestore {
         
         allow create: if isAuthenticated() &&
           request.resource.data.senderId == request.auth.uid;
+        
+        // Allow updating for 'seen' and 'delivered' status
+        allow update: if isAuthenticated() &&
+          (isAdmin() || get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants.hasAny([request.auth.uid]));
       }
+
+      match /typing/{uid} {
+        // Relaxing typing indicators to prevent listing errors
+        allow read: if isAuthenticated();
+        allow write: if isOwner(uid);
+      }
+    }
+
+    // ============================
+    // ADMIN COLLECTIONS
+    // ============================
+
+    match /leads/{leadId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /commissions/{commissionId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.salesId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /developer_applications/{appId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow create: if true; // Public applications allowed
+      allow update, delete: if isAdmin();
+    }
+
+    match /sales_applications/{appId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow create: if true; // Public applications allowed
+      allow update, delete: if isAdmin();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow write: if isAuthenticated() && (isAdmin() || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /leave_requests/{requestId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow write: if isAuthenticated() && (isAdmin() || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /meetings/{meetingId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.clientId == request.auth.uid || resource.data.adminId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /meeting_requests/{requestId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.clientId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.clientId == request.auth.uid);
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /otps/{email} {
+      allow read, write: if false; // Backend only
     }
 
     // ============================

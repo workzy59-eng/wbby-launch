@@ -118,21 +118,41 @@ async function startServer() {
   const dbAdmin = admin.firestore();
 
   // API Routes
-  app.get("/api/health", (req, res) => {
+  const apiRouter = express.Router();
+  
+  apiRouter.get("/health", (req, res) => {
     res.json({ status: "ok" });
   });
 
-  app.post("/api/upload", upload.single("file"), (req, res) => {
+  apiRouter.post("/upload", (req, res, next) => {
+    console.log("DEBUG: POST /api/upload reached");
+    upload.single("file")(req, res, (err) => {
+      if (err) {
+        console.error("DEBUG: Multer error:", err);
+        return res.status(400).json({ error: err.message || "File upload error" });
+      }
+      next();
+    });
+  }, (req, res) => {
     try {
       if (!req.file) {
+        console.warn("DEBUG: No file in request");
         return res.status(400).json({ error: "No file uploaded" });
       }
+      console.log("DEBUG: File uploaded:", (req.file as any).path);
       res.json({ url: (req.file as any).path || (req.file as any).secure_url });
     } catch (error: any) {
-      console.error("Upload error:", error);
+      console.error("DEBUG: Route error:", error);
       res.status(500).json({ error: error.message || "Upload failed" });
     }
   });
+
+  apiRouter.all("*", (req, res) => {
+    console.warn(`DEBUG: Unhandled API route: ${req.method} ${req.url}`);
+    res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
+  });
+
+  app.use("/api", apiRouter);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

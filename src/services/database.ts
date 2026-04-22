@@ -39,7 +39,14 @@ export const uploadFile = async (file: File, folder: string = 'uploads'): Promis
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        console.error('Server returned non-JSON error. Body snippet:', errorText.substring(0, 200));
+        throw new Error(`Upload failed with status ${response.status}. See console for details.`);
+      }
       throw new Error(errorData.error || 'Upload failed');
     }
 
