@@ -101,11 +101,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   
   useEffect(() => {
-    if (initialRecipientId && conversations.length > 0) {
+    if (initialRecipientId) {
       const existing = conversations.find(c => c.participants.includes(initialRecipientId));
       if (existing) {
         setActiveConversation(existing);
-      } else {
+      } else if (!activeConversation || (activeConversation.id === 'new' && activeConversation.participants.includes(initialRecipientId))) {
+        // Only fetch if not already set to this recipient
         getUserProfile(initialRecipientId).then(p => {
           if (p) {
             setActiveConversation({
@@ -120,7 +121,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         });
       }
     }
-  }, [initialRecipientId, conversations.length]);
+  }, [initialRecipientId, conversations]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -173,12 +174,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           return { ...conv, recipientProfile };
         }));
         
-        // Filter conversations as well for non-admins
         let finalConvs = enrichedConvs;
-        if (profile?.role !== 'admin') {
-          // Users should see conversations with admins OR conversations they are part of
-          finalConvs = enrichedConvs.filter(c => c.recipientProfile?.role === 'admin' || c.participants.includes(currentUser.uid));
-        }
         
         // Add project conversations
         const projectConvs: Conversation[] = projects.map(p => ({
@@ -714,12 +710,28 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
         <div className="flex-1 overflow-y-auto custom-scrollbar mt-2">
           {isLoading ? (
-            <div className="flex items-center justify-center h-40">
+            <div className="flex flex-col items-center justify-center h-64 space-y-4">
               <Loader color="white" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#8696a0] animate-pulse">Loading conversations...</p>
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-10 text-center space-y-4">
-              <div className="text-[#8696a0] text-sm font-medium">No chats found.</div>
+            <div className="p-8 text-center h-full flex flex-col items-center justify-center space-y-4">
+              <div className="w-16 h-16 bg-[#202c33] rounded-full flex items-center justify-center text-[#8696a0]">
+                {activeFilter === 'unread' ? <CheckCheck size={32} /> : <MessageCircle size={32} />}
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-[#e9edef] font-bold">
+                  {activeFilter === 'unread' ? "No unread messages" : 
+                   activeFilter === 'favorites' ? "No favorites yet" :
+                   searchQuery ? "No chats found" : "No conversations yet"}
+                </h3>
+                <p className="text-xs text-[#8696a0] max-w-[200px] mx-auto">
+                  {activeFilter === 'unread' ? "You're all caught up 🎉" :
+                   activeFilter === 'favorites' ? "Star conversations to find them quickly." :
+                   searchQuery ? "Try searching for something else." :
+                   "Click + to start chatting with our team. We'll respond instantly 🚀"}
+                </p>
+              </div>
             </div>
           ) : (
             filteredConversations.map((conv) => (
@@ -861,16 +873,18 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             >
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full space-y-6">
-                  <div className="w-24 h-24 bg-[#c7c42a]/10 rounded-full flex items-center justify-center relative">
-                    <MessageCircle size={48} className="text-[#c7c42a]" />
+                  <div className="w-20 h-20 bg-[#202c33] rounded-full flex items-center justify-center relative">
+                    <MessageCircle size={40} className="text-[#8696a0]" />
                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#c7c42a] rounded-full flex items-center justify-center text-black">
                       <Sparkles size={14} />
                     </div>
                   </div>
-                  <div className="text-center space-y-2">
-                    <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Start a Conversation</h3>
-                    <p className="text-xs font-bold text-white/40 uppercase tracking-widest max-w-[200px] leading-relaxed">
-                      Send a message to begin your project journey with us.
+                  <div className="text-center space-y-1">
+                    <h3 className="text-lg font-bold text-[#e9edef]">Start a Conversation</h3>
+                    <p className="text-xs text-[#8696a0] max-w-[240px] mx-auto leading-relaxed italic uppercase font-black tracking-tighter">
+                      {activeConversation.isProject 
+                        ? "Discuss your project details here."
+                        : `Say hello to ${activeConversation.recipientProfile?.displayName === 'SAI ROSHAN' ? 'Webby Launch' : (activeConversation.recipientProfile?.displayName || 'our team')}!`}
                     </p>
                   </div>
                 </div>

@@ -592,22 +592,38 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     ))}
                   </div>
 
-                  {projects.length === 0 ? (
-                    <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
-                      <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">No projects yet</h2>
-                      <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
-                      <Link to="/onboarding" className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]">
-                        Start Your Project
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                      {/* Project List */}
-                      <div className="lg:col-span-1 space-y-6">
-                        <div className="flex items-center justify-between px-4">
-                          <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">Your Projects</h2>
-                          <Link to="/onboarding" className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] hover:underline">New +</Link>
+                      {projects.length === 0 ? (
+                        <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
+                          <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">No projects yet</h2>
+                          <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
+                          <button 
+                            onClick={() => {
+                              localStorage.removeItem('onboarding_step');
+                              localStorage.removeItem('onboarding_data');
+                              navigate('/onboarding');
+                            }}
+                            className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
+                          >
+                            Start Your Project
+                          </button>
                         </div>
+                      ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                          {/* Project List */}
+                          <div className="lg:col-span-1 space-y-6">
+                            <div className="flex items-center justify-between px-4">
+                              <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">Your Projects</h2>
+                              <button 
+                                onClick={() => {
+                                  localStorage.removeItem('onboarding_step');
+                                  localStorage.removeItem('onboarding_data');
+                                  navigate('/onboarding');
+                                }}
+                                className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] hover:underline"
+                              >
+                                New +
+                              </button>
+                            </div>
                         <div className="space-y-4">
                           {projects.map((p) => (
                             <div 
