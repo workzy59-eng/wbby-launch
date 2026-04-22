@@ -301,14 +301,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     e.preventDefault();
     if ((!inputText.trim() && Object.keys(uploadProgress).length === 0) || !activeConversation || isSending) return;
 
-    const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-    if (!recipientId) return;
-
-    setIsSending(true);
     const messageText = inputText.trim();
     const currentReplyingTo = replyingTo;
     const currentEditingMessage = editingMessage;
     
+    setIsSending(true);
     try {
       if (activeConversation.isProject) {
         const messageData = {
@@ -325,24 +322,30 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         await sendMessage(activeConversation.id, messageData);
         setReplyingTo(null);
       } else if (currentEditingMessage) {
-        await updateDirectMessage(recipientId, currentEditingMessage.id, {
-          text: messageText,
-          edited: true,
-          updatedAt: new Date()
-        });
+        const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+        if (recipientId) {
+          await updateDirectMessage(recipientId, currentEditingMessage.id, {
+            text: messageText,
+            edited: true,
+            updatedAt: new Date()
+          });
+        }
         setEditingMessage(null);
       } else {
-        await sendDirectMessage(recipientId, {
-          senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
-          text: messageText,
-          status: 'sent',
-          replyTo: currentReplyingTo ? {
-            id: currentReplyingTo.id,
-            text: currentReplyingTo.text,
-            senderName: currentReplyingTo.senderName
-          } : null
-        });
+        const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+        if (recipientId) {
+          await sendDirectMessage(recipientId, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: messageText,
+            status: 'sent',
+            replyTo: currentReplyingTo ? {
+              id: currentReplyingTo.id,
+              text: currentReplyingTo.text,
+              senderName: currentReplyingTo.senderName
+            } : null
+          });
+        }
         setReplyingTo(null);
       }
       setInputText('');
@@ -721,22 +724,35 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               <p className="text-[10px] font-black uppercase tracking-widest text-[#8696a0] animate-pulse">Loading conversations...</p>
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-8 text-center h-full flex flex-col items-center justify-center space-y-4">
-              <div className="w-16 h-16 bg-[#202c33] rounded-full flex items-center justify-center text-[#8696a0]">
-                {activeFilter === 'unread' ? <CheckCheck size={32} /> : <MessageCircle size={32} />}
+            <div className="p-8 text-center h-full flex flex-col items-center justify-center space-y-6">
+              <div className="relative">
+                <div className="w-20 h-20 bg-[#202c33] rounded-3xl flex items-center justify-center text-[#8696a0] transform rotate-12 shadow-2xl border border-white/5">
+                   <MessageCircle size={40} className="-rotate-12" />
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#00a884] rounded-xl flex items-center justify-center text-black shadow-lg">
+                  <Check size={16} strokeWidth={3} />
+                </div>
               </div>
-              <div className="space-y-1">
-                <h3 className="text-[#e9edef] font-bold">
-                  {activeFilter === 'unread' ? "No unread messages" : 
-                   activeFilter === 'favorites' ? "No favorites yet" :
-                   searchQuery ? "No chats found" : "No conversations yet"}
+              <div className="space-y-3">
+                <h3 className="text-[#e9edef] text-xl font-black uppercase italic tracking-tighter">
+                  {activeFilter === 'unread' ? "All Caught Up" : 
+                   activeFilter === 'favorites' ? "No Favorites" :
+                   searchQuery ? "No Chats Found" : "No Conversations Yet"}
                 </h3>
-                <p className="text-xs text-[#8696a0] max-w-[200px] mx-auto">
-                  {activeFilter === 'unread' ? "You're all caught up 🎉" :
-                   activeFilter === 'favorites' ? "Star conversations to find them quickly." :
-                   searchQuery ? "Try searching for something else." :
-                   "Click + to start chatting with our team. We'll respond instantly 🚀"}
+                <p className="text-sm text-[#8696a0] max-w-[240px] mx-auto font-medium leading-relaxed">
+                  {activeFilter === 'unread' ? "You've read all your messages. Great job! 🎉" :
+                   activeFilter === 'favorites' ? "Star your important chats to see them here." :
+                   searchQuery ? "We couldn't find any results for your search." :
+                   "Start a chat with Webby Launch to get updates on your premium project."}
                 </p>
+                {(!searchQuery && activeFilter === 'all') && (
+                  <button 
+                    onClick={handleMessageAdmin}
+                    className="mt-4 bg-[#00a884] text-black px-8 py-3 rounded-xl font-black uppercase italic text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(0,168,132,0.3)]"
+                  >
+                    Start Chatting
+                  </button>
+                )}
               </div>
             </div>
           ) : (
