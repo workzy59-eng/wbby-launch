@@ -199,6 +199,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       secondaryColor: '#000000',
       tertiaryColor: '',
       logoUrl: '',
+      documentsUrl: '',
       selectedFeatures: [
         'Mobile Responsive Design',
         'Work Portfolio',
@@ -225,6 +226,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   });
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
+  const [docsFile, setDocsFile] = useState<File | null>(null);
+  const [docsName, setDocsName] = useState<string>('');
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [profilePreview, setProfilePreview] = useState<string>(profile?.photoURL || '');
 
@@ -249,9 +253,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     });
   }, []);
 
-  // Persist state to localStorage
+  // Persist state to localStorage (excluding large binary data)
   useEffect(() => {
-    localStorage.setItem('onboarding_data', JSON.stringify(formData));
+    const { logoUrl, documentsUrl, ...rest } = formData;
+    localStorage.setItem('onboarding_data', JSON.stringify(rest));
     localStorage.setItem('onboarding_step', step.toString());
   }, [formData, step]);
 
@@ -364,7 +369,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     try {
       let finalProfileUrl = profile?.photoURL || '';
 
-      // Upload files if present
       if (profileFile) {
         finalProfileUrl = await uploadFile(profileFile, 'profiles');
       }
@@ -402,13 +406,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         estimatedCompletion: null,
         referralSource: formData.referralSource || '',
         salesCode: formData.salesCode || '',
-        logoUrl: '',
-        documentsUrl: ''
+        logoUrl: formData.logoUrl || '',
+        documentsUrl: formData.documentsUrl || ''
       };
 
       const projectId = await createProject(projectData);
 
-      // Update user profile with onboarding info
       if (user) {
         await createUserProfile(user, {
           username: formData.username,
@@ -452,8 +455,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         localStorage.removeItem('onboarding_data');
         localStorage.removeItem('onboarding_step');
         
-        toast.success("Redirecting to secure payment...");
-        window.location.href = finalUrl;
+        toast.success("Project created! Redirecting to payment...");
+        setStep(10);
+        setTimeout(() => {
+          window.location.href = finalUrl;
+        }, 2000);
         return;
       }
 
@@ -778,7 +784,36 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 />
               </div>
 
-              {/* Logo and Documents Upload Removed */}
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Documents (Optional)</label>
+                <div className="relative group p-8 rounded-3xl border-2 border-dashed border-white/10 bg-white/5 hover:border-primary/50 transition-all flex flex-col items-center justify-center gap-4 cursor-pointer">
+                  <FileText className="text-subtext w-10 h-10 group-hover:text-primary transition-colors" />
+                  <div className="text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-text">
+                      {docsName || 'Click or drag to upload Trade License / ID / ROC'}
+                    </p>
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-subtext mt-1 italic">PDF, JPG, PNG (Max 5MB)</p>
+                  </div>
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setDocsFile(file);
+                        setDocsName(file.name);
+                        try {
+                          const base64 = await uploadFile(file);
+                          handleInputChange('documentsUrl', base64);
+                          toast.success('Document uploaded!');
+                        } catch (err) {
+                          toast.error('Upload failed');
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">City <span className="text-error">*</span></label>
@@ -1072,7 +1107,37 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              {/* Logo Upload Removed */}
+              {/* Logo Upload */}
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Upload Logo (Optional)</label>
+                <div className="relative group p-8 rounded-3xl border-2 border-dashed border-white/10 bg-white/5 hover:border-primary/50 transition-all flex flex-col items-center justify-center gap-4 cursor-pointer overflow-hidden">
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Logo Preview" className="h-20 object-contain" />
+                  ) : (
+                    <ImageIcon className="text-subtext w-10 h-10 group-hover:text-primary transition-colors" />
+                  )}
+                  <div className="text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-text">
+                      {logoPreview ? 'Click to change logo' : 'Upload your brand identity'}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setLogoFile(file);
+                        setLogoPreview(URL.createObjectURL(file));
+                        const base64 = await uploadFile(file);
+                        handleInputChange('logoUrl', base64);
+                        toast.success('Logo uploaded!');
+                      }
+                    }}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-4">
@@ -1541,11 +1606,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                           username: formData.username,
                           phone: formData.phone,
                           photoURL: finalProfileUrl,
+                          onboardingCompleted: true
                         });
                       }
                       localStorage.removeItem('onboarding_data');
                       localStorage.removeItem('onboarding_step');
-                      navigate('/dashboard?success=true');
+                      setStep(10);
+                      setTimeout(() => {
+                        navigate('/dashboard?success=true');
+                      }, 3000);
                     } catch (err: any) {
                       setError(err.message || 'Failed to skip payment. Please try again.');
                     } finally {
@@ -1557,6 +1626,25 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   Skip Payment (Test Mode)
                 </button>
               )}
+            </div>
+          </motion.div>
+        );
+      case 10: // Success
+        return (
+          <motion.div 
+            key="step10"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center space-y-8 py-20"
+          >
+            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Check size={48} className="text-primary" />
+            </div>
+            <div className="space-y-4">
+              <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white">Project Received!</h2>
+              <p className="text-subtext font-medium max-w-md mx-auto">
+                Your brilliant project is in our system. Redirecting you to your dashboard to track progress...
+              </p>
             </div>
           </motion.div>
         );
