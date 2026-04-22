@@ -7,7 +7,6 @@ import {
   CheckCheck, 
   Image as ImageIcon, 
   Paperclip, 
-  Search,
   MessageCircle,
   MessageSquare,
   MoreVertical,
@@ -602,7 +601,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const containerClasses = fullScreen 
     ? "fixed inset-0 z-[200] bg-[#121212] flex flex-col md:flex-row overflow-hidden font-sans"
-    : "relative w-full h-[calc(100vh-180px)] bg-[#121212] rounded-3xl border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
+    : "relative w-full h-[calc(100vh-120px)] bg-[#121212] rounded-[3rem] border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
 
   return (
     <motion.div 
@@ -614,49 +613,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       {/* Sidebar / List View */}
       <div className={`w-full md:w-[400px] border-r border-[#ffffff05] flex flex-col bg-[#121212] ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white tracking-tight">Chats</h2>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setShowUserList(true)}
-              className="p-2.5 hover:bg-white/5 rounded-full text-[#aebac1] transition-all"
-            >
-              <Plus size={20} />
-            </button>
             <button 
               onClick={onClose}
               className={`p-2.5 hover:bg-white/5 rounded-full text-[#aebac1] transition-all ${!fullScreen ? 'lg:hidden' : ''}`}
             >
               <X size={20} />
             </button>
-          </div>
-        </div>
-
-        <div className="px-6 py-2 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8696a0]" size={16} />
-            <input 
-              type="text"
-              placeholder="Search or start a new chat"
-              className="w-full bg-[#1e1e1e] border-none rounded-xl py-3 pl-12 pr-4 text-sm text-[#d1d7db] outline-none focus:ring-0 placeholder-[#8696a0]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-            {['all', 'unread', 'favorites'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setActiveFilter(f as any)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold capitalize transition-all whitespace-nowrap ${
-                  activeFilter === f 
-                    ? 'bg-white text-black' 
-                    : 'bg-[#1e1e1e] text-[#8696a0] hover:bg-[#2a3942]'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -798,22 +761,6 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </div>
             </header>
 
-            {showSearch && (
-              <div className="p-4 bg-[#111b21] border-b border-[#202c33] animate-in slide-in-from-top duration-300 relative z-20">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8696a0]" size={16} />
-                  <input 
-                    type="text"
-                    placeholder="Search messages..."
-                    className="w-full bg-[#202c33] border-none rounded-xl py-2 pl-10 pr-4 text-xs text-[#d1d7db] outline-none placeholder-[#8696a0]"
-                    value={messageSearchQuery}
-                    onChange={(e) => setMessageSearchQuery(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-              </div>
-            )}
-
             {/* Messages Area */}
             <div 
               ref={scrollRef}
@@ -908,7 +855,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   onClick={() => document.getElementById('direct-image-upload')?.click()}
                   className="p-2 text-[#8696a0] hover:text-white transition-all ml-2"
                 >
-                  <Plus size={24} />
+                  {/* Plus Icon removed as per minimalist request */}
                 </button>
 
                 <div className="flex-1 relative">
@@ -1007,11 +954,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               </div>
               <div className="p-6 border-b border-white/5 bg-[#121212]">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                   <input 
                     type="text"
                     placeholder="Search users..."
-                    className="w-full bg-[#1e1e1e] border-none rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:ring-0 placeholder-white/20 transition-all"
+                    className="w-full bg-[#1e1e1e] border-none rounded-2xl py-4 pr-4 text-sm text-white outline-none focus:ring-0 placeholder-white/20 transition-all"
                   />
                 </div>
               </div>

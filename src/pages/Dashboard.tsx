@@ -29,7 +29,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings' | 'meetings' | 'payments'>('messages');
   const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -190,15 +190,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col gap-6">
           {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
             { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
-            { id: 'meetings', icon: Video, label: 'Meetings' },
-            { id: 'payments', icon: CreditCard, label: 'Payments' },
-            { id: 'settings', icon: Settings, label: 'Settings', link: '/settings' },
           ].map((tab) => (
             <button 
               key={tab.id}
-              onClick={() => tab.link ? navigate(tab.link) : setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as any)}
               className={`p-4 rounded-2xl transition-all duration-300 relative group ${
                 activeTab === tab.id 
                   ? 'text-black shadow-lg scale-110' 
@@ -303,7 +299,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       </nav>
 
       <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 space-y-10">
+        <div className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === 'messages' ? 'py-6' : 'py-12'} space-y-10`}>
+          {activeTab !== 'messages' && (
+            <>
           {/* Subscription Warning */}
           {selectedProject?.subscriptionStatus === 'suspended' && (
             <motion.div 
@@ -387,6 +385,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </div>
           </div>
 
+            </>
+          )}
+          
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
