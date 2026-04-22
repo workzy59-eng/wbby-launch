@@ -62,7 +62,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
              <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
           </div>
           <div className="flex-1 bg-white rounded-full h-6 flex items-center px-4 text-[10px] text-gray-400 font-mono italic shadow-inner">
-             https://{data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.webbylaunch.com
+             {data.domain ? `https://${data.domain}` : `https://${data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.webbylaunch.com`}
           </div>
         </div>
 
@@ -195,6 +195,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       description: '',
       location: '',
       websiteName: '',
+      domain: '',
       primaryColor: '#c7c42a',
       secondaryColor: '#000000',
       tertiaryColor: '',
@@ -305,12 +306,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       case 3: // Features Select
         if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
         break;
-      case 4: // Domain Preferences
-        if (formData.domainPreferences.some(p => !p)) {
-          formData.domainPreferences.forEach((p, i) => {
-            if (!p) invalid.push(`domainPreference${i}`);
-          });
-        }
+      case 4: // Domain Selection
+        if (!formData.domain) invalid.push('domain');
         break;
       case 5: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
@@ -572,6 +569,67 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       : [...current, feature];
     handleInputChange('selectedFeatures', updated);
   };
+
+  const [suggestedDomains, setSuggestedDomains] = useState<{name: string, status: 'loading' | 'available' | 'taken' | 'error'}[]>([]);
+  const [customDomain, setCustomDomain] = useState('');
+  const [customStatus, setCustomStatus] = useState<'idle' | 'loading' | 'available' | 'taken' | 'error'>('idle');
+  const [isCheckingCustom, setIsCheckingCustom] = useState(false);
+
+  const checkDomain = async (domain: string) => {
+    try {
+      const res = await fetch(`https://dns.google/resolve?name=${domain}`);
+      const data = await res.json();
+      // Google DNS Answer field exists if there are records (domain taken)
+      return data.Answer ? "taken" : "available";
+    } catch {
+      return "error";
+    }
+  };
+
+  const loadSuggestions = async (name: string) => {
+    if (!name || name.length < 3) return;
+    
+    const extensions = ['.com', '.in', '.org', '.online', '.store'];
+    const bases = [name, name + 'official', 'get' + name];
+    
+    // Pick top 4 common variations
+    const domainNames = [
+      `${name}.com`,
+      `${name}.in`,
+      `${name}.org`,
+      `${name}.online`
+    ];
+
+    setSuggestedDomains(domainNames.map(d => ({ name: d, status: 'loading' })));
+
+    const results = await Promise.all(
+      domainNames.map(async (d) => ({
+        name: d,
+        status: (await checkDomain(d)) as any
+      }))
+    );
+
+    setSuggestedDomains(results);
+  };
+
+  const checkCustom = async () => {
+    if (!customDomain || !customDomain.includes('.')) {
+      toast.error("Please enter a valid domain (e.g., example.com)");
+      return;
+    }
+    setIsCheckingCustom(true);
+    setCustomStatus('loading');
+    const status = await checkDomain(customDomain);
+    setCustomStatus(status as any);
+    setIsCheckingCustom(false);
+  };
+
+  useEffect(() => {
+    if (step === 4) {
+      const name = formData.websiteName || formData.businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      loadSuggestions(name);
+    }
+  }, [step]);
 
   const renderStep = () => {
     switch (step) {
@@ -958,7 +1016,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         );
       case 4:
         const bName = formData.businessName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'yourbusiness';
-        const domainExtensions = ['.com', '.in', '.online', '.store', '.net', '.org', '.co.in', '.site', '.biz', '.info'];
         
         return (
           <motion.div 
@@ -974,89 +1031,134 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <p className="text-white/40 text-sm font-medium italic">Secure your brand's digital identity</p>
             </div>
 
-            <div className="space-y-12">
+            <div className="space-y-8">
+              {/* Auto Suggestions Section */}
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Step 1: Confirm Domain Name</label>
-                <div className="relative group">
-                   <input 
-                    type="text"
-                    value={formData.websiteName || bName}
-                    onChange={(e) => {
-                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
-                      handleInputChange('websiteName', val);
-                      // Update all preferences with new base name
-                      const newPrefs = formData.domainPreferences.map(p => {
-                        const ext = p.includes('.') ? p.substring(p.indexOf('.')) : '';
-                        return val + ext;
-                      });
-                      handleInputChange('domainPreferences', newPrefs);
-                    }}
-                    placeholder="yourbusinessname"
-                    className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
-                  />
-                  <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    <div className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-black text-primary uppercase italic">Editable</div>
-                    <Edit className="text-primary/40" size={16} />
-                  </div>
+                <div className="flex items-center gap-2 ml-4">
+                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] italic">✨ Best for you (Auto suggestions)</label>
                 </div>
-                <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest ml-4">Only letters and numbers allowed. No spaces.</p>
-              </div>
-
-              <div className="space-y-6">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Step 2: Ranked Preferences</label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {[0, 1, 2].map((idx) => {
-                    const currentFull = formData.domainPreferences[idx];
-                    const currentExt = currentFull?.includes('.') ? currentFull.substring(currentFull.indexOf('.')) : '';
-                    const isInvalid = invalidFields.includes(`domainPreference${idx}`);
-                    
-                    return (
-                      <div key={idx} className="relative group">
-                        <div className={`absolute -top-3 left-6 z-10 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${idx === 0 ? 'bg-primary text-black' : 'bg-white/10 text-white/40'}`}>
-                          {idx === 0 ? 'Primary' : idx === 1 ? 'Secondary' : 'Tertiary'} Choice
+                
+                <div className="grid grid-cols-1 gap-3">
+                  {suggestedDomains.length > 0 ? (
+                    suggestedDomains.map((d, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          handleInputChange('domain', d.name);
+                          handleInputChange('websiteName', d.name.split('.')[0]);
+                          handleInputChange('domainPreferences', [d.name, ...formData.domainPreferences.filter(p => p !== d.name)].slice(0, 3));
+                        }}
+                        className={`group flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
+                          formData.domain === d.name 
+                            ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(199,196,42,0.2)]' 
+                            : 'bg-white/5 border-white/5 hover:border-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black italic text-xs ${formData.domain === d.name ? 'bg-primary text-black' : 'bg-white/10 text-white/40'}`}>
+                            {i + 1}
+                          </div>
+                          <span className={`text-xl font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white/80'}`}>
+                            {d.name}
+                          </span>
                         </div>
                         
-                        <div className={`p-8 rounded-[2.5rem] bg-white/5 border-2 transition-all ${isInvalid ? 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : currentExt ? 'border-primary/50 bg-primary/5' : 'border-white/5 hover:border-white/20'}`}>
-                          <select
-                            className="w-full bg-transparent border-none text-white focus:outline-none font-black italic text-xl uppercase tracking-tighter cursor-pointer appearance-none"
-                            value={currentExt}
-                            onChange={(e) => {
-                              const ext = e.target.value;
-                              const newPrefs = [...formData.domainPreferences];
-                              const base = formData.websiteName || bName;
-                              newPrefs[idx] = base + ext;
-                              handleInputChange('domainPreferences', newPrefs);
-                              if (idx === 0) handleInputChange('domain', base + ext);
-                            }}
-                          >
-                            <option value="" className="bg-[#0a0a0a]">Select Extension</option>
-                            {domainExtensions.map(ext => (
-                              <option key={ext} value={ext} className="bg-[#0a0a0a]">{ext}</option>
-                            ))}
-                          </select>
-                          
-                          <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4">
-                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{idx + 1}st Priority</span>
-                            {currentExt ? (
-                              <div className="px-2 py-0.5 bg-primary/20 rounded text-[9px] font-black text-primary uppercase">{currentExt}</div>
-                            ) : (
-                              <ChevronDown size={14} className="text-white/20" />
-                            )}
+                        <div className="flex items-center gap-3">
+                          {d.status === 'loading' ? (
+                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                          ) : d.status === 'available' ? (
+                            <span className="text-[10px] font-black text-green-400 uppercase italic tracking-widest bg-green-400/10 px-3 py-1 rounded-lg">🟢 Available</span>
+                          ) : d.status === 'taken' ? (
+                            <span className="text-[10px] font-black text-red-400 uppercase italic tracking-widest bg-red-400/10 px-3 py-1 rounded-lg">🔴 Taken</span>
+                          ) : (
+                            <span className="text-[10px] font-black text-white/20 uppercase italic tracking-widest">Unknown</span>
+                          )}
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${formData.domain === d.name ? 'border-primary bg-primary text-black' : 'border-white/10'}`}>
+                            {formData.domain === d.name && <Check size={12} strokeWidth={4} />}
                           </div>
                         </div>
-
-                        {currentFull && (
-                          <div className="mt-3 px-6 flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[10px] font-black text-primary uppercase tracking-widest italic truncate">
-                              {currentFull}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-8 rounded-2xl bg-white/5 border border-dashed border-white/10 text-center">
+                      <p className="text-xs font-bold text-white/20 uppercase tracking-widest italic">Entering business name to see suggestions...</p>
+                    </div>
+                  )}
                 </div>
+              </div>
+
+              {/* Custom Domain Section */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Or enter your own domain</label>
+                <div className="relative group">
+                  <input 
+                    type="text"
+                    value={customDomain}
+                    onChange={(e) => {
+                      setCustomDomain(e.target.value.toLowerCase().trim());
+                      setCustomStatus('idle');
+                    }}
+                    placeholder="mycoolbrand.xyz"
+                    className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase pr-40"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    <button 
+                      onClick={checkCustom}
+                      disabled={isCheckingCustom || !customDomain}
+                      className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black text-white uppercase italic transition-all disabled:opacity-50"
+                    >
+                      {isCheckingCustom ? 'Checking...' : 'Check Status'}
+                    </button>
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {customStatus !== 'idle' && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`ml-4 p-4 rounded-xl inline-flex items-center gap-3 ${
+                        customStatus === 'available' ? 'bg-green-400/10 border border-green-400/20' : 
+                        customStatus === 'taken' ? 'bg-red-400/10 border border-red-400/20' : 
+                        'bg-white/5'
+                      }`}
+                    >
+                      {customStatus === 'loading' ? (
+                        <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      ) : customStatus === 'available' ? (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-[10px] font-black text-green-400 uppercase italic tracking-widest">Domain is available!</span>
+                          <button 
+                            onClick={() => {
+                              handleInputChange('domain', customDomain);
+                              handleInputChange('websiteName', customDomain.split('.')[0]);
+                              handleInputChange('domainPreferences', [customDomain, ...formData.domainPreferences.filter(p => p !== customDomain)].slice(0, 3));
+                            }}
+                            className="ml-4 px-4 py-1.5 bg-green-400 text-black rounded-lg text-[9px] font-black uppercase"
+                          >
+                            Use This
+                          </button>
+                        </>
+                      ) : customStatus === 'taken' ? (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-red-400" />
+                          <span className="text-[10px] font-black text-red-400 uppercase italic tracking-widest">Domain is already taken</span>
+                        </>
+                      ) : (
+                        <span className="text-[10px] font-black text-white/40 uppercase italic tracking-widest">Error checking domain</span>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
+                <ShieldCheck size={20} className="text-primary shrink-0 mt-1" />
+                <p className="text-[10px] font-medium text-primary leading-relaxed italic uppercase tracking-[0.05em]">
+                  ⚠️ Note: Domain availability is checked via live DNS records. Final availability and registration will be confirmed by our team during setup.
+                </p>
               </div>
             </div>
 
@@ -1069,7 +1171,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               </button>
               <button 
                 onClick={handleNext} 
-                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter"
+                disabled={!formData.domain}
+                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: formData.primaryColor }}
               >
                 Continue
