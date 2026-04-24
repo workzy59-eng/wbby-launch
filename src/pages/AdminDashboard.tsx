@@ -50,7 +50,7 @@ interface AdminDashboardProps {
   profile: UserProfile | null;
 }
 
-type Tab = 'overview' | 'clients' | 'developers' | 'projects' | 'leaves' | 'attendance' | 'messages';
+type Tab = 'overview' | 'clients' | 'developer-leads' | 'projects' | 'leaves' | 'attendance' | 'messages';
 
 interface DeveloperInvite {
   id?: string;
@@ -477,42 +477,52 @@ Generated on: ${new Date().toLocaleString()}
           </div>
         );
       case 'clients':
+        const clients = profiles.filter(p => p.role === 'client');
         return (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Registered Clients</h2>
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#00F2FF]">Client Network</h2>
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                {clients.length} Registered Users
+              </div>
             </div>
             <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
-              <h3 className="text-2xl font-black text-white uppercase italic mb-8">Registered Clients</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {profiles.filter(p => p.role === 'client').map((client, idx) => (
-                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#00F2FF]/40 transition-all">
-                    <div className="flex justify-between items-start">
-                      <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 font-black text-xl italic">
-                        {client.displayName?.[0]}
+                {clients.map((client, idx) => (
+                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#00F2FF]/40 transition-all relative overflow-hidden">
+                    <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#00F2FF]/5 rounded-full blur-2xl group-hover:bg-[#00F2FF]/10 transition-all" />
+                    <div className="flex justify-between items-start relative z-10">
+                      <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 font-black text-xl italic shadow-xl">
+                        {client.displayName?.[0] || 'U'}
                       </div>
                       <div className="px-4 py-1 bg-green-500/20 text-green-400 rounded-full text-[10px] font-black uppercase tracking-widest">
                         Active
                       </div>
                     </div>
-                    <div>
-                      <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{client.displayName}</h4>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{client.email}</p>
+                    <div className="relative z-10">
+                      <h4 className="text-xl font-black text-white uppercase italic tracking-tighter truncate">{client.displayName || 'Unnamed User'}</h4>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate">{client.email}</p>
                     </div>
-                    <div className="pt-6 border-t border-white/5 flex justify-between items-center">
+                    <div className="pt-6 border-t border-white/5 flex justify-between items-center relative z-10">
                       <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                         <MapPin size={12} />
-                        <span>Remote</span>
+                        <span>{client.businessLocation || 'Remote'}</span>
                       </div>
                       <button 
                         onClick={() => setSelectedChatUser(client)}
                         className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all"
                       >
-                        Message <ChevronRight size={14} />
+                        Portal <ChevronRight size={14} />
                       </button>
                     </div>
                   </div>
                 ))}
+                {clients.length === 0 && (
+                  <div className="col-span-full py-20 text-center">
+                    <Users size={48} className="mx-auto text-slate-700 mb-4 opacity-20" />
+                    <p className="text-slate-600 font-black uppercase tracking-[0.3em] italic">No clients found in relay</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -566,38 +576,91 @@ Generated on: ${new Date().toLocaleString()}
             </div>
           </div>
         );
-      case 'developers':
+      case 'developer-leads':
         return (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Developers Team</h2>
+              <div>
+                <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Developer Leads</h2>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">Recruitment & Talent Acquisition</p>
+              </div>
               <button 
                 onClick={() => setIsInviteModalOpen(true)}
                 className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black font-black uppercase italic rounded-2xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.3)]"
               >
                 <Plus size={20} />
-                <span>Invite Developer</span>
+                <span>Invite New Lead</span>
               </button>
             </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+                <h3 className="text-2xl font-black text-white uppercase italic mb-8">Pending Developer Requests</h3>
+                <div className="space-y-4">
+                  {profiles.filter(p => p.role === 'developer' && p.status === 'pending').map((dev, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#00F2FF] rounded-xl flex items-center justify-center text-black font-black italic shadow-[0_0_15px_rgba(0,242,255,0.1)]">
+                          {dev.displayName?.[0]}
+                        </div>
+                        <div>
+                          <div className="text-sm font-bold text-white uppercase italic">{dev.displayName}</div>
+                          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{dev.devRole} • {dev.experience} Years Exp</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleDeclineDeveloper(dev.uid)}
+                          className="p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                        >
+                          <XCircle size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleApproveDeveloper(dev.uid)}
+                          className="p-3 bg-green-500/10 text-green-400 rounded-xl hover:bg-green-500 hover:text-white transition-all"
+                        >
+                          <CheckCircle2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {profiles.filter(p => p.role === 'developer' && p.status === 'pending').length === 0 && (
+                    <div className="text-center py-12 text-slate-500 font-black uppercase tracking-widest italic">No pending requests</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+                <h3 className="text-2xl font-black text-white uppercase italic mb-8">Active Invites</h3>
+                <div className="space-y-4">
+                  {invites.filter(i => !i.used).map((invite, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5">
+                      <div>
+                        <div className="text-sm font-bold text-white uppercase italic">{invite.name}</div>
+                        <div className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">{invite.code} • {invite.role}</div>
+                      </div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        PENDING ONBOARDING
+                      </div>
+                    </div>
+                  ))}
+                  {invites.filter(i => !i.used).length === 0 && (
+                    <div className="text-center py-12 text-slate-500 font-black uppercase tracking-widest italic">No active invites</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-between items-center bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                 <input 
                   type="text" 
-                  placeholder="Search developers..."
+                  placeholder="Search crew members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-transparent pl-12 pr-4 py-2 text-white font-bold uppercase tracking-widest outline-none placeholder:text-slate-600"
                 />
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                  {filteredDevelopers.length} Developers Found
-                </div>
-                <button className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-                  <Filter size={16} />
-                  <span>Filter</span>
-                </button>
               </div>
             </div>
 
@@ -640,21 +703,6 @@ Generated on: ${new Date().toLocaleString()}
                       <div className="text-center">
                         <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Hours</div>
                         <div className="text-lg font-black text-white italic">{stats.activeHours}h</div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 relative z-10">
-                      <div className="p-2 bg-green-500/5 rounded-xl border border-green-500/10 text-center">
-                        <div className="text-[7px] font-black text-green-500/50 uppercase">Done</div>
-                        <div className="text-xs font-bold text-green-400">{stats.completed}</div>
-                      </div>
-                      <div className="p-2 bg-yellow-500/5 rounded-xl border border-yellow-500/10 text-center">
-                        <div className="text-[7px] font-black text-yellow-500/50 uppercase">Pending</div>
-                        <div className="text-xs font-bold text-yellow-400">{stats.pending}</div>
-                      </div>
-                      <div className="p-2 bg-red-500/5 rounded-xl border border-red-500/10 text-center">
-                        <div className="text-[7px] font-black text-red-500/50 uppercase">Rejected</div>
-                        <div className="text-xs font-bold text-red-400">{stats.rejected}</div>
                       </div>
                     </div>
 
@@ -1142,28 +1190,85 @@ Requirements:
           Webby<span className="text-[#c7c42a]">Admin</span>
         </div>
 
-        <nav className="flex-1 space-y-2">
-          {[
-            { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-            { id: 'clients', label: 'Clients', icon: User },
-            { id: 'projects', label: 'Projects', icon: Briefcase },
-            { id: 'leaves', label: 'Leaves', icon: Clock },
-            { id: 'attendance', label: 'Attendance', icon: CalendarIcon },
-            { id: 'messages', label: 'Messages', icon: MessageSquare },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as Tab)}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all duration-300 ${
-                activeTab === tab.id 
-                  ? 'bg-[#c7c42a] text-black shadow-[0_0_30_rgba(199,196,42,0.2)] scale-[1.02]' 
-                  : 'text-slate-500 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <tab.icon size={18} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
+        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
+          <div className="mb-6">
+            <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">Core Management</p>
+            <div className="space-y-1">
+              {[
+                { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                { id: 'clients', label: 'Clients', icon: User },
+                { id: 'projects', label: 'Projects', icon: Briefcase },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as Tab)}
+                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all relative group ${
+                    activeTab === item.id 
+                      ? 'bg-[#00F2FF] text-black shadow-[0_0_20px_rgba(0,242,255,0.3)]' 
+                      : 'text-slate-500 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon size={20} className="shrink-0" />
+                  <span className="text-sm font-black uppercase italic tracking-widest">{item.label}</span>
+                  {activeTab === item.id && (
+                    <motion.div layoutId="active" className="absolute left-0 w-1 h-6 bg-black rounded-r-full" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">Sales Leads</p>
+            <div className="space-y-1">
+              {[
+                { id: 'developer-leads', label: 'Developer Leads', icon: FileText },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as Tab)}
+                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all relative group ${
+                    activeTab === item.id 
+                      ? 'bg-[#c7c42a] text-black shadow-[0_0_20px_rgba(199,196,42,0.3)]' 
+                      : 'text-slate-500 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon size={20} className="shrink-0" />
+                  <span className="text-sm font-black uppercase italic tracking-widest">{item.label}</span>
+                  {activeTab === item.id && (
+                    <motion.div layoutId="active" className="absolute left-0 w-1 h-6 bg-black rounded-r-full" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">Operations</p>
+            <div className="space-y-1">
+              {[
+                { id: 'leaves', label: 'Leaves', icon: Clock },
+                { id: 'attendance', label: 'Attendance', icon: CalendarIcon },
+                { id: 'messages', label: 'Messages', icon: MessageSquare },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as Tab)}
+                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all relative group ${
+                    activeTab === item.id 
+                      ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]' 
+                      : 'text-slate-500 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon size={20} className="shrink-0" />
+                  <span className="text-sm font-black uppercase italic tracking-widest">{item.label}</span>
+                  {activeTab === item.id && (
+                    <motion.div layoutId="active" className="absolute left-0 w-1 h-6 bg-black rounded-r-full" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
         </nav>
       </aside>
 
