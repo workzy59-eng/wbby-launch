@@ -335,6 +335,8 @@ export interface Meeting {
   title: string;
   clientId: string;
   adminId: string;
+  developerId?: string; // Assigned developer
+  projectId?: string; // Linked project
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   meetingLink: string;

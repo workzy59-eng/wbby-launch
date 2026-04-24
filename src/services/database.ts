@@ -25,41 +25,39 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// Corrected upload helper using Cloudinary (via Express backend)
+// Corrected upload helper using Cloudinary (Client-side)
 export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
-  console.log(`Uploading ${file.name} to ${folder} via Cloudinary...`);
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    console.warn('Cloudinary credentials missing, falling back to Base64');
+    return await convertFileToBase64(file);
+  }
+
   try {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
     formData.append('folder', folder);
 
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        console.error('Server returned non-JSON error. Body snippet:', errorText.substring(0, 200));
-        throw new Error(`Upload failed with status ${response.status}. See console for details.`);
-      }
-      throw new Error(errorData.error || 'Upload failed');
+      throw new Error('Cloudinary upload failed');
     }
 
     const data = await response.json();
-    return data.url;
+    return data.secure_url;
   } catch (error) {
-    console.error('File upload error:', error);
-    // Fallback to Base64 (to ensure flow continues)
-    try {
-      return await convertFileToBase64(file);
-    } catch (e) {
-      throw error;
-    }
+    console.error('Cloudinary upload error:', error);
+    return await convertFileToBase64(file);
   }
 };
 
@@ -406,12 +404,14 @@ export const getProjectsAsync = async (userId?: string, developerId?: string) =>
   }
 };
 
-export const getProjects = (callback: (projects: any[]) => void, userId?: string) => {
+export const getProjects = (callback: (projects: any[]) => void, userId?: string, role?: string) => {
   const path = 'projects';
   let q = query(collection(db, 'projects'), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
   
-  if (userId) {
+  if (role === 'client' && userId) {
     q = query(collection(db, 'projects'), where('userId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+  } else if (role === 'developer' && userId) {
+    q = query(collection(db, 'projects'), where('developerId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
   }
 
   return onSnapshot(q, (snapshot) => {
@@ -862,4 +862,72 @@ export const deleteAllUsers = async () => {
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
+};
+
+// Developer Invite System
+export const createDeveloperInvite = async (inviteData: any) => {
+  await addDoc(collection(db, 'developer_invites'), inviteData);
+};
+
+export const getDeveloperInvites = async () => {
+  const q = query(collection(db, 'developer_invites'), orderBy('createdAt', 'desc'));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
+export const getInviteByCode = async (email: string, code: string) => {
+  const q = query(
+    collection(db, 'developer_invites'), 
+    where('email', '==', email.toLowerCase()), 
+    where('code', '==', code.toUpperCase()),
+    where('used', '==', false)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return { id: snap.docs[0].id, ...snap.docs[0].data() };
+};
+
+export const markInviteUsed = async (inviteId: string) => {
+  const docRef = doc(db, 'developer_invites', inviteId);
+  await updateDoc(docRef, { used: true });
+};
+
+// Activity Tracking
+export const createVisitSession = async (userId: string) => {
+  const docRef = await addDoc(collection(db, 'visit_sessions'), {
+    userId,
+    startTime: serverTimestamp(),
+    durationMinutes: 0
+  });
+  return docRef.id;
+};
+
+export const endVisitSession = async (sessionId: string) => {
+  const docRef = doc(db, 'visit_sessions', sessionId);
+  try {
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data.startTime) {
+        const startTime = data.startTime.toDate();
+        const endTime = new Date();
+        const durationMinutes = Math.max(0, Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60)));
+        await updateDoc(docRef, {
+          endTime: serverTimestamp(),
+          durationMinutes: durationMinutes
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error ending visit session:", err);
+  }
+};
+
+export const getVisitSessions = async (userId?: string) => {
+  let q = query(collection(db, 'visit_sessions'), orderBy('startTime', 'desc'));
+  if (userId) {
+    q = query(collection(db, 'visit_sessions'), where('userId', '==', userId), orderBy('startTime', 'desc'));
+  }
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };

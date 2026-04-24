@@ -21,7 +21,11 @@ import {
   ArrowUpRight,
   RefreshCcw,
   MapPin,
-  FileText
+  FileText,
+  Plus,
+  Shield,
+  Activity,
+  Award
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
@@ -33,7 +37,10 @@ import {
   getAllLeaveRequests, 
   updateLeaveRequest,
   getAllAttendance,
-  sendDirectMessage
+  sendDirectMessage,
+  createDeveloperInvite,
+  getDeveloperInvites,
+  getVisitSessions
 } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
@@ -44,6 +51,31 @@ interface AdminDashboardProps {
 }
 
 type Tab = 'overview' | 'clients' | 'developers' | 'projects' | 'leaves' | 'attendance' | 'messages';
+
+interface DeveloperInvite {
+  id?: string;
+  name: string;
+  email: string;
+  code: string;
+  role: 'developer' | 'senior developer';
+  permissions: {
+    canChat: boolean;
+    canUpload: boolean;
+    canViewProjects: boolean;
+  };
+  joiningDate: string;
+  createdBy: string;
+  createdAt: any;
+  used: boolean;
+}
+
+interface VisitSession {
+  id: string;
+  userId: string;
+  startTime: any;
+  endTime: any;
+  durationMinutes: number;
+}
 
 const Loader = ({ color = "white" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -69,6 +101,8 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [invites, setInvites] = useState<DeveloperInvite[]>([]);
+  const [sessions, setSessions] = useState<VisitSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedChatUser, setSelectedChatUser] = useState<UserProfile | null>(null);
@@ -77,16 +111,32 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
 
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [viewingDescription, setViewingDescription] = useState<Project | null>(null);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  const [inviteForm, setInviteForm] = useState({
+    name: '',
+    email: '',
+    code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+    role: 'developer' as 'developer' | 'senior developer',
+    joiningDate: new Date().toISOString().split('T')[0],
+    permissions: {
+      canChat: true,
+      canUpload: true,
+      canViewProjects: true
+    }
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [allProfiles, allProjects, allLeaves, allAttendance] = await Promise.all([
+        const [allProfiles, allProjects, allLeaves, allAttendance, allInvites, allSessions] = await Promise.all([
           getProfiles(),
           getProjectsAsync(),
           getAllLeaveRequests(),
-          getAllAttendance()
+          getAllAttendance(),
+          getDeveloperInvites(),
+          getVisitSessions()
         ]);
 
         // Enrich attendance with user names if missing
@@ -103,6 +153,8 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
         setProjects(allProjects);
         setLeaveRequests(allLeaves);
         setAttendance(enrichedAttendance);
+        setInvites(allInvites as DeveloperInvite[]);
+        setSessions(allSessions as VisitSession[]);
       } catch (error) {
         console.error("Error fetching admin data:", error);
       } finally {
@@ -111,6 +163,58 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
     };
     fetchData();
   }, []);
+
+  const handleCreateInvite = async () => {
+    if (!inviteForm.name || !inviteForm.email) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      if (!user) return;
+      const inviteData: DeveloperInvite = {
+        ...inviteForm,
+        email: inviteForm.email.toLowerCase(),
+        createdBy: user.uid,
+        createdAt: new Date(),
+        used: false
+      };
+
+      await createDeveloperInvite(inviteData);
+      setInvites(prev => [inviteData, ...prev]);
+      setIsInviteModalOpen(false);
+      setInviteForm({
+        name: '',
+        email: '',
+        code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+        role: 'developer',
+        joiningDate: new Date().toISOString().split('T')[0],
+        permissions: {
+          canChat: true,
+          canUpload: true,
+          canViewProjects: true
+        }
+      });
+      toast.success("Developer invite created!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create invite");
+    }
+  };
+
+  const getDevStats = (devId: string) => {
+    const devProjects = projects.filter(p => p.developerId === devId);
+    const completed = devProjects.filter(p => p.status?.toLowerCase() === 'completed').length;
+    const pending = devProjects.filter(p => ['pending', 'waiting for review', 'under review', 'accepted', 'development started', 'in-progress'].includes(p.status?.toLowerCase() || '')).length;
+    const rejected = devProjects.filter(p => p.status?.toLowerCase() === 'rejected').length;
+    const total = devProjects.length;
+    const efficiency = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    const devSessions = sessions.filter(s => s.userId === devId);
+    const totalMinutes = devSessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
+    const activeHours = Math.round(totalMinutes / 60);
+
+    return { total, completed, pending, rejected, efficiency, activeHours };
+  };
 
   const handleUpdateProject = async (projectId: string, updates: Partial<Project>) => {
     try {
@@ -467,6 +571,13 @@ Generated on: ${new Date().toLocaleString()}
           <div className="space-y-8">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Developers Team</h2>
+              <button 
+                onClick={() => setIsInviteModalOpen(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black font-black uppercase italic rounded-2xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.3)]"
+              >
+                <Plus size={20} />
+                <span>Invite Developer</span>
+              </button>
             </div>
             <div className="flex justify-between items-center bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="relative flex-1 max-w-md">
@@ -479,55 +590,202 @@ Generated on: ${new Date().toLocaleString()}
                   className="w-full bg-transparent pl-12 pr-4 py-2 text-white font-bold uppercase tracking-widest outline-none placeholder:text-slate-600"
                 />
               </div>
-              <button className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-                <Filter size={16} />
-                <span>Filter</span>
-              </button>
+              <div className="flex items-center gap-4">
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  {filteredDevelopers.length} Developers Found
+                </div>
+                <button className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+                  <Filter size={16} />
+                  <span>Filter</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredDevelopers.map((dev, idx) => (
-                <div key={idx} className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-8 space-y-6 group hover:border-[#00F2FF]/40 transition-all backdrop-blur-xl">
-                  <div className="flex justify-between items-start">
-                    <div className="w-16 h-16 bg-[#00F2FF] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_20px_rgba(0,242,255,0.2)]">
-                      {dev.displayName?.[0]}
+              {filteredDevelopers.map((dev, idx) => {
+                const stats = getDevStats(dev.uid);
+                return (
+                  <div key={idx} className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-8 space-y-6 group hover:border-[#c7c42a]/40 transition-all backdrop-blur-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <Shield size={80} className="text-[#c7c42a]" />
                     </div>
-                    <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      dev.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                      dev.status === 'declined' ? 'bg-red-500/20 text-red-400' :
-                      'bg-#c7c42a/20 text-#c7c42a'
-                    }`}>
-                      {dev.status}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{dev.displayName}</h4>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{dev.devRole}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                    <div className="space-y-1">
-                      <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Experience</div>
-                      <div className="text-xs font-bold text-white uppercase">{dev.experience} Years</div>
-                    </div>
-                    <div className="space-y-1 text-right">
-                      <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Absences</div>
-                      <div className={`text-xs font-bold uppercase ${dev.absences && dev.absences > 3 ? 'text-red-400' : 'text-white'}`}>
-                        {dev.absences || 0} Days
+                    
+                    <div className="flex justify-between items-start relative z-10">
+                      <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_20px_rgba(199,196,42,0.2)]">
+                        {dev.displayName?.[0]}
+                      </div>
+                      <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        dev.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                        dev.status === 'declined' ? 'bg-red-500/20 text-red-400' :
+                        'bg-[#c7c42a]/20 text-[#c7c42a]'
+                      }`}>
+                        {dev.status}
                       </div>
                     </div>
+
+                    <div className="relative z-10">
+                      <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{dev.displayName}</h4>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{dev.devRole}</p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 py-4 border-y border-white/5 relative z-10">
+                      <div className="text-center">
+                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Projects</div>
+                        <div className="text-lg font-black text-white italic">{stats.total}</div>
+                      </div>
+                      <div className="text-center border-x border-white/5">
+                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Efficiency</div>
+                        <div className="text-lg font-black text-[#c7c42a] italic">{stats.efficiency}%</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Hours</div>
+                        <div className="text-lg font-black text-white italic">{stats.activeHours}h</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 relative z-10">
+                      <div className="p-2 bg-green-500/5 rounded-xl border border-green-500/10 text-center">
+                        <div className="text-[7px] font-black text-green-500/50 uppercase">Done</div>
+                        <div className="text-xs font-bold text-green-400">{stats.completed}</div>
+                      </div>
+                      <div className="p-2 bg-yellow-500/5 rounded-xl border border-yellow-500/10 text-center">
+                        <div className="text-[7px] font-black text-yellow-500/50 uppercase">Pending</div>
+                        <div className="text-xs font-bold text-yellow-400">{stats.pending}</div>
+                      </div>
+                      <div className="p-2 bg-red-500/5 rounded-xl border border-red-500/10 text-center">
+                        <div className="text-[7px] font-black text-red-500/50 uppercase">Rejected</div>
+                        <div className="text-xs font-bold text-red-400">{stats.rejected}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2 relative z-10">
+                      <button className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+                        <Activity size={14} /> Analytics
+                      </button>
+                      <button 
+                        onClick={() => setSelectedChatUser(dev)}
+                        className="p-3 bg-[#c7c42a]/10 text-[#c7c42a] rounded-xl hover:bg-[#c7c42a] hover:text-black transition-all"
+                      >
+                        <Mail size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2 pt-4">
-                    <button className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all">View Profile</button>
-                    <button 
-                      onClick={() => setSelectedChatUser(dev)}
-                      className="p-3 bg-[#00F2FF]/10 text-[#00F2FF] rounded-xl hover:bg-[#00F2FF] hover:text-black transition-all"
-                    >
-                      <Mail size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
+            {/* Invite Modal */}
+            <AnimatePresence>
+              {isInviteModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1">
+                        <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Invite Developer</h3>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Access Control & Onboarding</p>
+                      </div>
+                      <button onClick={() => setIsInviteModalOpen(false)} className="text-white/40 hover:text-white transition-colors">
+                        <XCircle size={24} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Full Name</label>
+                          <input 
+                            type="text" 
+                            value={inviteForm.name}
+                            onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })}
+                            placeholder="John Doe"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Email Address</label>
+                          <input 
+                            type="email" 
+                            value={inviteForm.email}
+                            onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                            placeholder="john@example.com"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Invite Code</label>
+                          <div className="relative">
+                            <input 
+                              type="text" 
+                              value={inviteForm.code}
+                              readOnly
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-[#c7c42a] font-black italic tracking-widest outline-none"
+                            />
+                            <button 
+                              onClick={() => setInviteForm({ ...inviteForm, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+                            >
+                              <RefreshCcw size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Developer Role</label>
+                          <select 
+                            value={inviteForm.role}
+                            onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value as any })}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] appearance-none"
+                          >
+                            <option value="developer">Developer</option>
+                            <option value="senior developer">Senior Developer</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 pt-4 border-t border-white/5">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Permissions</label>
+                        <div className="grid grid-cols-3 gap-4">
+                          {[
+                            { id: 'canChat', label: 'Chat Access' },
+                            { id: 'canUpload', label: 'File Upload' },
+                            { id: 'canViewProjects', label: 'View Projects' }
+                          ].map(perm => (
+                            <label key={perm.id} className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:border-[#c7c42a]/40 transition-all">
+                              <input 
+                                type="checkbox"
+                                checked={(inviteForm.permissions as any)[perm.id]}
+                                onChange={(e) => setInviteForm({ 
+                                  ...inviteForm, 
+                                  permissions: { ...inviteForm.permissions, [perm.id]: e.target.checked }
+                                })}
+                                className="w-4 h-4 rounded border-white/10 text-[#c7c42a] focus:ring-[#c7c42a] bg-transparent"
+                              />
+                              <span className="text-[10px] font-black text-white uppercase tracking-widest italic">{perm.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={handleCreateInvite}
+                      className="w-full py-5 bg-[#c7c42a] text-black font-black uppercase italic rounded-2xl hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(199,196,42,0.3)] flex items-center justify-center gap-3"
+                    >
+                      <Plus size={20} strokeWidth={4} />
+                      Generate Invite Link
+                    </button>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         );
       case 'projects':
@@ -751,6 +1009,20 @@ Requirements:
                         />
                       </div>
 
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Assign Developer</label>
+                        <select 
+                          value={editingProject.developerId || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, developerId: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#00F2FF]"
+                        >
+                          <option value="">Unassigned</option>
+                          {profiles.filter(p => p.role === 'developer' && p.status === 'approved').map(dev => (
+                            <option key={dev.uid} value={dev.uid}>{dev.displayName} ({dev.devRole})</option>
+                          ))}
+                        </select>
+                      </div>
+
                       {editingProject.status === 'rejected' && (
                         <div>
                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Rejection Reason</label>
@@ -775,7 +1047,8 @@ Requirements:
                         onClick={() => handleUpdateProject(editingProject.id, { 
                           status: editingProject.status, 
                           progress: editingProject.progress,
-                          rejectionReason: editingProject.rejectionReason
+                          rejectionReason: editingProject.rejectionReason,
+                          developerId: editingProject.developerId
                         })}
                         className="flex-1 py-4 rounded-xl bg-[#c7c42a] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
                       >

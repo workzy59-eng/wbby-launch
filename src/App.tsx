@@ -41,10 +41,14 @@ const Docs = React.lazy(() => import('./pages/Docs'));
 const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
 
 import { useAuth } from './context/AuthContext';
+import { useActivityTracker } from './hooks/useActivityTracker';
 
 export default function App() {
   const { user, profile, loading } = useAuth();
   const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  // Track activity for logged in users
+  useActivityTracker(user?.uid);
 
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
@@ -132,10 +136,7 @@ export default function App() {
                 <Route path="/preview-builder" element={<PreviewBuilder />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route 
-                  path="/join-developer" 
-                  element={<Navigate to="https://discord.gg/EDZb5Aefb" replace />} 
-                />
+                <Route path="/join-developer" element={<JoinDeveloper />} />
                 <Route path="/join-sales" element={<JoinSales />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />

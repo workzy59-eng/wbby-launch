@@ -323,7 +323,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!agreedToTerms) invalid.push('terms');
         break;
       case 9: // Finalize
-        if (!paymentOption) invalid.push('paymentOption');
+        // Reduced step complexity, no logic needed here anymore if we submit directly
         break;
     }
     return invalid;
@@ -427,44 +427,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         });
       }
 
-      // Stripe Payment Links
-      const stripeLinks = {
-        'one-time': {
-          basic: 'https://buy.stripe.com/test_eVqcN45is5n6bTudhRbAs0a',
-          standard: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
-          pro: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
-        },
-        'subscription': {
-          basic: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07',
-          standard: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08',
-          pro: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09',
-        },
-        advance: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07' // Placeholder for Advance Payment
-      };
+      localStorage.removeItem('onboarding_data');
+      localStorage.removeItem('onboarding_step');
+      
+      toast.success("Project created successfully!");
+      setStep(9);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 3000);
 
-      let paymentUrl = '';
-      if (paymentOption === 'understanding') {
-        paymentUrl = stripeLinks.advance;
-      } else {
-        paymentUrl = stripeLinks[formData.billingCycle][formData.plan];
-      }
-
-      if (paymentUrl) {
-        // Append projectId for backend and search params for client return
-        const finalUrl = `${paymentUrl}?client_reference_id=${projectId}&success=true&projectId=${projectId}`;
-        
-        localStorage.removeItem('onboarding_data');
-        localStorage.removeItem('onboarding_step');
-        
-        toast.success("Project created! Redirecting to payment...");
-        setStep(10);
-        setTimeout(() => {
-          window.location.href = finalUrl;
-        }, 2000);
-        return;
-      }
-
-      toast.error("Payment configuration missing. Please contact support.");
     } catch (err: any) {
       console.error('Error submitting project:', err);
       setError(err.message || 'Failed to submit project. Please try again.');
@@ -1045,65 +1016,45 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-white italic uppercase leading-none">Domain Selection</h3>
-              <p className="text-white/40 text-sm font-medium italic">Secure your brand's digital identity</p>
+              <h3 className="text-4xl font-bold tracking-tight text-white italic uppercase leading-none">Best domains for your business</h3>
+              <p className="text-white/40 text-sm font-medium italic uppercase tracking-widest">Select your digital identity</p>
             </div>
 
             <div className="space-y-8">
-              {/* Auto Suggestions Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 ml-4">
-                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] italic">✨ Best for you (Auto suggestions)</label>
-                </div>
-                
-                <div className="grid grid-cols-1 gap-3">
-                  {suggestedDomains.length > 0 ? (
-                    suggestedDomains.map((d, i) => (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          handleInputChange('domain', d.name);
-                          handleInputChange('websiteName', d.name.split('.')[0]);
-                          handleInputChange('domainPreferences', [d.name, ...formData.domainPreferences.filter(p => p !== d.name)].slice(0, 3));
-                        }}
-                        className={`group flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
-                          formData.domain === d.name 
-                            ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(199,196,42,0.2)]' 
-                            : 'bg-white/5 border-white/5 hover:border-white/10'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black italic text-xs ${formData.domain === d.name ? 'bg-primary text-black' : 'bg-white/10 text-white/40'}`}>
-                            {i + 1}
-                          </div>
-                          <span className={`text-xl font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white/80'}`}>
-                            {d.name}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                          {d.status === 'loading' ? (
-                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                          ) : d.status === 'available' ? (
-                            <span className="text-[10px] font-black text-green-400 uppercase italic tracking-widest bg-green-400/10 px-3 py-1 rounded-lg">🟢 Available</span>
-                          ) : d.status === 'taken' ? (
-                            <span className="text-[10px] font-black text-red-400 uppercase italic tracking-widest bg-red-400/10 px-3 py-1 rounded-lg">🔴 Taken</span>
-                          ) : (
-                            <span className="text-[10px] font-black text-white/20 uppercase italic tracking-widest">Unknown</span>
-                          )}
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${formData.domain === d.name ? 'border-primary bg-primary text-black' : 'border-white/10'}`}>
-                            {formData.domain === d.name && <Check size={12} strokeWidth={4} />}
-                          </div>
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="p-8 rounded-2xl bg-white/5 border border-dashed border-white/10 text-center">
-                      <p className="text-xs font-bold text-white/20 uppercase tracking-widest italic">Entering business name to see suggestions...</p>
-                    </div>
-                  )}
-                </div>
+              <div className="grid grid-cols-1 gap-3">
+                {suggestedDomains.length > 0 ? (
+                  suggestedDomains.map((d, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        handleInputChange('domain', d.name);
+                        handleInputChange('websiteName', d.name.split('.')[0]);
+                        handleInputChange('domainPreferences', [d.name, ...formData.domainPreferences.filter(p => p !== d.name)].slice(0, 3));
+                      }}
+                      className={`group flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
+                        formData.domain === d.name 
+                          ? 'bg-primary/10 border-primary' 
+                          : 'bg-white/5 border-white/5'
+                      }`}
+                    >
+                      <span className={`text-xl font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white/80'}`}>
+                        {d.name}
+                      </span>
+                      {formData.domain === d.name && <Check size={20} className="text-primary" strokeWidth={4} />}
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-8 rounded-2xl bg-white/5 border border-dashed border-white/10 text-center">
+                    <p className="text-xs font-bold text-white/20 uppercase tracking-widest italic">Generating suggestions...</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
+                <p className="text-yellow-500 font-bold uppercase tracking-tight text-xs flex items-start gap-2">
+                  <span className="shrink-0">⚠️</span>
+                  Domain charges are NOT included in your plan. You will need to purchase the domain separately during checkout.
+                </p>
               </div>
 
               {/* Custom Domain Section */}

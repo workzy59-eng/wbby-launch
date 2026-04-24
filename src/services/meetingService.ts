@@ -55,13 +55,17 @@ export const updateMeetingRequest = async (requestId: string, updates: Partial<M
 };
 
 export const subscribeToMeetingRequests = (
-  role: 'admin' | 'client',
+  role: 'admin' | 'client' | 'developer',
   userId: string,
   callback: (requests: MeetingRequest[]) => void
 ) => {
   let q;
   if (role === 'admin') {
     q = query(collection(db, REQUESTS_COLLECTION), orderBy('createdAt', 'desc'));
+  } else if (role === 'developer') {
+    // Developers don't usually see requests, but if they do, filter by relevant projects/clients
+    // For now, same as admin or empty. Let's assume empty for developers unless specifically requested.
+    q = query(collection(db, REQUESTS_COLLECTION), where('developerId', '==', userId), orderBy('createdAt', 'desc'));
   } else {
     q = query(
       collection(db, REQUESTS_COLLECTION), 
@@ -82,13 +86,20 @@ export const subscribeToMeetingRequests = (
 };
 
 export const subscribeToMeetings = (
-  role: 'admin' | 'client',
+  role: 'admin' | 'client' | 'developer',
   userId: string,
   callback: (meetings: Meeting[]) => void
 ) => {
   let q;
   if (role === 'admin') {
     q = query(collection(db, COLLECTION_NAME), orderBy('date', 'asc'), orderBy('time', 'asc'));
+  } else if (role === 'developer') {
+    q = query(
+      collection(db, COLLECTION_NAME), 
+      where('developerId', '==', userId),
+      orderBy('date', 'asc'), 
+      orderBy('time', 'asc')
+    );
   } else {
     q = query(
       collection(db, COLLECTION_NAME), 

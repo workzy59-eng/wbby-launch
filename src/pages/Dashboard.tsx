@@ -58,6 +58,39 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     };
     handlePaymentSuccess();
   }, [location.search, navigate]);
+  const handlePayment = (project: Project) => {
+    // Stripe Payment Links
+    const stripeLinks: any = {
+      'one-time': {
+        basic: 'https://buy.stripe.com/test_eVqcN45is5n6bTudhRbAs0a',
+        standard: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
+        pro: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs0c',
+      },
+      'subscription': {
+        basic: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07',
+        standard: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08',
+        pro: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09',
+      }
+    };
+
+    const billingCycle = (project as any).billingCycle || 'one-time';
+    const plan = (project.plan || 'basic').toLowerCase();
+    
+    // Find link
+    let paymentUrl = '';
+    if (stripeLinks[billingCycle] && stripeLinks[billingCycle][plan]) {
+      paymentUrl = stripeLinks[billingCycle][plan];
+    } else {
+      paymentUrl = stripeLinks['one-time'].basic;
+    }
+
+    if (paymentUrl) {
+      window.location.href = `${paymentUrl}?client_reference_id=${project.id}&success=true&projectId=${project.id}`;
+    } else {
+      toast.error("Payment configuration missing. Please contact support.");
+    }
+  };
+
   const [showChat, setShowChat] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
@@ -133,7 +166,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         }
       });
       setProjectUnread(count);
-    }, user.uid);
+    }, user.uid, profile?.role);
 
     return () => {
       unsubConvs();
@@ -151,18 +184,19 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   }, [user.uid, adminProfile]);
 
   useEffect(() => {
+    if (!profile) return;
     const unsubscribe = getProjects((projectsData) => {
       setProjects(projectsData as Project[]);
       if (projectsData.length > 0 && !selectedProject) {
         setSelectedProject(projectsData[0] as Project);
       }
-    }, user.uid);
+    }, user.uid, profile.role);
     return () => unsubscribe();
-  }, [user.uid]);
+  }, [user.uid, profile]);
 
   useEffect(() => {
     if (!profile) return;
-    const unsubscribe = subscribeToMeetings(profile?.role as 'admin' | 'client', user.uid, (data) => {
+    const unsubscribe = subscribeToMeetings(profile?.role as 'admin' | 'client' | 'developer', user.uid, (data) => {
       setMeetings(data);
     });
     return () => unsubscribe();
@@ -508,21 +542,38 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       </div>
                     </div>
 
-                    {/* Payment Status Card */}
-                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 flex flex-col justify-center text-center">
-                      <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto">
-                        <ShieldCheck size={40} />
-                      </div>
-                      <div className="space-y-2">
-                        <h4 className="text-2xl font-black uppercase italic tracking-tighter">Payment Verified</h4>
-                        <p className="text-white/40 text-xs font-medium italic">Your subscription is in good standing. No action required.</p>
-                      </div>
-                      <div className="pt-4">
-                        <button className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] hover:underline">
-                          Update Payment Method
-                        </button>
-                      </div>
-                    </div>
+                             {/* Payment Status Card */}
+                             <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 flex flex-col justify-center text-center">
+                               {selectedProject.paymentStatus === 'paid' ? (
+                                 <>
+                                   <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto">
+                                     <ShieldCheck size={40} />
+                                   </div>
+                                   <div className="space-y-2">
+                                     <h4 className="text-2xl font-black uppercase italic tracking-tighter">Payment Verified</h4>
+                                     <p className="text-white/40 text-xs font-medium italic">Your project is funded and in production.</p>
+                                   </div>
+                                 </>
+                               ) : (
+                                 <>
+                                   <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-500 mx-auto">
+                                     <CreditCard size={40} />
+                                   </div>
+                                   <div className="space-y-2">
+                                     <h4 className="text-2xl font-black uppercase italic tracking-tighter">Payment Pending</h4>
+                                     <p className="text-white/40 text-xs font-medium italic">Complete your payment to start development.</p>
+                                   </div>
+                                   <div className="pt-4">
+                                     <button 
+                                       onClick={() => handlePayment(selectedProject)}
+                                       className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20"
+                                     >
+                                       Pay & Start Project
+                                     </button>
+                                   </div>
+                                 </>
+                               )}
+                             </div>
                   </div>
 
                   {/* Transaction History */}

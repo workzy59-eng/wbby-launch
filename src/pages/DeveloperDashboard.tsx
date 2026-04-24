@@ -16,7 +16,9 @@ import {
   User,
   ChevronRight,
   Send,
-  X
+  X,
+  Award,
+  Activity
 } from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
@@ -37,7 +39,7 @@ const Loader = ({ color = "white" }: { color?: string }) => (
   </div>
 );
 import { formatDate } from '../lib/utils';
-import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync, getAdmins } from '../services/database';
+import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjectsAsync, getAdmins, getVisitSessions } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { Project } from '../types';
@@ -48,6 +50,14 @@ interface DeveloperDashboardProps {
 }
 
 type Tab = 'dashboard' | 'projects' | 'messages' | 'update' | 'leave' | 'calendar' | 'resign';
+
+interface VisitSession {
+  id: string;
+  userId: string;
+  startTime: any;
+  endTime: any;
+  durationMinutes: number;
+}
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
@@ -62,6 +72,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [sessions, setSessions] = useState<VisitSession[]>([]);
   const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
@@ -80,6 +91,17 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   });
   const [isUpdating, setIsUpdating] = useState(false);
   const [isMarkingAttendance, setIsMarkingAttendance] = useState(false);
+
+  const getStats = () => {
+    const completed = projects.filter(p => p.status?.toLowerCase() === 'completed').length;
+    const total = projects.length;
+    const efficiency = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    const totalMinutes = sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
+    const activeHours = Math.round(totalMinutes / 60);
+
+    return { total, completed, efficiency, activeHours };
+  };
 
   const handleMarkAttendance = async () => {
     if (!user?.uid || isMarkingAttendance) return;
@@ -136,7 +158,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   };
 
   useEffect(() => {
-    if (profile && !profile.devRole) {
+    if (profile && !profile.devRole && profile.role !== 'developer') {
       setShowOnboarding(true);
     }
   }, [profile]);
@@ -146,15 +168,17 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
     const fetchDevData = async () => {
         setLoading(true);
-        const [leaves, att, projs, admins] = await Promise.all([
+        const [leaves, att, projs, admins, allSessions] = await Promise.all([
           getLeaveRequests(user.uid),
           getAttendance(user.uid),
           getProjectsAsync(undefined, user.uid),
-          getAdmins()
+          getAdmins(),
+          getVisitSessions(user.uid)
         ]);
         setLeaveRequests(leaves);
         setAttendance(att);
         setProjects(projs);
+        setSessions(allSessions as VisitSession[]);
         if (admins.length > 0) {
           setAdminProfile(admins[0]);
         }
@@ -310,29 +334,31 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     );
   }
 
+  const stats = getStats();
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'dashboard':
         return (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[
-                { label: 'My Projects', value: projects.length, icon: Briefcase, color: 'text-#c7c42a', bg: 'bg-#c7c42a/10' },
-                { label: 'Attendance', value: attendance.length > 0 ? `${Math.round((attendance.filter(a => a.status === 'present').length / 30) * 100)}%` : '0%', icon: Clock, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10' },
-                { label: 'Messages', value: '0', icon: MessageSquare, color: 'text-yellow-200', bg: 'bg-#c7c42a/10' },
+                { label: 'Assigned', value: stats.total, icon: Briefcase, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/10' },
+                { label: 'Efficiency', value: `${stats.efficiency}%`, icon: Award, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10' },
+                { label: 'Active Hours', value: `${stats.activeHours}h`, icon: Clock, color: 'text-purple-400', bg: 'bg-purple-500/10' },
               ].map((stat, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#c7c42a]/30 transition-all group"
+                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#c7c42a]/30 transition-all group backdrop-blur-xl shadow-xl"
                 >
                   <div className="flex justify-between items-start">
                     <div className={`p-3 ${stat.bg} rounded-2xl ${stat.color} group-hover:scale-110 transition-transform`}>
                       <stat.icon size={24} />
                     </div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live</span>
                   </div>
                   <div>
                     <div className="text-4xl font-black text-white tracking-tighter">{stat.value}</div>
@@ -342,18 +368,46 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               ))}
             </div>
 
-            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10">
-              <h3 className="text-2xl font-black text-white uppercase italic mb-8">Recent Activity</h3>
-              <div className="space-y-6">
-                <div className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
-                  <div className="w-12 h-12 bg-[#818CF8]/10 rounded-xl flex items-center justify-center text-[#818CF8]">
-                    <CheckCircle2 size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-bold text-white uppercase italic">Profile Approved</div>
-                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Your developer profile is now active</div>
-                  </div>
-                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Just now</div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 shadow-xl backdrop-blur-xl">
+                <h3 className="text-2xl font-black text-white uppercase italic mb-8">Recent Missions</h3>
+                <div className="space-y-6">
+                  {projects.slice(0, 3).map((project, idx) => (
+                    <div key={idx} className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
+                      <div className="w-12 h-12 bg-[#c7c42a]/10 rounded-xl flex items-center justify-center text-[#c7c42a]">
+                        <Briefcase size={24} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-bold text-white uppercase italic">{project.businessName}</div>
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress: {project.progress || 0}% • {project.status}</div>
+                      </div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{formatDate(project.createdAt)}</div>
+                    </div>
+                  ))}
+                  {projects.length === 0 && (
+                    <div className="text-center py-12 text-slate-600 font-black uppercase tracking-widest italic">No missions assigned</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 shadow-xl backdrop-blur-xl">
+                <h3 className="text-2xl font-black text-white uppercase italic mb-8">Performance Timeline</h3>
+                <div className="space-y-6">
+                   {sessions.slice(0, 5).map((session, idx) => (
+                    <div key={idx} className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
+                      <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400">
+                        <Activity size={24} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-bold text-white uppercase italic">Session Recorded</div>
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Duration: {session.durationMinutes} Minutes</div>
+                      </div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{formatDate(session.startTime?.toDate ? session.startTime.toDate() : session.startTime)}</div>
+                    </div>
+                  ))}
+                  {sessions.length === 0 && (
+                    <div className="text-center py-12 text-slate-600 font-black uppercase tracking-widest italic">No activity recorded</div>
+                  )}
                 </div>
               </div>
             </div>

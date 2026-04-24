@@ -110,6 +110,44 @@
       },
       "required": ["salesId", "paymentId", "amount", "status", "createdAt"]
     },
+    "DeveloperInvite": {
+      "title": "Developer Invite",
+      "description": "Invitations for developers to join the platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "code": { "type": "string" },
+        "role": { "type": "string", "enum": ["developer", "senior developer"] },
+        "permissions": {
+          "type": "object",
+          "properties": {
+            "canChat": { "type": "boolean" },
+            "canUpload": { "type": "boolean" },
+            "canViewProjects": { "type": "boolean" }
+          }
+        },
+        "joiningDate": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "used": { "type": "boolean" }
+      },
+      "required": ["name", "email", "code", "role", "permissions", "used", "createdAt"]
+    },
+    "VisitSession": {
+       "title": "Visit Session",
+       "description": "User activity tracking session.",
+       "type": "object",
+       "properties": {
+         "id": { "type": "string" },
+         "userId": { "type": "string" },
+         "startTime": { "type": "string", "format": "date-time" },
+         "endTime": { "type": "string", "format": "date-time" },
+         "durationMinutes": { "type": "number" }
+       },
+       "required": ["userId", "startTime"]
+    },
     "Project": {
       "title": "Project",
       "description": "Website project details and status.",
@@ -351,6 +389,14 @@
     "/system_settings/{settingId}": {
       "schema": "SystemSettings",
       "description": "Global application configuration."
+    },
+    "/developer_invites/{inviteId}": {
+      "schema": "DeveloperInvite",
+      "description": "Developer invitations."
+    },
+    "/visit_sessions/{sessionId}": {
+      "schema": "VisitSession",
+      "description": "User activity tracking sessions."
     }
   }
 }
