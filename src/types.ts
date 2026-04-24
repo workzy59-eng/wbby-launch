@@ -84,10 +84,23 @@ export interface UserProfile {
   businessLocation?: string;
   googleMapsLink?: string;
   // Developer specific fields
-  experience?: number;
+  experience?: number | string;
   devRole?: string;
   joiningDate?: string | Timestamp;
   absences?: number;
+  activeProjects?: number;
+  paymentLinks?: {
+    oneTime: {
+      basic: string;
+      standard: string;
+      premium: string;
+    };
+    subscription: {
+      basic: string;
+      standard: string;
+      premium: string;
+    };
+  };
 }
 
 export interface Lead {
@@ -241,6 +254,7 @@ export interface Project {
   lastMessageAt?: string | Timestamp;
   lastSenderId?: string;
   developerId?: string;
+  assignedTo?: string; // New field for assigned developer UID
   unreadCount?: Record<string, number>;
   websiteUrl?: string;
   acceptedAt?: string | Timestamp;

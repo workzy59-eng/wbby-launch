@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -102,6 +102,7 @@ interface UploadProgress {
 }
 
 export default function MessagesModule({ currentUser, profile, onClose, fullScreen = true, projects = [], initialRecipientId }: MessagesModuleProps) {
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   
@@ -716,7 +717,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     setActiveConversation({ 
                       id: 'new_admin', 
                       participants: [currentUser.uid, 'admin_wl'],
-                      recipientProfile: { displayName: 'Webby Launch', email: 'workzy59@gmail.com', role: 'admin' } as any,
+                      recipientProfile: { 
+                        displayName: 'Webby Launch', 
+                        email: 'workzy59@gmail.com', 
+                        role: 'admin',
+                        status: 'online'
+                      } as any,
                       isProject: false 
                     } as any);
                   }
@@ -800,19 +806,22 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         />
         
         {activeConversation ? (
-          <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+          <div key={activeConversation.id} className="flex-1 flex flex-col overflow-hidden relative z-10">
             {/* Header */}
             <header className="px-5 py-2.5 border-b border-[#ffffff05] flex items-center justify-between bg-[#202c33] relative z-20 shadow-sm">
-              <div className="flex items-center gap-4 cursor-pointer">
+              <div className="flex items-center gap-4 cursor-pointer" onClick={() => activeConversation.isProject && navigate?.(`/projects/${activeConversation.project?.id}`)}>
                 <button 
-                  onClick={() => setActiveConversation(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveConversation(null);
+                  }}
                   className="p-1 hover:bg-white/5 rounded-full text-white/40 md:hidden transition-all"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <div className="relative">
                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-md ${
-                    activeConversation.isProject ? 'bg-blue-500 text-white' : 
+                    activeConversation.isProject ? 'bg-[#c7c42a] text-black' : 
                     activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'bg-[#ffc107] text-black' : 'bg-[#3b4a54] text-white'
                   }`}>
                     {activeConversation.isProject ? <Briefcase size={20} /> : (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'WL' : (activeConversation.recipientProfile?.displayName?.[0] || 'U'))}
@@ -823,14 +832,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </div>
                 <div>
                   <h3 className="font-medium text-[#e9edef] text-base leading-tight">
-                    {activeConversation.isProject ? activeConversation.project?.businessName : (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'Webby Launch' : activeConversation.recipientProfile?.displayName)}
+                    {activeConversation.isProject ? (activeConversation.project?.businessName || 'Project Team') : (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'Webby Launch' : (activeConversation.recipientProfile?.displayName || 'User'))}
                   </h3>
                   <div className="flex items-center gap-2">
                     {typingUsers.length > 0 ? (
                       <p className="text-[11px] text-[#00a884] font-medium animate-pulse">typing...</p>
                     ) : (
                       <p className="text-[11px] text-[#8696a0]">
-                        {activeConversation.isProject ? 'Project Team' : (activeConversation.recipientProfile?.status === 'online' ? 'Online' : `last seen today at ${activeConversation.recipientProfile?.lastSeen ? formatDate(activeConversation.recipientProfile.lastSeen, 'h:mm a') : 'recently'}`)}
+                        {activeConversation.isProject ? 'Direct Support channel' : (activeConversation.recipientProfile?.status === 'online' ? 'Online' : `last seen today at ${activeConversation.recipientProfile?.lastSeen ? formatDate(activeConversation.recipientProfile.lastSeen, 'h:mm a') : 'recently'}`)}
                       </p>
                     )}
                   </div>

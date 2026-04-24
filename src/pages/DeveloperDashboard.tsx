@@ -19,6 +19,7 @@ import {
   X,
   Award,
   Activity,
+  ArrowRight,
   Loader2
 } from 'lucide-react';
 
@@ -69,6 +70,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [urlEnteringProjectId, setUrlEnteringProjectId] = useState<string | null>(null);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [isSubmittingUrl, setIsSubmittingUrl] = useState(false);
+  const [isAcceptingProject, setIsAcceptingProject] = useState(false);
 
   const [onboardingData, setOnboardingData] = useState({
     name: profile?.displayName || '',
@@ -114,6 +116,25 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     }, 1000);
     return () => clearInterval(timer);
   }, [projectsNeedingUrl]);
+
+  const handleAcceptProject = async (projectId: string) => {
+    if (isAcceptingProject) return;
+    setIsAcceptingProject(true);
+    try {
+      const { updateProject } = await import('../services/database');
+      await updateProject(projectId, {
+        status: 'Accepted',
+        acceptedAt: new Date().toISOString(),
+        progress: 15
+      });
+      toast.success('Project accepted! Mission started.');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to accept project');
+    } finally {
+      setIsAcceptingProject(false);
+    }
+  };
 
   const handleSubmitUrl = async (projectId: string) => {
     if (!websiteUrl || isSubmittingUrl) return;
@@ -198,6 +219,13 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
   const handleUpdateSubmit = async () => {
     if (!projectUpdate.projectId || !projectUpdate.details || isUpdating) return;
+
+    // Requirement 9: Developer cannot upload anything until URL is submitted
+    const targetProject = projects.find(p => p.id === projectUpdate.projectId);
+    if (!targetProject?.websiteUrl) {
+      toast.error('Mission Critical: You must submit the Website URL before posting updates or files.');
+      return;
+    }
     
     setIsUpdating(true);
     try {
@@ -700,10 +728,22 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                       <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{project.businessType}</p>
                     </div>
                     <div className="pt-6 border-t border-white/5 flex justify-between items-center">
-                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">Deadline: 14 Days</div>
-                      <button className="text-[#c7c42a] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
-                        View Details <ChevronRight size={14} />
-                      </button>
+                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">
+                        {project.status === 'Under Review' ? 'Accept within 3h' : 'Deadline: 14 Days'}
+                      </div>
+                      {project.status === 'Under Review' ? (
+                        <button 
+                          onClick={() => handleAcceptProject(project.id)}
+                          disabled={isAcceptingProject}
+                          className="px-6 py-2 bg-[#c7c42a] text-black rounded-xl font-black uppercase italic text-[10px] tracking-widest hover:scale-[1.05] active:scale-95 transition-all shadow-lg flex items-center gap-2"
+                        >
+                          {isAcceptingProject ? <Loader2 size={12} className="animate-spin" /> : <>Accept <ArrowRight size={12} /></>}
+                        </button>
+                      ) : (
+                        <button className="text-[#c7c42a] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                          View Details <ChevronRight size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

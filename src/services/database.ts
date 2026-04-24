@@ -340,7 +340,41 @@ export const createProject = async (projectData: any) => {
         const conversationId = getConversationId(adminUid, clientUid);
         const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${projectData.businessName}" has been successfully received. We've assigned our team to review your requirements.\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
 
-        // Create the conversation document FIRST
+        // 3. Auto-Assignment Logic
+        try {
+          const degsQ = query(collection(db, 'users'), where('role', '==', 'developer'), where('status', '==', 'approved'));
+          const devsSnap = await getDocs(degsQ);
+          const devs = devsSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+
+          if (devs.length > 0) {
+            // Sort by activeProjects (asc), then experience (desc)
+            // Seniors (5+) > Mid (3-4) > Junior (1-2)
+            const sortedDevs = devs.sort((a, b) => {
+              const projectsA = (a as any).activeProjects || 0;
+              const projectsB = (b as any).activeProjects || 0;
+              if (projectsA !== projectsB) return projectsA - projectsB;
+
+              const expA = parseInt(String(a.experience || '0'), 10);
+              const expB = parseInt(String(b.experience || '0'), 10);
+              return expB - expA;
+            });
+
+            const assignedDev = sortedDevs[0];
+            await updateDoc(doc(db, 'projects', projectId), {
+              assignedTo: assignedDev.uid,
+              assignedAt: serverTimestamp(),
+              status: 'Under Review'
+            });
+
+            await updateDoc(doc(db, 'users', assignedDev.uid), {
+              activeProjects: ((assignedDev as any).activeProjects || 0) + 1
+            });
+          }
+        } catch (assignError) {
+          console.error('Auto-assignment failed:', assignError);
+        }
+
+        // Create the conversation document
         await setDoc(doc(db, 'conversations', conversationId), {
           participants: [adminUid, clientUid],
           lastMessage: welcomeMessage,
@@ -873,6 +907,21 @@ export const getDeveloperInvites = async () => {
   const q = query(collection(db, 'developer_invites'), orderBy('createdAt', 'desc'));
   const snap = await getDocs(q);
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
+export const createDeveloperRequest = async (data: any) => {
+  const path = 'developer_requests';
+  try {
+    const docRef = await addDoc(collection(db, 'developer_requests'), {
+      ...data,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
 };
 
 export const getInviteByCode = async (email: string, code: string) => {

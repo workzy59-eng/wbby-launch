@@ -165,11 +165,16 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     email: '',
     code: Math.floor(10000 + Math.random() * 90000).toString(),
     role: 'developer' as 'developer' | 'senior developer',
+    experience: '',
     joiningDate: new Date().toISOString().split('T')[0],
     permissions: {
       canChat: true,
       canUpload: true,
       canViewProjects: true
+    },
+    paymentLinks: {
+      oneTime: { basic: '', standard: '', premium: '' },
+      subscription: { basic: '', standard: '', premium: '' }
     }
   });
 
@@ -187,7 +192,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         email: inviteForm.email.toLowerCase(),
         createdBy: user.uid,
         createdAt: new Date(),
-        used: false
+        used: false,
+        activeProjects: 0
       };
 
       await createDeveloperInvite(inviteData);
@@ -197,11 +203,16 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         email: '',
         code: Math.floor(10000 + Math.random() * 90000).toString(),
         role: 'developer',
+        experience: '',
         joiningDate: new Date().toISOString().split('T')[0],
         permissions: {
           canChat: true,
           canUpload: true,
           canViewProjects: true
+        },
+        paymentLinks: {
+          oneTime: { basic: '', standard: '', premium: '' },
+          subscription: { basic: '', standard: '', premium: '' }
         }
       });
       toast.success("Developer invite created! Code: " + inviteData.code);
@@ -285,7 +296,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       console.error("Admin Leads Snapshot Error:", error);
     });
 
-    const unsubscribeDevApps = onSnapshot(collection(db, 'developer_applications'), (snapshot) => {
+    const unsubscribeDevApps = onSnapshot(collection(db, 'developer_requests'), (snapshot) => {
       setDeveloperApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
       console.error("Admin DevApps Snapshot Error:", error);
@@ -1471,13 +1482,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {app.status === 'pending' && (
               <div className="flex gap-4 pt-4">
                 <button 
-                  onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_applications' : 'sales_applications', app.id, 'approved')}
+                  onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_requests' : 'sales_applications', app.id, 'approved')}
                   className="flex-1 bg-[#c7c42a] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
                 >
                   Approve
                 </button>
                 <button 
-                  onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_applications' : 'sales_applications', app.id, 'rejected')}
+                  onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_requests' : 'sales_applications', app.id, 'rejected')}
                   className="flex-1 border border-white/10 text-white/40 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 transition-all"
                 >
                   Reject
@@ -2662,7 +2673,7 @@ ${viewingProject.description}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-3 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Rank / Role</label>
                     <select 
@@ -2675,6 +2686,16 @@ ${viewingProject.description}
                     </select>
                   </div>
                   <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Experience (Yrs)</label>
+                    <input 
+                      type="number"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]/50 transition-all placeholder:text-white/10"
+                      placeholder="e.g. 5"
+                      value={inviteForm.experience}
+                      onChange={(e) => setInviteForm({...inviteForm, experience: e.target.value})}
+                    />
+                  </div>
+                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Deployment Date</label>
                     <input 
                       type="date"
@@ -2682,6 +2703,61 @@ ${viewingProject.description}
                       value={inviteForm.joiningDate}
                       onChange={(e) => setInviteForm({...inviteForm, joiningDate: e.target.value})}
                     />
+                  </div>
+                </div>
+
+                <div className="p-8 bg-white/5 rounded-3xl border border-white/5 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black text-[#c7c42a] uppercase tracking-widest">Payment Links Configuration</h4>
+                    <span className="text-[8px] font-black text-white/20 uppercase tracking-widest italic">Mission Critical: Direct Pay</span>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-black text-white/40 uppercase tracking-widest ml-1">One-Time Project Links</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        {['basic', 'standard', 'premium'].map((plan) => (
+                          <div key={plan} className="space-y-1">
+                            <label className="text-[7px] font-black text-white/20 uppercase tracking-widest ml-2">{plan}</label>
+                            <input 
+                              placeholder="URL"
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] text-white outline-none focus:border-[#c7c42a]/50 transition-all"
+                              value={inviteForm.paymentLinks.oneTime[plan as keyof typeof inviteForm.paymentLinks.oneTime]}
+                              onChange={(e) => setInviteForm({
+                                ...inviteForm,
+                                paymentLinks: {
+                                  ...inviteForm.paymentLinks,
+                                  oneTime: { ...inviteForm.paymentLinks.oneTime, [plan]: e.target.value }
+                                }
+                              })}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-black text-white/40 uppercase tracking-widest ml-1">Subscription Links</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        {['basic', 'standard', 'premium'].map((plan) => (
+                          <div key={plan} className="space-y-1">
+                            <label className="text-[7px] font-black text-white/20 uppercase tracking-widest ml-2">{plan}</label>
+                            <input 
+                              placeholder="URL"
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] text-white outline-none focus:border-[#c7c42a]/50 transition-all"
+                              value={inviteForm.paymentLinks.subscription[plan as keyof typeof inviteForm.paymentLinks.subscription]}
+                              onChange={(e) => setInviteForm({
+                                ...inviteForm,
+                                paymentLinks: {
+                                  ...inviteForm.paymentLinks,
+                                  subscription: { ...inviteForm.paymentLinks.subscription, [plan]: e.target.value }
+                                }
+                              })}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

@@ -60,7 +60,7 @@ import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
 import { subscribeToMeetings } from '../services/meetingService';
 import { Meeting } from '../types';
-import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations } from '../services/database';
+import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { toast } from 'react-hot-toast';
 import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
@@ -108,35 +108,26 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     handlePaymentSuccess();
   }, [location.search, navigate]);
   const handlePayment = (project: Project) => {
-    // Stripe Payment Links
-    const stripeLinks: any = {
-      'one-time': {
-        basic: 'https://buy.stripe.com/test_eVqcN45is5n6bTudhRbAs0a',
-        standard: 'https://buy.stripe.com/test_8x2eVc9yI02M4r21z9bAs0c',
-        pro: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs0c',
-      },
-      'subscription': {
-        basic: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07',
-        standard: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08',
-        pro: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09',
-      }
-    };
-
     const billingCycle = (project as any).billingCycle || 'one-time';
-    const plan = (project.plan || 'basic').toLowerCase();
+    const plan = (project.plan || 'basic').toLowerCase() as 'basic' | 'standard' | 'premium';
     
-    // Find link
+    // Use assigned developer's payment links if available
+    const devLinks = assignedDeveloper?.paymentLinks;
+    
     let paymentUrl = '';
-    if (stripeLinks[billingCycle] && stripeLinks[billingCycle][plan]) {
-      paymentUrl = stripeLinks[billingCycle][plan];
-    } else {
-      paymentUrl = stripeLinks['one-time'].basic;
+    
+    if (devLinks) {
+      if (billingCycle === 'subscription') {
+        paymentUrl = devLinks.subscription[plan];
+      } else {
+        paymentUrl = devLinks.oneTime[plan];
+      }
     }
 
     if (paymentUrl) {
       window.location.href = `${paymentUrl}?client_reference_id=${project.id}&success=true&projectId=${project.id}`;
     } else {
-      toast.error("Payment configuration missing. Please contact support.");
+      toast.error('Payment configuration missing for this developer. Please contact support.');
     }
   };
 
@@ -160,6 +151,17 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (selectedProject?.assignedTo) {
+      getUserProfile(selectedProject.assignedTo).then(devProfile => {
+        setAssignedDeveloper(devProfile as UserProfile);
+      });
+    } else {
+      setAssignedDeveloper(null);
+    }
+  }, [selectedProject?.assignedTo]);
 
   const hasAcceptedProject = projects.some(p => p.status !== 'Waiting for Review' && p.status !== 'Rejected');
 

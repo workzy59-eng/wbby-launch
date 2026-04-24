@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Code, Mail, ArrowRight, ShieldCheck, Laptop, User, Github, Briefcase, FileText, ExternalLink, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getInviteByCode, markInviteUsed, updateProfile } from '../services/database';
+import { getInviteByCode, markInviteUsed, updateProfile, createDeveloperRequest } from '../services/database';
 
 export default function JoinDeveloper() {
   const [email, setEmail] = useState('');
@@ -71,18 +71,44 @@ export default function JoinDeveloper() {
     }
   };
 
-  const handleApply = (e: React.FormEvent) => {
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
-    const discordUrl = "https://discord.com/channels/1496067242432139276/1496378249259778149";
-    const message = `🚀 NEW DEVELOPER APPLICATION\n\nName: ${applyData.name}\nRole: ${applyData.role}\nExperience: ${applyData.experience} Years\nGitHub: ${applyData.github}\nPortfolio: ${applyData.portfolio}\nEmail: ${user?.email}\n\nLooking for a developer job at WebbyLaunch!`;
+    if (!user) {
+      toast.error("Please login/signup to apply");
+      return;
+    }
     
-    // Copy to clipboard
-    navigator.clipboard.writeText(message);
-    toast.success("Application details copied! Redirecting to Discord...");
-    
-    setTimeout(() => {
-      window.open(discordUrl, '_blank');
-    }, 1500);
+    setLoading(true);
+    try {
+      // 1. Save to Firestore
+      await createDeveloperRequest({
+        name: applyData.name,
+        email: user.email,
+        skills: [applyData.role],
+        experience: applyData.experience,
+        portfolio: applyData.portfolio,
+        github: applyData.github,
+        uid: user.uid
+      });
+
+      const discordUrl = "https://discord.com/channels/1496067242432139276/1496378249259778149";
+      const message = `🚀 NEW DEVELOPER APPLICATION\n\nName: ${applyData.name}\nRole: ${applyData.role}\nExperience: ${applyData.experience} Years\nGitHub: ${applyData.github}\nPortfolio: ${applyData.portfolio}\nEmail: ${user?.email}\n\nLooking for a developer job at WebbyLaunch!`;
+      
+      // 2. Copy to clipboard
+      await navigator.clipboard.writeText(message);
+      
+      // 3. Show alert/toast
+      toast.success("Application saved and details copied! Opening Discord...");
+      
+      // 4. Open Discord after small delay
+      setTimeout(() => {
+        window.open(discordUrl, '_blank');
+      }, 2000);
+    } catch (error) {
+      toast.error("Application failed to save. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

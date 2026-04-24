@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import { Check, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
@@ -171,8 +171,26 @@ interface OnboardingFlowProps {
   profile: UserProfile | null;
 }
 
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 
+  'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 
+  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
+  'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 
+  'Lakshadweep', 'Puducherry'
+];
+
 export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { signInWithGoogle } = useAuth();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth', { state: { from: location.pathname } });
+    }
+  }, [user, navigate, location]);
+
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem('onboarding_data');
     const defaults = {
@@ -241,12 +259,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
   const [paymentOption, setPaymentOption] = useState<'full' | 'understanding'>('full');
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     getSystemSettings().then(settings => {
@@ -863,6 +880,45 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2 relative">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">State <span className="text-error">*</span></label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={getInputClass('state')}
+                      value={formData.state}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleInputChange('state', val);
+                        handleInputChange('city', ''); // Clear city when state changes
+                      }}
+                      placeholder="Search State"
+                      onFocus={() => setShowStateDropdown(true)}
+                    />
+                    <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-subtext group-focus:text-primary transition-colors pointer-events-none" size={16} />
+                  </div>
+                  
+                  {showStateDropdown && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-card border border-border rounded-2xl shadow-2xl max-h-48 overflow-y-auto no-scrollbar">
+                      {INDIAN_STATES.filter(s => s.toLowerCase().includes(formData.state.toLowerCase())).map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => {
+                            handleInputChange('state', s);
+                            handleInputChange('city', '');
+                            setShowStateDropdown(false);
+                          }}
+                          className="w-full text-left px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#8696a0] hover:text-[#c7c42a] hover:bg-[#c7c42a]/5 transition-all"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {showStateDropdown && <div className="fixed inset-0 z-40" onClick={() => setShowStateDropdown(false)} />}
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">City <span className="text-error">*</span></label>
                   <input
@@ -870,15 +926,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     className={getInputClass('city')}
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">State <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('state')}
-                    value={formData.state}
-                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    placeholder={formData.state ? "Enter City" : "Select state first"}
+                    disabled={!formData.state}
                   />
                 </div>
               </div>
@@ -888,9 +937,11 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Pincode <span className="text-error">*</span></label>
                   <input
                     type="text"
+                    maxLength={6}
                     className={getInputClass('pincode')}
                     value={formData.pincode}
-                    onChange={(e) => handleInputChange('pincode', e.target.value)}
+                    onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
                   />
                 </div>
                 <div className="space-y-2">
