@@ -931,3 +931,6 @@ export const getVisitSessions = async (userId?: string) => {
   const snap = await getDocs(q);
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
+
+export const verifyDeveloperInvite = getInviteByCode;
+export const useDeveloperInvite = markInviteUsed;

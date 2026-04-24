@@ -16,6 +16,10 @@ export interface UserProfile {
   commissionEarned?: number;
   salesCode?: string; // For sales users
   referralCode?: string; // For clients who used a sales code
+  address?: string;
+  state?: string;
+  city?: string;
+  pincode?: string;
   // ... rest of the fields
   
   // Settings & Preferences

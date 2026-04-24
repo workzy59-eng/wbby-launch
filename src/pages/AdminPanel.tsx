@@ -163,7 +163,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [inviteForm, setInviteForm] = useState({
     name: '',
     email: '',
-    code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+    code: Math.floor(10000 + Math.random() * 90000).toString(),
     role: 'developer' as 'developer' | 'senior developer',
     joiningDate: new Date().toISOString().split('T')[0],
     permissions: {
@@ -195,7 +195,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       setInviteForm({
         name: '',
         email: '',
-        code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+        code: Math.floor(10000 + Math.random() * 90000).toString(),
         role: 'developer',
         joiningDate: new Date().toISOString().split('T')[0],
         permissions: {
@@ -204,7 +204,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
           canViewProjects: true
         }
       });
-      toast.success("Developer invite created!");
+      toast.success("Developer invite created! Code: " + inviteData.code);
     } catch (error: any) {
       toast.error(error.message || "Failed to create invite");
     }

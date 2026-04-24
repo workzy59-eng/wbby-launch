@@ -4,7 +4,56 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, FirebaseUser, logOut } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { LogOut, User, MessageCircle, X, LayoutDashboard, FolderKanban, Settings, Check, ArrowRight, Layout, Clock, CheckCircle2, Download, FileText, Image as ImageIcon, PartyPopper, Video, CreditCard, ShieldCheck, AlertCircle, Mail } from 'lucide-react';
+import { 
+  LogOut, 
+  User, 
+  MessageCircle, 
+  X, 
+  LayoutDashboard, 
+  FolderKanban, 
+  Settings, 
+  Check, 
+  ArrowRight, 
+  Layout, 
+  Clock, 
+  CheckCircle2, 
+  Download, 
+  FileText, 
+  Image as ImageIcon, 
+  PartyPopper, 
+  Video, 
+  CreditCard, 
+  ShieldCheck, 
+  AlertCircle, 
+  Mail,
+  TrendingUp,
+  Loader2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Activity,
+  Zap,
+  Flame,
+  Search,
+  MoreVertical,
+  Plus,
+  Smile,
+  Mic,
+  Send,
+  CheckCheck
+} from 'lucide-react';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  PieChart, 
+  Pie, 
+  Cell 
+} from 'recharts';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -29,7 +78,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'analytics'>('dashboard');
   const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -225,6 +274,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <nav className="flex-1 flex flex-col gap-6">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+            { id: 'analytics', icon: TrendingUp, label: 'Analytics' },
             { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
             { id: 'meetings', icon: Video, label: 'Meetings' },
             { id: 'payments', icon: CreditCard, label: 'Payments' },
@@ -258,9 +308,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </Link>
           )}
         </nav>
-        <button onClick={() => logOut()} className="p-4 rounded-2xl text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all">
-          <LogOut size={24} />
-        </button>
       </aside>
 
       <AnimatePresence>
@@ -310,6 +357,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            { id: 'analytics', icon: TrendingUp, label: 'Stats' },
             { id: 'progress', icon: FolderKanban, label: 'Progress' },
             { id: 'messages', icon: MessageCircle, label: 'Chat' },
             { id: 'meetings', icon: Video, label: 'Meets' },
@@ -418,37 +466,24 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </motion.div>
           )}
 
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-2 mb-4"
-              >
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Client Dashboard</span>
-              </motion.div>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
-                Welcome back,<br />
-                <span style={{ color: primaryColor }}>{profile?.displayName?.split(' ')[0] || 'User'}</span>
-              </h1>
-            </div>
-            <div className="flex flex-col items-end gap-4">
-              <div className="flex items-center gap-4">
-              {adminProfile && (
-                <button 
-                  onClick={() => setActiveTab('messages')}
-                  className="flex items-center gap-3 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl hover:bg-white/10 transition-all group"
-                  style={{ color: primaryColor, borderColor: primaryColor + '40' }}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-2 mb-4"
                 >
-                  <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Chat with Admin</span>
-                </button>
-              )}
+                  <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
+                </motion.div>
+                <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
+                  Status:<br />
+                  <span style={{ color: primaryColor }}>Operational</span>
+                </h1>
+              </div>
+              <div className="flex flex-col items-end gap-4">
               </div>
             </div>
-          </div>
 
             </>
           )}
@@ -470,6 +505,125 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   projects={projects}
                   initialRecipientId={adminProfile?.uid}
                 />
+              ) : activeTab === 'analytics' ? (
+                <div className="space-y-12">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Real-time Pulse</span>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Intelligence</h2>
+                  </div>
+
+                  {/* Overview Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[
+                      { label: 'Network Uptime', value: '99.98%', icon: Activity, color: '#c7c42a' },
+                      { label: 'Data Processing', value: '1.2ms', icon: Zap, color: '#c7c42a' },
+                      { label: 'System Health', value: 'Stable', icon: ShieldCheck, color: '#c7c42a' },
+                      { label: 'Traffic Pulse', value: 'Active', icon: Flame, color: '#c7c42a' },
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-[#c7c42a]/20 transition-all">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
+                            <stat.icon size={24} style={{ color: stat.color }} />
+                          </div>
+                        </div>
+                        <div className="text-3xl font-black text-white">{stat.value}</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">{stat.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Charts Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Performance History */}
+                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 min-h-[400px]">
+                      <div className="flex justify-between items-center mb-10">
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter">System Performance</h3>
+                        <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] text-[8px] font-black uppercase rounded-full border border-[#c7c42a]/20">24h History</span>
+                      </div>
+                      <div className="h-[250px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={[
+                            { time: '00:00', load: 30 },
+                            { time: '04:00', load: 45 },
+                            { time: '08:00', load: 32 },
+                            { time: '12:00', load: 60 },
+                            { time: '16:00', load: 48 },
+                            { time: '20:00', load: 55 },
+                            { time: '23:59', load: 40 },
+                          ]}>
+                            <defs>
+                              <linearGradient id="colorLoad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#c7c42a" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#c7c42a" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <XAxis 
+                              dataKey="time" 
+                              stroke="#ffffff20" 
+                              fontSize={10} 
+                              tickLine={false} 
+                              axisLine={false}
+                            />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                              itemStyle={{ color: '#c7c42a' }}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="load" 
+                              stroke="#c7c42a" 
+                              strokeWidth={3}
+                              fillOpacity={1} 
+                              fill="url(#colorLoad)" 
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Resource Allocation */}
+                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 min-h-[400px]">
+                      <div className="flex justify-between items-center mb-10">
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter">Resource Pulse</h3>
+                        <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] text-[8px] font-black uppercase rounded-full border border-[#c7c42a]/20">Live Sync</span>
+                      </div>
+                      <div className="h-[250px] w-full flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: 'Development', value: 45 },
+                                { name: 'Compute', value: 25 },
+                                { name: 'Storage', value: 20 },
+                                { name: 'Bandwidth', value: 10 },
+                              ]}
+                              innerRadius={60}
+                              outerRadius={80}
+                              paddingAngle={5}
+                              dataKey="value"
+                            >
+                              {[
+                                '#c7c42a',
+                                '#c7c42a80',
+                                '#c7c42a40',
+                                '#c7c42a10',
+                              ].map((color, index) => (
+                                <Cell key={`cell-${index}`} fill={color} stroke="none" />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute flex flex-col items-center">
+                          <span className="text-2xl font-black text-white">92%</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest text-white/20">Efficiency</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : activeTab === 'progress' ? (
                 <div className="space-y-12">
                    <div className="flex flex-col gap-2">

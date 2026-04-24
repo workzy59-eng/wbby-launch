@@ -26,7 +26,10 @@ import {
   Sparkles,
   ChevronDown,
   Search,
-  Lock
+  Lock,
+  ArrowRight,
+  ArrowLeft,
+  Loader2
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -170,7 +173,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
     const unsubConversations = getConversations(currentUser.uid, async (convs) => {
       try {
-        const enrichedConvs = await Promise.all(convs.map(async (conv) => {
+        let enrichedConvs = await Promise.all(convs.map(async (conv) => {
           try {
             const recipientId = conv.participants.find((id: string) => id !== currentUser.uid);
             if (!recipientId) return { ...conv, recipientProfile: null };
@@ -181,6 +184,26 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             return { ...conv, recipientProfile: null };
           }
         }));
+
+        // If client, ensure they can see the Admin even if no conversation exists yet
+        if (profile?.role === 'client') {
+          const admins = await getAdmins();
+          const mainAdmin = admins.find(a => a.email === 'workzy59@gmail.com') || admins[0];
+          
+          if (mainAdmin) {
+            const adminConvExists = enrichedConvs.some(c => c.participants.includes(mainAdmin.uid));
+            if (!adminConvExists) {
+              enrichedConvs.push({
+                id: 'new_admin',
+                lastMessage: 'Hi Webby Launch Services...',
+                lastMessageAt: null,
+                lastSenderId: '',
+                participants: [currentUser.uid, mainAdmin.uid],
+                recipientProfile: mainAdmin
+              } as any);
+            }
+          }
+        }
         
         // Sort by date
         const allConvs = enrichedConvs.sort((a, b) => {
@@ -675,15 +698,32 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         <div className="flex-1 overflow-y-auto mt-2 custom-scrollbar">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
-              <Loader color="white" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20 animate-pulse">Syncing Encrypted Data...</p>
+              <Loader2 className="animate-spin text-[#c7c42a]" size={32} />
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#8696a0] animate-pulse">Syncing Encrypted Data...</p>
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-8 text-center h-full flex flex-col items-center justify-center space-y-8">
-              <div className="w-24 h-24 bg-[#202c33] rounded-full flex items-center justify-center">
-                <MessageSquare size={40} className="text-[#8696a0]" />
-              </div>
-              <p className="text-sm text-[#8696a0]">No chats available.</p>
+            <div className="p-6">
+              <p className="text-xs font-bold text-[#8696a0] uppercase tracking-widest mb-4 px-2">No active chats</p>
+              <button
+                onClick={() => setActiveConversation({ 
+                  id: 'new_admin', 
+                  recipientId: 'admin_wl', 
+                  recipientProfile: { displayName: 'Webby Launch', email: 'workzy59@gmail.com', role: 'admin' },
+                  isProject: false 
+                } as any)}
+                className="w-full p-4 flex items-center gap-4 transition-all hover:bg-[#202c33] rounded-xl border border-[#ffffff05] group"
+              >
+                <div className="w-14 h-14 rounded-full bg-[#ffc107] flex items-center justify-center text-black font-black text-xl shadow-lg ring-2 ring-transparent group-hover:ring-[#ffc107]/20 transition-all">
+                  WL
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="font-bold text-[#e9edef] flex items-center gap-2">
+                    Webby Launch <span className="px-1.5 py-0.5 bg-[#00a884]/20 text-[#00a884] text-[8px] rounded uppercase">24/7 Support</span>
+                  </div>
+                  <p className="text-xs text-[#8696a0]">Start a chat with our admin team</p>
+                </div>
+                <ArrowRight size={18} className="text-[#8696a0] group-hover:text-white transition-all transform group-hover:translate-x-1" />
+              </button>
             </div>
           ) : (
             <div className="divide-y divide-[#202c33]/20">
