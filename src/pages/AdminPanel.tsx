@@ -4,6 +4,7 @@ import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, quer
 import { UserProfile, Project, ProjectStatus } from '../types';
 import { Link } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
+import { DomainSelect } from '../components/DomainSelect';
 import { 
   LogOut, 
   User, 
@@ -36,7 +37,8 @@ import {
   Camera,
   MoreVertical,
   Video,
-  Download
+  Download,
+  Shield
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import ChatSystem from '../components/ChatSystem';
@@ -135,7 +137,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'leads' | 'applications' | 'clients'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'leads' | 'applications' | 'clients' | 'developers'>('dashboard');
 
   const [leads, setLeads] = useState<any[]>([]);
   const [developerApps, setDeveloperApps] = useState<any[]>([]);
@@ -157,6 +159,56 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [reasonToShow, setReasonToShow] = useState('');
   const [projectSearch, setProjectSearch] = useState('');
   const [unreadTotal, setUnreadTotal] = useState(0);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [inviteForm, setInviteForm] = useState({
+    name: '',
+    email: '',
+    code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+    role: 'developer' as 'developer' | 'senior developer',
+    joiningDate: new Date().toISOString().split('T')[0],
+    permissions: {
+      canChat: true,
+      canUpload: true,
+      canViewProjects: true
+    }
+  });
+
+  const handleCreateInvite = async () => {
+    if (!inviteForm.name || !inviteForm.email) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      if (!user) return;
+      const { createDeveloperInvite } = await import('../services/database');
+      const inviteData: any = {
+        ...inviteForm,
+        email: inviteForm.email.toLowerCase(),
+        createdBy: user.uid,
+        createdAt: new Date(),
+        used: false
+      };
+
+      await createDeveloperInvite(inviteData);
+      setIsInviteModalOpen(false);
+      setInviteForm({
+        name: '',
+        email: '',
+        code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+        role: 'developer',
+        joiningDate: new Date().toISOString().split('T')[0],
+        permissions: {
+          canChat: true,
+          canUpload: true,
+          canViewProjects: true
+        }
+      });
+      toast.success("Developer invite created!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create invite");
+    }
+  };
   const [userUnreadCounts, setUserUnreadCounts] = useState<Record<string, number>>({});
   const [projectUnreadCounts, setProjectUnreadCounts] = useState<Record<string, number>>({});
 
@@ -501,21 +553,42 @@ Generated on: ${new Date().toLocaleString()}
 
   const renderDashboard = () => (
     <div className="space-y-12">
-      <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Overview</span>
-        <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
+      <div className="flex justify-between items-end gap-2">
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Overview</span>
+          <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
+        </div>
+        <button 
+          onClick={() => { setActiveTab('projects'); setShowProjectModal(true); }}
+          className="w-16 h-16 bg-[#c7c42a] rounded-[2rem] flex items-center justify-center text-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_50px_rgba(199,196,42,0.2)]"
+        >
+          <Plus size={32} />
+        </button>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#c7c42a]' },
-          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#c7c42a]' },
-          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]' },
+          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#c7c42a]', onPlus: () => setActiveTab('clients') },
+          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#c7c42a]', onPlus: () => { setActiveTab('projects'); setShowProjectModal(true); } },
+          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]', onPlus: () => setActiveTab('requests') },
           { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#c7c42a]' },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all">
-            <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-              <stat.icon size={24} className={stat.color} />
+          <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative">
+            <div className="flex justify-between items-start mb-6">
+              <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                <stat.icon size={24} className={stat.color} />
+              </div>
+              {stat.onPlus && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    stat.onPlus?.();
+                  }}
+                  className="p-2 bg-white/5 rounded-lg hover:bg-[#c7c42a] hover:text-black transition-all text-[#c7c42a]/40"
+                >
+                  <Plus size={14} />
+                </button>
+              )}
             </div>
             <div className="text-4xl font-bold mb-1 text-white tabular-nums">{stat.value}</div>
             <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
@@ -1699,6 +1772,12 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             </div>
             <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
           </div>
+          <button 
+            onClick={() => { setActiveTab('projects'); setShowProjectModal(true); }}
+            className="w-10 h-10 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black hover:scale-110 active:scale-95 transition-all shadow-lg"
+          >
+            <Plus size={20} />
+          </button>
         </div>
         <nav className="flex-1 p-6 space-y-3">
           {[
@@ -1707,13 +1786,12 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'clients', label: 'Clients', icon: Users },
+            { id: 'developers', label: 'Developers', icon: Shield },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'meetings', label: 'Meetings', icon: Video },
             { id: 'leads', label: 'Sales Leads', icon: TrendingUp },
-            { id: 'applications', label: 'Applications', icon: User },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'system', label: 'System Settings', icon: Settings },
-            { id: 'recycle', label: 'Recycle Bin', icon: Trash2 },
           ].map((item) => (
             <button
               key={item.id}
@@ -1759,6 +1837,50 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {activeTab === 'active' && renderActiveProjects()}
             {activeTab === 'projects' && renderProjectDetails()}
             {activeTab === 'clients' && renderClients()}
+            {activeTab === 'developers' && <div className="space-y-12">
+              <div className="flex justify-between items-end">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Staff</span>
+                  <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Active Developers</h2>
+                </div>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setIsInviteModalOpen(true)}
+                    className="px-8 py-4 bg-[#c7c42a] text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(199, 196, 42,0.2)]"
+                  >
+                    Invite Developer
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('applications')}
+                    className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
+                  >
+                    View Applications
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {users.filter(u => u.role === 'developer').map((dev) => (
+                  <div key={dev.uid} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 space-y-6">
+                    <div className="flex justify-between items-start">
+                      <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic">
+                        {dev.displayName?.[0]}
+                      </div>
+                      <div className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[8px] font-black uppercase tracking-widest">
+                        Online
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-white uppercase tracking-tight">{dev.displayName}</h4>
+                      <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{dev.email}</p>
+                    </div>
+                    <div className="pt-6 border-t border-white/5 flex gap-2">
+                       <button onClick={() => { setSelectedUser(dev); setShowDirectChat(true); }} className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl font-bold text-[10px] uppercase tracking-widest">Message</button>
+                       <button className="flex-1 py-3 bg-white/5 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest">Profile</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'recycle' && renderRecycleBin()}
@@ -2467,6 +2589,15 @@ ${viewingProject.description}
                       <option value="Rejected">Rejected</option>
                     </select>
                   </div>
+                  <input type="hidden" name="domain" id="project-domain-input" defaultValue={editingProjectDetails?.domain} />
+                  <DomainSelect 
+                    initialValue={editingProjectDetails?.domain} 
+                    onSelect={(domain) => {
+                      const input = document.getElementById('project-domain-input') as HTMLInputElement;
+                      if (input) input.value = domain;
+                    }} 
+                  />
+
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Description</label>
                     <textarea 
@@ -2497,6 +2628,115 @@ ${viewingProject.description}
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Developer Invite Modal */}
+      <AnimatePresence>
+        {isInviteModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[100] flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-[#111] w-full max-w-2xl rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl"
+            >
+              <div className="p-10 border-b border-white/5 flex justify-between items-center bg-[#c7c42a]">
+                <div>
+                  <h3 className="text-2xl font-bold text-black uppercase italic leading-none">Assemble Crew</h3>
+                  <p className="text-[10px] font-black text-black/50 uppercase tracking-widest mt-2 font-mono">ID: {inviteForm.code}</p>
+                </div>
+                <button onClick={() => setIsInviteModalOpen(false)} className="p-3 bg-black/10 rounded-2xl hover:bg-black/20 transition-all text-black">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-12 space-y-8 max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Full Name</label>
+                    <input 
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]/50 transition-all placeholder:text-white/10"
+                      placeholder="e.g. John Doe"
+                      value={inviteForm.name}
+                      onChange={(e) => setInviteForm({...inviteForm, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Email Protocol</label>
+                    <input 
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]/50 transition-all placeholder:text-white/10"
+                      placeholder="dev@webbylaunch.com"
+                      value={inviteForm.email}
+                      onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Rank / Role</label>
+                    <select 
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]/50 transition-all appearance-none"
+                      value={inviteForm.role}
+                      onChange={(e) => setInviteForm({...inviteForm, role: e.target.value as any})}
+                    >
+                      <option value="developer" className="bg-black text-white">Developer</option>
+                      <option value="senior developer" className="bg-black text-white">Senior Developer</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Deployment Date</label>
+                    <input 
+                      type="date"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]/50 transition-all"
+                      value={inviteForm.joiningDate}
+                      onChange={(e) => setInviteForm({...inviteForm, joiningDate: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-8 bg-white/5 rounded-3xl border border-white/5 space-y-4">
+                  <h4 className="text-xs font-black text-[#c7c42a] uppercase tracking-widest">Clearance Level</h4>
+                  <div className="flex gap-4">
+                    {Object.keys(inviteForm.permissions).map((key) => (
+                      <button
+                        key={key}
+                        onClick={() => setInviteForm({
+                          ...inviteForm,
+                          permissions: {
+                            ...inviteForm.permissions,
+                            [key as keyof typeof inviteForm.permissions]: !inviteForm.permissions[key as keyof typeof inviteForm.permissions]
+                          }
+                        })}
+                        className={`flex-1 py-3 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border ${
+                          inviteForm.permissions[key as keyof typeof inviteForm.permissions]
+                            ? 'bg-[#c7c42a]/10 border-[#c7c42a] text-[#c7c42a]'
+                            : 'bg-white/5 border-white/10 text-white/20'
+                        }`}
+                      >
+                        {key.replace(/([A-Z])/g, ' $1')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-10 bg-black/20 border-t border-white/5">
+                <button 
+                  onClick={handleCreateInvite}
+                  className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(199, 196, 42,0.3)]"
+                >
+                  Generate Invite Link
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
