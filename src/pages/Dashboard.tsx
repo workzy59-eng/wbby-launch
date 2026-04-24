@@ -336,6 +336,32 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <div className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === 'messages' ? 'py-6' : 'py-12'} space-y-10`}>
           {activeTab !== 'messages' && (
             <>
+          {/* Payment Warning */}
+          {selectedProject?.paymentStatus === 'pending' && !selectedProject?.isDeleted && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-[#c7c42a] text-black p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-black/10 relative overflow-hidden mb-10"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full blur-3xl -mr-32 -mt-32" />
+              <div className="flex items-center gap-8 text-center md:text-left relative z-10">
+                <div className="w-20 h-20 bg-black/10 rounded-3xl flex items-center justify-center shrink-0">
+                  <CreditCard size={40} className="animate-bounce" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black uppercase italic tracking-tighter leading-none">Awaiting Launch Payment</h3>
+                  <p className="text-black/60 text-sm font-black uppercase italic max-w-xl">Complete your {selectedProject.plan} plan payment to initiate engineering and development.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveTab('payments')}
+                className="bg-black text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.05] transition-all shrink-0 relative z-10 shadow-xl"
+              >
+                Complete Payment
+              </button>
+            </motion.div>
+          )}
+
           {/* Subscription Warning */}
           {selectedProject?.subscriptionStatus === 'suspended' && (
             <motion.div 

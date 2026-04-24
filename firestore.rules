@@ -33,6 +33,10 @@ service cloud.firestore {
         email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
     }
 
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches("^[a-zA-Z0-9_\\-]+$");
+    }
+
     // ============================
     // VALIDATORS
     // ============================
@@ -48,14 +52,6 @@ service cloud.firestore {
       return data.userId is string &&
         data.userId == request.auth.uid &&
         data.businessName is string;
-    }
-
-    // ============================
-    // SYSTEM SETTINGS (PRIORITY)
-    // ============================
-    match /system_settings/{settingId} {
-      allow read: if true;
-      allow write: if isAdmin();
     }
 
     // ============================
@@ -207,6 +203,30 @@ service cloud.firestore {
     match /blog_posts/{postId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // ============================
+    // VISIT SESSIONS
+    // ============================
+
+    match /visit_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.startTime == request.time;
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.endTime == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // ============================
+    // DEVELOPER INVITES
+    // ============================
+
+    match /developer_invites/{inviteId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.email == request.auth.token.email);
+      allow create, update, delete: if isAdmin();
     }
 
     // ============================

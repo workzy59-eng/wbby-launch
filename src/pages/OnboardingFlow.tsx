@@ -322,9 +322,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       case 8: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
-      case 9: // Finalize
-        // Reduced step complexity, no logic needed here anymore if we submit directly
-        break;
     }
     return invalid;
   };
@@ -430,8 +427,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('onboarding_step');
       
-      toast.success("Project created successfully!");
-      setStep(9);
+      toast.success("Project submitted successfully! You can handle payment in your dashboard.");
+      setStep(9); // Success state
       setTimeout(() => {
         navigate('/dashboard');
       }, 3000);
@@ -1445,68 +1442,62 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 8</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text">Terms & Conditions</h3>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 8</h2>
+              <h3 className="text-4xl font-bold tracking-tight text-white italic leading-none uppercase">Terms & Submission</h3>
+              <p className="text-subtext font-medium italic">Review our terms before launching your project.</p>
             </div>
 
-            <div className="bg-card rounded-2xl p-8 space-y-6 border border-border max-h-[40vh] overflow-y-auto scrollbar-hide">
-              <div className="space-y-6 text-subtext font-medium leading-relaxed">
-                <section className="space-y-2">
-                  <h4 className="text-lg font-bold text-text">1. Services</h4>
-                  <p>We provide website development services based on the information submitted by the client.</p>
+            <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50 max-h-[40vh] overflow-y-auto scrollbar-hide relative group">
+              <div className="space-y-8 text-subtext font-medium leading-relaxed">
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">1. Services</h4>
+                  <p className="text-sm opacity-80">We provide premium website development services tailored to your business needs as specified in this onboarding flow.</p>
                 </section>
 
-                <section className="space-y-2">
-                  <h4 className="text-lg font-bold text-text">2. Project Approval</h4>
-                  <p>All projects are subject to review and approval by the admin. We reserve the right to reject any project.</p>
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">2. Project Approval</h4>
+                  <p className="text-sm opacity-80">All project requests are subject to engineering review. We reserve the right to refine or adjust scope based on technical feasibility.</p>
                 </section>
 
-                <section className="space-y-2">
-                  <h4 className="text-lg font-bold text-text">3. Payment Terms</h4>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>An advance payment is required to start the project.</li>
-                    <li>Advance payment is non-refundable.</li>
-                    <li>Final payment must be completed before project delivery.</li>
-                  </ul>
-                </section>
-
-                <section className="space-y-2">
-                  <h4 className="text-lg font-bold text-text">4. Refund Policy</h4>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>Advance payments are non-refundable.</li>
-                    <li>In case of project rejection, a refund (if applicable) will be processed within 5–7 working days.</li>
-                    <li>Refunds will be credited to the original payment method.</li>
-                  </ul>
+                <section className="space-y-4">
+                  <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">3. Payment & Delivery</h4>
+                  <p className="text-sm opacity-80">You can finalize your plan and complete payment via your personal Client Dashboard after submission. Development officially begins upon receipt of the initial payment.</p>
                 </section>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-6 bg-card rounded-2xl border border-border">
-              <button 
-                onClick={() => setAgreedToTerms(!agreedToTerms)}
-                className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                  agreedToTerms ? 'bg-primary border-primary text-white' : 'border-border'
+            <div className="flex items-center gap-6 p-8 bg-white/5 rounded-[2rem] border border-white/5 transition-all hover:bg-white/10 group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
+              <div 
+                className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center transition-all ${
+                  agreedToTerms ? 'bg-primary border-primary text-black' : 'border-white/20'
                 }`}
+                style={agreedToTerms ? { backgroundColor: formData.primaryColor, borderColor: formData.primaryColor } : {}}
               >
-                {agreedToTerms && <Check size={16} />}
-              </button>
-              <p className="text-sm font-medium text-subtext">
-                I have read and agree to the <span className="text-primary">Terms & Conditions</span>
+                {agreedToTerms && <Check size={18} strokeWidth={4} />}
+              </div>
+              <p className="text-xs font-bold text-white/60 uppercase tracking-widest leading-relaxed">
+                I have reviewed my project summary and agree to the <span className="text-primary italic underline underline-offset-4" style={{ color: formData.primaryColor }}>Terms & Conditions</span>
               </p>
             </div>
 
-            <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
+            <div className="flex gap-6">
+              <button onClick={handleBack} className="flex-[0.4] border-2 border-white/10 text-white/60 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter">Back</button>
               <button 
-                onClick={handleNext} 
-                disabled={!agreedToTerms}
-                className={`flex-1 py-6 rounded-2xl font-bold text-xl transition-all ${
-                  agreedToTerms 
-                    ? 'bg-primary text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20' 
-                    : 'bg-card text-subtext cursor-not-allowed border border-border'
+                onClick={handleSubmit} 
+                disabled={!agreedToTerms || isSubmitting}
+                className={`flex-1 py-6 rounded-[2rem] font-black text-2xl transition-all flex items-center justify-center gap-4 shadow-2xl ${
+                  agreedToTerms && !isSubmitting
+                    ? 'bg-primary text-black hover:scale-[1.02] active:scale-[0.98]' 
+                    : 'bg-white/5 text-white/20 cursor-not-allowed'
                 }`}
+                style={agreedToTerms && !isSubmitting ? { backgroundColor: formData.primaryColor } : {}}
               >
-                Next
+                {isSubmitting ? <Loader color="black" /> : (
+                  <>
+                    <span>Launch Project</span>
+                    <ArrowRight size={24} />
+                  </>
+                )}
               </button>
             </div>
           </motion.div>
@@ -1515,253 +1506,30 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         return (
           <motion.div 
             key="step9"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
-          >
-            <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 9</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text">Finalize Project</h3>
-            </div>
-            
-            <div className="bg-card rounded-2xl p-8 space-y-8 border border-border">
-              <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-text">Ready to Launch</h3>
-                <p className="text-subtext font-medium">
-                  Your project details have been captured. Choose your payment method to finalize your request.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button
-                  onClick={() => setPaymentOption('full')}
-                  className={`p-8 rounded-2xl border transition-all text-left relative overflow-hidden group ${
-                    paymentOption === 'full' 
-                      ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
-                      : 'bg-card border-border text-text hover:border-primary/50'
-                  }`}
-                >
-                  <div className="absolute top-6 right-6">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentOption === 'full' ? 'border-white' : 'border-border'}`}>
-                      {paymentOption === 'full' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-                    </div>
-                  </div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider mb-2 opacity-60">Option 1</div>
-                  <div className="text-xl font-bold mb-2">Pay Full Amount</div>
-                  <p className={`text-xs font-medium opacity-60 leading-relaxed`}>
-                    Get your website live instantly with full ownership and priority support.
-                  </p>
-                </button>
-
-                <button
-                  onClick={() => setPaymentOption('understanding')}
-                  className={`p-8 rounded-2xl border transition-all text-left relative overflow-hidden group ${
-                    paymentOption === 'understanding' 
-                      ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
-                      : 'bg-card border-border text-text hover:border-primary/50'
-                  }`}
-                >
-                  <div className="absolute top-6 right-6">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentOption === 'understanding' ? 'border-white' : 'border-border'}`}>
-                      {paymentOption === 'understanding' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-                    </div>
-                  </div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider mb-2 opacity-60">Option 2</div>
-                  <div className="text-xl font-bold mb-2">Advance Payment</div>
-                  <p className={`text-xs font-medium opacity-60 leading-relaxed`}>
-                    I agree to the project terms and will proceed with the agreed payment schedule.
-                  </p>
-                </button>
-              </div>
-
-              <div className="p-6 bg-background rounded-2xl border border-border">
-                {paymentOption === 'full' ? (
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="text-[10px] font-bold text-subtext uppercase tracking-widest mb-1">Selected Plan</div>
-                      <div className="text-xl font-bold text-primary">
-                        {formData.plan === 'basic' ? 'Basic' : formData.plan === 'standard' ? 'Standard' : 'Pro'}
-                      </div>
-                    </div>
-                    <div className="text-2xl font-bold text-text">
-                      {formData.billingCycle === 'one-time' ? (
-                        formData.plan === 'basic' ? '₹5,000/-' : formData.plan === 'standard' ? '₹15,000/-' : '₹30,000/-'
-                      ) : (
-                        formData.plan === 'basic' ? '₹1,499/-' : formData.plan === 'standard' ? '₹3,499/-' : '₹9,999/-'
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-1">
-                      <div className="text-xl font-bold text-primary">Pay Advance for starting with us</div>
-                      <p className="text-xs font-medium text-subtext">You will pay the remaining balance once you receive your project.</p>
-                    </div>
-                    <div className="text-2xl font-bold text-text">₹499/-</div>
-                  </div>
-                )}
-              </div>
-
-              {error && (
-                <div className="p-4 bg-error/10 border border-error/20 rounded-xl text-error text-xs font-bold uppercase tracking-wider">
-                  {error}
-                </div>
-              )}
-            </div>
-            
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-4">
-                <button 
-                  onClick={handleBack} 
-                  disabled={isSubmitting}
-                  className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all disabled:opacity-50"
-                >
-                  Back
-                </button>
-                {user ? (
-                  <div className="flex-1 flex flex-col gap-2">
-                    <button 
-                      onClick={handleSubmit} 
-                      disabled={isSubmitting}
-                      className="w-full py-6 bg-primary text-white rounded-2xl font-bold text-xl uppercase hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-3"
-                    >
-                      {isSubmitting ? (
-                        <Loader color="white" />
-                      ) : (
-                        'Proceed to Payment'
-                      )}
-                    </button>
-                    <p className="text-[10px] font-bold text-subtext uppercase tracking-widest text-center">
-                      By continuing, you agree that advance is non-refundable and refunds (if applicable) may take 5–7 working days.
-                    </p>
-                  </div>
-                ) : (
-                  <button 
-                    onClick={async () => {
-                      try {
-                        await signInWithGoogle();
-                        toast.success('Signed in successfully!');
-                      } catch (err: any) {
-                        toast.error(err.message || 'Failed to sign in');
-                      }
-                    }}
-                    className="flex-1 bg-white text-black py-6 rounded-2xl font-bold text-xl uppercase hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-3 border border-border"
-                  >
-                    <svg className="w-6 h-6" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                    Sign in with Google
-                  </button>
-                )}
-              </div>
-              {user && !isSubmitting && (
-                <button 
-                  onClick={async () => {
-                    setIsSubmitting(true);
-                    try {
-                      // Create project without redirecting to Stripe
-                      const finalLogoUrl = formData.logoUrl;
-                      const finalDocsUrl = formData.documentsUrl;
-                      const finalProfileUrl = profile?.photoURL || '';
-                      
-                      const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
-                      const projectData = {
-                        userId: user?.uid,
-                        userName: formData.name || '',
-                        userEmail: formData.email || '',
-                        userPhone: formData.phone || '',
-                        businessName: formData.businessName || '',
-                        businessNumber: formData.businessNumber || '',
-                        businessEmail: formData.businessEmail || '',
-                        businessPhone: formData.businessPhone || '',
-                        gstNumber: formData.gstNumber || '',
-                        addressLine: formData.addressLine || '',
-                        city: formData.city || '',
-                        state: formData.state || '',
-                        pincode: formData.pincode || '',
-                        country: formData.country || 'India',
-                        businessType: finalBusinessType || '',
-                        businessLocation: formData.location || '',
-                        description: formData.description || '',
-                        websiteName: formData.websiteName || '',
-                        domain: formData.domain || '',
-                        domainPreferences: formData.domainPreferences || ['', '', ''],
-                        primaryColor: formData.primaryColor || '#c7c42a',
-                        secondaryColor: formData.secondaryColor || '#000000',
-                        tertiaryColor: formData.tertiaryColor || '',
-                        selectedFeatures: formData.selectedFeatures || [],
-                        logoUrl: formData.logoUrl || '',
-                        documentsUrl: formData.documentsUrl || '',
-                        plan: formData.plan || 'basic',
-                        paymentStatus: 'pending' as 'pending' | 'paid',
-                        referenceWebsite: formData.referenceWebsite || '',
-                        templateId: 'custom-dev',
-                        estimatedCompletion: null,
-                        referralSource: formData.referralSource || '',
-                        salesCode: formData.salesCode || ''
-                      };
-
-                      await createProject(projectData);
-                      if (user) {
-                        await createUserProfile(user, {
-                          username: formData.username,
-                          phone: formData.phone,
-                          photoURL: finalProfileUrl,
-                          onboardingCompleted: true
-                        });
-                      }
-                      localStorage.removeItem('onboarding_data');
-                      localStorage.removeItem('onboarding_step');
-                      setStep(10);
-                      setTimeout(() => {
-                        navigate('/dashboard?success=true');
-                      }, 3000);
-                    } catch (err: any) {
-                      setError(err.message || 'Failed to skip payment. Please try again.');
-                    } finally {
-                      setIsSubmitting(false);
-                    }
-                  }}
-                  className="text-[10px] font-bold uppercase tracking-widest text-subtext hover:text-primary transition-all"
-                >
-                  Skip Payment (Test Mode)
-                </button>
-              )}
-            </div>
-          </motion.div>
-        );
-      case 10: // Success
-        return (
-          <motion.div 
-            key="step10"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-8 py-20"
+            className="text-center py-20 px-8 bg-card rounded-[4rem] border border-border relative overflow-hidden"
           >
-            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-8">
-              <Check size={48} className="text-primary" />
-            </div>
-            <div className="space-y-4">
-              <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white">Project Received!</h2>
-              <p className="text-subtext font-medium max-w-md mx-auto">
-                Your brilliant project is in our system. Redirecting you to your dashboard to track progress...
-              </p>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
+            <div className="relative z-10 space-y-10">
+              <div className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto relative" style={{ color: formData.primaryColor }}>
+                <motion.div 
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute inset-0 rounded-full blur-2xl"
+                  style={{ backgroundColor: formData.primaryColor }}
+                />
+                <ShieldCheck size={64} strokeWidth={1.5} className="relative z-10" />
+              </div>
+              <div className="space-y-6">
+                <h2 className="text-6xl font-black uppercase italic tracking-tighter text-white leading-none">Flight Initiated</h2>
+                <p className="text-white/40 text-sm font-medium uppercase tracking-[0.3em] max-w-sm mx-auto italic leading-relaxed text-center">
+                  Your project has been successfully transmitted. Redirecting to your dashboard control center...
+                </p>
+              </div>
+              <div className="pt-4 flex justify-center">
+                <Loader color="white" />
+              </div>
             </div>
           </motion.div>
         );
@@ -1770,40 +1538,34 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
   };
 
+  const TOTAL_STEPS = 8;
+
   return (
     <div className="min-h-screen bg-black font-sans selection:bg-primary selection:text-black">
       <header className="px-10 py-8 border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50 text-white">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-              <span className="text-white font-bold text-xl">W</span>
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20" style={{ backgroundColor: formData.primaryColor }}>
+              <span className="text-black font-bold text-xl">W</span>
             </div>
-            <div className="text-2xl font-bold tracking-tight text-text">
-              Webby<span className="text-primary">Launch</span>
+            <div className="text-2xl font-bold tracking-tight text-white uppercase italic">
+              Webby<span style={{ color: formData.primaryColor }}>Launch</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="h-1.5 w-32 bg-border rounded-full overflow-hidden">
+            <div className="h-1.5 w-32 bg-white/10 rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${(step / 10) * 100}%` }}
-                className="h-full bg-primary"
+                animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+                className="h-full"
+                style={{ backgroundColor: formData.primaryColor }}
               />
             </div>
-            <div className="text-xs font-bold text-primary uppercase tracking-wider">Step {step} of 10</div>
+            <div className="text-[10px] font-black italic text-white/40 uppercase tracking-[0.2em]">Step {step <= 8 ? step : 'Final'} of 8</div>
           </div>
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-10 py-16">
-        <div className="mb-8">
-           <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${(step / 10) * 100}%` }}
-                className="h-full bg-primary"
-              />
-            </div>
-        </div>
         <AnimatePresence mode="wait">
           {renderStep()}
         </AnimatePresence>

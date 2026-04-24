@@ -6,7 +6,6 @@ import {
   LayoutDashboard, 
   Users, 
   Briefcase, 
-  MessageSquare, 
   Settings, 
   CheckCircle2, 
   XCircle, 
@@ -37,20 +36,18 @@ import {
   getAllLeaveRequests, 
   updateLeaveRequest,
   getAllAttendance,
-  sendDirectMessage,
   createDeveloperInvite,
   getDeveloperInvites,
   getVisitSessions
 } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
-import MessagesModule from '../components/MessagesModule';
 
 interface AdminDashboardProps {
   user: FirebaseUser | null;
   profile: UserProfile | null;
 }
 
-type Tab = 'overview' | 'clients' | 'developer-leads' | 'projects' | 'leaves' | 'attendance' | 'messages';
+type Tab = 'overview' | 'clients' | 'developers' | 'developer-leads' | 'projects' | 'leaves' | 'attendance';
 
 interface DeveloperInvite {
   id?: string;
@@ -380,7 +377,7 @@ Generated on: ${new Date().toLocaleString()}
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[
-                { label: 'Total Clients', value: profiles.filter(p => p.role === 'client').length, icon: User, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                { label: 'Total Clients', value: profiles.filter(p => p.role === 'client').length, icon: User, color: 'text-blue-400', bg: 'bg-blue-500/10', onPlus: () => setActiveTab('clients') },
                 { label: 'Total Developers', value: profiles.filter(p => p.role === 'developer').length, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
                 { label: 'Active Projects', value: projects.length, icon: Briefcase, color: 'text-[#00F2FF]', bg: 'bg-[#00F2FF]/10' },
                 { label: 'Pending Leaves', value: leaveRequests.filter(r => r.status === 'pending').length, icon: Clock, color: 'text-#c7c42a', bg: 'bg-#c7c42a/10' },
@@ -390,13 +387,26 @@ Generated on: ${new Date().toLocaleString()}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#00F2FF]/30 transition-all group backdrop-blur-xl"
+                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#00F2FF]/30 transition-all group backdrop-blur-xl relative"
                 >
                   <div className="flex justify-between items-start">
                     <div className={`p-3 ${stat.bg} rounded-2xl ${stat.color} group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,0,0,0.2)]`}>
                       <stat.icon size={24} />
                     </div>
-                    <ArrowUpRight size={16} className="text-slate-500 group-hover:text-[#00F2FF] transition-colors" />
+                    <div className="flex gap-2 items-center">
+                      {'onPlus' in stat && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            stat.onPlus?.();
+                          }}
+                          className="p-1.5 bg-white/5 rounded-lg hover:bg-[#00F2FF] hover:text-black transition-all text-white/20"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      )}
+                      <ArrowUpRight size={16} className="text-slate-500 group-hover:text-[#00F2FF] transition-colors" />
+                    </div>
                   </div>
                   <div>
                     <div className="text-4xl font-black text-white tracking-tighter">{stat.value}</div>
@@ -573,6 +583,101 @@ Generated on: ${new Date().toLocaleString()}
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        );
+      case 'developers':
+        const activeDevs = profiles.filter(p => p.role === 'developer' && p.status !== 'pending');
+        return (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Active Developers</h2>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">Our Engineering Elite</p>
+              </div>
+              <button 
+                onClick={() => setIsInviteModalOpen(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black font-black uppercase italic rounded-2xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.3)]"
+              >
+                <Plus size={20} />
+                <span>Add New Member</span>
+              </button>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                <input 
+                  type="text" 
+                  placeholder="Search crew members..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent pl-12 pr-4 py-2 text-white font-bold uppercase tracking-widest outline-none placeholder:text-slate-600"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {activeDevs.filter(d => 
+                d.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                d.devRole?.toLowerCase().includes(searchQuery.toLowerCase())
+              ).map((dev, idx) => {
+                const stats = getDevStats(dev.uid);
+                return (
+                  <div key={idx} className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-8 space-y-6 group hover:border-[#c7c42a]/40 transition-all backdrop-blur-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <Shield size={80} className="text-[#c7c42a]" />
+                    </div>
+                    
+                    <div className="flex justify-between items-start relative z-10">
+                      <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_20px_rgba(199,196,42,0.2)]">
+                        {dev.displayName?.[0]}
+                      </div>
+                      <div className="px-4 py-1 bg-green-500/20 text-green-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
+                        TRUSTED
+                      </div>
+                    </div>
+
+                    <div className="relative z-10">
+                      <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{dev.displayName}</h4>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{dev.devRole}</p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 py-4 border-y border-white/5 relative z-10">
+                      <div className="text-center">
+                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Projects</div>
+                        <div className="text-lg font-black text-white italic">{stats.total}</div>
+                      </div>
+                      <div className="text-center border-x border-white/5">
+                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Efficiency</div>
+                        <div className="text-lg font-black text-[#c7c42a] italic">{stats.efficiency}%</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Hours</div>
+                        <div className="text-lg font-black text-white italic">{stats.activeHours}h</div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2 relative z-10">
+                      <button className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+                        <Activity size={14} /> Analytics
+                      </button>
+                      <button 
+                        onClick={() => setSelectedChatUser(dev)}
+                        className="p-3 bg-[#c7c42a]/10 text-[#c7c42a] rounded-xl hover:bg-[#c7c42a] hover:text-black transition-all"
+                      >
+                        <Mail size={16} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {activeDevs.length === 0 && (
+                <div className="col-span-full py-20 text-center">
+                  <Shield size={48} className="mx-auto text-slate-700 mb-4 opacity-20" />
+                  <p className="text-slate-600 font-black uppercase tracking-[0.3em] italic">Force not yet assembled</p>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -1167,15 +1272,6 @@ Requirements:
             </div>
           </div>
         );
-      case 'messages':
-        return (
-          <MessagesModule 
-            currentUser={user!}
-            profile={profile}
-            onClose={() => setActiveTab('overview')}
-            fullScreen={false}
-          />
-        );
       default:
         return null;
     }
@@ -1192,7 +1288,12 @@ Requirements:
 
         <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
           <div className="mb-6">
-            <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">Core Management</p>
+            <div className="flex justify-between items-center px-4 mb-4">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Core Management</p>
+              <button className="text-white/20 hover:text-white transition-colors group">
+                <Plus size={14} className="group-hover:rotate-90 transition-transform duration-300" />
+              </button>
+            </div>
             <div className="space-y-1">
               {[
                 { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -1219,10 +1320,19 @@ Requirements:
           </div>
 
           <div className="mb-6">
-            <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">Sales Leads</p>
+            <div className="flex justify-between items-center px-4 mb-4">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Sales Leads</p>
+              <button 
+                onClick={() => setIsInviteModalOpen(true)}
+                className="text-white/20 hover:text-white transition-colors group"
+              >
+                <Plus size={14} className="group-hover:rotate-90 transition-transform duration-300" />
+              </button>
+            </div>
             <div className="space-y-1">
               {[
                 { id: 'developer-leads', label: 'Developer Leads', icon: FileText },
+                { id: 'developers', label: 'Active Crew', icon: Users },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -1249,7 +1359,6 @@ Requirements:
               {[
                 { id: 'leaves', label: 'Leaves', icon: Clock },
                 { id: 'attendance', label: 'Attendance', icon: CalendarIcon },
-                { id: 'messages', label: 'Messages', icon: MessageSquare },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -1278,7 +1387,7 @@ Requirements:
           { id: 'overview', icon: LayoutDashboard },
           { id: 'clients', icon: User },
           { id: 'projects', icon: Briefcase },
-          { id: 'messages', icon: MessageSquare },
+          { id: 'leaves', icon: Clock },
         ].map((tab) => (
           <button 
             key={tab.id}
