@@ -130,81 +130,81 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Full Name</label>
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Full Name</label>
+          <div className="relative group">
+            <User className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
             <input 
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all"
+              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
               placeholder="Your full name"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Email Address</label>
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Email Address</label>
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+            <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10" size={20} />
             <input 
               type="email"
               value={profile.email}
               readOnly
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white/40 text-sm outline-none cursor-not-allowed"
+              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white/40 text-base font-bold outline-none cursor-not-allowed"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Phone Number</label>
-          <div className="relative">
-            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Phone Number</label>
+          <div className="relative group">
+            <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
             <input 
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all"
-              placeholder="+91 00000 00000"
+              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
+              placeholder="9866184572"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Pincode Check</label>
-          <div className="relative">
-            <Check className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Pincode Check</label>
+          <div className="relative group">
+            <Check className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
             <input 
               type="text"
               maxLength={6}
               value={formData.pincode}
               onChange={(e) => setFormData({ ...formData, pincode: e.target.value.replace(/\D/g, '') })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all"
-              placeholder="6-digit Pincode"
+              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
+              placeholder="123456"
             />
           </div>
         </div>
 
-        <div className="md:col-span-2 space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Street Address</label>
-          <div className="relative">
-            <Building className="absolute left-4 top-4 text-white/20" size={18} />
+        <div className="md:col-span-2 space-y-3">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Street Address</label>
+          <div className="relative group">
+            <Building className="absolute left-6 top-6 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
             <textarea 
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all resize-none"
-              placeholder="Building, Street, Area..."
+              rows={4}
+              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all resize-none placeholder:text-white/5"
+              placeholder="y"
             />
           </div>
         </div>
 
-        <div className="space-y-2 relative">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">State</label>
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+        <div className="space-y-3 relative">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">State</label>
+          <div className="relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
             <input 
               type="text"
               value={formData.state || stateSearch}
@@ -214,8 +214,8 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                 setFormData({ ...formData, state: '', city: '' });
                 setIsStateDropdownOpen(true);
               }}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all font-bold placeholder:text-white/10"
-              placeholder="Search State..."
+              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
+              placeholder="Assam"
             />
             <AnimatePresence>
               {isStateDropdownOpen && (
@@ -225,7 +225,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute left-0 right-0 top-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar"
+                    className="absolute left-0 right-0 top-full mt-2 bg-[#111] border border-white/10 rounded-[1.5rem] shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar"
                   >
                     {filteredStates.length > 0 ? (
                       filteredStates.map(state => (
@@ -252,10 +252,10 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
           </div>
         </div>
 
-        <div className="space-y-2 relative">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">City</label>
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+        <div className="space-y-3 relative">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">City</label>
+          <div className="relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
             <input 
               type="text"
               value={formData.city || citySearch}
@@ -266,8 +266,8 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                 setIsCityDropdownOpen(true);
               }}
               disabled={!formData.state}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed font-bold placeholder:text-white/10"
-              placeholder={formData.state ? "Search city..." : "Select state first"}
+              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed placeholder:text-white/5"
+              placeholder="Silchar"
             />
             
             <AnimatePresence>
@@ -278,7 +278,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute left-0 right-0 top-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar"
+                    className="absolute left-0 right-0 top-full mt-2 bg-[#111] border border-white/10 rounded-[1.5rem] shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar"
                   >
                     {filteredCities.length > 0 ? (
                       filteredCities.map(city => (

@@ -276,46 +276,69 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black">
       <MeetingReminder meetings={meetings} />
       {/* Sidebar Navigation */}
-      <aside className="fixed left-0 top-0 bottom-0 w-24 bg-[#0a0a0a] border-r border-white/5 flex flex-col items-center py-10 gap-10 z-40 hidden lg:flex">
-        <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-xl">
-          <span className="text-white font-black text-xl italic tracking-tighter">Q</span>
-        </div>
-        <nav className="flex-1 flex flex-col gap-6">
+      <aside className="fixed left-0 top-0 bottom-0 w-24 bg-[#0a0a0a] border-r border-white/5 flex flex-col items-center py-8 gap-10 z-40 hidden lg:flex">
+        <button 
+          onClick={() => {
+            setActiveTab('messages');
+            setShowChat(true);
+          }}
+          className="w-14 h-14 bg-black rounded-2xl flex flex-col items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all border border-white/10 group overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-[#c7c42a]/0 group-hover:bg-[#c7c42a]/10 transition-colors" />
+          <span className="text-white font-black text-2xl italic tracking-tighter relative z-10">W</span>
+          <span className="text-[6px] font-black uppercase text-[#c7c42a]/60 leading-none tracking-widest group-hover:text-[#c7c42a] transition-colors relative z-10">Chat</span>
+        </button>
+        <nav className="flex-1 flex flex-col gap-5">
           {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { id: 'analytics', icon: TrendingUp, label: 'Analytics' },
-            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
-            { id: 'meetings', icon: Video, label: 'Meetings' },
-            { id: 'payments', icon: CreditCard, label: 'Payments' },
-            { id: 'settings', icon: Settings, label: 'Settings' },
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            { id: 'analytics', icon: TrendingUp, label: 'Stats' },
+            { id: 'messages', icon: MessageCircle, label: 'Chat' },
+            { id: 'meetings', icon: Video, label: 'Meets' },
+            { id: 'payments', icon: CreditCard, label: 'Plans' },
+            { id: 'settings', icon: Settings, label: 'User' },
           ].map((tab) => (
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`p-4 rounded-2xl transition-all duration-300 relative group ${
+              className={`w-14 h-14 rounded-2xl transition-all duration-300 relative group flex items-center justify-center ${
                 activeTab === tab.id 
                   ? 'text-black shadow-lg scale-110' 
-                  : 'text-white/30 hover:text-white hover:bg-white/5'
+                  : 'text-white/20 hover:text-white hover:bg-white/5'
               }`}
               style={activeTab === tab.id ? { backgroundColor: primaryColor } : {}}
               title={tab.label}
             >
-              <tab.icon size={24} />
+              <tab.icon size={22} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
               {tab.id === 'messages' && unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg animate-pulse border-2 border-black">
                   {unreadCount}
                 </span>
               )}
+              {/* Tooltip */}
+              <div className="absolute left-full ml-4 px-3 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                {tab.label}
+              </div>
             </button>
           ))}
           {profile?.role === 'admin' && (
             <Link 
               to="/admin"
-              className="p-4 rounded-2xl text-white/30 hover:text-[#c7c42a] hover:bg-white/5 transition-all"
+              className="w-14 h-14 rounded-2xl text-white/20 hover:text-[#c7c42a] hover:bg-white/5 transition-all flex items-center justify-center group"
+              title="Admin Panel"
             >
-              <LayoutDashboard size={24} />
+              <ShieldCheck size={22} />
             </Link>
           )}
+          
+          <div className="mt-auto pb-4">
+            <button 
+              onClick={() => logOut()} 
+              className="w-14 h-14 rounded-2xl text-white/20 hover:text-red-500 hover:bg-red-500/10 transition-all group flex items-center justify-center"
+              title="Logout"
+            >
+              <LogOut size={22} className="group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
         </nav>
       </aside>
 

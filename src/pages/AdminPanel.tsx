@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc } from '../firebase';
+import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc, serverTimestamp } from '../firebase';
 import { UserProfile, Project, ProjectStatus } from '../types';
 import { Link } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
@@ -325,6 +325,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       await updateProject(projectId, { 
         status: 'Accepted',
         progress: 10,
+        acceptedAt: serverTimestamp(),
         estimatedCompletion: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
       });
 
@@ -558,19 +559,13 @@ Generated on: ${new Date().toLocaleString()}
           <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Overview</span>
           <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
         </div>
-        <button 
-          onClick={() => { setActiveTab('projects'); setShowProjectModal(true); }}
-          className="w-16 h-16 bg-[#c7c42a] rounded-[2rem] flex items-center justify-center text-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_50px_rgba(199,196,42,0.2)]"
-        >
-          <Plus size={32} />
-        </button>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#c7c42a]', onPlus: () => setActiveTab('clients') },
-          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#c7c42a]', onPlus: () => { setActiveTab('projects'); setShowProjectModal(true); } },
-          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]', onPlus: () => setActiveTab('requests') },
+          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#c7c42a]' },
+          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#c7c42a]' },
+          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]' },
           { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#c7c42a]' },
         ].map((stat, i) => (
           <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative">
@@ -578,17 +573,6 @@ Generated on: ${new Date().toLocaleString()}
               <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform`}>
                 <stat.icon size={24} className={stat.color} />
               </div>
-              {stat.onPlus && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    stat.onPlus?.();
-                  }}
-                  className="p-2 bg-white/5 rounded-lg hover:bg-[#c7c42a] hover:text-black transition-all text-[#c7c42a]/40"
-                >
-                  <Plus size={14} />
-                </button>
-              )}
             </div>
             <div className="text-4xl font-bold mb-1 text-white tabular-nums">{stat.value}</div>
             <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>

@@ -242,6 +242,9 @@ export interface Project {
   lastSenderId?: string;
   developerId?: string;
   unreadCount?: Record<string, number>;
+  websiteUrl?: string;
+  acceptedAt?: string | Timestamp;
+  urlSubmittedAt?: string | Timestamp;
 }
 
 export interface Attachment {

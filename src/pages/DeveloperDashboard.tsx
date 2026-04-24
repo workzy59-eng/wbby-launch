@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, LeaveRequest, Attendance } from '../types';
@@ -18,7 +18,8 @@ import {
   Send,
   X,
   Award,
-  Activity
+  Activity,
+  Loader2
 } from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
@@ -43,6 +44,8 @@ import { updateProfile, requestLeave, getLeaveRequests, getAttendance, getProjec
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { Project } from '../types';
+import { toast } from 'react-hot-toast';
+import { ExternalLink, Globe } from 'lucide-react';
 
 interface DeveloperDashboardProps {
   user: FirebaseUser | null;
@@ -63,6 +66,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSalaryWarning, setShowSalaryWarning] = useState(false);
+  const [urlEnteringProjectId, setUrlEnteringProjectId] = useState<string | null>(null);
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [isSubmittingUrl, setIsSubmittingUrl] = useState(false);
+
   const [onboardingData, setOnboardingData] = useState({
     name: profile?.displayName || '',
     experience: '',
@@ -77,6 +84,59 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
+
+  const projectsNeedingUrl = useMemo(() => projects.filter(p => p.status === 'Accepted' && !p.websiteUrl), [projects]);
+
+  const formatTimeLeft = (acceptedAt: any) => {
+    if (!acceptedAt) return '3:00:00';
+    const date = acceptedAt.toDate ? acceptedAt.toDate() : new Date(acceptedAt);
+    const limit = date.getTime() + (3 * 60 * 60 * 1000);
+    const now = new Date().getTime();
+    const diff = limit - now;
+    
+    if (diff <= 0) return 'LATE';
+    
+    const h = Math.floor(diff / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const [timeLeft, setTimeLeft] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const newTimeLeft: Record<string, string> = {};
+      projectsNeedingUrl.forEach(p => {
+        newTimeLeft[p.id] = formatTimeLeft(p.acceptedAt);
+      });
+      setTimeLeft(newTimeLeft);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [projectsNeedingUrl]);
+
+  const handleSubmitUrl = async (projectId: string) => {
+    if (!websiteUrl || isSubmittingUrl) return;
+    setIsSubmittingUrl(true);
+    try {
+      const { updateProject } = await import('../services/database');
+      await updateProject(projectId, {
+        websiteUrl,
+        status: 'Development Started',
+        progress: 20,
+        urlSubmittedAt: new Date().toISOString()
+      });
+      toast.success('Website URL submitted! Project status updated.');
+      setUrlEnteringProjectId(null);
+      setWebsiteUrl('');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to submit URL');
+    } finally {
+      setIsSubmittingUrl(false);
+    }
+  };
+  
   const [newLeave, setNewLeave] = useState({
     startDate: '',
     endDate: '',
@@ -341,6 +401,56 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       case 'dashboard':
         return (
           <div className="space-y-8">
+            {/* Urgent: Website URL Entry */}
+            {projectsNeedingUrl.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500">Urgent: Website URL Required</span>
+                </div>
+                <div className="grid grid-cols-1 gap-6">
+                  {projectsNeedingUrl.map(project => (
+                    <motion.div 
+                      key={project.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-red-500/10 border border-red-500/20 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8"
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center text-red-500">
+                          <Globe size={32} />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{project.businessName}</h4>
+                          <p className="text-xs font-bold text-red-400 uppercase tracking-widest mt-1">Time Remaining: {timeLeft[project.id] || '3:00:00'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 max-w-md w-full flex gap-3">
+                        <input 
+                          type="url"
+                          placeholder="https://your-website-url.com"
+                          className="flex-1 bg-black/40 border border-white/10 rounded-xl px-6 py-4 text-sm font-bold text-white outline-none focus:border-red-500/50 transition-all"
+                          value={urlEnteringProjectId === project.id ? websiteUrl : ''}
+                          onChange={(e) => {
+                            setUrlEnteringProjectId(project.id);
+                            setWebsiteUrl(e.target.value);
+                          }}
+                        />
+                        <button 
+                          onClick={() => handleSubmitUrl(project.id)}
+                          disabled={isSubmittingUrl || !websiteUrl || urlEnteringProjectId !== project.id}
+                          className="px-8 py-4 bg-red-500 text-white rounded-xl font-black uppercase italic text-xs tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                          {isSubmittingUrl ? <Loader2 className="animate-spin" /> : 'Sumbit'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[
                 { label: 'Assigned', value: stats.total, icon: Briefcase, color: 'text-blue-400', bg: 'bg-blue-500/10' },
