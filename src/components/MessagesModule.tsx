@@ -135,6 +135,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
   const [showUserList, setShowUserList] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -155,6 +156,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const fetchProfiles = async () => {
       let profiles: UserProfile[] = [];
       
+      const admins = await getAdmins();
+      if (admins.length > 0) setAdminProfile(admins[0]);
+
       // Admin can message everyone, others can message admin
       profiles = await getProfiles();
       
@@ -246,7 +250,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (!activeConversation) return;
 
     // Mark as seen when opening
-    if (activeConversation.id !== 'new') {
+    if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin') {
       markConversationAsSeen(activeConversation.id, currentUser.uid);
     }
 
@@ -705,12 +709,18 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <div className="p-6">
               <p className="text-xs font-bold text-[#8696a0] uppercase tracking-widest mb-4 px-2">No active chats</p>
               <button
-                onClick={() => setActiveConversation({ 
-                  id: 'new_admin', 
-                  recipientId: 'admin_wl', 
-                  recipientProfile: { displayName: 'Webby Launch', email: 'workzy59@gmail.com', role: 'admin' },
-                  isProject: false 
-                } as any)}
+                onClick={() => {
+                  if (adminProfile) {
+                    startNewChat(adminProfile);
+                  } else {
+                    setActiveConversation({ 
+                      id: 'new_admin', 
+                      participants: [currentUser.uid, 'admin_wl'],
+                      recipientProfile: { displayName: 'Webby Launch', email: 'workzy59@gmail.com', role: 'admin' } as any,
+                      isProject: false 
+                    } as any);
+                  }
+                }}
                 className="w-full p-4 flex items-center gap-4 transition-all hover:bg-[#202c33] rounded-xl border border-[#ffffff05] group"
               >
                 <div className="w-14 h-14 rounded-full bg-[#ffc107] flex items-center justify-center text-black font-black text-xl shadow-lg ring-2 ring-transparent group-hover:ring-[#ffc107]/20 transition-all">

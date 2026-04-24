@@ -132,79 +132,80 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Full Name</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#ffffff60] ml-1">Full Name</label>
           <div className="relative group">
-            <User className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
+            <User className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/20 group-focus-within:text-[#c7c42a] transition-all" size={20} />
             <input 
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
+              className="w-full bg-[#0a0a0a] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 focus:bg-[#0d0d0d] transition-all placeholder:text-white/5 shadow-inner"
               placeholder="Your full name"
             />
           </div>
         </div>
 
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Email Address</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#ffffff60] ml-1">Email Address</label>
           <div className="relative">
-            <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10" size={20} />
+            <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-white/5" size={20} />
             <input 
               type="email"
               value={profile.email}
               readOnly
-              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white/40 text-base font-bold outline-none cursor-not-allowed"
+              className="w-full bg-[#050505] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white/20 text-base font-bold outline-none cursor-not-allowed opacity-60"
             />
+            <div className="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 bg-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-white/20">Verified</div>
           </div>
         </div>
 
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Phone Number</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#ffffff60] ml-1">Phone Number</label>
           <div className="relative group">
-            <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
+            <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/20 group-focus-within:text-[#c7c42a] transition-all" size={20} />
             <input 
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
-              placeholder="9866184572"
+              className="w-full bg-[#0a0a0a] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 focus:bg-[#0d0d0d] transition-all placeholder:text-white/5 shadow-inner"
+              placeholder="+91 00000 00000"
             />
           </div>
         </div>
 
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Pincode Check</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#ffffff60] ml-1">Pincode Check</label>
           <div className="relative group">
-            <Check className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
+            <Check className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/20 group-focus-within:text-[#c7c42a] transition-all" size={20} />
             <input 
               type="text"
               maxLength={6}
               value={formData.pincode}
               onChange={(e) => setFormData({ ...formData, pincode: e.target.value.replace(/\D/g, '') })}
-              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
+              className="w-full bg-[#0a0a0a] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 focus:bg-[#0d0d0d] transition-all placeholder:text-white/5 shadow-inner"
               placeholder="123456"
             />
           </div>
         </div>
 
         <div className="md:col-span-2 space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">Street Address</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#ffffff60] ml-1">Street Address</label>
           <div className="relative group">
-            <Building className="absolute left-6 top-6 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
+            <Building className="absolute left-6 top-6 text-[#c7c42a]/20 group-focus-within:text-[#c7c42a] transition-all" size={20} />
             <textarea 
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               rows={4}
-              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all resize-none placeholder:text-white/5"
-              placeholder="y"
+              className="w-full bg-[#0a0a0a] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 focus:bg-[#0d0d0d] transition-all resize-none placeholder:text-white/5 shadow-inner"
+              placeholder="Enter your full business or residence address"
             />
           </div>
         </div>
 
         <div className="space-y-3 relative">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">State</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#ffffff60] ml-1">State Selection</label>
           <div className="relative group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/20 group-focus-within:text-[#c7c42a] transition-all" size={20} />
             <input 
               type="text"
               value={formData.state || stateSearch}
@@ -214,18 +215,19 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                 setFormData({ ...formData, state: '', city: '' });
                 setIsStateDropdownOpen(true);
               }}
-              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all placeholder:text-white/5"
-              placeholder="Assam"
+              className="w-full bg-[#0a0a0a] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 focus:bg-[#0d0d0d] transition-all placeholder:text-white/5 shadow-inner"
+              placeholder="Select State"
             />
+            <ChevronDown className={`absolute right-6 top-1/2 -translate-y-1/2 text-white/20 transition-transform duration-300 ${isStateDropdownOpen ? 'rotate-180' : ''}`} size={16} />
             <AnimatePresence>
               {isStateDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsStateDropdownOpen(false)} />
                   <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute left-0 right-0 top-full mt-2 bg-[#111] border border-white/10 rounded-[1.5rem] shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar"
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute left-0 right-0 top-full mt-2 bg-[#0a0a0a] border border-white/10 rounded-[1.5rem] shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-3xl"
                   >
                     {filteredStates.length > 0 ? (
                       filteredStates.map(state => (
@@ -237,13 +239,13 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                             setCitySearch('');
                             setIsStateDropdownOpen(false);
                           }}
-                          className="w-full text-left px-6 py-4 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 uppercase font-black italic tracking-tighter"
+                          className="w-full text-left px-6 py-4 text-xs text-white/50 hover:text-[#c7c42a] hover:bg-[#c7c42a]/5 transition-all border-b border-white/5 last:border-0 uppercase font-black italic tracking-tighter"
                         >
                           {state}
                         </button>
                       ))
                     ) : (
-                      <div className="px-6 py-4 text-xs text-white/20 italic">No states found.</div>
+                      <div className="px-6 py-8 text-center text-[10px] font-black uppercase tracking-widest text-white/20 italic">No states matched.</div>
                     )}
                   </motion.div>
                 </>
@@ -253,9 +255,9 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
         </div>
 
         <div className="space-y-3 relative">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#555] ml-1">City</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#ffffff60] ml-1">City Selection</label>
           <div className="relative group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#c7c42a] transition-colors" size={20} />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/20 group-focus-within:text-[#c7c42a] transition-all" size={20} />
             <input 
               type="text"
               value={formData.city || citySearch}
@@ -266,19 +268,20 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                 setIsCityDropdownOpen(true);
               }}
               disabled={!formData.state}
-              className="w-full bg-[#111] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed placeholder:text-white/5"
-              placeholder="Silchar"
+              className="w-full bg-[#0a0a0a] border border-white/5 rounded-[1.5rem] py-6 pl-16 pr-6 text-white text-base font-bold outline-none focus:border-[#c7c42a]/30 focus:bg-[#0d0d0d] transition-all disabled:opacity-30 disabled:cursor-not-allowed placeholder:text-white/5 shadow-inner"
+              placeholder={formData.state ? "Select City" : "Select state first"}
             />
+            <ChevronDown className={`absolute right-6 top-1/2 -translate-y-1/2 text-white/20 transition-transform duration-300 ${isCityDropdownOpen ? 'rotate-180' : ''}`} size={16} />
             
             <AnimatePresence>
               {isCityDropdownOpen && formData.state && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsCityDropdownOpen(false)} />
                   <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute left-0 right-0 top-full mt-2 bg-[#111] border border-white/10 rounded-[1.5rem] shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar"
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute left-0 right-0 top-full mt-2 bg-[#0a0a0a] border border-white/10 rounded-[1.5rem] shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-3xl"
                   >
                     {filteredCities.length > 0 ? (
                       filteredCities.map(city => (
@@ -289,13 +292,13 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                             setCitySearch(city);
                             setIsCityDropdownOpen(false);
                           }}
-                          className="w-full text-left px-6 py-4 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 uppercase font-black italic tracking-tighter"
+                          className="w-full text-left px-6 py-4 text-xs text-white/50 hover:text-[#c7c42a] hover:bg-[#c7c42a]/5 transition-all border-b border-white/5 last:border-0 uppercase font-black italic tracking-tighter"
                         >
                           {city}
                         </button>
                       ))
                     ) : (
-                      <div className="px-6 py-4 text-xs text-white/20 italic">No cities found. Try typing...</div>
+                      <div className="px-6 py-8 text-center text-[10px] font-black uppercase tracking-widest text-white/20 italic">No cities matched.</div>
                     )}
                   </motion.div>
                 </>

@@ -40,7 +40,7 @@ export default function JoinDeveloper() {
 
     setLoading(true);
     try {
-      const invite: any = await getInviteByCode(email, code);
+      const invite: any = await getInviteByCode(email.trim().toLowerCase(), code.trim().toUpperCase());
       
       if (!invite) {
         throw new Error("Invalid or already used invite code for this email");

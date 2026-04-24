@@ -549,7 +549,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               {[
                 { label: 'Total Projects', value: stats.total, icon: FolderKanban, color: '#c7c42a' },
                 { label: 'Active Missions', value: stats.active, icon: Activity, color: '#c7c42a' },
-                { label: 'Network Uptime', value: stats.uptime, icon: ShieldCheck, color: '#c7c42a' },
+                { label: 'In Review', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: ShieldCheck, color: '#c7c42a' },
                 { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: '#c7c42a' },
               ].map((stat, i) => (
                       <div key={i} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-[#c7c42a]/20 transition-all">
@@ -1073,16 +1073,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           <div className="lg:col-span-1 space-y-6">
                             <div className="flex items-center justify-between px-4">
                               <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">Your Projects</h2>
-                              <button 
-                                onClick={() => {
-                                  localStorage.removeItem('onboarding_step');
-                                  localStorage.removeItem('onboarding_data');
-                                  navigate('/onboarding');
-                                }}
-                                className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] hover:underline"
-                              >
-                                New +
-                              </button>
                             </div>
                         <div className="space-y-4">
                           {projects.map((p) => (

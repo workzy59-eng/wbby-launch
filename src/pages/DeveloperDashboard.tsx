@@ -405,44 +405,56 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             {projectsNeedingUrl.length > 0 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500">Urgent: Website URL Required</span>
+                  <div className="w-2 h-2 rounded-full bg-[#c7c42a] animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Mission Critical: Domain Submission</span>
                 </div>
                 <div className="grid grid-cols-1 gap-6">
                   {projectsNeedingUrl.map(project => (
                     <motion.div 
                       key={project.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-red-500/10 border border-red-500/20 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-[#c7c42a] rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between gap-10 shadow-[0_0_50px_rgba(199,196,42,0.15)] relative overflow-hidden group"
                     >
-                      <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center text-red-500">
-                          <Globe size={32} />
+                      {/* Visual Flourish */}
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700" />
+                      
+                      <div className="flex items-center gap-8 relative z-10">
+                        <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center text-[#c7c42a] shadow-2xl group-hover:rotate-6 transition-transform">
+                          <Globe size={40} />
                         </div>
                         <div>
-                          <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{project.businessName}</h4>
-                          <p className="text-xs font-bold text-red-400 uppercase tracking-widest mt-1">Time Remaining: {timeLeft[project.id] || '3:00:00'}</p>
+                          <div className="flex items-center gap-3 mb-1">
+                            <h4 className="text-3xl font-black text-black uppercase italic tracking-tighter">{project.businessName}</h4>
+                            <span className="px-3 py-1 bg-black text-[#c7c42a] rounded-lg text-[8px] font-black uppercase">Pending URL</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock size={14} className="text-black/60" />
+                            <p className="text-sm font-black text-black/80 uppercase italic">Time Remaining: <span className="text-xl inline-block ml-1 underline decoration-2 underline-offset-4">{timeLeft[project.id] || '3:00:00'}</span></p>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="flex-1 max-w-md w-full flex gap-3">
-                        <input 
-                          type="url"
-                          placeholder="https://your-website-url.com"
-                          className="flex-1 bg-black/40 border border-white/10 rounded-xl px-6 py-4 text-sm font-bold text-white outline-none focus:border-red-500/50 transition-all"
-                          value={urlEnteringProjectId === project.id ? websiteUrl : ''}
-                          onChange={(e) => {
-                            setUrlEnteringProjectId(project.id);
-                            setWebsiteUrl(e.target.value);
-                          }}
-                        />
+                      <div className="flex-1 max-w-lg w-full flex flex-col sm:flex-row gap-4 relative z-10">
+                        <div className="flex-1 relative group/input">
+                          <ExternalLink className="absolute left-6 top-1/2 -translate-y-1/2 text-black/20 group-focus-within/input:text-black transition-colors" size={18} />
+                          <input 
+                            type="url"
+                            placeholder="Enter Finished Website URL (e.g. https://www.yourdomain.com)"
+                            className="w-full bg-black/10 border-2 border-black/10 rounded-2xl py-6 pl-16 pr-6 text-base font-black text-black outline-none focus:border-black/30 bg-white/20 transition-all placeholder:text-black/30 placeholder:italic"
+                            value={urlEnteringProjectId === project.id ? websiteUrl : ''}
+                            onChange={(e) => {
+                              setUrlEnteringProjectId(project.id);
+                              setWebsiteUrl(e.target.value);
+                            }}
+                          />
+                        </div>
                         <button 
                           onClick={() => handleSubmitUrl(project.id)}
                           disabled={isSubmittingUrl || !websiteUrl || urlEnteringProjectId !== project.id}
-                          className="px-8 py-4 bg-red-500 text-white rounded-xl font-black uppercase italic text-xs tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                          className="px-10 py-6 bg-black text-white rounded-2xl font-black uppercase italic text-sm tracking-widest hover:scale-[1.05] active:scale-95 transition-all disabled:opacity-50 shadow-2xl flex items-center justify-center gap-3"
                         >
-                          {isSubmittingUrl ? <Loader2 className="animate-spin" /> : 'Sumbit'}
+                          {isSubmittingUrl ? <Loader2 className="animate-spin" /> : <>Launch <Send size={16} /></>}
                         </button>
                       </div>
                     </motion.div>

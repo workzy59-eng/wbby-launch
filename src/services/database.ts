@@ -878,8 +878,8 @@ export const getDeveloperInvites = async () => {
 export const getInviteByCode = async (email: string, code: string) => {
   const q = query(
     collection(db, 'developer_invites'), 
-    where('email', '==', email.toLowerCase()), 
-    where('code', '==', code.toUpperCase()),
+    where('email', '==', email.trim().toLowerCase()), 
+    where('code', '==', code.trim().toUpperCase()),
     where('used', '==', false)
   );
   const snap = await getDocs(q);
