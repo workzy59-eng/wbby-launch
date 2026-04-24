@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
@@ -139,6 +139,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       toast.error("Payment configuration missing. Please contact support.");
     }
   };
+
+  const stats = useMemo(() => {
+    const total = projects.length;
+    const active = projects.filter(p => !['Completed', 'Rejected'].includes(p.status)).length;
+    const completed = projects.filter(p => p.status === 'Completed').length;
+    const uptime = total > 0 ? '99.9%' : '0%';
+    
+    return { total, active, completed, uptime };
+  }, [projects]);
 
   const [showChat, setShowChat] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -514,12 +523,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
                   {/* Overview Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                      { label: 'Network Uptime', value: '99.98%', icon: Activity, color: '#c7c42a' },
-                      { label: 'Data Processing', value: '1.2ms', icon: Zap, color: '#c7c42a' },
-                      { label: 'System Health', value: 'Stable', icon: ShieldCheck, color: '#c7c42a' },
-                      { label: 'Traffic Pulse', value: 'Active', icon: Flame, color: '#c7c42a' },
-                    ].map((stat, i) => (
+              {[
+                { label: 'Total Projects', value: stats.total, icon: FolderKanban, color: '#c7c42a' },
+                { label: 'Active Missions', value: stats.active, icon: Activity, color: '#c7c42a' },
+                { label: 'Network Uptime', value: stats.uptime, icon: ShieldCheck, color: '#c7c42a' },
+                { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: '#c7c42a' },
+              ].map((stat, i) => (
                       <div key={i} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-[#c7c42a]/20 transition-all">
                         <div className="flex justify-between items-start mb-6">
                           <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">

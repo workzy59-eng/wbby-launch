@@ -24,7 +24,15 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
   const [isUploading, setIsUploading] = useState(false);
   const [citySearch, setCitySearch] = useState('');
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+  const [stateSearch, setStateSearch] = useState('');
+  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredStates = useMemo(() => {
+    return INDIAN_STATES.filter(state => 
+      state.toLowerCase().includes(stateSearch.toLowerCase())
+    );
+  }, [stateSearch]);
 
   const availableCities = useMemo(() => {
     if (!formData.state) return [];
@@ -193,25 +201,59 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">State (First)</label>
+        <div className="space-y-2 relative">
+          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">State</label>
           <div className="relative">
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={18} />
-            <select 
-              value={formData.state}
-              onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '' })}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all appearance-none"
-            >
-              <option value="" className="bg-[#111]">Select State</option>
-              {INDIAN_STATES.map(state => (
-                <option key={state} value={state} className="bg-[#111]">{state}</option>
-              ))}
-            </select>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+            <input 
+              type="text"
+              value={formData.state || stateSearch}
+              onFocus={() => setIsStateDropdownOpen(true)}
+              onChange={(e) => {
+                setStateSearch(e.target.value);
+                setFormData({ ...formData, state: '', city: '' });
+                setIsStateDropdownOpen(true);
+              }}
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all font-bold placeholder:text-white/10"
+              placeholder="Search State..."
+            />
+            <AnimatePresence>
+              {isStateDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsStateDropdownOpen(false)} />
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute left-0 right-0 top-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar"
+                  >
+                    {filteredStates.length > 0 ? (
+                      filteredStates.map(state => (
+                        <button
+                          key={state}
+                          onClick={() => {
+                            setFormData({ ...formData, state, city: '' });
+                            setStateSearch(state);
+                            setCitySearch('');
+                            setIsStateDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-6 py-4 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 uppercase font-black italic tracking-tighter"
+                        >
+                          {state}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-6 py-4 text-xs text-white/20 italic">No states found.</div>
+                    )}
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         <div className="space-y-2 relative">
-          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">City (Last)</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">City</label>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
             <input 
@@ -224,7 +266,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                 setIsCityDropdownOpen(true);
               }}
               disabled={!formData.state}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed font-bold placeholder:text-white/10"
               placeholder={formData.state ? "Search city..." : "Select state first"}
             />
             
@@ -247,7 +289,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
                             setCitySearch(city);
                             setIsCityDropdownOpen(false);
                           }}
-                          className="w-full text-left px-6 py-3 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                          className="w-full text-left px-6 py-4 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 uppercase font-black italic tracking-tighter"
                         >
                           {city}
                         </button>
