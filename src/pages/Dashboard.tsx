@@ -29,7 +29,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'messages' | 'settings' | 'meetings' | 'payments'>('messages');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
   const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -224,7 +224,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col gap-6">
           {[
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
             { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages' },
+            { id: 'meetings', icon: Video, label: 'Meetings' },
+            { id: 'payments', icon: CreditCard, label: 'Payments' },
+            { id: 'settings', icon: Settings, label: 'Settings' },
           ].map((tab) => (
             <button 
               key={tab.id}
@@ -303,20 +307,21 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       </header>
 
       {/* Mobile Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-around items-center z-40">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'messages', icon: MessageCircle, label: unreadCount > 0 ? `Chat (${unreadCount})` : 'Chat' },
-            { id: 'meetings', icon: Video, label: 'Meetings' },
+            { id: 'progress', icon: FolderKanban, label: 'Progress' },
+            { id: 'messages', icon: MessageCircle, label: 'Chat' },
+            { id: 'meetings', icon: Video, label: 'Meets' },
             { id: 'settings', icon: Settings, label: 'Settings' },
           ].map((tab) => (
           <button 
             key={tab.id}
-            onClick={() => tab.id === 'settings' ? navigate('/settings') : setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as any)}
             className={`flex flex-col items-center gap-1 transition-all relative ${
               activeTab === tab.id 
-                ? 'text-black' 
-                : 'text-gray-400'
+                ? 'text-[#c7c42a]' 
+                : 'text-white/40'
             }`}
           >
             <div className="relative">
@@ -327,7 +332,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
+            <span className="text-[10px] font-black uppercase tracking-tighter">{tab.label}</span>
           </button>
         ))}
       </nav>
@@ -465,6 +470,108 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   projects={projects}
                   initialRecipientId={adminProfile?.uid}
                 />
+              ) : activeTab === 'progress' ? (
+                <div className="space-y-12">
+                   <div className="flex flex-col gap-2">
+                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Real-time Tracking</span>
+                     <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Project Progress</h2>
+                   </div>
+                   
+                   {!selectedProject ? (
+                     <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5">
+                        <p className="text-white/40 italic">Select a project to view its progress timeline.</p>
+                     </div>
+                   ) : (
+                     <div className="space-y-10">
+                        {/* Status Steps */}
+                        <div className="bg-[#0a0a0a] rounded-[3rem] p-12 border border-white/5 relative overflow-hidden">
+                           <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>
+                           <div className="flex justify-between items-center overflow-x-auto pb-6 gap-6 no-scrollbar relative z-10">
+                            {statusSteps.map((step, i) => (
+                              <div key={step} className="flex flex-col items-center min-w-[120px] text-center gap-4">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
+                                  i < currentStepIndex 
+                                    ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
+                                    : i === currentStepIndex
+                                      ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#c7c42a] border-[#c7c42a] text-black'
+                                      : 'bg-transparent border-white/20 text-white/20'
+                                }`}>
+                                  {i < currentStepIndex ? <Check size={24} /> : step === 'Declined' ? <X size={24} /> : <span className="font-black text-lg">{i + 1}</span>}
+                                </div>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                  i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#c7c42a]' : 'text-white/20'
+                                }`}>
+                                  {step}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="space-y-6 mt-12 relative z-10">
+                            <div className="flex justify-between items-end">
+                              <span className="text-2xl font-black uppercase italic text-[#c7c42a]">Progress: {selectedProject.progress}%</span>
+                              <span className="text-xs font-black text-white/40 uppercase tracking-widest">Est. Completion: {formatDate(selectedProject.estimatedCompletion)}</span>
+                            </div>
+                            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${selectedProject.progress}%` }}
+                                className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_15px_rgba(199,196,42,0.5)]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Phase Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                           <div className="bg-white/5 p-12 rounded-[3rem] border border-white/5">
+                              <h3 className="text-xl font-black uppercase italic tracking-tighter mb-8">Phase Breakdown</h3>
+                              <div className="space-y-8">
+                                {[
+                                  { step: '01', title: 'Consultation', desc: 'Project architecture and scope lockdown.', done: selectedProject.progress >= 20 },
+                                  { step: '02', title: 'UI/UX Design', desc: 'Visual language and interface engineering.', done: selectedProject.progress >= 40 },
+                                  { step: '03', title: 'Development', desc: 'Core logic and feature implementation.', done: selectedProject.progress >= 70 },
+                                  { step: '04', title: 'Quality Assurance', desc: 'Refinement and performance testing.', done: selectedProject.progress >= 90 },
+                                  { step: '05', title: 'Live Deployment', desc: 'Final production roll-out and scaling.', done: selectedProject.progress >= 100 },
+                                ].map((phase, i) => (
+                                  <div key={i} className="flex gap-8 items-start group">
+                                    <div className={`text-2xl font-black italic transition-colors ${phase.done ? 'text-[#c7c42a]' : 'text-white/10'}`}>{phase.step}</div>
+                                    <div className="pt-1">
+                                      <h4 className={`text-sm font-black uppercase italic tracking-widest transition-colors ${phase.done ? 'text-white' : 'text-white/20'}`}>{phase.title}</h4>
+                                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">{phase.desc}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                           </div>
+
+                           <div className="flex flex-col gap-8">
+                             <div className="bg-[#c7c42a] p-12 rounded-[3rem] text-black">
+                                <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none text-black">Engineering<br />Pulse.</h3>
+                                <p className="text-xs font-bold uppercase tracking-widest opacity-60">Status updates are pushed directly from our development environment.</p>
+                                <div className="mt-8 pt-8 border-t border-black/10">
+                                   <div className="flex items-center gap-3">
+                                      <div className="w-2 h-2 rounded-full bg-black animate-pulse"></div>
+                                      <span className="text-[10px] font-black uppercase tracking-widest leading-none">System Online</span>
+                                   </div>
+                                </div>
+                             </div>
+                             
+                             <div className="bg-white/5 p-12 rounded-[3rem] border border-white/5">
+                                <h4 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-white">Need Adjustments?</h4>
+                                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">Discuss scope changes with your project lead.</p>
+                                <button 
+                                  onClick={() => setActiveTab('messages')}
+                                  className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                >
+                                  Open Project Chat
+                                </button>
+                             </div>
+                           </div>
+                        </div>
+                     </div>
+                   )}
+                </div>
               ) : activeTab === 'meetings' ? (
                 <div className="space-y-12">
                   <div className="flex flex-col gap-2">
@@ -474,21 +581,83 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   <MeetingList user={user} profile={profile!} />
                 </div>
               ) : activeTab === 'settings' ? (
-                <div className="bg-[#0a0a0a] rounded-[3rem] p-16 border border-white/5 shadow-2xl text-center space-y-8">
-                  <div className="w-24 h-24 bg-[#c7c42a] rounded-full flex items-center justify-center text-black mx-auto shadow-[0_0_50px_rgba(199,196,42,0.2)]">
-                    <Settings size={48} />
+                <div className="space-y-12">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Preferences</span>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Settings</h2>
                   </div>
-                  <div className="space-y-4">
-                    <h2 className="text-5xl font-black tracking-tighter uppercase italic text-[#c7c42a]">Professional Settings</h2>
-                    <p className="text-white/50 text-xl max-w-md mx-auto font-medium italic">Manage your profile, business details, and platform controls in our new dedicated settings portal.</p>
-                  </div>
-                  <div className="pt-8">
-                    <Link 
-                      to="/settings" 
-                      className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
-                    >
-                      Open Settings Portal
-                    </Link>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Profile Quick View */}
+                    <div className="md:col-span-1 space-y-8">
+                       <div className="bg-[#0a0a0a] rounded-[3rem] p-10 border border-white/5 text-center">
+                          <div className="relative inline-block mb-6">
+                             <div className="w-32 h-32 rounded-full border-4 border-[#c7c42a]/20 p-2">
+                                <div className="w-full h-full rounded-full bg-[#111] flex items-center justify-center text-5xl font-black text-[#c7c42a] overflow-hidden">
+                                   {profile?.photoURL ? (
+                                     <img src={profile.photoURL} alt="" className="w-full h-full object-cover" />
+                                   ) : (
+                                     profile?.displayName?.[0] || 'U'
+                                   )}
+                                </div>
+                             </div>
+                             <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-[#0a0a0a]"></div>
+                          </div>
+                          <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">{profile?.displayName}</h3>
+                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{profile?.role} Account</p>
+                          
+                          <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
+                             <div className="flex justify-between items-center text-xs">
+                                <span className="text-white/20 uppercase font-black">Status</span>
+                                <span className="text-[#c7c42a] uppercase font-black italic">Verified</span>
+                             </div>
+                             <div className="flex justify-between items-center text-xs">
+                                <span className="text-white/20 uppercase font-black">Member Since</span>
+                                <span className="text-white font-black italic">{new Date(profile?.createdAt as any).getFullYear() || '2026'}</span>
+                             </div>
+                          </div>
+                       </div>
+                       
+                       <button 
+                         onClick={() => navigate('/settings')}
+                         className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic text-sm hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+                       >
+                         <Settings size={18} /> Manage All Settings
+                       </button>
+                    </div>
+
+                    {/* Quick Settings Panels */}
+                    <div className="md:col-span-2 space-y-8">
+                       <div className="bg-white/5 rounded-[3rem] p-12 border border-white/5">
+                          <h4 className="text-xl font-black uppercase italic tracking-tighter mb-8 text-white">Notifications</h4>
+                          <div className="space-y-6">
+                             {[
+                               { label: 'Push Notifications', desc: 'Real-time alerts for project updates.', active: true },
+                               { label: 'Email Reports', desc: 'Weekly project health summaries.', active: true },
+                               { label: 'Chat Sounds', desc: 'Audible alerts for new messages.', active: false },
+                             ].map((item, i) => (
+                               <div key={i} className="flex justify-between items-center p-6 bg-black/20 rounded-2xl border border-white/5">
+                                  <div>
+                                     <div className="text-sm font-black uppercase italic text-white">{item.label}</div>
+                                     <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{item.desc}</div>
+                                  </div>
+                                  <div className={`w-12 h-6 rounded-full p-1 transition-colors ${item.active ? 'bg-[#c7c42a]' : 'bg-white/10'}`}>
+                                     <div className={`w-4 h-4 rounded-full bg-white transition-transform ${item.active ? 'translate-x-6' : ''}`}></div>
+                                  </div>
+                               </div>
+                             ))}
+                          </div>
+                       </div>
+
+                       <div className="bg-[#c7c42a]/5 rounded-[3rem] p-12 border border-[#c7c42a]/10">
+                          <h4 className="text-xl font-black uppercase italic tracking-tighter mb-4 text-[#c7c42a]">Security Status</h4>
+                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">Two-factor authentication is recommended for all client accounts.</p>
+                          <div className="flex items-center gap-4 text-green-400">
+                             <ShieldCheck size={20} />
+                             <span className="text-[10px] font-black uppercase tracking-widest">End-to-End Encrypted Sessions</span>
+                          </div>
+                       </div>
+                    </div>
                   </div>
                 </div>
               ) : activeTab === 'payments' ? (
