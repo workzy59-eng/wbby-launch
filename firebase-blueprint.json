@@ -366,9 +366,9 @@
       "schema": "Lead",
       "description": "Sales leads."
     },
-    "/developer_applications/{applicationId}": {
+    "/developer_requests/{requestId}": {
       "schema": "DeveloperApplication",
-      "description": "Developer applications."
+      "description": "Developer job requests"
     },
     "/sales_applications/{applicationId}": {
       "schema": "SalesApplication",

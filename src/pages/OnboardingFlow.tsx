@@ -44,6 +44,8 @@ const AVAILABLE_FEATURES = [
   'Fast Loading Performance'
 ];
 
+import StateCityDropdown from '../components/StateCityDropdown';
+
 const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
   const containerClasses = {
     desktop: 'w-full h-[600px]',
@@ -839,14 +841,40 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Address Line <span className="text-error">*</span></label>
-                <input
-                  type="text"
-                  className={getInputClass('addressLine')}
-                  value={formData.addressLine}
-                  onChange={(e) => handleInputChange('addressLine', e.target.value)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Address Line <span className="text-error">*</span></label>
+                  <input
+                    type="text"
+                    className={getInputClass('addressLine')}
+                    value={formData.addressLine}
+                    onChange={(e) => handleInputChange('addressLine', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Pincode <span className="text-error">*</span></label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    className={getInputClass('pincode')}
+                    value={formData.pincode}
+                    onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">State & City <span className="text-error">*</span></label>
+                <StateCityDropdown 
+                  onSelect={(state, city) => {
+                    handleInputChange('state', state);
+                    handleInputChange('city', city);
+                  }}
+                  initialState={formData.state}
+                  initialCity={formData.city}
                 />
+                {invalidFields.includes('state') && <p className="text-[8px] font-bold text-red-500 uppercase tracking-widest ml-4">Please select state and city</p>}
               </div>
 
               <div className="space-y-4">

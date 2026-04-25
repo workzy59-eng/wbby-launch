@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import admin from 'firebase-admin';
 import crypto from "crypto";
+import Razorpay from "razorpay";
 import firebaseConfig from './firebase-applet-config.json';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
@@ -117,6 +118,11 @@ async function startServer() {
 
   const dbAdmin = admin.firestore();
 
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret',
+  });
+
   // API Routes
   const apiRouter = express.Router();
   
@@ -144,6 +150,95 @@ async function startServer() {
     } catch (error: any) {
       console.error("DEBUG: Route error:", error);
       res.status(500).json({ error: error.message || "Upload failed" });
+    }
+  });
+
+  apiRouter.post("/razorpay/create-order", async (req, res) => {
+    try {
+      const { amount, currency = "INR", receipt } = req.body;
+      if (!amount) return res.status(400).json({ error: "Amount is required" });
+      
+      const options = {
+        amount: Math.round(amount * 100), // amount in the smallest currency unit
+        currency,
+        receipt: receipt || `receipt_${Date.now()}`,
+      };
+      const order = await razorpay.orders.create(options);
+      res.json(order);
+    } catch (error: any) {
+      console.error("Razorpay order creation error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  apiRouter.post("/razorpay/save-payment", async (req, res) => {
+    try {
+      const { 
+        orderId, 
+        paymentId, 
+        signature, 
+        projectId, 
+        amount, 
+        userId,
+        developerId 
+      } = req.body;
+
+      if (!projectId || !amount) {
+        return res.status(400).json({ error: "Missing required payment fields" });
+      }
+
+      const totalAmount = Number(amount);
+      const adminShare = totalAmount * 0.3;
+      const developerShare = totalAmount * 0.7;
+
+      const paymentData = {
+        orderId: orderId || "",
+        paymentId: paymentId || "",
+        projectId,
+        userId: userId || "",
+        developerId: developerId || "",
+        amount: totalAmount,
+        adminShare,
+        developerShare,
+        status: 'completed',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      // Save payment record
+      await dbAdmin.collection('payments').add(paymentData);
+
+      // Update project status
+      await dbAdmin.collection('projects').doc(projectId).update({
+        paymentStatus: 'Paid',
+        status: 'In Development',
+        paidAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Update developer earnings
+      if (developerId) {
+        const devRef = dbAdmin.collection('users').doc(developerId);
+        try {
+          await dbAdmin.runTransaction(async (transaction) => {
+            const devDoc = await transaction.get(devRef);
+            if (devDoc.exists) {
+              const currentEarnings = devDoc.data()?.earnings || 0;
+              transaction.update(devRef, {
+                earnings: currentEarnings + developerShare,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+              });
+            }
+          });
+        } catch (transError) {
+          console.error("Error updating developer earnings:", transError);
+          // Don't fail the whole payment if just earnings update fails, but log it
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Payment save error:", error);
+      res.status(500).json({ error: error.message });
     }
   });
 

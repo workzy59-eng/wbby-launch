@@ -141,6 +141,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
   const [leads, setLeads] = useState<any[]>([]);
   const [developerApps, setDeveloperApps] = useState<any[]>([]);
+  const [developerInvites, setDeveloperInvites] = useState<any[]>([]);
   const [salesApps, setSalesApps] = useState<any[]>([]);
   const [commissions, setCommissions] = useState<any[]>([]);
 
@@ -243,7 +244,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [appTab, setAppTab] = useState<'developer' | 'sales'>('developer');
 
-  const isUserAdmin = profile?.role === 'admin' || user.email === ADMIN_EMAIL;
+  const isUserAdmin = profile?.role === 'admin' || (user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
   if (!isUserAdmin) {
     return (
@@ -300,6 +301,12 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       setDeveloperApps(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
       console.error("Admin DevApps Snapshot Error:", error);
+    });
+
+    const unsubscribeDevInvites = onSnapshot(collection(db, 'developer_invites'), (snapshot) => {
+      setDeveloperInvites(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.error("Admin DevInvites Snapshot Error:", error);
     });
 
     const unsubscribeSalesApps = onSnapshot(collection(db, 'sales_applications'), (snapshot) => {
@@ -1760,19 +1767,10 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
         <div className="p-10 border-b border-white/5 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="px-2 py-0.5 bg-[#c7c42a] rounded flex items-center justify-center">
-                <span className="text-black font-black text-[8px] tracking-tighter">{HYPHENATED_NAME}</span>
-              </div>
               <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
             </div>
             <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
           </div>
-          <button 
-            onClick={() => { setActiveTab('projects'); setShowProjectModal(true); }}
-            className="w-10 h-10 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black hover:scale-110 active:scale-95 transition-all shadow-lg"
-          >
-            <Plus size={20} />
-          </button>
         </div>
         <nav className="flex-1 p-6 space-y-3">
           {[

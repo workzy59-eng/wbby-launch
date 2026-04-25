@@ -66,68 +66,100 @@ interface VisitSession {
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [sessions, setSessions] = useState<VisitSession[]>([]);
+  const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
+  const [showChat, setShowChat] = useState(false);
+  const [onboardingData, setOnboardingData] = useState({
+    name: profile?.displayName || '',
+    devRole: '',
+    experience: '',
+    paymentLinks: {
+      subscription: { basic: '', standard: '', premium: '' },
+      oneTime: { basic: '', standard: '', premium: '' }
+    }
+  });
+
   const [showSalaryWarning, setShowSalaryWarning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<Record<string, string>>({});
+
+  const projectsNeedingUrl = useMemo(() => {
+    return projects.filter(p => p.status === 'Accepted' && !p.websiteUrl);
+  }, [projects]);
+
+  // Countdown logic for Accepted projects needing URL
+  useEffect(() => {
+    if (projectsNeedingUrl.length === 0) return;
+
+    const timer = setInterval(() => {
+      const newTimeLeft: Record<string, string> = {};
+      projectsNeedingUrl.forEach(project => {
+        let acceptedTime = Date.now();
+        if (project.acceptedAt) {
+          if (typeof project.acceptedAt === 'string') {
+            acceptedTime = new Date(project.acceptedAt).getTime();
+          } else if ('toDate' in project.acceptedAt) {
+            acceptedTime = project.acceptedAt.toDate().getTime();
+          }
+        }
+        
+        const deadline = acceptedTime + (3 * 60 * 60 * 1000); // 3 hours limit
+        const diff = deadline - Date.now();
+
+        if (diff <= 0) {
+          newTimeLeft[project.id] = "EXPIRED";
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+          newTimeLeft[project.id] = `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+      });
+      setTimeLeft(newTimeLeft);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [projectsNeedingUrl]);
+
   const [urlEnteringProjectId, setUrlEnteringProjectId] = useState<string | null>(null);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [isSubmittingUrl, setIsSubmittingUrl] = useState(false);
   const [isAcceptingProject, setIsAcceptingProject] = useState(false);
+  const [projectToAcceptId, setProjectToAcceptId] = useState<string | null>(null);
+  const [initialLink, setInitialLink] = useState('');
 
-  const [onboardingData, setOnboardingData] = useState({
-    name: profile?.displayName || '',
-    experience: '',
-    devRole: '',
-  });
-  
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [sessions, setSessions] = useState<VisitSession[]>([]);
-  const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showChat, setShowChat] = useState(false);
-  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
-
-  const projectsNeedingUrl = useMemo(() => projects.filter(p => p.status === 'Accepted' && !p.websiteUrl), [projects]);
-
-  const formatTimeLeft = (acceptedAt: any) => {
-    if (!acceptedAt) return '3:00:00';
-    const date = acceptedAt.toDate ? acceptedAt.toDate() : new Date(acceptedAt);
-    const limit = date.getTime() + (3 * 60 * 60 * 1000);
-    const now = new Date().getTime();
-    const diff = limit - now;
-    
-    if (diff <= 0) return 'LATE';
-    
-    const h = Math.floor(diff / (1000 * 60 * 60));
-    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const s = Math.floor((diff % (1000 * 60)) / 1000);
-    return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-  };
-
-  const [timeLeft, setTimeLeft] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const newTimeLeft: Record<string, string> = {};
-      projectsNeedingUrl.forEach(p => {
-        newTimeLeft[p.id] = formatTimeLeft(p.acceptedAt);
-      });
-      setTimeLeft(newTimeLeft);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [projectsNeedingUrl]);
-
-  const handleAcceptProject = async (projectId: string) => {
+  const handleAcceptProject = async (projectId: string, skipLink = false) => {
     if (isAcceptingProject) return;
+    
+    // If not skipped and no link yet provided, show the prompt
+    if (!skipLink && !initialLink) {
+      setProjectToAcceptId(projectId);
+      return;
+    }
+
     setIsAcceptingProject(true);
     try {
       const { updateProject } = await import('../services/database');
-      await updateProject(projectId, {
+      const updateData: any = {
         status: 'Accepted',
         acceptedAt: new Date().toISOString(),
         progress: 15
-      });
-      toast.success('Project accepted! Mission started.');
+      };
+
+      if (initialLink) {
+        updateData.websiteUrl = initialLink;
+        updateData.status = 'Development Started';
+        updateData.progress = 20;
+        updateData.urlSubmittedAt = new Date().toISOString();
+      }
+
+      await updateProject(projectId, updateData);
+      toast.success(initialLink ? 'Project accepted and link saved!' : 'Project accepted! Mission started.');
+      setProjectToAcceptId(null);
+      setInitialLink('');
     } catch (error) {
       console.error(error);
       toast.error('Failed to accept project');

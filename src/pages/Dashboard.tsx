@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, FirebaseUser, logOut } from '../firebase';
+import { initiatePayment } from '../services/razorpay';
 import { UserProfile, Project } from '../types';
 import { 
   LogOut, 
@@ -107,27 +108,45 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     };
     handlePaymentSuccess();
   }, [location.search, navigate]);
-  const handlePayment = (project: Project) => {
-    const billingCycle = (project as any).billingCycle || 'one-time';
-    const plan = (project.plan || 'basic').toLowerCase() as 'basic' | 'standard' | 'premium';
-    
-    // Use assigned developer's payment links if available
-    const devLinks = assignedDeveloper?.paymentLinks;
-    
-    let paymentUrl = '';
-    
-    if (devLinks) {
-      if (billingCycle === 'subscription') {
-        paymentUrl = devLinks.subscription[plan];
-      } else {
-        paymentUrl = devLinks.oneTime[plan];
-      }
+  const handlePayment = async (project: Project) => {
+    if (!user || !profile) {
+      toast.error('Please login to continue');
+      return;
     }
 
-    if (paymentUrl) {
-      window.location.href = `${paymentUrl}?client_reference_id=${project.id}&success=true&projectId=${project.id}`;
-    } else {
-      toast.error('Payment configuration missing for this developer. Please contact support.');
+    const plan = (project.plan || 'basic').toLowerCase();
+    // Pricing Map
+    const prices: { [key: string]: number } = {
+      'basic': 1499,
+      'standard': 2999,
+      'premium': 4999
+    };
+    
+    const amount = prices[plan] || 1499;
+
+    try {
+      toast.loading('Initiating secure payment...', { id: 'payment' });
+      
+      await initiatePayment({
+        amount,
+        projectId: project.id,
+        userId: user.uid,
+        userName: profile.displayName || user.displayName || 'User',
+        userEmail: profile.email || user.email || '',
+        userPhone: profile.phone || '',
+        developerId: project.assignedTo,
+        onSuccess: (response) => {
+          toast.success('Payment successful!', { id: 'payment' });
+          // Force refresh project data
+          window.location.reload();
+        },
+        onError: (error) => {
+          console.error('Payment error:', error);
+          toast.error(error.message || 'Payment failed', { id: 'payment' });
+        }
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to start payment', { id: 'payment' });
     }
   };
 

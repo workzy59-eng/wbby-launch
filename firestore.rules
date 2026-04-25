@@ -16,7 +16,8 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email == "workzy59@gmail.com" ||
+        request.auth.token.email.lower() == "workzy59@gmail.com" ||
+        request.auth.token.email.lower() == "admin@webbylaunch.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
       );
@@ -146,24 +147,22 @@ service cloud.firestore {
     // ============================
 
     match /leads/{leadId} {
-      allow get, list, write: if isAdmin();
+      allow get, list, read, write: if isAdmin();
     }
 
     match /commissions/{commissionId} {
-      allow get, list: if isAuthenticated() && (isAdmin() || resource.data.salesId == request.auth.uid);
+      allow get, list, read: if isAuthenticated() && (isAdmin() || resource.data.salesId == request.auth.uid);
       allow write: if isAdmin();
     }
 
-    match /developer_applications/{appId} {
-      allow get, list: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+    match /developer_requests/{appId} {
+      allow get, list, read, write: if isAdmin();
       allow create: if true; // Public applications allowed
-      allow update, delete: if isAdmin();
     }
 
     match /sales_applications/{appId} {
-      allow get, list: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow get, list, read, write: if isAdmin();
       allow create: if true; // Public applications allowed
-      allow update, delete: if isAdmin();
     }
 
     match /attendance/{attendanceId} {
@@ -226,7 +225,7 @@ service cloud.firestore {
 
     match /developer_invites/{inviteId} {
       allow read: if isAuthenticated() && (isAdmin() || resource.data.email == request.auth.token.email);
-      allow create, update, delete: if isAdmin();
+      allow write: if isAdmin();
     }
 
     // ============================

@@ -75,6 +75,7 @@ import {
 import { formatDate, isSameDay } from '../lib/utils';
 import ChatSystem from './ChatSystem';
 import imageCompression from 'browser-image-compression';
+import { ADMIN_EMAIL } from '../constants';
 
 interface MessagesModuleProps {
   currentUser: FirebaseUser;
@@ -193,14 +194,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         // If client, ensure they can see the Admin even if no conversation exists yet
         if (profile?.role === 'client') {
           const admins = await getAdmins();
-          const mainAdmin = admins.find(a => a.email === 'workzy59@gmail.com') || admins[0];
+          const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
           
           if (mainAdmin) {
             const adminConvExists = enrichedConvs.some(c => c.participants.includes(mainAdmin.uid));
             if (!adminConvExists) {
               enrichedConvs.push({
                 id: 'new_admin',
-                lastMessage: 'Hi Webby Launch Services...',
+                lastMessage: 'Contact Webby Launch Support',
                 lastMessageAt: null,
                 lastSenderId: '',
                 participants: [currentUser.uid, mainAdmin.uid],
@@ -544,14 +545,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 )}
               </AnimatePresence>
 
-              <div className={`relative px-4 py-2.5 rounded-2xl text-[14.5px] leading-[20px] shadow-sm ${
+              <div className={`relative px-4 py-2 rounded-xl text-[14.5px] leading-[20px] shadow-sm max-w-[90%] ${
                 isMe 
-                  ? 'bg-[#1e1e1e] text-white rounded-tr-none border border-white/5' 
-                  : 'bg-[#262626] text-white border border-white/5 rounded-tl-none'
+                  ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none' 
+                  : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
               } ${!isFirstOfGroup ? (isMe ? 'rounded-tr-2xl' : 'rounded-tl-2xl') : ''}`}>
                 
                 {!isMe && isFirstOfGroup && (
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700] mb-1">
+                  <p className="text-[12px] font-bold text-[#34b7f1] mb-1">
                     {m.senderName === 'SAI ROSHAN' ? 'Webby Launch' : m.senderName}
                   </p>
                 )}
