@@ -2403,6 +2403,26 @@ ${viewingProject.description}
                     }} 
                   />
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Basic Payment Link</label>
+                      <input 
+                        name="paymentLinkBasic"
+                        defaultValue={editingProjectDetails?.paymentLinkBasic}
+                        placeholder="https://buy.stripe.com/..."
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold text-xs"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Premium Payment Link</label>
+                      <input 
+                        name="paymentLinkPremium"
+                        defaultValue={editingProjectDetails?.paymentLinkPremium}
+                        placeholder="https://buy.stripe.com/..."
+                        className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold text-xs"
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Description</label>
                     <textarea 

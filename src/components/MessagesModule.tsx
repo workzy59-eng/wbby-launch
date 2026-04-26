@@ -36,6 +36,10 @@ import {
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import EmojiPicker, { Theme as EmojiTheme } from 'emoji-picker-react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { StopCircle, Play, Pause, Trash2 as TrashIcon, Headphones } from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -147,6 +151,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+
+  // New states for voice messages
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const [showActions, setShowActions] = useState<string | null>(null);
   const [mentionSearch, setMentionSearch] = useState('');
   const [mentionResults, setMentionResults] = useState<UserProfile[]>([]);
@@ -394,6 +405,111 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     } else {
       setShowMentions(false);
     }
+  };
+
+  const onEmojiClick = (emojiData: any) => {
+    setInputText(prev => prev + emojiData.emoji);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        const audioFile = new File([audioBlob], 'voice_message.webm', { type: 'audio/webm' });
+
+        if (recordingDuration < 1) {
+          toast.error('Voice message too short');
+          return;
+        }
+
+        try {
+          setIsSending(true);
+          const voiceUrl = await uploadFile(audioFile, 'voice_messages');
+          
+          if (activeConversation) {
+            const messageData = {
+              text: '🎤 Voice message',
+              senderId: currentUser.uid,
+              senderName: profile?.displayName || 'User',
+              type: 'voice',
+              mediaUrl: voiceUrl,
+              duration: recordingDuration,
+              replyTo: replyingTo ? {
+                id: replyingTo.id,
+                text: replyingTo.text,
+                senderName: replyingTo.senderName
+              } : null
+            };
+
+            const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+            if (activeConversation.isProject) {
+              await sendMessage(activeConversation.id, messageData);
+            } else if (recipientId) {
+              await sendDirectMessage(recipientId, messageData);
+            }
+            setReplyingTo(null);
+          }
+        } catch (error) {
+          console.error('Error sending voice message:', error);
+          toast.error('Failed to send voice message');
+        } finally {
+          setIsSending(false);
+        }
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      setRecordingDuration(0);
+      
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast.error('Could not access microphone');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+    }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.onstop = null; // Prevent triggering send
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+      toast('Recording canceled');
+    }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}:${sec.toString().padStart(2, '0')}`;
   };
 
   const selectMention = (user: UserProfile) => {
@@ -666,19 +782,35 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     {/* Media content */}
                     {renderMedia(m)}
 
-                    <p className="whitespace-pre-wrap break-words">
-                      {m.text.split(' ').map((word, i) => {
-                        if (word.startsWith('@')) {
-                          return <span key={i} className="text-[#34b7f1] font-medium cursor-pointer hover:underline">{word} </span>;
-                        }
-                        return word + ' ';
-                      })}
-                      {m.edited && (
-                        <span className="text-[10px] text-[#8696a0] ml-2 italic">
-                          (edited)
-                        </span>
-                      )}
-                    </p>
+                    {m.type === 'voice' ? (
+                      <div className="flex items-center gap-3 bg-[#00000020] p-3 rounded-xl min-w-[200px]">
+                        <div className="w-10 h-10 rounded-full bg-[#34b7f1]/10 flex items-center justify-center text-[#34b7f1]">
+                          <Headphones size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <audio controls className="h-8 w-full">
+                            <source src={m.mediaUrl} type="audio/webm" />
+                          </audio>
+                          <div className="flex justify-between items-center px-1 mt-1">
+                            <span className="text-[10px] text-[#8696a0]">{formatDuration(m.duration || 0)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap break-words">
+                        {m.text.split(' ').map((word, i) => {
+                          if (word.startsWith('@')) {
+                            return <span key={i} className="text-[#34b7f1] font-medium cursor-pointer hover:underline">{word} </span>;
+                          }
+                          return word + ' ';
+                        })}
+                        {m.edited && (
+                          <span className="text-[10px] text-[#8696a0] ml-2 italic">
+                            (edited)
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </>
                 )}
                 <div className="flex items-center gap-1 mt-1 justify-end">
@@ -1016,7 +1148,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                </AnimatePresence>
 
                <div className="flex items-center gap-2">
-                 <div className="flex items-center">
+                 <div className="flex items-center gap-1">
                     <input 
                       type="file" 
                       id="file-upload" 
@@ -1024,33 +1156,81 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       multiple 
                       onChange={(e) => handleFileUpload(e.target.files)} 
                     />
-                    <label htmlFor="file-upload" className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all cursor-pointer">
+                    <label htmlFor="file-upload" className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all cursor-pointer hover:bg-white/5 rounded-full">
                       <Plus size={24} />
                     </label>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all hover:bg-white/5 rounded-full">
+                          <Smile size={24} />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent side="top" align="start" className="p-0 border-none bg-transparent shadow-2xl">
+                        <EmojiPicker 
+                          onEmojiClick={onEmojiClick} 
+                          theme={EmojiTheme.DARK}
+                          width={320}
+                          height={400}
+                        />
+                      </PopoverContent>
+                    </Popover>
                  </div>
                  
-                 <button className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all">
-                    <Smile size={24} />
-                 </button>
-                 
-                 <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2 min-w-0">
-                    <div className="flex-1 relative min-w-0">
-                      <input 
-                        type="text"
-                        value={inputText}
-                        onChange={handleInputChange}
-                        placeholder={editingMessage ? "Edit message..." : "Message"}
-                        className="w-full bg-[#2a3942] border-none rounded-xl py-2 px-4 text-sm text-[#e9edef] placeholder:text-[#8696a0] outline-none"
-                      />
+                 {isRecording ? (
+                    <div className="flex-1 flex items-center gap-4 bg-[#2a3942] rounded-xl px-4 py-2 animate-pulse">
+                      <div className="flex items-center gap-2 text-red-500">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                        <span className="text-xs font-bold tabular-nums">{formatDuration(recordingDuration)}</span>
+                      </div>
+                      <div className="flex-1 text-xs text-[#8696a0] font-medium italic">Recording audio...</div>
+                      <div className="flex items-center gap-3">
+                        <button type="button" onClick={cancelRecording} className="p-2 text-red-400 hover:bg-white/5 rounded-full transition-all">
+                          <TrashIcon size={18} />
+                        </button>
+                        <button type="button" onClick={stopRecording} className="p-2 text-green-500 hover:bg-white/5 rounded-full transition-all">
+                          <StopCircle size={20} />
+                        </button>
+                      </div>
                     </div>
-                    <button 
-                      type="submit"
-                      disabled={isSending && inputText.trim() === ''}
-                      className={`p-2.5 transition-all ${inputText.trim() ? 'text-[#00a884] scale-110' : 'text-[#aebac1]'}`}
-                    >
-                      {inputText.trim() ? <Send size={24} /> : <Mic size={24} />}
-                    </button>
-                 </form>
+                 ) : (
+                    <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2 min-w-0">
+                       <div className="flex-1 relative min-w-0">
+                         <input 
+                           type="text"
+                           value={inputText}
+                           onChange={handleInputChange}
+                           onKeyPress={(e) => {
+                             if (e.key === 'Enter' && !e.shiftKey) {
+                               e.preventDefault();
+                               handleSendMessage(e as any);
+                             }
+                           }}
+                           placeholder={editingMessage ? "Edit message..." : "Message"}
+                           className="w-full bg-[#2a3942] border-none rounded-xl py-2 px-4 text-sm text-[#e9edef] placeholder:text-[#8696a0] outline-none focus:ring-1 focus:ring-[#34b7f1]/30"
+                         />
+                       </div>
+                       
+                       {inputText.trim() ? (
+                         <button 
+                           type="submit"
+                           disabled={isSending}
+                           className="p-2.5 text-[#00a884] scale-110 hover:bg-[#00a884]/10 rounded-full transition-all disabled:opacity-50"
+                         >
+                           <Send size={24} />
+                         </button>
+                       ) : (
+                         <button 
+                           type="button"
+                           onClick={startRecording}
+                           disabled={isSending}
+                           className="p-2.5 text-[#aebac1] hover:text-[#34b7f1] hover:bg-white/5 rounded-full transition-all disabled:opacity-50"
+                         >
+                           <Mic size={24} />
+                         </button>
+                       )}
+                    </form>
+                 )}
                </div>
             </footer>
           </div>

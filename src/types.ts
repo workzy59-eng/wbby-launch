@@ -252,6 +252,8 @@ export interface Project {
   isDeleted?: boolean;
   isLocked: boolean; // For the lock system
   previewUrl?: string;
+  paymentLinkBasic?: string;
+  paymentLinkPremium?: string;
   lastMessage?: string;
   lastMessageAt?: string | Timestamp;
   lastSenderId?: string;
@@ -279,7 +281,8 @@ export interface Message {
   senderName: string;
   text: string;
   fileUrl?: string; // Added for Cloudinary
-  type: 'text' | 'image' | 'video' | 'file' | 'audio'; 
+  type: 'text' | 'image' | 'video' | 'file' | 'audio' | 'voice'; 
+  duration?: number;
   mediaUrl?: string;
   mentions?: string[];
   attachments?: Attachment[];

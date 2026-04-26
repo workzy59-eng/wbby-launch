@@ -114,6 +114,19 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       return;
     }
 
+    // Prefer project-specific payment links if defined
+    if (project.paymentLinkPremium && project.plan?.toLowerCase().includes('premium')) {
+      window.open(project.paymentLinkPremium, '_blank');
+      toast.success('Opening Premium payment link...');
+      return;
+    }
+
+    if (project.paymentLinkBasic && project.plan?.toLowerCase().includes('basic')) {
+      window.open(project.paymentLinkBasic, '_blank');
+      toast.success('Opening Basic payment link...');
+      return;
+    }
+
     const plan = (project.plan || 'basic').toLowerCase();
     
     // Redirect to direct Razorpay links

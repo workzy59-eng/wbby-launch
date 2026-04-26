@@ -15,12 +15,12 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() && (
+      return isAuthenticated() && request.auth.token.email_verified == true && (
         request.auth.token.email.lower() == "workzy59@gmail.com" ||
         request.auth.token.email.lower() == "admin@webbylaunch.com" ||
         request.auth.token.email.lower() == "aither2029@gmail.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == "admin")
       );
     }
 
@@ -28,7 +28,7 @@ service cloud.firestore {
       return isAuthenticated() && (
         request.auth.token.email.lower() == "aither2029@gmail.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "developer")
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == "developer")
       );
     }
 
@@ -117,6 +117,13 @@ service cloud.firestore {
 
       // DELETE
       allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() &&
+          (isAdmin() || isDeveloper() || resource.data.userId == request.auth.uid || resource.data.developerId == request.auth.uid);
+        allow create: if isAuthenticated();
+        allow update, delete: if isAdmin();
+      }
     }
 
     // ============================

@@ -354,6 +354,17 @@ export const getAllAttendance = async () => {
   }
 };
 
+export const getProject = async (projectId: string) => {
+  const path = `projects/${projectId}`;
+  try {
+    const docSnap = await getDoc(doc(db, 'projects', projectId));
+    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Project : null;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, path);
+    return null;
+  }
+};
+
 // Project Operations
 export const createProject = async (projectData: any) => {
   const path = 'projects';
