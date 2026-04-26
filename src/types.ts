@@ -277,7 +277,9 @@ export interface Message {
   senderName: string;
   text: string;
   fileUrl?: string; // Added for Cloudinary
-  type: 'text' | 'image' | 'audio'; // Added
+  type: 'text' | 'image' | 'video' | 'file' | 'audio'; 
+  mediaUrl?: string;
+  mentions?: string[];
   attachments?: Attachment[];
   imageUrl?: string;
   attachmentUrl?: string;

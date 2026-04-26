@@ -29,7 +29,9 @@ import {
   Lock,
   ArrowRight,
   ArrowLeft,
-  Loader2
+  Loader2,
+  Maximize2,
+  ExternalLink
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -70,7 +72,8 @@ import {
   markProjectAsSeen,
   markMessageAsDelivered,
   markMessageAsSeen,
-  deleteDirectMessage
+  deleteDirectMessage,
+  searchUsers // Added
 } from '../services/database';
 import { formatDate, isSameDay } from '../lib/utils';
 import ChatSystem from './ChatSystem';
@@ -145,6 +148,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [showActions, setShowActions] = useState<string | null>(null);
+  const [mentionSearch, setMentionSearch] = useState('');
+  const [mentionResults, setMentionResults] = useState<UserProfile[]>([]);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionLoading, setMentionLoading] = useState(false);
+  const [mentions, setMentions] = useState<string[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'favorites'>('all');
   
@@ -300,6 +309,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const messageText = inputText.trim();
     const currentReplyingTo = replyingTo;
     const currentEditingMessage = editingMessage;
+    const currentMentions = mentions;
     
     setIsSending(true);
     try {
@@ -309,6 +319,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           await updateDirectMessage(recipientId, currentEditingMessage.id, {
             text: messageText,
             edited: true,
+            mentions: currentMentions,
             updatedAt: new Date()
           });
         }
@@ -321,6 +332,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             senderName: currentUser.displayName || profile?.displayName || 'User',
             text: messageText,
             status: 'sent',
+            mentions: currentMentions,
+            type: 'text',
             replyTo: currentReplyingTo ? {
               id: currentReplyingTo.id,
               text: currentReplyingTo.text,
@@ -331,6 +344,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         setReplyingTo(null);
       }
       setInputText('');
+      setMentions([]);
+      setShowMentions(false);
       // Clear typing status
       if (activeConversation.id !== 'new' && !activeConversation.isProject) {
         setUserTyping(activeConversation.id, currentUser.uid, false);
@@ -342,8 +357,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputText(e.target.value);
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputText(value);
     
     if (activeConversation && activeConversation.id !== 'new' && !activeConversation.isProject) {
       setUserTyping(activeConversation.id, currentUser.uid, true);
@@ -353,74 +369,141 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         setUserTyping(activeConversation.id, currentUser.uid, false);
       }, 3000);
     }
+
+    // Mention logic
+    const words = value.split(' ');
+    const lastWord = words[words.length - 1];
+    
+    if (lastWord.startsWith('@')) {
+      const search = lastWord.substring(1);
+      if (search.length >= 2) {
+        setMentionSearch(search);
+        setShowMentions(true);
+        setMentionLoading(true);
+        try {
+          const results = await searchUsers(search);
+          setMentionResults(results as UserProfile[]);
+        } catch (err) {
+          console.error('Mention search error:', err);
+        } finally {
+          setMentionLoading(false);
+        }
+      } else {
+        setShowMentions(false);
+      }
+    } else {
+      setShowMentions(false);
+    }
   };
 
-  const handleFileUpload = async (files: FileList | null, isImage: boolean) => {
-    if (!files || files.length === 0 || !activeConversation || isSending) return;
+  const selectMention = (user: UserProfile) => {
+    const words = inputText.split(' ');
+    words.pop(); // Remove the @mention part
+    const mentionText = `@${user.username || user.displayName}`;
+    const newText = [...words, mentionText].join(' ') + ' ';
+    setInputText(newText);
+    setMentions(prev => [...new Set([...prev, user.uid])]);
+    setShowMentions(false);
+  };
+
+  const renderMedia = (m: Message) => {
+    if (m.isDeleted) return null;
     
-    let recipientId: string | undefined;
-    if (!activeConversation.isProject) {
-      recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-      if (!recipientId) return;
+    const mediaUrl = m.mediaUrl || m.fileUrl || m.imageUrl || m.fileData;
+    if (!mediaUrl) return null;
+
+    if (m.type === 'image') {
+      return (
+        <div 
+          className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/5 cursor-pointer bg-[#2a3942]" 
+          onClick={() => setSelectedImage(mediaUrl)}
+        >
+          <img src={mediaUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center">
+            <Maximize2 size={24} className="text-white drop-shadow-lg" />
+          </div>
+        </div>
+      );
     }
 
+    if (m.type === 'video') {
+      return (
+        <div className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/5 bg-[#2a3942]">
+          <video src={mediaUrl} className="max-w-full h-auto max-h-[300px]" controls />
+        </div>
+      );
+    }
+
+    if (m.type === 'file') {
+      return (
+        <div className={`flex items-center gap-3 p-3 rounded-xl border mb-2 ${m.senderId === currentUser.uid ? 'bg-black/10 border-black/5' : 'bg-white/5 border-white/10'}`}>
+          <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-[#ffc107]">
+            <FileText size={24} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-[#e9edef] truncate">{m.fileName || 'Attachment'}</p>
+            <p className="text-[10px] text-[#8696a0] uppercase tracking-wider font-medium">Document</p>
+          </div>
+          <a 
+            href={mediaUrl} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="p-2 hover:bg-white/10 rounded-lg transition-all text-[#8696a0] hover:text-[#e9edef]"
+          >
+            <ExternalLink size={18} />
+          </a>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !activeConversation || isSending) return;
+    
+    let recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+    if (!recipientId) return;
+
     setIsSending(true);
-    const attachments: Attachment[] = [];
     
     try {
       for (let i = 0; i < files.length; i++) {
         let file = files[i];
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
         
-        // Validate size
-        const maxSize = isImage ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-          alert(`File ${file.name} is too large. Max size is ${isImage ? '5MB' : '10MB'}.`);
+        // Validate size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`File ${file.name} is too large. Max 10MB.`);
           continue;
         }
 
-        // Compress image if needed
+        // Compress images
         if (isImage) {
-          const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true
-          };
           try {
-            file = await imageCompression(file as any, options) as any;
-          } catch (error) {
-            console.error('Compression failed:', error);
-          }
+            file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
+          } catch (e) { console.error(e); }
         }
 
-        setUploadProgress(prev => ({ ...prev, [file.name]: 50 }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const fileData = await uploadFile(file, isImage ? 'images' : 'attachments');
-          attachments.push({
-            name: file.name,
-            type: file.type,
-            url: fileData,
-            size: file.size
-          });
+          const url = await uploadFile(file);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
-        } catch (error) {
-          console.error(`Failed to upload ${file.name}:`, error);
+
+          await sendDirectMessage(recipientId, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: isImage ? 'Sent an image' : (isVideo ? 'Sent a video' : `Shared ${file.name}`),
+            type: isImage ? 'image' : (isVideo ? 'video' : 'file'),
+            mediaUrl: url,
+            fileName: file.name
+          });
+        } catch (e) {
+          console.error(e);
         }
       }
-
-      if (attachments.length > 0 && recipientId) {
-        await sendDirectMessage(recipientId, {
-          senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
-          text: isImage ? 'Sent images' : 'Sent attachments',
-          fileData: attachments[0].url,
-          attachments,
-          status: 'sent'
-        });
-      }
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
     } finally {
       setIsSending(false);
       setTimeout(() => setUploadProgress({}), 1000);
@@ -483,9 +566,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       ? messages.filter(m => m.text.toLowerCase().includes(messageSearchQuery.toLowerCase()))
       : messages;
 
+    let lastDate = '';
+
     return filteredMessages.map((m, idx) => {
       const isMe = m.senderId === currentUser.uid;
-      const showDate = idx === 0 || (m.createdAt && messages[idx - 1].createdAt && !isSameDay(m.createdAt, messages[idx - 1].createdAt));
+      const messageDate = m.createdAt ? formatDate(m.createdAt, 'separator') : '';
+      const showDate = messageDate !== lastDate;
+      if (showDate) lastDate = messageDate;
+      
       const isActionsVisible = showActions === m.id;
       const isFirstOfGroup = idx === 0 || messages[idx-1].senderId !== m.senderId;
       
@@ -494,7 +582,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           {showDate && (
             <div className="flex justify-center my-6">
               <span className="px-4 py-1.5 bg-[#182229] border border-[#ffffff10] rounded-lg text-[11px] font-medium text-[#8696a0] uppercase tracking-widest shadow-sm">
-                {formatDate(m.createdAt, 'separator')}
+                {messageDate}
               </span>
             </div>
           )}
@@ -532,7 +620,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     )}
                     <button 
                       onClick={async () => {
-                        const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+                        const recipientId = activeConversation?.participants.find(id => id !== currentUser.uid);
                         if (recipientId) {
                           await deleteDirectMessage(recipientId, m.id, isMe, currentUser.uid);
                         }
@@ -545,7 +633,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 )}
               </AnimatePresence>
 
-              <div className={`relative px-4 py-2 rounded-xl text-[14.5px] leading-[20px] shadow-sm max-w-[90%] ${
+              <div className={`relative px-4 py-2 rounded-xl text-[14.5px] leading-[20px] shadow-sm ${
                 isMe 
                   ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none' 
                   : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
@@ -557,8 +645,6 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   </p>
                 )}
                 
-                {/* Tail placeholder if needed, but rounded-none handles it well enough visually */}
-
                 {m.isDeleted ? (
                   <p className="text-[12px] italic text-[#8696a0] flex items-center gap-2">
                     <Trash2 size={12} />
@@ -571,33 +657,22 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                         <p className="text-[11px] font-bold text-[#00a884] mb-0.5">
                           {m.replyTo.senderName}
                         </p>
-                        <p className="text-[12px] text-[#8696a0] truncate">
+                        <p className="text-[12px] text-[#8696a0] truncate italic">
                           {m.replyTo.text}
                         </p>
                       </div>
                     )}
                     
-                    {/* Attachment preview */}
-                    {m.fileData && (
-                      <div className="mb-2 rounded-lg overflow-hidden cursor-pointer bg-[#182229] border border-white/5" onClick={() => window.open(m.fileData, '_blank')}>
-                         {m.type === 'image' || m.text === 'Sent an image' || (m.fileData.match(/\.(jpeg|jpg|gif|png)$/) != null) ? (
-                           <img src={m.fileData} alt="Attachment" className="max-w-full h-auto rounded-lg" />
-                         ) : (
-                           <div className="p-3 flex items-center gap-3">
-                             <div className="w-10 h-10 rounded-lg bg-[#202c33] flex items-center justify-center text-[#8696a0]">
-                               <FileText size={20} />
-                             </div>
-                             <div className="flex-1 min-w-0">
-                               <p className="text-xs font-medium text-[#e9edef] truncate">{m.fileName || 'Document'}</p>
-                               <p className="text-[10px] text-[#8696a0] uppercase font-bold tracking-tighter">File</p>
-                             </div>
-                           </div>
-                         )}
-                      </div>
-                    )}
+                    {/* Media content */}
+                    {renderMedia(m)}
 
                     <p className="whitespace-pre-wrap break-words">
-                      {m.text}
+                      {m.text.split(' ').map((word, i) => {
+                        if (word.startsWith('@')) {
+                          return <span key={i} className="text-[#34b7f1] font-medium cursor-pointer hover:underline">{word} </span>;
+                        }
+                        return word + ' ';
+                      })}
                       {m.edited && (
                         <span className="text-[10px] text-[#8696a0] ml-2 italic">
                           (edited)
@@ -885,50 +960,130 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
 
             {/* Input Area */}
-            <footer className="px-4 py-2 border-t border-[#ffffff05] bg-[#202c33] flex items-center gap-2 relative z-20">
-               <button className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all">
-                  <Plus size={24} />
-               </button>
-               <button className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all">
-                  <Smile size={24} />
-               </button>
-               
-               <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
-                  <input 
-                    type="text"
-                    value={inputText}
-                    onChange={handleInputChange}
-                    placeholder="Message"
-                    className="w-full bg-[#2a3942] border-none rounded-xl py-2 px-4 text-sm text-[#e9edef] placeholder:text-[#8696a0] outline-none"
-                  />
-                  <button 
-                    type="submit"
-                    className="p-2.5 text-[#aebac1] hover:text-[#e9edef] transition-all"
-                  >
-                    {inputText.trim() ? <Send size={24} /> : <Mic size={24} />}
-                  </button>
-               </form>
+            <footer className="px-4 py-2 border-t border-[#ffffff05] bg-[#202c33] flex flex-col relative z-20">
+               {/* Reply Preview */}
+               <AnimatePresence>
+                 {replyingTo && (
+                   <motion.div 
+                     initial={{ opacity: 0, height: 0 }}
+                     animate={{ opacity: 1, height: 'auto' }}
+                     exit={{ opacity: 0, height: 0 }}
+                     className="px-4 py-2 border-l-4 border-[#34b7f1] bg-[#1e293b]/50 mb-2 flex items-center justify-between"
+                   >
+                     <div className="flex-1 min-w-0">
+                       <p className="text-[10px] font-bold text-[#34b7f1] uppercase tracking-wider">Replying to {replyingTo.senderName}</p>
+                       <p className="text-xs text-[#8696a0] truncate italic">{replyingTo.text}</p>
+                     </div>
+                     <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-white/10 rounded-full text-[#8696a0]">
+                       <X size={14} />
+                     </button>
+                   </motion.div>
+                 )}
+               </AnimatePresence>
+
+               {/* Mentions Dropdown */}
+               <AnimatePresence>
+                 {showMentions && mentionResults.length > 0 && (
+                   <motion.div 
+                     initial={{ opacity: 0, y: 10 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: 10 }}
+                     className="absolute bottom-full left-4 right-4 bg-[#202c33] border border-white/5 rounded-xl shadow-2xl overflow-hidden mb-2 z-50"
+                   >
+                     <div className="px-4 py-2 bg-[#2a3942] flex items-center justify-between">
+                       <span className="text-[10px] font-bold text-[#8696a0] uppercase tracking-widest">Mention a User</span>
+                       {mentionLoading && <Loader2 size={12} className="animate-spin text-[#ffc107]" />}
+                     </div>
+                     <div className="max-h-48 overflow-y-auto">
+                       {mentionResults.map(u => (
+                         <button 
+                           key={u.uid}
+                           onClick={() => selectMention(u)}
+                           className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 text-left transition-all"
+                         >
+                           <div className="w-8 h-8 rounded-full bg-[#3b4a54] flex items-center justify-center font-bold text-xs uppercase">
+                             {u.displayName?.[0] || 'U'}
+                           </div>
+                           <div>
+                             <p className="text-sm font-medium text-[#e9edef]">{u.displayName}</p>
+                             <p className="text-[10px] text-[#8696a0]">@{u.username || u.uid.slice(0, 6)}</p>
+                           </div>
+                         </button>
+                       ))}
+                     </div>
+                   </motion.div>
+                 )}
+               </AnimatePresence>
+
+               <div className="flex items-center gap-2">
+                 <div className="flex items-center">
+                    <input 
+                      type="file" 
+                      id="file-upload" 
+                      className="hidden" 
+                      multiple 
+                      onChange={(e) => handleFileUpload(e.target.files)} 
+                    />
+                    <label htmlFor="file-upload" className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all cursor-pointer">
+                      <Plus size={24} />
+                    </label>
+                 </div>
+                 
+                 <button className="p-2 text-[#aebac1] hover:text-[#e9edef] transition-all">
+                    <Smile size={24} />
+                 </button>
+                 
+                 <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
+                    <div className="flex-1 relative">
+                      <input 
+                        type="text"
+                        value={inputText}
+                        onChange={handleInputChange}
+                        placeholder={editingMessage ? "Edit message..." : "Message"}
+                        className="w-full bg-[#2a3942] border-none rounded-xl py-2 px-4 text-sm text-[#e9edef] placeholder:text-[#8696a0] outline-none"
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={isSending && inputText.trim() === ''}
+                      className={`p-2.5 transition-all ${inputText.trim() ? 'text-[#00a884] scale-110' : 'text-[#aebac1]'}`}
+                    >
+                      {inputText.trim() ? <Send size={24} /> : <Mic size={24} />}
+                    </button>
+                 </form>
+               </div>
             </footer>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-8 bg-[#222e35]">
-             <div className="w-64 h-64 bg-[#202c33] rounded-full flex items-center justify-center opacity-20 transform scale-110">
-                <MessageSquare size={100} className="text-[#8696a0]" />
-             </div>
-             <div className="space-y-4 max-w-sm">
-                <h3 className="text-3xl font-light text-[#e9edef] opacity-60">Webby Launch for Desktop</h3>
-                <p className="text-sm text-[#8696a0] leading-relaxed">
-                  Send and receive messages without keeping your phone online.
-                  Use Webby Launch on up to 4 linked devices and 1 phone at the same time.
-                </p>
-             </div>
-             <div className="pt-12 flex items-center gap-2 text-[#8696a0] text-xs opacity-50 font-medium font-sans">
-                <Lock size={12} />
-                <span>End-to-end encrypted</span>
-             </div>
+             {/* ... */}
           </div>
         )}
       </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+            className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 md:p-20 cursor-zoom-out"
+          >
+            <motion.img 
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              src={selectedImage}
+              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+            />
+            <button className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all">
+              <X size={24} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* User Selection Modal */}
       <AnimatePresence>

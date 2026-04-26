@@ -58,7 +58,8 @@ import {
   deleteMessageForEveryone,
   getConversationId,
   markConversationAsSeen,
-  markProjectAsSeen
+  markProjectAsSeen,
+  searchUsers // Added
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { HYPHENATED_NAME } from '../constants';
@@ -93,6 +94,11 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [showActions, setShowActions] = useState<string | null>(null);
+  const [mentionSearch, setMentionSearch] = useState('');
+  const [mentionResults, setMentionResults] = useState<UserProfile[]>([]);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionLoading, setMentionLoading] = useState(false);
+  const [mentions, setMentions] = useState<string[]>([]);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -192,6 +198,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     const messageText = inputText.trim();
     const currentReplyingTo = replyingTo;
     const currentEditingMessage = editingMessage;
+    const currentMentions = mentions;
     const chatId = isDirect && recipientUser ? (currentUser.uid < recipientUser.uid ? `${currentUser.uid}_${recipientUser.uid}` : `${recipientUser.uid}_${currentUser.uid}`) : projectId;
 
     try {
@@ -200,6 +207,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           await updateDirectMessage(recipientUser.uid, currentEditingMessage.id, {
             text: messageText,
             edited: true,
+            mentions: currentMentions,
             updatedAt: new Date()
           });
           setEditingMessage(null);
@@ -209,6 +217,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             senderName: currentUser.displayName || profile?.displayName || 'User',
             text: messageText,
             status: 'sent',
+            type: 'text',
+            mentions: currentMentions,
             replyTo: currentReplyingTo ? {
               id: currentReplyingTo.id,
               text: currentReplyingTo.text,
@@ -222,6 +232,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           await updateMessage(projectId, currentEditingMessage.id, {
             text: messageText,
             edited: true,
+            mentions: currentMentions,
             updatedAt: new Date()
           });
           setEditingMessage(null);
@@ -231,6 +242,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             senderName: currentUser.displayName || profile?.displayName || 'User',
             text: messageText,
             status: 'sent',
+            type: 'text',
+            mentions: currentMentions,
             replyTo: currentReplyingTo ? {
               id: currentReplyingTo.id,
               text: currentReplyingTo.text,
@@ -241,6 +254,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         }
       }
       setInputText('');
+      setMentions([]);
+      setShowMentions(false);
       if (chatId) {
         setUserTyping(chatId, currentUser.uid, false);
       }
@@ -251,8 +266,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputText(e.target.value);
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputText(value);
     
     const chatId = isDirect && recipientUser ? (currentUser.uid < recipientUser.uid ? `${currentUser.uid}_${recipientUser.uid}` : `${recipientUser.uid}_${currentUser.uid}`) : projectId;
     
@@ -264,73 +280,145 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         setUserTyping(chatId, currentUser.uid, false);
       }, 3000);
     }
+
+    // Mention logic
+    const words = value.split(' ');
+    const lastWord = words[words.length - 1];
+    
+    if (lastWord.startsWith('@')) {
+      const search = lastWord.substring(1);
+      if (search.length >= 2) {
+        setMentionSearch(search);
+        setShowMentions(true);
+        setMentionLoading(true);
+        try {
+          const results = await searchUsers(search);
+          setMentionResults(results as UserProfile[]);
+        } catch (err) {
+          console.error('Mention search error:', err);
+        } finally {
+          setMentionLoading(false);
+        }
+      } else {
+        setShowMentions(false);
+      }
+    } else {
+      setShowMentions(false);
+    }
   };
 
-  const handleFileUpload = async (files: FileList | null, isImage: boolean) => {
+  const selectMention = (user: UserProfile) => {
+    const words = inputText.split(' ');
+    words.pop(); // Remove the @mention part
+    const mentionText = `@${user.username || user.displayName}`;
+    const newText = [...words, mentionText].join(' ') + ' ';
+    setInputText(newText);
+    setMentions(prev => [...new Set([...prev, user.uid])]);
+    setShowMentions(false);
+  };
+
+  const renderMedia = (m: Message) => {
+    if (m.isDeleted) return null;
+    
+    const mediaUrl = m.mediaUrl || m.fileUrl || m.imageUrl || m.fileData;
+    if (!mediaUrl) return null;
+
+    if (m.type === 'image') {
+      return (
+        <div 
+          className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/5 cursor-pointer bg-black/20" 
+          onClick={(e) => { e.stopPropagation(); setSelectedImage(mediaUrl); }}
+        >
+          <img src={mediaUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center">
+            <Maximize2 size={24} className="text-white drop-shadow-lg" />
+          </div>
+        </div>
+      );
+    }
+
+    if (m.type === 'video') {
+      return (
+        <div className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/5 bg-black/20">
+          <video src={mediaUrl} className="max-w-full h-auto max-h-[300px]" controls />
+        </div>
+      );
+    }
+
+    if (m.type === 'file') {
+      const isMe = m.senderId === currentUser.uid;
+      return (
+        <div className={`flex items-center gap-3 p-3 rounded-xl border mb-2 ${isMe ? 'bg-black/10 border-black/5' : 'bg-white/5 border-white/10'}`}>
+          <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-[#ffc107]">
+            <FileText size={24} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-white truncate">{m.fileName || 'Attachment'}</p>
+            <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Document</p>
+          </div>
+          <a 
+            href={mediaUrl} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="p-2 hover:bg-white/10 rounded-lg transition-all text-white/40 hover:text-white"
+          >
+            <ExternalLink size={18} />
+          </a>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0 || isSending) return;
     
     setIsSending(true);
-    const attachments: Attachment[] = [];
     
     try {
       for (let i = 0; i < files.length; i++) {
         let file = files[i];
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
         
-        // Validate size
-        const maxSize = isImage ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-          alert(`File ${file.name} is too large. Max size is ${isImage ? '5MB' : '10MB'}.`);
+        // Validate size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`File ${file.name} is too large. Max 10MB.`);
           continue;
         }
 
-        // Compress image if needed
+        // Compress images
         if (isImage) {
-          const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true
-          };
           try {
-            file = await imageCompression(file as any, options) as any;
-          } catch (error) {
-            console.error('Compression failed:', error);
-          }
+            file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
+          } catch (e) { console.error(e); }
         }
 
-        setUploadProgress(prev => ({ ...prev, [file.name]: 50 })); // Mock progress since fetch doesn't give it easily
+        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const fileData = await uploadFile(file, isImage ? 'images' : 'attachments');
-          attachments.push({
-            name: file.name,
-            type: file.type,
-            url: fileData, // This is now the Base64 string
-            size: file.size
-          });
+          const url = await uploadFile(file);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
-        } catch (error) {
-          console.error(`Failed to upload ${file.name}:`, error);
+
+          const messageData = {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: isImage ? 'Sent an image' : (isVideo ? 'Sent a video' : `Shared ${file.name}`),
+            type: isImage ? 'image' : (isVideo ? 'video' : 'file'),
+            mediaUrl: url,
+            fileName: file.name
+          };
+
+          if (isDirect && recipientUser) {
+            await sendDirectMessage(recipientUser.uid, messageData);
+          } else if (projectId) {
+            await sendMessage(projectId, messageData);
+          }
+        } catch (e) {
+          console.error(e);
         }
       }
-
-      if (attachments.length > 0) {
-        const messageData = {
-          senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
-          text: isImage ? 'Sent images' : 'Sent attachments',
-          fileData: attachments[0].url, // Store the first one as fileData for quick preview
-          attachments
-        };
-
-        if (isDirect && recipientUser) {
-          await sendDirectMessage(recipientUser.uid, messageData);
-        } else if (projectId) {
-          await sendMessage(projectId, messageData);
-        }
-      }
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
     } finally {
       setIsSending(false);
       setTimeout(() => setUploadProgress({}), 1000);
@@ -553,81 +641,25 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                       </div>
                     )}
 
-                    {!m.isDeleted && m.fileData && (
-                      <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
-                        <img src={m.fileData} alt="Shared file" className="w-full h-auto max-h-64 object-cover" />
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setSelectedImage(m.fileData!); }}
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center text-white"
-                        >
-                          <Maximize2 size={20} />
-                        </button>
+                    {renderMedia(m)}
+
+                    {!m.isDeleted && (
+                      <div className="flex flex-col gap-1">
+                        <div className="break-words">
+                          {m.text.split(' ').map((word, i) => {
+                            if (word.startsWith('@')) {
+                              return <span key={i} className="text-[#34b7f1] font-bold cursor-pointer hover:underline">{word} </span>;
+                            }
+                            return word + ' ';
+                          })}
+                          {!m.isDeleted && m.edited && (
+                            <span className="text-[8px] text-white/20 font-black uppercase tracking-widest ml-2 italic">
+                              (edited)
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
-
-                    {!m.isDeleted && m.imageUrl && (
-                      <div className="mb-3 rounded-xl overflow-hidden border border-black/10 relative group/img">
-                        <img src={m.imageUrl} alt="AI Visualization" className="w-full h-auto max-h-64 object-cover" />
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setSelectedImage(m.imageUrl!); }}
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center text-white"
-                        >
-                          <Maximize2 size={20} />
-                        </button>
-                      </div>
-                    )}
-
-                    {!m.isDeleted && m.attachments && m.attachments.length > 0 && (
-                      <div className="space-y-2 mb-3">
-                        {m.attachments.map((att, idx) => {
-                          const isImg = att.type.startsWith('image/');
-                          if (isImg) {
-                            return (
-                              <div key={idx} className="rounded-xl overflow-hidden border border-black/10 relative group/img">
-                                <img src={att.url} alt={att.name} className="w-full h-auto max-h-64 object-cover" />
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); setSelectedImage(att.url); }}
-                                  className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center text-white"
-                                >
-                                  <Maximize2 size={20} />
-                                </button>
-                              </div>
-                            );
-                          }
-                          return (
-                            <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border ${isMe ? 'bg-black/10 border-black/5' : 'bg-white/5 border-white/10'}`}>
-                              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/60">
-                                <FileText size={16} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black truncate uppercase tracking-widest">{att.name}</p>
-                                <p className="text-[8px] opacity-40 uppercase tracking-widest">{(att.size / 1024).toFixed(1)} KB</p>
-                              </div>
-                              <a 
-                                href={att.url} 
-                                download={att.name}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className={`p-1.5 rounded-lg transition-all ${isMe ? 'hover:bg-black/20' : 'hover:bg-white/10'}`}
-                              >
-                                <ExternalLink size={14} />
-                              </a>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    <p className={`whitespace-pre-wrap ${m.isDeleted ? 'text-white/40 italic flex items-center gap-2' : ''}`}>
-                      {m.isDeleted && <Trash2 size={12} />}
-                      {m.text}
-                      {!m.isDeleted && m.edited && (
-                        <span className="text-[8px] text-white/20 font-black uppercase tracking-widest ml-2 italic">
-                          (edited)
-                        </span>
-                      )}
-                    </p>
                     
                     {/* AI Visualization button removed */}
 
@@ -825,14 +857,14 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             className="hidden" 
             accept="image/*" 
             multiple 
-            onChange={(e) => handleFileUpload(e.target.files, true)}
+            onChange={(e) => handleFileUpload(e.target.files)}
           />
           <input 
             type="file" 
             id="chat-file-upload" 
             className="hidden" 
             multiple 
-            onChange={(e) => handleFileUpload(e.target.files, false)}
+            onChange={(e) => handleFileUpload(e.target.files)}
           />
           
           <button 

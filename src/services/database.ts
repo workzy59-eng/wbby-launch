@@ -185,6 +185,34 @@ export const getTypingStatus = (conversationId: string, callback: (typingUsers: 
   });
 };
 
+export const searchUsers = async (queryStr: string) => {
+  const path = 'users';
+  try {
+    const qWithUsername = query(
+      collection(db, 'users'),
+      where('username', '>=', queryStr),
+      where('username', '<=', queryStr + '\uf8ff'),
+      limit(5)
+    );
+    const qWithDisplayName = query(
+      collection(db, 'users'),
+      where('displayName', '>=', queryStr),
+      where('displayName', '<=', queryStr + '\uf8ff'),
+      limit(5)
+    );
+    
+    const [snap1, snap2] = await Promise.all([getDocs(qWithUsername), getDocs(qWithDisplayName)]);
+    const users = new Map();
+    snap1.docs.forEach(doc => users.set(doc.id, { uid: doc.id, ...doc.data() }));
+    snap2.docs.forEach(doc => users.set(doc.id, { uid: doc.id, ...doc.data() }));
+    
+    return Array.from(users.values());
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 export const checkUsernameUnique = async (username: string) => {
   const path = 'users';
   try {
@@ -314,7 +342,6 @@ export const getAllAttendance = async () => {
 export const createProject = async (projectData: any) => {
   const path = 'projects';
   try {
-    // 1. Create the project document
     const docRef = await addDoc(collection(db, 'projects'), {
       ...projectData,
       createdAt: serverTimestamp(),
@@ -327,11 +354,9 @@ export const createProject = async (projectData: any) => {
 
     const projectId = docRef.id;
 
-    // 2. Setup initial conversation and welcome message
     try {
       const admins = await getAdmins();
       if (admins.length > 0) {
-        // Use primary admin if available, otherwise first admin found
         const admin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
         const adminUid = admin.uid;
         const clientUid = projectData.userId;
@@ -340,15 +365,12 @@ export const createProject = async (projectData: any) => {
         const conversationId = getConversationId(adminUid, clientUid);
         const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${projectData.businessName}" has been successfully received. We've assigned our team to review your requirements.\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
 
-        // 3. Auto-Assignment Logic
         try {
           const degsQ = query(collection(db, 'users'), where('role', '==', 'developer'), where('status', '==', 'approved'));
           const devsSnap = await getDocs(degsQ);
           const devs = devsSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
 
           if (devs.length > 0) {
-            // Sort by activeProjects (asc), then experience (desc)
-            // Seniors (5+) > Mid (3-4) > Junior (1-2)
             const sortedDevs = devs.sort((a, b) => {
               const projectsA = (a as any).activeProjects || 0;
               const projectsB = (b as any).activeProjects || 0;
@@ -374,7 +396,6 @@ export const createProject = async (projectData: any) => {
           console.error('Auto-assignment failed:', assignError);
         }
 
-        // Create the conversation document
         await setDoc(doc(db, 'conversations', conversationId), {
           participants: [adminUid, clientUid],
           lastMessage: welcomeMessage,
@@ -385,10 +406,9 @@ export const createProject = async (projectData: any) => {
             [adminUid]: 0
           },
           lastSenderId: adminUid,
-          projectId: projectId // Optionally link to the project
+          projectId: projectId 
         }, { merge: true });
 
-        // Add the welcome message to the subcollection
         await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
           text: welcomeMessage,
           senderId: adminUid,
@@ -412,9 +432,6 @@ export const createProject = async (projectData: any) => {
 export const updateProject = async (projectId: string, updateData: any) => {
   const path = `projects/${projectId}`;
   try {
-    const projectDoc = await getDoc(doc(db, 'projects', projectId));
-    const oldData = projectDoc.data();
-    
     await updateDoc(doc(db, 'projects', projectId), updateData);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
@@ -480,7 +497,6 @@ export const getBlogPostBySlug = async (slug: string) => {
   }
 };
 
-// Message Operations
 export const getConversationId = (uid1: string, uid2: string) => {
   return [uid1, uid2].sort().join('_');
 };
@@ -488,8 +504,15 @@ export const getConversationId = (uid1: string, uid2: string) => {
 export const sendMessage = async (projectId: string, messageData: any) => {
   const path = `projects/${projectId}/messages`;
   try {
+    const text = messageData.text || '';
+    const type = messageData.type || (messageData.fileUrl || messageData.mediaUrl ? 'image' : 'text');
+    const mediaUrl = messageData.mediaUrl || messageData.fileUrl || messageData.imageUrl || null;
+
     const docRef = await addDoc(collection(db, 'projects', projectId, 'messages'), {
       ...messageData,
+      text,
+      type,
+      mediaUrl,
       projectId,
       createdAt: serverTimestamp(),
       status: 'sent',
@@ -503,10 +526,7 @@ export const sendMessage = async (projectId: string, messageData: any) => {
       const data = projectDoc.data();
       const unreadCount = data.unreadCount || {};
       
-      // Increment unread count for everyone except sender
-      // For simplicity, we'll assume the participants are the client and admin
-      const participants = [data.userId, data.developerId].filter(id => id && id !== messageData.senderId);
-      // Also include admins
+      const participants = [data.userId, data.developerId, data.assignedTo].filter(id => id && id !== messageData.senderId);
       const admins = await getAdmins();
       admins.forEach(admin => {
         if (admin.uid !== messageData.senderId) {
@@ -519,8 +539,13 @@ export const sendMessage = async (projectId: string, messageData: any) => {
         unreadCount[uid] = (unreadCount[uid] || 0) + 1;
       });
 
+      let lastMessagePreview = text;
+      if (type === 'image') lastMessagePreview = '📷 Image';
+      else if (type === 'video') lastMessagePreview = '🎥 Video';
+      else if (type === 'file') lastMessagePreview = '📁 File';
+
       await updateDoc(doc(db, 'projects', projectId), {
-        lastMessage: messageData.text || (messageData.attachments?.length ? 'Sent an attachment' : 'Sent an image'),
+        lastMessage: lastMessagePreview,
         lastMessageAt: serverTimestamp(),
         lastSenderId: messageData.senderId,
         unreadCount,
@@ -538,6 +563,10 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
   const conversationId = getConversationId(auth.currentUser.uid, recipientId);
   const path = `conversations/${conversationId}`;
   try {
+    const text = messageData.text || '';
+    const type = messageData.type || (messageData.fileUrl || messageData.mediaUrl || messageData.fileData ? 'image' : 'text');
+    const mediaUrl = messageData.mediaUrl || messageData.fileUrl || messageData.imageUrl || messageData.fileData || null;
+
     const convRef = doc(db, 'conversations', conversationId);
     const convDoc = await getDoc(convRef);
     let unreadCount = {};
@@ -545,12 +574,15 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       unreadCount = convDoc.data().unreadCount || {};
     }
     
-    // Increment unread count for recipient
     unreadCount[recipientId] = (unreadCount[recipientId] || 0) + 1;
 
-    // Update/Create parent conversation FIRST
+    let lastMessagePreview = text;
+    if (type === 'image') lastMessagePreview = '📷 Image';
+    else if (type === 'video') lastMessagePreview = '🎥 Video';
+    else if (type === 'file') lastMessagePreview = '📁 File';
+
     await setDoc(convRef, {
-      lastMessage: messageData.text || (messageData.attachments?.length ? 'Sent an attachment' : 'Sent an image'),
+      lastMessage: lastMessagePreview,
       lastMessageAt: serverTimestamp(),
       lastSenderId: auth.currentUser.uid,
       participants: [auth.currentUser.uid, recipientId],
@@ -558,9 +590,11 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       updatedAt: serverTimestamp(),
     }, { merge: true });
 
-    // Add message to subcollection
     const docRef = await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
       ...messageData,
+      text,
+      type,
+      mediaUrl,
       conversationId,
       createdAt: serverTimestamp(),
       status: 'sent',
