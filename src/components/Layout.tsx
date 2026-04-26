@@ -16,7 +16,12 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
+  const isDashboard = location.pathname.startsWith('/dashboard') || 
+    location.pathname.startsWith('/admin') || 
+    location.pathname.startsWith('/developer-dashboard') ||
+    location.pathname.startsWith('/sales-dashboard') ||
+    location.pathname.startsWith('/onboarding') ||
+    location.pathname.startsWith('/messages');
   const isPortfolio = location.pathname.startsWith('/portfolio');
 
   if (isDashboard || isPortfolio) return <>{children}</>;

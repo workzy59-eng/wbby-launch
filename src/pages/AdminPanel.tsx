@@ -2355,6 +2355,14 @@ ${viewingProject.description}
                           <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Progress</span>
                           <span className="text-xs font-bold text-white uppercase">{viewingProject.progress}%</span>
                         </div>
+                        {viewingProject.developerId && (
+                          <div className="flex justify-between">
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Developer</span>
+                            <span className="text-xs font-bold text-[#c7c42a] uppercase">
+                              {users.find(u => u.uid === viewingProject.developerId)?.displayName || 'Assigned'}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </section>
 
@@ -2626,8 +2634,23 @@ ${viewingProject.description}
                       <option value="Under Review">Under Review</option>
                       <option value="Accepted">Accepted</option>
                       <option value="Development Started">Development Started</option>
+                      <option value="assigned">Assigned to Developer</option>
+                      <option value="pending">Pending Developer Accept</option>
                       <option value="Completed">Completed</option>
                       <option value="Rejected">Rejected</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Assign Developer</label>
+                    <select 
+                      name="developerId"
+                      defaultValue={editingProjectDetails?.developerId}
+                      className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest appearance-none"
+                    >
+                      <option value="">No Developer Assigned</option>
+                      {users.filter(u => u.role === 'developer').map(dev => (
+                        <option key={dev.uid} value={dev.uid}>{dev.displayName || dev.email}</option>
+                      ))}
                     </select>
                   </div>
                   <input type="hidden" name="domain" id="project-domain-input" defaultValue={editingProjectDetails?.domain} />

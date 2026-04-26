@@ -167,14 +167,20 @@ export default function App() {
                   path="/dashboard" 
                   element={
                     user ? (
-                      (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
-                        <AdminPanel user={user} profile={profile} />
-                      ) : profile?.role === 'developer' ? (
-                        <DeveloperDashboard user={user} profile={profile} />
-                      ) : profile?.role === 'sales' ? (
-                        <SalesDashboard user={user} profile={profile} />
+                      profile ? (
+                        (profile.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
+                          <AdminPanel user={user} profile={profile} />
+                        ) : profile.role === 'developer' ? (
+                          <DeveloperDashboard user={user} profile={profile} />
+                        ) : profile.role === 'sales' ? (
+                          <SalesDashboard user={user} profile={profile} />
+                        ) : (
+                          <Dashboard user={user} profile={profile} />
+                        )
                       ) : (
-                        <Dashboard user={user} profile={profile} />
+                        <div className="min-h-screen bg-black flex items-center justify-center">
+                          <Loader />
+                        </div>
                       )
                     ) : (
                       <Navigate to="/auth" />
@@ -183,7 +189,23 @@ export default function App() {
                 />
                 <Route 
                   path="/developer-dashboard" 
-                  element={user && profile?.role === 'developer' ? <DeveloperDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                  element={
+                    user ? (
+                      profile ? (
+                        profile.role === 'developer' ? (
+                          <DeveloperDashboard user={user} profile={profile} />
+                        ) : (
+                          <Navigate to="/dashboard" />
+                        )
+                      ) : (
+                        <div className="min-h-screen bg-black flex items-center justify-center">
+                          <Loader />
+                        </div>
+                      )
+                    ) : (
+                      <Navigate to="/auth" />
+                    )
+                  } 
                 />
                 <Route 
                   path="/admin" 

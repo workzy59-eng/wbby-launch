@@ -99,7 +99,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       const newTimeLeft: Record<string, string> = {};
       
       projects.forEach(p => {
-        if (p.status === 'pending' || p.status === 'assigned') {
+        const currentStatus = p.status?.toLowerCase();
+        if (currentStatus === 'pending' || currentStatus === 'assigned') {
           // Robust timestamp conversion
           let startTimeMs = 0;
             if (p.createdAt && typeof p.createdAt === 'object') {
@@ -120,7 +121,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           if (diff <= 0) {
             newTimeLeft[p.id] = 'DELAYED';
             // Update status in DB if needed (to keep it persistent)
-            if (p.status === 'assigned' || p.status === 'pending') {
+            if (currentStatus === 'assigned' || currentStatus === 'pending') {
               updateProject(p.id, { status: 'delayed' });
             }
           } else {
@@ -178,8 +179,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
   const stats = useMemo(() => {
     const total = projects.length;
-    const completed = projects.filter(p => p.status === 'completed').length;
-    const pending = projects.filter(p => p.status === 'pending' || p.status === 'assigned').length;
+    const completed = projects.filter(p => p.status?.toLowerCase() === 'completed').length;
+    const pending = projects.filter(p => p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned').length;
     
     const totalEarned = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
     
@@ -318,8 +319,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                             <p className="text-[10px] font-bold uppercase text-white/40">{p.userName || 'Private Client'}</p>
                           </div>
                           <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                            p.status === 'completed' ? 'bg-green-500/10 text-green-500' :
-                            p.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400' :
+                            p.status?.toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-500' :
+                            p.status?.toLowerCase() === 'in-progress' ? 'bg-blue-500/10 text-blue-400' :
                             'bg-[#c7c42a]/10 text-[#c7c42a] animate-pulse'
                           }`}>
                             {p.status}
@@ -342,7 +343,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                         </div>
 
                         {/* Deadline Timer */}
-                        {(p.status === 'pending' || p.status === 'assigned') && (
+                        {(p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned') && (
                           <div className="flex items-center gap-3 p-4 bg-black/40 rounded-2xl border border-white/5">
                             <Clock size={16} className={timeLeft[p.id] === 'DELAYED' ? 'text-red-500' : 'text-[#c7c42a]'} />
                             <div className="flex-1">
@@ -356,7 +357,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
                         {/* Actions */}
                         <div className="pt-2">
-                          {p.status === 'pending' || p.status === 'assigned' ? (
+                          {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' ? (
                             <button 
                               onClick={() => setShowAcceptPopup(p.id)}
                               className="w-full py-4 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/10"
