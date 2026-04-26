@@ -384,6 +384,7 @@ export const createProject = async (projectData: any) => {
             const assignedDev = sortedDevs[0];
             await updateDoc(doc(db, 'projects', projectId), {
               assignedTo: assignedDev.uid,
+              developerId: assignedDev.uid, // Add this for dashboard compatibility
               assignedAt: serverTimestamp(),
               status: 'Under Review'
             });

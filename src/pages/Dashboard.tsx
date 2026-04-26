@@ -134,7 +134,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         userName: profile.displayName || user.displayName || 'User',
         userEmail: profile.email || user.email || '',
         userPhone: profile.phone || '',
-        developerId: project.assignedTo,
+        developerId: project.developerId || project.assignedTo,
         onSuccess: (response) => {
           toast.success('Payment successful!', { id: 'payment' });
           // Force refresh project data
@@ -173,14 +173,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    if (selectedProject?.assignedTo) {
-      getUserProfile(selectedProject.assignedTo).then(devProfile => {
+    const devId = selectedProject?.developerId || selectedProject?.assignedTo;
+    if (devId) {
+      getUserProfile(devId).then(devProfile => {
         setAssignedDeveloper(devProfile as UserProfile);
       });
     } else {
       setAssignedDeveloper(null);
     }
-  }, [selectedProject?.assignedTo]);
+  }, [selectedProject?.developerId, selectedProject?.assignedTo]);
 
   const hasAcceptedProject = projects.some(p => p.status !== 'Waiting for Review' && p.status !== 'Rejected');
 

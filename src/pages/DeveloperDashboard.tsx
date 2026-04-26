@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { getProjectsAsync, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile } from '../services/database';
+import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
@@ -61,23 +61,26 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   useEffect(() => {
     if (!user?.uid) return;
 
-    const fetchData = async () => {
+    const unsubProjects = getProjects((projs) => {
+      setProjects(projs);
+      setLoading(false);
+    }, user.uid, 'developer');
+
+    const fetchPayments = async () => {
       try {
-        const [projs, pays] = await Promise.all([
-          getProjectsAsync(undefined, user.uid),
-          getPayments(user.uid)
-        ]);
-        setProjects(projs);
+        const pays = await getPayments(user.uid);
         setPayments(pays);
       } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching payments:', error);
       }
     };
 
-    fetchData();
-  }, [user]);
+    fetchPayments();
+
+    return () => {
+      unsubProjects();
+    };
+  }, [user?.uid]);
 
   // Sync settings when profile updates
   useEffect(() => {
@@ -121,7 +124,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           if (diff <= 0) {
             newTimeLeft[p.id] = 'DELAYED';
             // Update status in DB if needed (to keep it persistent)
-            if (currentStatus === 'assigned' || currentStatus === 'pending') {
+            if ((currentStatus === 'assigned' || currentStatus === 'pending') && p.status !== 'delayed') {
               updateProject(p.id, { status: 'delayed' });
             }
           } else {
@@ -180,11 +183,11 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const stats = useMemo(() => {
     const total = projects.length;
     const completed = projects.filter(p => p.status?.toLowerCase() === 'completed').length;
-    const pending = projects.filter(p => p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned').length;
+    const active = projects.filter(p => ['development started', 'in-progress', 'assigned', 'pending', 'delayed', 'accepted', 'under review'].includes(p.status?.toLowerCase() || '')).length;
     
     const totalEarned = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
     
-    return { total, completed, pending, earnings: totalEarned };
+    return { total, completed, pending: active, earnings: totalEarned };
   }, [projects, payments]);
 
   if (loading) {

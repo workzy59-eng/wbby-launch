@@ -333,6 +333,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       unsubscribeConversations();
       unsubscribeLeads();
       unsubscribeDevApps();
+      unsubscribeDevInvites();
       unsubscribeSalesApps();
       unsubscribeCommissions();
     };
@@ -399,6 +400,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
 
   const handleSaveProject = async (projectData: Partial<Project>) => {
     try {
+      // Ensure both internal ID fields are synced
+      if (projectData.developerId) {
+        projectData.assignedTo = projectData.developerId;
+      } else if (projectData.assignedTo) {
+        projectData.developerId = projectData.assignedTo;
+      }
+
       if (editingProjectDetails) {
         await updateProject(editingProjectDetails.id, projectData);
       } else {
@@ -2644,7 +2652,7 @@ ${viewingProject.description}
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Assign Developer</label>
                     <select 
                       name="developerId"
-                      defaultValue={editingProjectDetails?.developerId}
+                      defaultValue={editingProjectDetails?.developerId || editingProjectDetails?.assignedTo}
                       className="w-full p-6 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-bold uppercase tracking-widest appearance-none"
                     >
                       <option value="">No Developer Assigned</option>
@@ -2653,6 +2661,7 @@ ${viewingProject.description}
                       ))}
                     </select>
                   </div>
+                  <input type="hidden" name="assignedTo" defaultValue={editingProjectDetails?.assignedTo || editingProjectDetails?.developerId} />
                   <input type="hidden" name="domain" id="project-domain-input" defaultValue={editingProjectDetails?.domain} />
                   <DomainSelect 
                     initialValue={editingProjectDetails?.domain} 
