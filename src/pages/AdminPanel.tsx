@@ -17,6 +17,7 @@ import {
   MessageCircle, 
   TrendingUp, 
   Users, 
+  UserPlus,
   Clock, 
   CheckCircle2, 
   Layout,
@@ -242,7 +243,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [showDirectChat, setShowDirectChat] = useState(false);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
-  const [appTab, setAppTab] = useState<'developer' | 'sales'>('developer');
+  const [appTab, setAppTab] = useState<'developer' | 'sales' | 'invites'>('developer');
 
   const isUserAdmin = profile?.role === 'admin' || (user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
@@ -1401,115 +1402,161 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
     }
   };
 
-  const renderApplications = () => (
+  const renderRecruitment = () => (
     <div className="space-y-12">
       <div className="flex justify-between items-end">
         <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Recruitment</span>
-          <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Applications</h2>
+          <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Talent Acquisition</span>
+          <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Recruitment</h2>
         </div>
         <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
           <button 
             onClick={() => setAppTab('developer')}
             className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'developer' ? 'bg-[#c7c42a] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
-            Developers
+            Dev Apps
           </button>
           <button 
             onClick={() => setAppTab('sales')}
             className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'sales' ? 'bg-[#c7c42a] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
           >
-            Sales
+            Sales Apps
+          </button>
+          <button 
+            onClick={() => setAppTab('invites')}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${appTab === 'invites' ? 'bg-[#c7c42a] text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
+          >
+            Active Invites
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {(appTab === 'developer' ? developerApps : salesApps).map((app) => (
-          <div key={app.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 space-y-8">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-3xl font-bold tracking-tighter text-white uppercase italic">{app.name}</h3>
-                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">{app.email} • {app.phone}</p>
+      {appTab === 'invites' ? (
+        <div className="bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-white/5">
+                <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest">Name</th>
+                <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest">Email</th>
+                <th className="p-8 text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">Invite Code</th>
+                <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest">Role</th>
+                <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {developerInvites.map((inv) => (
+                <tr key={inv.id} className="border-b border-white/5 hover:bg-white/5 transition-all">
+                  <td className="p-8 font-bold text-white uppercase italic">{inv.name}</td>
+                  <td className="p-8 text-xs text-white/60">{inv.email}</td>
+                  <td className="p-8">
+                    <span className="bg-[#c7c42a]/10 text-[#c7c42a] px-4 py-2 rounded-lg font-black text-lg tracking-[0.2em] font-mono border border-[#c7c42a]/20 uppercase">
+                      {inv.code}
+                    </span>
+                  </td>
+                  <td className="p-8 text-[10px] font-bold text-white/40 uppercase tracking-widest">{inv.role}</td>
+                  <td className="p-8">
+                    <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${inv.used ? 'bg-white/5 text-white/20' : 'bg-green-500/20 text-green-400'}`}>
+                      {inv.used ? 'Used' : 'Active'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {developerInvites.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-20 text-center text-white/20 font-black uppercase tracking-widest">No active invites</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {(appTab === 'developer' ? developerApps : salesApps).map((app) => (
+            <div key={app.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[3rem] border border-white/10 space-y-8">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-3xl font-bold tracking-tighter text-white uppercase italic">{app.name}</h3>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">{app.email} • {app.phone}</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                  app.status === 'approved' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                  app.status === 'rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                  'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
+                }`}>
+                  {app.status}
+                </span>
               </div>
-              <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
-                app.status === 'approved' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                app.status === 'rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
-              }`}>
-                {app.status}
-              </span>
-            </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              {appTab === 'developer' ? (
-                <>
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Skills</p>
-                    <p className="text-xs font-bold text-white/60">{app.skills}</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Experience</p>
-                    <p className="text-xs font-bold text-white/60">{app.experience}</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Portfolio</p>
-                    <a href={app.portfolio} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#c7c42a] hover:underline">View Link</a>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Availability</p>
-                    <p className="text-xs font-bold text-white/60">{app.availability}</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Experience</p>
-                    <p className="text-xs font-bold text-white/60">{app.experience}</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Languages</p>
-                    <p className="text-xs font-bold text-white/60">{app.languages}</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Availability</p>
-                    <p className="text-xs font-bold text-white/60">{app.availability}</p>
-                  </div>
-                </>
+              <div className="grid grid-cols-2 gap-6">
+                {appTab === 'developer' ? (
+                  <>
+                    <div>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Skills</p>
+                      <p className="text-xs font-bold text-white/60">{app.skills}</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Experience</p>
+                      <p className="text-xs font-bold text-white/60">{app.experience}</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Portfolio</p>
+                      <a href={app.portfolio} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#c7c42a] hover:underline">View Link</a>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Availability</p>
+                      <p className="text-xs font-bold text-white/60">{app.availability}</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Experience</p>
+                      <p className="text-xs font-bold text-white/60">{app.experience}</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Languages</p>
+                      <p className="text-xs font-bold text-white/60">{app.languages}</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Availability</p>
+                      <p className="text-xs font-bold text-white/60">{app.availability}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {app.message && (
+                <div>
+                  <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-2">Message</p>
+                  <p className="text-sm text-white/60 italic leading-relaxed">"{app.message}"</p>
+                </div>
+              )}
+
+              {app.status === 'pending' && (
+                <div className="flex gap-4 pt-4">
+                  <button 
+                    onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_requests' : 'sales_applications', app.id, 'approved')}
+                    className="flex-1 bg-[#c7c42a] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
+                  >
+                    Approve
+                  </button>
+                  <button 
+                    onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_requests' : 'sales_applications', app.id, 'rejected')}
+                    className="flex-1 border border-white/10 text-white/40 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 transition-all"
+                  >
+                    Reject
+                  </button>
+                </div>
               )}
             </div>
-
-            {app.message && (
-              <div>
-                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-2">Message</p>
-                <p className="text-sm text-white/60 italic leading-relaxed">"{app.message}"</p>
-              </div>
-            )}
-
-            {app.status === 'pending' && (
-              <div className="flex gap-4 pt-4">
-                <button 
-                  onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_requests' : 'sales_applications', app.id, 'approved')}
-                  className="flex-1 bg-[#c7c42a] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
-                >
-                  Approve
-                </button>
-                <button 
-                  onClick={() => handleUpdateAppStatus(appTab === 'developer' ? 'developer_requests' : 'sales_applications', app.id, 'rejected')}
-                  className="flex-1 border border-white/10 text-white/40 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 transition-all"
-                >
-                  Reject
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-        {(appTab === 'developer' ? developerApps : salesApps).length === 0 && (
-          <div className="col-span-full py-20 text-center">
-            <p className="text-white/20 text-sm font-black uppercase tracking-widest">No applications found</p>
-          </div>
-        )}
-      </div>
+          ))}
+          {(appTab === 'developer' ? developerApps : salesApps).length === 0 && (
+            <div className="col-span-full py-20 text-center">
+              <p className="text-white/20 text-sm font-black uppercase tracking-widest">No applications found</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -1783,6 +1830,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'meetings', label: 'Meetings', icon: Video },
             { id: 'leads', label: 'Sales Leads', icon: TrendingUp },
+            { id: 'applications', label: 'Recruitment', icon: UserPlus },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'system', label: 'System Settings', icon: Settings },
           ].map((item) => (
@@ -1879,7 +1927,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {activeTab === 'recycle' && renderRecycleBin()}
             {activeTab === 'system' && renderSystem()}
             {activeTab === 'leads' && renderLeads()}
-            {activeTab === 'applications' && renderApplications()}
+            {activeTab === 'applications' && renderRecruitment()}
             {activeTab === 'meetings' && (
               <div className="space-y-12">
                 <div className="flex flex-col gap-2">

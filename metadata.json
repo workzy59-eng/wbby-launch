@@ -1,6 +1,6 @@
 {
   "name": "WebbyLaunch",
-  "description": "Premium SaaS platform for modern website development with real-time tracking, secure OTP verification, and integrated payments.",
+  "description": "Premium SaaS platform for modern website development with recruitment management, developer onboarding, real-time tracking, and integrated payments.",
   "requestFramePermissions": [
     "camera",
     "microphone",

@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Code, Mail, ArrowRight, ShieldCheck, Laptop, User, Github, Briefcase, FileText, ExternalLink, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getInviteByCode, markInviteUsed, updateProfile, createDeveloperRequest } from '../services/database';
+import { getInviteByCode, markInviteUsed, createDeveloperRequest } from '../services/database';
+import { db, doc, setDoc, serverTimestamp } from '../firebase';
 
 export default function JoinDeveloper() {
   const [email, setEmail] = useState('');
@@ -21,53 +22,90 @@ export default function JoinDeveloper() {
     role: 'Frontend'
   });
 
-  const { user } = useAuth();
+  const { user, signUpWithEmail, signInWithEmail } = useAuth();
   const navigate = useNavigate();
+
+  const [password, setPassword] = useState('');
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [verifiedInvite, setVerifiedInvite] = useState<any>(null);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
-      toast.error("Please login first to join as a developer");
-      navigate('/auth');
-      return;
-    }
-
-    if (user.email?.toLowerCase() !== email.toLowerCase()) {
-      toast.error("The email entered does not match your logged-in account");
-      return;
-    }
-
     setLoading(true);
     try {
-      const invite: any = await getInviteByCode(email.trim().toLowerCase(), code.trim().toUpperCase());
-      
-      if (!invite) {
-        throw new Error("Invalid or already used invite code for this email");
+      if (!verifiedInvite) {
+        const invite: any = await getInviteByCode(email.trim().toLowerCase(), code.trim().toUpperCase());
+        
+        if (!invite) {
+          throw new Error("Invalid or already used invite code for this email");
+        }
+
+        setVerifiedInvite(invite);
+        // Check if we need a password (if user not logged in)
+        if (!user) {
+          setIsNewUser(true);
+        } else {
+          // If logged in, we can proceed directly
+          await completeOnboarding(user.uid, invite);
+        }
+      } else {
+        // We have a verified invite and need to handle password/auth
+        if (!user && password) {
+          try {
+            // Try to sign up, if it fails because user exists, try to notify or just login
+            const cred = await signUpWithEmail(email, password);
+            if (cred.user) {
+              await completeOnboarding(cred.user.uid, verifiedInvite);
+            }
+          } catch (signUpError: any) {
+            if (signUpError.code === 'auth/email-already-in-use') {
+              // Try to sign in instead
+              const cred = await signInWithEmail(email, password);
+              if (cred.user) {
+                await completeOnboarding(cred.user.uid, verifiedInvite);
+              }
+            } else {
+              throw signUpError;
+            }
+          }
+        }
       }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to join");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Update user profile
-      await updateProfile(user.uid, {
+  const completeOnboarding = async (uid: string, invite: any) => {
+    try {
+      // 🏗️ STEP 4: CREATE DEVELOPER USER (Crucial Step)
+      await setDoc(doc(db, "users", uid), {
+        uid,
+        email: email.toLowerCase(),
         role: 'developer',
-        devRole: invite.role,
-        permissions: invite.permissions,
-        joiningDate: invite.joiningDate,
-        status: 'approved',
-        displayName: invite.name || applyData.name
-      });
+        devRole: invite.role || 'Developer',
+        permissions: invite.permissions || ['projects', 'messages'],
+        joiningDate: invite.joiningDate || new Date().toISOString(),
+        status: 'online',
+        displayName: invite.name || applyData.name || 'Developer',
+        paymentLinks: invite.paymentLinks || null,
+        experience: invite.experience || '0',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
 
-      // Mark invite as used
+      // Marks invite used in Firestore
       await markInviteUsed(invite.id);
 
       toast.success("Welcome to the team! Redirecting to dashboard...");
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
-
-    } catch (error: any) {
-      toast.error(error.message || "Failed to join");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Error in completeOnboarding:", error);
+      throw new Error("Failed to finalize onboarding. Please contact support.");
     }
   };
 
@@ -155,35 +193,61 @@ export default function JoinDeveloper() {
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />
               
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Registered Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/40" size={18} />
-                  <input 
-                    type="email" 
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
-                  />
-                </div>
-              </div>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Registered Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/40" size={18} />
+                      <input 
+                        type="email" 
+                        required
+                        disabled={!!verifiedInvite}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Invite Code</label>
-                <div className="relative">
-                  <Code className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/40" size={18} />
-                  <input 
-                    type="text" 
-                    required
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="XXXXXX"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-[#c7c42a] font-black italic tracking-[0.4em] outline-none focus:border-[#c7c42a] transition-all uppercase"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Invite Code</label>
+                    <div className="relative">
+                      <Code className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/40" size={18} />
+                      <input 
+                        type="text" 
+                        required
+                        disabled={!!verifiedInvite}
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        placeholder="XXXXXX"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-[#c7c42a] font-black italic tracking-[0.4em] outline-none focus:border-[#c7c42a] transition-all uppercase disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+
+                  {isNewUser && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="space-y-2"
+                    >
+                      <label className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4 italic">Create Access Password</label>
+                      <div className="relative">
+                        <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a]/40" size={18} />
+                        <input 
+                          type="password" 
+                          required
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                        />
+                      </div>
+                      <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest ml-4 mt-2 italic">This will be your system access logic going forward.</p>
+                    </motion.div>
+                  )}
                 </div>
-              </div>
 
               <button 
                 type="submit"
@@ -194,7 +258,7 @@ export default function JoinDeveloper() {
                   <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>Onboard Now</span>
+                    <span>{isNewUser ? 'Complete Onboarding' : (verifiedInvite ? 'Confirm Join' : 'Verify & Onboard')}</span>
                     <ArrowRight size={20} className="stroke-[3]" />
                   </>
                 )}

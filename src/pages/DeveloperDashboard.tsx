@@ -11,6 +11,7 @@ import {
   LogOut, 
   CheckCircle2, 
   XCircle, 
+  DollarSign,
   Clock, 
   AlertTriangle,
   User,
@@ -46,14 +47,15 @@ import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
 import { Project } from '../types';
 import { toast } from 'react-hot-toast';
-import { ExternalLink, Globe } from 'lucide-react';
+import { ExternalLink, Globe, Wallet } from 'lucide-react';
+import { PRICING_PLANS, COMMISSION_SPLIT } from '../constants';
 
 interface DeveloperDashboardProps {
   user: FirebaseUser | null;
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'messages' | 'update' | 'leave' | 'calendar' | 'resign';
+type Tab = 'dashboard' | 'projects' | 'earnings' | 'messages' | 'update' | 'leave' | 'calendar' | 'resign';
 
 interface VisitSession {
   id: string;
@@ -788,6 +790,99 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             </div>
           </div>
         );
+      case 'earnings':
+        const paidProjects = projects.filter(p => p.paymentStatus === 'paid');
+        const calculateEarnings = (project: Project) => {
+          const plan = (project.plan || 'starter').toLowerCase() as keyof typeof PRICING_PLANS;
+          const basePrice = PRICING_PLANS[plan] || PRICING_PLANS.starter;
+          return basePrice * COMMISSION_SPLIT.DEVELOPER;
+        };
+        const totalEarnings = paidProjects.reduce((sum, p) => sum + calculateEarnings(p), 0);
+
+        return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="col-span-1 md:col-span-2 bg-[#c7c42a] rounded-[2.5rem] p-10 text-black shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full -mr-32 -mt-32 transition-transform duration-700 group-hover:scale-110" />
+                <div className="relative z-10 flex flex-col justify-between h-full space-y-8">
+                   <div className="flex justify-between items-start">
+                     <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center shadow-xl">
+                        <Wallet size={32} className="text-[#c7c42a]" />
+                     </div>
+                     <span className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-1 rounded-full">Developer Commission: 40%</span>
+                   </div>
+                   <div>
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-2">Total Accumulated Revenue</p>
+                     <div className="flex items-baseline gap-2">
+                       <span className="text-xl font-black">₹</span>
+                       <h2 className="text-7xl font-black italic tracking-tighter leading-none">{totalEarnings.toLocaleString()}</h2>
+                     </div>
+                   </div>
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-10 flex flex-col justify-between shadow-xl">
+                <div>
+                  <h3 className="text-xl font-black text-white uppercase italic mb-4">Payout Policy</h3>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
+                    Commissions are processed automatically upon client payment confirmation. Payouts are settled to your linked UPI/Bank account every Friday.
+                  </p>
+                </div>
+                <button className="w-full py-4 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+                  Withdrawal History
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/40 border border-white/5 rounded-[3rem] overflow-hidden backdrop-blur-xl">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest">Project Mission</th>
+                    <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest">Plan Tier</th>
+                    <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest">Status</th>
+                    <th className="p-8 text-[10px] font-black text-[#c7c42a] uppercase tracking-widest text-right">Commission</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paidProjects.map((project) => (
+                    <tr key={project.id} className="border-b border-white/5 hover:bg-white/5 transition-all">
+                      <td className="p-8">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-[#c7c42a]/10 rounded-xl flex items-center justify-center text-[#c7c42a]">
+                            {project.businessName?.[0]}
+                          </div>
+                          <div>
+                            <p className="font-bold text-white uppercase italic">{project.businessName}</p>
+                            <p className="text-[8px] text-white/20 uppercase tracking-widest">{formatDate(project.createdAt)}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-8">
+                        <span className="px-3 py-1 bg-white/5 text-white/60 rounded-full text-[8px] font-black uppercase tracking-widest border border-white/5">
+                          {project.plan || 'Starter'}
+                        </span>
+                      </td>
+                      <td className="p-8">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                          <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Settled</span>
+                        </div>
+                      </td>
+                      <td className="p-8 text-right font-black text-white italic">
+                        ₹{calculateEarnings(project).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                  {paidProjects.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-20 text-center text-white/20 font-black uppercase tracking-widest italic">No earnings records found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
       case 'messages':
         return (
           <MessagesModule 
@@ -852,6 +947,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           {[
             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'projects', label: 'My Projects', icon: Briefcase },
+            { id: 'earnings', label: 'Earnings', icon: DollarSign },
             { id: 'messages', label: 'Messages', icon: MessageSquare },
             { id: 'update', label: 'Update', icon: RefreshCcw },
             { id: 'leave', label: 'Leave Requests', icon: Clock },
@@ -890,9 +986,9 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         {[
           { id: 'dashboard', icon: LayoutDashboard },
           { id: 'projects', icon: Briefcase },
+          { id: 'earnings', icon: DollarSign },
           { id: 'messages', icon: MessageSquare },
           { id: 'update', icon: RefreshCcw },
-          { id: 'leave', icon: Clock },
         ].map((tab) => (
           <button 
             key={tab.id}

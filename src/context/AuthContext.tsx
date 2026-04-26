@@ -8,8 +8,8 @@ interface AuthContextType {
   user: FirebaseUser | null;
   profile: UserProfile | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signInWithGoogle: () => Promise<any>;
+  signInWithEmail: (email: string, pass: string) => Promise<any>;
   signUpWithEmail: (email: string, pass: string) => Promise<any>;
 }
 
@@ -45,12 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     const { signInWithGoogle: firebaseSignIn } = await import('../firebase');
-    await firebaseSignIn();
+    return await firebaseSignIn();
   };
 
   const signInWithEmail = async (email: string, pass: string) => {
     const { signInWithEmail: firebaseSignIn } = await import('../firebase');
-    await firebaseSignIn(email, pass);
+    return await firebaseSignIn(email, pass);
   };
 
   const signUpWithEmail = async (email: string, pass: string) => {
