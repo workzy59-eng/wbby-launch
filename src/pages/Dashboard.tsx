@@ -115,39 +115,19 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     }
 
     const plan = (project.plan || 'basic').toLowerCase();
-    // Pricing Map
-    const prices: { [key: string]: number } = {
-      'basic': 1499,
-      'standard': 2999,
-      'premium': 4999
-    };
     
-    const amount = prices[plan] || 1499;
-
-    try {
-      toast.loading('Initiating secure payment...', { id: 'payment' });
-      
-      await initiatePayment({
-        amount,
-        projectId: project.id,
-        userId: user.uid,
-        userName: profile.displayName || user.displayName || 'User',
-        userEmail: profile.email || user.email || '',
-        userPhone: profile.phone || '',
-        developerId: project.developerId || project.assignedTo,
-        onSuccess: (response) => {
-          toast.success('Payment successful!', { id: 'payment' });
-          // Force refresh project data
-          window.location.reload();
-        },
-        onError: (error) => {
-          console.error('Payment error:', error);
-          toast.error(error.message || 'Payment failed', { id: 'payment' });
-        }
-      });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to start payment', { id: 'payment' });
+    // Redirect to direct Razorpay links
+    let paymentUrl = '';
+    if (plan === 'standard') {
+      paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
+    } else if (plan === 'pro') {
+      paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
+    } else {
+      paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic
     }
+
+    window.open(paymentUrl, '_blank');
+    toast.success('Opening payment link... Please refresh page after payment.');
   };
 
   const stats = useMemo(() => {

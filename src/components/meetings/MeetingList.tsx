@@ -48,14 +48,16 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
   const [view, setView] = useState<'upcoming' | 'past' | 'requests'>('upcoming');
 
   const isAdmin = profile?.role === 'admin';
+  const isDev = profile?.role === 'developer';
+  const isManager = isAdmin || isDev;
 
   useEffect(() => {
-    const unsubMeetings = subscribeToMeetings(profile?.role as 'admin' | 'client', user.uid, (data) => {
+    const unsubMeetings = subscribeToMeetings(profile?.role as 'admin' | 'client' | 'developer', user.uid, (data) => {
       setMeetings(data);
       setLoading(false);
     });
 
-    const unsubRequests = subscribeToMeetingRequests(profile?.role as 'admin' | 'client', user.uid, (data) => {
+    const unsubRequests = subscribeToMeetingRequests(profile?.role as 'admin' | 'client' | 'developer', user.uid, (data) => {
       setRequests(data);
     });
 
@@ -248,7 +250,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
             <option value="Completed" className="bg-[#0A0A0A]">Completed</option>
           </select>
 
-          {!isAdmin && (
+          {!isManager && (
             <button 
               onClick={() => setShowRequestForm(true)}
               className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
@@ -258,7 +260,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
             </button>
           )}
 
-          {isAdmin && (
+          {isManager && (
             <button 
               onClick={() => {
                 setEditingMeeting(undefined);
@@ -332,7 +334,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                 <div key={meeting.id} id={`meeting-${meeting.id}`}>
                   <MeetingCard 
                     meeting={meeting}
-                    isAdmin={isAdmin}
+                    isAdmin={isManager}
                     onStatusUpdate={handleStatusUpdate}
                     onEdit={(m) => {
                       setEditingMeeting(m);

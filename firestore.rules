@@ -18,8 +18,17 @@ service cloud.firestore {
       return isAuthenticated() && (
         request.auth.token.email.lower() == "workzy59@gmail.com" ||
         request.auth.token.email.lower() == "admin@webbylaunch.com" ||
+        request.auth.token.email.lower() == "aither2029@gmail.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+      );
+    }
+
+    function isDeveloper() {
+      return isAuthenticated() && (
+        request.auth.token.email.lower() == "aither2029@gmail.com" ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "developer")
       );
     }
 
@@ -86,7 +95,7 @@ service cloud.firestore {
     match /projects/{projectId} {
       // READ
       allow read: if isAuthenticated() &&
-        (isAdmin() || resource.data.userId == request.auth.uid);
+        (isAdmin() || isDeveloper() || resource.data.userId == request.auth.uid || resource.data.developerId == request.auth.uid);
 
       // CREATE
       allow create: if isAuthenticated() &&
@@ -99,10 +108,10 @@ service cloud.firestore {
         (
           isAdmin() ||
           (
-            resource.data.userId == request.auth.uid &&
-            // Allow user to modify specific project fields or logically delete
+            (resource.data.userId == request.auth.uid || resource.data.developerId == request.auth.uid) &&
+            // Allow user/dev to modify specific project fields
             request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['isDeleted', 'updatedAt', 'forcedStop', 'websiteName', 'domain', 'domainPreferences'])
+              .hasOnly(['isDeleted', 'updatedAt', 'forcedStop', 'websiteName', 'domain', 'domainPreferences', 'progress', 'status', 'websiteUrl', 'startedAt', 'isLocked'])
           )
         );
 
@@ -146,25 +155,6 @@ service cloud.firestore {
     // ADMIN COLLECTIONS
     // ============================
 
-    match /leads/{leadId} {
-      allow get, list, read, write: if isAdmin();
-    }
-
-    match /commissions/{commissionId} {
-      allow get, list, read: if isAuthenticated() && (isAdmin() || resource.data.salesId == request.auth.uid);
-      allow write: if isAdmin();
-    }
-
-    match /developer_requests/{appId} {
-      allow get, list, read, write: if isAdmin();
-      allow create: if true; // Public applications allowed
-    }
-
-    match /sales_applications/{appId} {
-      allow get, list, read, write: if isAdmin();
-      allow create: if true; // Public applications allowed
-    }
-
     match /attendance/{attendanceId} {
       allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
       allow write: if isAuthenticated() && (isAdmin() || request.resource.data.userId == request.auth.uid);
@@ -176,14 +166,14 @@ service cloud.firestore {
     }
 
     match /meetings/{meetingId} {
-      allow read: if isAuthenticated() && (isAdmin() || resource.data.clientId == request.auth.uid || resource.data.adminId == request.auth.uid);
-      allow write: if isAdmin();
+      allow read: if isAuthenticated() && (isAdmin() || isDeveloper() || resource.data.clientId == request.auth.uid || resource.data.adminId == request.auth.uid || resource.data.developerId == request.auth.uid);
+      allow write: if isAdmin() || isDeveloper();
     }
 
     match /meeting_requests/{requestId} {
-      allow read: if isAuthenticated() && (isAdmin() || resource.data.clientId == request.auth.uid);
+      allow read: if isAuthenticated() && (isAdmin() || isDeveloper() || resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid);
       allow create: if isAuthenticated();
-      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.clientId == request.auth.uid);
+      allow update, delete: if isAdmin() || isDeveloper() || (isAuthenticated() && resource.data.clientId == request.auth.uid);
     }
 
     match /payments/{paymentId} {
@@ -209,13 +199,11 @@ service cloud.firestore {
     // ============================
 
     match /visit_sessions/{sessionId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated() && (isAdmin() || isDeveloper() || resource.data.userId == request.auth.uid);
       allow create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.startTime == request.time;
+        request.resource.data.userId == request.auth.uid;
       allow update: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid &&
-        request.resource.data.endTime == request.time;
+        (isAdmin() || isDeveloper() || resource.data.userId == request.auth.uid);
       allow delete: if isAdmin();
     }
 

@@ -971,46 +971,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         </div>
       </section>
 
-      {/* Join Our Team Section */}
-      <section className="py-32 px-10 relative overflow-hidden bg-[#050505]">
-        <div className="max-w-7xl mx-auto">
-          <div className="border border-white/10 p-12 md:p-24 relative overflow-hidden technical-grid">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-              <div className="space-y-8">
-                <span className="text-[10px] font-black uppercase tracking-[0.6em] text-[#c7c42a]">Collaborators</span>
-                <h2 className="text-6xl md:text-9xl font-black tracking-tighter uppercase italic leading-[0.75]">
-                  Architect <br />
-                  <span className="text-[#c7c42a]">The Void.</span>
-                </h2>
-                <p className="text-xl text-white/40 font-medium italic leading-relaxed">
-                  We are searching for digital engineers and sales strategists to redefine the Indian web landscape.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <Link 
-                  to="/join-developer"
-                  className="group bg-[#0a0a0a] border border-white/5 p-12 hover:bg-[#c7c42a] transition-all duration-700"
-                >
-                  <Code size={32} className="text-[#c7c42a] group-hover:text-black mb-8 transition-colors" />
-                  <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-black transition-colors">Developer</h3>
-                  <p className="text-white/20 text-xs font-medium italic mt-2 group-hover:text-black/40 transition-colors">Premium UI/UX</p>
-                </Link>
-                
-                <Link 
-                  to="/join-sales"
-                  className="group bg-[#0a0a0a] border border-white/5 p-12 hover:bg-[#c7c42a] transition-all duration-700"
-                >
-                  <Phone size={32} className="text-[#c7c42a] group-hover:text-black mb-8 transition-colors" />
-                  <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-black transition-colors">Sales</h3>
-                  <p className="text-white/20 text-xs font-medium italic mt-2 group-hover:text-black/40 transition-colors">High Yield</p>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Founder's Message */}
       <section className="py-32 px-10 bg-black relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center space-y-12 relative z-10">

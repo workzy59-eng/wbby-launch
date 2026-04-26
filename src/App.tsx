@@ -28,8 +28,6 @@ const Blog = React.lazy(() => import('./pages/Blog'));
 const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const Testimonials = React.lazy(() => import('./pages/Testimonials'));
 const HowItWorks = React.lazy(() => import('./pages/HowItWorks'));
-const JoinDeveloper = React.lazy(() => import('./pages/JoinDeveloper'));
-const JoinSales = React.lazy(() => import('./pages/JoinSales'));
 const Privacy = React.lazy(() => import('./pages/Privacy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const MessagesModule = React.lazy(() => import('./components/MessagesModule'));
@@ -37,7 +35,6 @@ const Settings = React.lazy(() => import('./pages/Settings'));
 const ComponentShowcase = React.lazy(() => import('./pages/ComponentShowcase'));
 const Layout = React.lazy(() => import('./components/Layout'));
 const LocationPage = React.lazy(() => import('./pages/LocationPage'));
-const Careers = React.lazy(() => import('./pages/Careers'));
 const Docs = React.lazy(() => import('./pages/Docs'));
 const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
 
@@ -132,13 +129,10 @@ export default function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/pricing" element={<Pricing />} />
-                <Route path="/careers" element={<Careers />} />
                 <Route path="/docs" element={<Docs />} />
                 <Route path="/preview-builder" element={<PreviewBuilder />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/join-developer" element={<JoinDeveloper />} />
-                <Route path="/join-sales" element={<JoinSales />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/privacy-policy" element={<Privacy />} />

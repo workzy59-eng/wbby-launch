@@ -109,12 +109,16 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   try {
     const userDoc = await getDoc(doc(db, 'users', user.uid));
     if (!userDoc.exists()) {
+      let role = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'client';
+      if (user.email?.toLowerCase() === 'aither2029@gmail.com') {
+        role = 'developer';
+      }
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
-        role: user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'client',
+        role: role,
         status: 'online',
         lastSeen: serverTimestamp(),
         createdAt: serverTimestamp(),
@@ -267,6 +271,18 @@ export const getAdmins = async () => {
   }
 };
 
+export const getClients = async () => {
+  const path = 'users';
+  try {
+    const q = query(collection(db, 'users'), where('role', '==', 'client'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 // Leave Operations
 export const requestLeave = async (leaveData: any) => {
   const path = 'leave_requests';
@@ -366,32 +382,52 @@ export const createProject = async (projectData: any) => {
         const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${projectData.businessName}" has been successfully received. We've assigned our team to review your requirements.\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
 
         try {
-          const degsQ = query(collection(db, 'users'), where('role', '==', 'developer'), where('status', '==', 'approved'));
-          const devsSnap = await getDocs(degsQ);
-          const devs = devsSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-
-          if (devs.length > 0) {
-            const sortedDevs = devs.sort((a, b) => {
-              const projectsA = (a as any).activeProjects || 0;
-              const projectsB = (b as any).activeProjects || 0;
-              if (projectsA !== projectsB) return projectsA - projectsB;
-
-              const expA = parseInt(String(a.experience || '0'), 10);
-              const expB = parseInt(String(b.experience || '0'), 10);
-              return expB - expA;
-            });
-
-            const assignedDev = sortedDevs[0];
+          // Find the specific developer aither2029@gmail.com
+          const devQ = query(collection(db, 'users'), where('email', '==', 'aither2029@gmail.com'));
+          const devSnap = await getDocs(devQ);
+          
+          if (!devSnap.empty) {
+            const assignedDev = { uid: devSnap.docs[0].id, ...devSnap.docs[0].data() } as UserProfile;
             await updateDoc(doc(db, 'projects', projectId), {
               assignedTo: assignedDev.uid,
-              developerId: assignedDev.uid, // Add this for dashboard compatibility
+              developerId: assignedDev.uid,
               assignedAt: serverTimestamp(),
               status: 'Under Review'
             });
 
             await updateDoc(doc(db, 'users', assignedDev.uid), {
-              activeProjects: ((assignedDev as any).activeProjects || 0) + 1
+              activeProjects: ((assignedDev as any).activeProjects || 0) + 1,
+              role: 'developer' // Double check role
             });
+          } else {
+            // Fallback to previous logic if specific dev not found
+            const degsQ = query(collection(db, 'users'), where('role', '==', 'developer'), where('status', '==', 'approved'));
+            const devsSnap = await getDocs(degsQ);
+            const devs = devsSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+
+            if (devs.length > 0) {
+              const sortedDevs = devs.sort((a, b) => {
+                const projectsA = (a as any).activeProjects || 0;
+                const projectsB = (b as any).activeProjects || 0;
+                if (projectsA !== projectsB) return projectsA - projectsB;
+
+                const expA = parseInt(String(a.experience || '0'), 10);
+                const expB = parseInt(String(b.experience || '0'), 10);
+                return expB - expA;
+              });
+
+              const assignedDev = sortedDevs[0];
+              await updateDoc(doc(db, 'projects', projectId), {
+                assignedTo: assignedDev.uid,
+                developerId: assignedDev.uid,
+                assignedAt: serverTimestamp(),
+                status: 'Under Review'
+              });
+
+              await updateDoc(doc(db, 'users', assignedDev.uid), {
+                activeProjects: ((assignedDev as any).activeProjects || 0) + 1
+              });
+            }
           }
         } catch (assignError) {
           console.error('Auto-assignment failed:', assignError);
@@ -1007,13 +1043,28 @@ export const endVisitSession = async (sessionId: string) => {
   }
 };
 
-export const getVisitSessions = async (userId?: string) => {
-  let q = query(collection(db, 'visit_sessions'), orderBy('startTime', 'desc'));
-  if (userId) {
-    q = query(collection(db, 'visit_sessions'), where('userId', '==', userId), orderBy('startTime', 'desc'));
+export const getVisitSessions = async (userId?: string, role?: string) => {
+  const isAdmin = role === 'admin' || role === 'developer' || auth.currentUser?.email === ADMIN_EMAIL;
+  
+  let q;
+  if (isAdmin) {
+    if (userId) {
+      q = query(collection(db, 'visit_sessions'), where('userId', '==', userId), orderBy('startTime', 'desc'));
+    } else {
+      q = query(collection(db, 'visit_sessions'), orderBy('startTime', 'desc'));
+    }
+  } else {
+    // Force filter by current user if not admin
+    q = query(collection(db, 'visit_sessions'), where('userId', '==', auth.currentUser?.uid), orderBy('startTime', 'desc'));
   }
-  const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+  try {
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+  } catch (error) {
+    console.error("Error fetching visit sessions:", error);
+    return [];
+  }
 };
 
 export const getPayments = async (developerId: string) => {

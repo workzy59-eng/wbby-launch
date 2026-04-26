@@ -32,7 +32,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
     { name: 'Services', path: '/services', icon: Menu },
     { name: 'Pricing', path: '/pricing', icon: Menu },
     { name: 'Blog', path: '/blog', icon: Menu },
-    { name: 'Careers', path: '/careers', icon: Menu },
     { name: 'Docs', path: '/docs', icon: Menu },
   ];
 
@@ -149,15 +148,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
             <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
               <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            </div>
-          </div>
-
-          <div className="space-y-8">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[#c7c42a]">Careers</h4>
-            <div className="flex flex-col gap-4 text-sm font-bold text-white/40">
-              <Link to="/careers" className="hover:text-white transition-colors">Careers Home</Link>
-              <Link to="/join-developer" className="hover:text-white transition-colors">Join as Developer</Link>
-              <Link to="/join-sales" className="hover:text-white transition-colors">Join as Sales</Link>
             </div>
           </div>
 

@@ -19,26 +19,29 @@ import {
   Menu,
   X,
   Plus,
-  Wallet
+  Wallet,
+  Video
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile } from '../services/database';
+import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
+import { MeetingList } from '../components/meetings/MeetingList';
 
 interface DeveloperDashboardProps {
   user: FirebaseUser | null;
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'chat' | 'earnings' | 'settings';
+type Tab = 'dashboard' | 'projects' | 'chat' | 'meetings' | 'earnings' | 'settings';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [clients, setClients] = useState<UserProfile[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAcceptPopup, setShowAcceptPopup] = useState<string | null>(null);
@@ -68,10 +71,14 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
     const fetchPayments = async () => {
       try {
-        const pays = await getPayments(user.uid);
+        const [pays, profiles] = await Promise.all([
+          getPayments(user.uid),
+          getClients()
+        ]);
         setPayments(pays);
+        setClients(profiles);
       } catch (error) {
-        console.error('Error fetching payments:', error);
+        console.error('Error fetching dashboard data:', error);
       }
     };
 
@@ -229,6 +236,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           <NavItem tab="dashboard" icon={LayoutDashboard} label="Dashboard" />
           <NavItem tab="projects" icon={Briefcase} label="Projects" />
           <NavItem tab="chat" icon={MessageSquare} label="Chat" />
+          <NavItem tab="meetings" icon={Video} label="Meetings" />
           <NavItem tab="earnings" icon={DollarSign} label="Earnings" />
           <NavItem tab="settings" icon={SettingsIcon} label="Settings" />
         </nav>
@@ -504,6 +512,22 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
               </motion.div>
             )}
 
+            {activeTab === 'meetings' && (
+              <motion.div 
+                key="meetings"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-10"
+              >
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Scheduling</span>
+                  <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Developer Meetings</h2>
+                </div>
+                <MeetingList user={user!} profile={profile!} allClients={clients} />
+              </motion.div>
+            )}
+
             {activeTab === 'earnings' && (
               <motion.div 
                 key="earnings"
@@ -664,6 +688,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             { tab: 'dashboard' as Tab, icon: LayoutDashboard, label: 'Home' },
             { tab: 'projects' as Tab, icon: Briefcase, label: 'Projects' },
             { tab: 'chat' as Tab, icon: MessageSquare, label: 'Chat' },
+            { tab: 'meetings' as Tab, icon: Video, label: 'Meets' },
             { tab: 'earnings' as Tab, icon: DollarSign, label: 'Pay' },
             { tab: 'settings' as Tab, icon: SettingsIcon, label: 'Settings' }
           ].map((item) => (
@@ -702,6 +727,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   <NavItem tab="dashboard" icon={LayoutDashboard} label="Dashboard" />
                   <NavItem tab="projects" icon={Briefcase} label="Projects" />
                   <NavItem tab="chat" icon={MessageSquare} label="Chat" />
+                  <NavItem tab="meetings" icon={Video} label="Meetings" />
                   <NavItem tab="earnings" icon={DollarSign} label="Earnings" />
                   <NavItem tab="settings" icon={SettingsIcon} label="Settings" />
                   

@@ -37,13 +37,15 @@ export default function Settings({ user, profile }: SettingsProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const isAdmin = profile?.role === 'admin';
+  const isDev = profile?.role === 'developer';
+  const isManager = isAdmin || isDev;
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User, desc: 'Personal information & photo' },
     { id: 'security', label: 'Security', icon: Lock, desc: 'Password & account protection' },
     { id: 'notifications', label: 'Notifications', icon: Bell, desc: 'Alerts & communication' },
-    { id: 'payments', label: 'Payments', icon: CreditCard, desc: isAdmin ? 'UPI & Bank details' : 'Subscription & Billing' },
-    { id: 'meetings', label: 'Meetings', icon: Video, desc: isAdmin ? 'Platform & availability' : 'Meeting preferences' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, desc: isManager ? 'UPI & Bank details' : 'Subscription & Billing' },
+    { id: 'meetings', label: 'Meetings', icon: Video, desc: isManager ? 'Platform & availability' : 'Meeting preferences' },
     ...(isAdmin ? [
       { id: 'business', label: 'Business', icon: Building2, desc: 'Company branding & info' },
       { id: 'users', label: 'Users', icon: Users, desc: 'Manage clients & accounts' }
