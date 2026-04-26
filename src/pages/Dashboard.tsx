@@ -384,156 +384,79 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         )}
       </AnimatePresence>
 
-      <header className="lg:hidden bg-[#0a0a0a] px-6 py-6 border-b border-white/5 sticky top-0 z-40">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-sm italic">Q</span>
+          <header className="lg:hidden bg-[#0a0a0a] px-6 py-6 border-b border-white/5 sticky top-0 z-40">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                  <span className="text-white font-black text-sm italic">Q</span>
+                </div>
+                <div className="text-xl font-black tracking-tighter uppercase italic">{APP_NAME}</div>
+              </div>
+              <div className="flex items-center gap-4">
+                <button onClick={() => logOut()} className="text-white/50 hover:text-red-400 transition-all">
+                  <LogOut size={24} />
+                </button>
+              </div>
             </div>
-            <div className="text-xl font-black tracking-tighter uppercase italic">{APP_NAME}</div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => logOut()} className="text-white/50 hover:text-red-400 transition-all">
-              <LogOut size={24} />
-            </button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* Mobile Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
-          {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'analytics', icon: TrendingUp, label: 'Stats' },
-            { id: 'progress', icon: FolderKanban, label: 'Progress' },
-            { id: 'messages', icon: MessageCircle, label: 'Chat' },
-            { id: 'meetings', icon: Video, label: 'Meets' },
-            { id: 'settings', icon: Settings, label: 'Settings' },
-          ].map((tab) => (
-          <button 
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex flex-col items-center gap-1 transition-all relative ${
-              activeTab === tab.id 
-                ? 'text-[#c7c42a]' 
-                : 'text-white/40'
-            }`}
-          >
-            <div className="relative">
-              <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
-              {tab.id === 'messages' && unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg">
-                  {unreadCount}
-                </span>
+          {/* Mobile Navigation */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
+              {[
+                { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+                { id: 'analytics', icon: TrendingUp, label: 'Stats' },
+                { id: 'progress', icon: FolderKanban, label: 'Progress' },
+                { id: 'messages', icon: MessageCircle, label: 'Chat' },
+                { id: 'meetings', icon: Video, label: 'Meets' },
+                { id: 'settings', icon: Settings, label: 'Settings' },
+              ].map((tab) => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex flex-col items-center gap-1 transition-all relative ${
+                  activeTab === tab.id 
+                    ? 'text-[#c7c42a]' 
+                    : 'text-white/40'
+                }`}
+              >
+                <div className="relative">
+                  <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
+                  {tab.id === 'messages' && unreadCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-tighter">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
+            <div className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === 'messages' ? 'py-6' : 'py-12'} space-y-10`}>
+              {activeTab !== 'messages' && (
+                <>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div>
+                    <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-2 mb-4"
+                    >
+                      <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
+                    </motion.div>
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
+                      Status:<br />
+                      <span style={{ color: primaryColor }}>Operational</span>
+                    </h1>
+                  </div>
+                  <div className="flex flex-col items-end gap-4">
+                  </div>
+                </div>
+
+                </>
               )}
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-tighter">{tab.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
-        <div className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === 'messages' ? 'py-6' : 'py-12'} space-y-10`}>
-          {activeTab !== 'messages' && (
-            <>
-          {/* Payment Warning */}
-          {selectedProject?.paymentStatus === 'pending' && !selectedProject?.isDeleted && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#c7c42a] text-black p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-black/10 relative overflow-hidden mb-10"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full blur-3xl -mr-32 -mt-32" />
-              <div className="flex items-center gap-8 text-center md:text-left relative z-10">
-                <div className="w-20 h-20 bg-black/10 rounded-3xl flex items-center justify-center shrink-0">
-                  <CreditCard size={40} className="animate-bounce" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black uppercase italic tracking-tighter leading-none">Awaiting Launch Payment</h3>
-                  <p className="text-black/60 text-sm font-black uppercase italic max-w-xl">Complete your {selectedProject.plan} plan payment to initiate engineering and development.</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setActiveTab('payments')}
-                className="bg-black text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.05] transition-all shrink-0 relative z-10 shadow-xl"
-              >
-                Complete Payment
-              </button>
-            </motion.div>
-          )}
-
-          {/* Subscription Warning */}
-          {selectedProject?.subscriptionStatus === 'suspended' && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-500 text-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-white/20 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-black/10 rounded-full blur-3xl -mr-32 -mt-32" />
-              <div className="flex items-center gap-8 text-center md:text-left relative z-10">
-                <div className="w-20 h-20 bg-black/10 rounded-3xl flex items-center justify-center shrink-0">
-                  <AlertCircle size={40} className="animate-pulse" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black uppercase italic tracking-tighter">Account Suspended</h3>
-                  <p className="text-white/70 text-sm font-medium italic max-w-xl">Your website has been temporarily paused due to non-payment. Please update your payment to restore service immediately.</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setActiveTab('payments')}
-                className="bg-white text-black px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.05] transition-all shrink-0 relative z-10 shadow-xl"
-              >
-                Pay Now
-              </button>
-            </motion.div>
-          )}
-
-          {selectedProject?.subscriptionStatus === 'past_due' && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-#c7c42a text-black p-8 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-black/10 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full blur-3xl -mr-32 -mt-32" />
-              <div className="flex items-center gap-8 text-center md:text-left relative z-10">
-                <div className="w-20 h-20 bg-black/10 rounded-3xl flex items-center justify-center shrink-0">
-                  <Clock size={40} className="animate-bounce" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black uppercase italic tracking-tighter">Payment Overdue</h3>
-                  <p className="text-black/60 text-sm font-medium italic max-w-xl">Your payment is overdue. Please pay within 48 hours to avoid service interruption and potential suspension.</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setActiveTab('payments')}
-                className="bg-black text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.05] transition-all shrink-0 relative z-10 shadow-xl"
-              >
-                Resolve Now
-              </button>
-            </motion.div>
-          )}
-
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div>
-                <motion.div 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-2 mb-4"
-                >
-                  <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
-                </motion.div>
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
-                  Status:<br />
-                  <span style={{ color: primaryColor }}>Operational</span>
-                </h1>
-              </div>
-              <div className="flex flex-col items-end gap-4">
-              </div>
-            </div>
-
-            </>
-          )}
           
           <AnimatePresence mode="wait">
             <motion.div

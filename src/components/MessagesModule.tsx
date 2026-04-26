@@ -665,6 +665,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               mediaUrl: previewUrl,
               status: 'sending',
               createdAt: new Date(),
+              seen: false,
               temp: true
             };
             setMessages(prev => [...prev, tempMessage]);

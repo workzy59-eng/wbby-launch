@@ -5,6 +5,7 @@ import {
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings } from '../types';
 import { ADMIN_EMAIL } from '../constants';
+import { toast } from 'react-hot-toast';
 
 export enum OperationType {
   CREATE = 'create',
@@ -384,9 +385,10 @@ export const createProject = async (projectData: any) => {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       status: 'Waiting for Review',
+      paymentStatus: projectData.paymentStatus || 'paid', // Default to paid to allow usage without paying
       progress: 0,
       isDeleted: false,
-      isLocked: true,
+      isLocked: false, // Unlock by default if allowed without paying
     });
 
     const projectId = docRef.id;

@@ -291,8 +291,8 @@ export interface Message {
   attachmentUrl?: string;
   fileData?: string; // Base64 string
   fileName?: string;
-  createdAt: string | Timestamp;
-  status: 'sent' | 'delivered' | 'seen';
+  createdAt: string | Timestamp | Date;
+  status: 'sending' | 'sent' | 'delivered' | 'seen';
   seen: boolean;
   seenTime?: string | Timestamp;
   isDeleted?: boolean;

@@ -417,7 +417,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         tertiaryColor: formData.tertiaryColor || '',
         selectedFeatures: formData.selectedFeatures || [],
         plan: formData.plan || 'basic',
-        paymentStatus: 'pending' as 'pending' | 'paid',
+        paymentStatus: 'paid' as 'pending' | 'paid',
         referenceWebsite: formData.referenceWebsite || '',
         templateId: 'custom-dev',
         estimatedCompletion: null,
