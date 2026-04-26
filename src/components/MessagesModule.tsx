@@ -572,6 +572,51 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       );
     }
 
+    if (m.type === 'voice') {
+      return (
+        <div className="flex items-center gap-3 py-2 px-1 min-w-[200px]">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              const audio = document.getElementById(`audio-${m.id}`) as HTMLAudioElement;
+              if (audio) {
+                if (audio.paused) audio.play();
+                else audio.pause();
+              }
+            }}
+            className="w-10 h-10 bg-[#c7c42a] rounded-full flex items-center justify-center text-black shrink-0 hover:scale-105 active:scale-95 transition-all shadow-lg"
+          >
+            <Play size={20} className="ml-1" />
+          </button>
+          <div className="flex-1 min-w-0">
+             <div className="flex flex-col gap-1.5">
+                <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden relative">
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: '100%' }}
+                     transition={{ duration: m.duration || 0, ease: 'linear' }}
+                     className="h-full bg-[#c7c42a] absolute left-0 top-0 opacity-40" 
+                   />
+                   <div className="absolute inset-0 flex justify-between px-1">
+                      {[...Array(12)].map((_, i) => (
+                        <div key={i} className="w-[1px] h-full bg-white/20" />
+                      ))}
+                   </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[9px] font-black tracking-widest text-[#8696a0] uppercase">{formatDuration(m.duration || 0)}</span>
+                  <Mic size={10} className="text-[#8696a0]" />
+                </div>
+             </div>
+          </div>
+          <audio id={`audio-${m.id}`} src={mediaUrl} className="hidden" onPlay={(e) => {
+             const btn = e.currentTarget.previousElementSibling?.querySelector('button');
+             // We can manipulate UI via classes if needed
+          }} />
+        </div>
+      );
+    }
+
     return null;
   };
 
@@ -591,33 +636,74 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         
         // Validate size (10MB max)
         if (file.size > 10 * 1024 * 1024) {
-          alert(`File ${file.name} is too large. Max 10MB.`);
+          toast.error(`File ${file.name} is too large. Max 10MB.`);
           continue;
         }
 
-        // Compress images
+        let uploadFileSource = file;
+        let previewUrl = '';
+
+        // Compress images & Instant Preview
         if (isImage) {
           try {
-            file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
-          } catch (e) { console.error(e); }
+            const compressed = await imageCompression(file as any, { 
+              maxSizeMB: 0.2, 
+              maxWidthOrHeight: 800,
+              useWebWorker: true 
+            });
+            uploadFileSource = compressed as any;
+            previewUrl = URL.createObjectURL(compressed);
+            
+            // Add temp message for instant preview
+            const tempId = 'temp-' + Date.now() + '-' + i;
+            const tempMessage: Message = {
+              id: tempId,
+              senderId: currentUser.uid,
+              senderName: profile?.displayName || 'User',
+              text: '📷 Photo',
+              type: 'image',
+              mediaUrl: previewUrl,
+              status: 'sending',
+              createdAt: new Date(),
+              temp: true
+            };
+            setMessages(prev => [...prev, tempMessage]);
+          } catch (e) { 
+            console.error('Compression error:', e); 
+          }
         }
 
         setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const url = await uploadFile(file);
+          const url = await uploadFile(uploadFileSource);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
-          await sendDirectMessage(recipientId, {
+          // Final message send
+          const messageData = {
             senderId: currentUser.uid,
             senderName: currentUser.displayName || profile?.displayName || 'User',
             text: isImage ? 'Sent an image' : (isVideo ? 'Sent a video' : `Shared ${file.name}`),
             type: isImage ? 'image' : (isVideo ? 'video' : 'file'),
             mediaUrl: url,
-            fileName: file.name
-          });
+            fileName: file.name,
+            status: 'sent'
+          };
+
+          if (activeConversation.isProject) {
+            await sendMessage(activeConversation.id, messageData);
+          } else if (recipientId) {
+            await sendDirectMessage(recipientId, messageData);
+          }
+
+          // Clean up temp message if it was an image
+          if (isImage) {
+             setMessages(prev => prev.filter(m => !m.temp));
+          }
+          
         } catch (e) {
-          console.error(e);
+          console.error('Upload error:', e);
+          toast.error(`Failed to upload ${file.name}`);
         }
       }
     } finally {
@@ -753,7 +839,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 isMe 
                   ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none' 
                   : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
-              } ${!isFirstOfGroup ? (isMe ? 'rounded-tr-2xl' : 'rounded-tl-2xl') : ''}`}>
+              } ${!isFirstOfGroup ? (isMe ? 'rounded-tr-2xl' : 'rounded-tl-2xl') : ''} ${m.temp ? 'opacity-70 animate-pulse' : ''}`}>
+                
+                {m.temp && (
+                  <div className="absolute inset-0 bg-black/10 rounded-xl flex items-center justify-center">
+                    <Loader2 size={16} className="animate-spin text-white/40" />
+                  </div>
+                )}
                 
                 {!isMe && isFirstOfGroup && (
                   <p className="text-[12px] font-bold text-[#34b7f1] mb-1">

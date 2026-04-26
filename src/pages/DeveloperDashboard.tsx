@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients } from '../services/database';
+import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
@@ -35,12 +35,13 @@ interface DeveloperDashboardProps {
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'chat' | 'meetings' | 'earnings' | 'settings';
+type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'meetings' | 'earnings' | 'settings';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [unassignedProjects, setUnassignedProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -69,6 +70,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       setLoading(false);
     }, user.uid, 'developer');
 
+    const unsubUnassigned = getUnassignedProjects((projs) => {
+      setUnassignedProjects(projs);
+    });
+
     const fetchPayments = async () => {
       try {
         const [pays, profiles] = await Promise.all([
@@ -86,6 +91,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
     return () => {
       unsubProjects();
+      unsubUnassigned();
     };
   }, [user?.uid]);
 
@@ -194,8 +200,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     
     const totalEarned = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
     
-    return { total, completed, pending: active, earnings: totalEarned };
-  }, [projects, payments]);
+    return { total, completed, pending: active, pool: unassignedProjects.length, earnings: totalEarned };
+  }, [projects, payments, unassignedProjects]);
 
   if (loading) {
     return (
@@ -234,6 +240,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
         <nav className="flex-1 flex flex-col gap-2">
           <NavItem tab="dashboard" icon={LayoutDashboard} label="Dashboard" />
+          <NavItem tab="pool" icon={Plus} label="New Jobs" />
           <NavItem tab="projects" icon={Briefcase} label="Projects" />
           <NavItem tab="chat" icon={MessageSquare} label="Chat" />
           <NavItem tab="meetings" icon={Video} label="Meetings" />
@@ -301,14 +308,19 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 className="space-y-10"
               >
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
                   {[
                     { label: 'Total', value: stats.total, color: 'text-white' },
                     { label: 'Completed', value: stats.completed, color: 'text-green-500' },
-                    { label: 'Pending', value: stats.pending, color: 'text-[#c7c42a]' },
+                    { label: 'Active', value: stats.pending, color: 'text-[#c7c42a]' },
+                    { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]' },
                     { label: 'Earnings', value: `₹${stats.earnings.toLocaleString()}`, color: 'text-[#c7c42a]' }
                   ].map((stat, i) => (
-                    <div key={i} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2">
+                    <div 
+                      key={i} 
+                      className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2 ${stat.label === 'New Jobs' ? 'cursor-pointer hover:border-[#c7c42a]/50' : ''}`}
+                      onClick={() => stat.label === 'New Jobs' ? setActiveTab('pool') : null}
+                    >
                       <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
                       <h3 className={`text-2xl md:text-3xl font-black italic ${stat.color}`}>{stat.value}</h3>
                     </div>
@@ -407,6 +419,65 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                       </div>
                     )}
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'pool' && (
+              <motion.div 
+                key="pool"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-10"
+              >
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Opportunity Hub</span>
+                  <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Job Pool</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {unassignedProjects.map(p => (
+                    <div key={p.id} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 group">
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
+                        <div className="flex items-center gap-2">
+                           <span className="px-3 py-1 bg-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-white/40">{p.businessType}</span>
+                           <span className="px-3 py-1 bg-[#c7c42a]/10 rounded-lg text-[8px] font-black uppercase tracking-widest text-[#c7c42a]">{p.plan}</span>
+                        </div>
+                      </div>
+                      <p className="text-xs font-medium text-white/60 line-clamp-3 leading-relaxed italic">
+                        {p.description || 'No description provided.'}
+                      </p>
+                      
+                      <button 
+                        onClick={async () => {
+                          if (confirm('Claim this project? You will be responsible for its delivery.')) {
+                            try {
+                              await updateProject(p.id, { 
+                                developerId: user?.uid,
+                                assignedTo: user?.uid,
+                                assignedAt: new Date().toISOString(),
+                                status: 'Assigned'
+                              });
+                              toast.success('Project claimed successfully!');
+                              setActiveTab('projects');
+                            } catch (e) {
+                              toast.error('Failed to claim project');
+                            }
+                          }
+                        }}
+                        className="w-full py-4 bg-white text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-[#c7c42a] transition-all"
+                      >
+                        Claim Project
+                      </button>
+                    </div>
+                  ))}
+                  {unassignedProjects.length === 0 && (
+                     <div className="col-span-full py-20 flex flex-col items-center justify-center space-y-4 border-2 border-dashed border-white/5 rounded-[3rem]">
+                        <p className="text-sm font-bold uppercase italic text-white/20 tracking-widest">No new projects available in the pool</p>
+                      </div>
+                  )}
                 </div>
               </motion.div>
             )}

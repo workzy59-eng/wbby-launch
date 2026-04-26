@@ -82,7 +82,7 @@ service cloud.firestore {
     // ============================
 
     match /users/{userId} {
-      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin() || resource.data.role == "admin");
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin() || isDeveloper() || resource.data.role == "admin");
       allow create: if isAuthenticated() && isOwner(userId); // Simplified create for user profile
       allow update: if isNotBlocked() && (isOwner(userId) || isAdmin());
       allow delete: if isAdmin();

@@ -583,8 +583,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     const domainNames = [
       `${name}.com`,
       `${name}.in`,
-      `${name}.org`,
-      `${name}.online`
+      `${name}.online`,
+      `${name}.site`
     ];
 
     setSuggestedDomains(domainNames.map(d => ({ name: d, status: 'loading' })));

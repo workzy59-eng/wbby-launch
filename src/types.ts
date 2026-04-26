@@ -283,6 +283,7 @@ export interface Message {
   fileUrl?: string; // Added for Cloudinary
   type: 'text' | 'image' | 'video' | 'file' | 'audio' | 'voice'; 
   duration?: number;
+  temp?: boolean;
   mediaUrl?: string;
   mentions?: string[];
   attachments?: Attachment[];

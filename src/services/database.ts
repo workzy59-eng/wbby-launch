@@ -81,8 +81,18 @@ export interface FirestoreErrorInfo {
 }
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  
+  if (errorMessage.includes('resource-exhausted') || errorMessage.includes('Quota limit exceeded')) {
+    toast.error("System Overload: Daily free tier quota exceeded. Service will resume tomorrow.", { id: 'quota-error' });
+  } else if (errorMessage.includes('permission-denied') || errorMessage.includes('insufficient permissions')) {
+    if (operationType !== OperationType.LIST) {
+      toast.error("Permission denied for this operation.");
+    }
+  }
+
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errorMessage,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
@@ -521,6 +531,24 @@ export const getProjects = (callback: (projects: any[]) => void, userId?: string
   });
 };
 
+export const getUnassignedProjects = (callback: (projects: Project[]) => void) => {
+  const path = 'projects';
+  const q = query(
+    collection(db, 'projects'), 
+    where('isDeleted', '==', false), 
+    orderBy('createdAt', 'desc')
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const projects = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as Project))
+      .filter(p => !p.developerId && !p.assignedTo);
+    callback(projects);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
+  });
+};
+
 // Blog Operations
 export const getBlogPosts = async () => {
   const path = 'blog_posts';
@@ -941,21 +969,25 @@ export const deleteAllProjects = async () => {
     throw new Error("Unauthorized: Only the main admin can reset the database.");
   }
   
-  const path = 'projects';
   try {
     const querySnapshot = await getDocs(collection(db, 'projects'));
     const deletePromises = querySnapshot.docs.map(async (projectDoc) => {
-      // Delete messages subcollection
-      const messagesSnapshot = await getDocs(collection(db, 'projects', projectDoc.id, 'messages'));
-      const messageDeletePromises = messagesSnapshot.docs.map(mDoc => deleteDoc(mDoc.ref));
-      await Promise.all(messageDeletePromises);
-      
-      // Delete the project document itself
-      await deleteDoc(projectDoc.ref);
+      try {
+        // Delete messages subcollection
+        const messagesSnapshot = await getDocs(collection(db, 'projects', projectDoc.id, 'messages'));
+        const messageDeletePromises = messagesSnapshot.docs.map(mDoc => deleteDoc(mDoc.ref));
+        await Promise.all(messageDeletePromises);
+        
+        // Delete the project document itself
+        await deleteDoc(projectDoc.ref);
+      } catch (err) {
+        console.error(`Error deleting project ${projectDoc.id}:`, err);
+        // Continue with others
+      }
     });
     await Promise.all(deletePromises);
   } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
+    handleFirestoreError(error, OperationType.DELETE, 'projects');
   }
 };
 
@@ -964,19 +996,22 @@ export const deleteAllUsers = async () => {
     throw new Error("Unauthorized: Only the main admin can reset users.");
   }
   
-  const path = 'users';
   try {
     const querySnapshot = await getDocs(collection(db, 'users'));
     const deletePromises = querySnapshot.docs.map(async (userDoc) => {
-      const userData = userDoc.data();
-      // DO NOT delete the main admin
-      if (userData.email !== ADMIN_EMAIL) {
-        await deleteDoc(userDoc.ref);
+      try {
+        const userData = userDoc.data();
+        // DO NOT delete the main admin
+        if (userData.email !== ADMIN_EMAIL) {
+          await deleteDoc(userDoc.ref);
+        }
+      } catch (err) {
+        console.error(`Error deleting user ${userDoc.id}:`, err);
       }
     });
     await Promise.all(deletePromises);
   } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
+    handleFirestoreError(error, OperationType.DELETE, 'users');
   }
 };
 
