@@ -1015,5 +1015,17 @@ export const getVisitSessions = async (userId?: string) => {
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
+export const getPayments = async (developerId: string) => {
+  const path = 'payments';
+  try {
+    const q = query(collection(db, 'payments'), where('developerId', '==', developerId), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 export const verifyDeveloperInvite = getInviteByCode;
 export const useDeveloperInvite = markInviteUsed;

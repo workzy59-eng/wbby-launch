@@ -591,7 +591,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             onMouseEnter={() => setShowActions(m.id)}
             onMouseLeave={() => setShowActions(null)}
           >
-            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[65%] relative`}>
+            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] md:max-w-[70%] relative`}>
               {/* Message Actions Dropdown */}
               <AnimatePresence>
                 {isActionsVisible && !m.isDeleted && (
@@ -706,8 +706,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   };
 
   const containerClasses = fullScreen 
-    ? "fixed inset-0 z-[200] bg-[#121212] flex flex-col md:flex-row overflow-hidden font-sans"
-    : "relative w-full h-[calc(100vh-120px)] bg-[#121212] rounded-[3rem] border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
+    ? "fixed inset-0 z-[200] bg-[#121212] flex flex-col md:flex-row overflow-hidden font-sans h-[100dvh]"
+    : "relative w-full h-[calc(100vh-120px)] md:h-[calc(100vh-120px)] bg-[#121212] rounded-[1.5rem] md:rounded-[3rem] border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
 
   return (
     <motion.div 
@@ -717,11 +717,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       className={containerClasses}
     >
       {/* Sidebar / List View */}
-      <div className={`w-full md:w-[420px] border-r border-[#ffffff05] flex flex-col bg-[#111b21] ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`w-full md:w-[420px] border-r border-[#ffffff05] flex flex-col bg-[#111b21] h-full ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
         {/* Sidebar Header */}
-        <div className="p-4 pt-6 space-y-4">
+        <div className="p-4 pt-4 md:pt-6 space-y-3 md:space-y-4 shrink-0">
           <div className="flex items-center justify-between px-2">
-            <h1 className="text-[22px] font-bold text-[#e9edef] tracking-tight">Chats</h1>
+            <h1 className="text-xl md:text-[22px] font-bold text-[#e9edef] tracking-tight">Chats</h1>
             <div className="flex items-center gap-1">
               <button 
                 onClick={() => setShowUserList(true)}
@@ -884,19 +884,19 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         {activeConversation ? (
           <div key={activeConversation.id} className="flex-1 flex flex-col overflow-hidden relative z-10">
             {/* Header */}
-            <header className="px-5 py-2.5 border-b border-[#ffffff05] flex items-center justify-between bg-[#202c33] relative z-20 shadow-sm">
-              <div className="flex items-center gap-4 cursor-pointer" onClick={() => activeConversation.isProject && navigate?.(`/projects/${activeConversation.project?.id}`)}>
+            <header className="px-3 md:px-5 py-2 md:py-2.5 border-b border-[#ffffff05] flex items-center justify-between bg-[#202c33] relative z-20 shadow-sm shrink-0">
+              <div className="flex items-center gap-2 md:gap-4 cursor-pointer" onClick={() => activeConversation.isProject && navigate?.(`/projects/${activeConversation.project?.id}`)}>
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveConversation(null);
                   }}
-                  className="p-1 hover:bg-white/5 rounded-full text-white/40 md:hidden transition-all"
+                  className="p-1.5 hover:bg-white/5 rounded-full text-white/40 md:hidden transition-all"
                 >
-                  <ChevronLeft size={24} />
+                  <ChevronLeft size={20} />
                 </button>
                 <div className="relative">
-                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-md ${
+                   <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm md:text-lg shadow-md ${
                     activeConversation.isProject ? 'bg-[#c7c42a] text-black' : 
                     activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'bg-[#ffc107] text-black' : 'bg-[#3b4a54] text-white'
                   }`}>
@@ -939,7 +939,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             {/* Messages Area */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto px-6 md:px-10 py-10 space-y-3 relative z-10 custom-scrollbar scroll-smooth"
+              className="flex-1 overflow-y-auto px-4 md:px-10 py-6 md:py-10 space-y-3 relative z-10 custom-scrollbar scroll-smooth"
             >
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-10">
@@ -960,7 +960,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
 
             {/* Input Area */}
-            <footer className="px-4 py-2 border-t border-[#ffffff05] bg-[#202c33] flex flex-col relative z-20">
+            <footer className="px-2 md:px-4 py-2 border-t border-[#ffffff05] bg-[#202c33] flex flex-col relative z-20 shrink-0">
                {/* Reply Preview */}
                <AnimatePresence>
                  {replyingTo && (
@@ -1033,8 +1033,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     <Smile size={24} />
                  </button>
                  
-                 <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
-                    <div className="flex-1 relative">
+                 <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2 min-w-0">
+                    <div className="flex-1 relative min-w-0">
                       <input 
                         type="text"
                         value={inputText}

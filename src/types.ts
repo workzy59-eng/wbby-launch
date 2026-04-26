@@ -200,6 +200,8 @@ export type ProjectStatus =
   | "active"
   | "in-progress"
   | "pending"
+  | "assigned"
+  | "delayed"
   | "rejected";
 
 export type RequestStatus = 'pending' | 'accepted' | 'declined' | 'approved';

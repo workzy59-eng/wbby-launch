@@ -474,24 +474,24 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex flex-col font-sans"
+      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex flex-col font-sans h-[100dvh]"
     >
       {/* Header */}
-      <header className="px-10 py-8 border-b border-white/10 flex items-center justify-between bg-white/5">
-        <div className="flex items-center gap-6">
+      <header className="px-4 md:px-10 py-4 md:py-8 border-b border-white/10 flex items-center justify-between bg-white/5 shrink-0">
+        <div className="flex items-center gap-3 md:gap-6">
           <div className="relative">
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)] ${recipientUser?.displayName === 'SAI ROSHAN' ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]' : 'bg-[#c7c42a]'}`}>
-              {recipientUser?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={32} /> : (recipientUser?.displayName?.[0] || (projectId ? 'P' : 'U'))}
+            <div className={`w-10 h-10 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center text-black font-black text-lg md:text-2xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)] ${recipientUser?.displayName === 'SAI ROSHAN' ? 'bg-transparent border border-[#c7c42a]/30 text-[#c7c42a]' : 'bg-[#c7c42a]'}`}>
+              {recipientUser?.displayName === 'SAI ROSHAN' ? <ShieldCheck size={20} className="md:w-8 md:h-8" /> : (recipientUser?.displayName?.[0] || (projectId ? 'P' : 'U'))}
             </div>
             {isDirect && (
-              <div className={`absolute -bottom-1 -right-1 w-5 h-5 border-4 border-black rounded-full ${
+              <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-5 md:h-5 border-2 md:border-4 border-black rounded-full ${
                 recipientProfile?.status === 'online' ? 'bg-green-500' : 
                 recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
               }`}></div>
             )}
           </div>
           <div>
-            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">{recipientUser?.displayName || (projectId ? 'Project Chat' : 'Chat')}</h2>
+            <h2 className="text-xl md:text-3xl font-black text-white uppercase italic tracking-tighter truncate max-w-[150px] md:max-w-none">{recipientUser?.displayName || (projectId ? 'Project Chat' : 'Chat')}</h2>
             <div className="flex items-center gap-2">
               {typingUsers.length > 0 ? (
                 <p className="text-[10px] text-[#c7c42a] font-black uppercase tracking-widest animate-pulse italic">typing...</p>
@@ -509,14 +509,14 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="w-[1px] h-12 bg-white/10 mx-4"></div>
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="w-[1px] h-8 md:h-12 bg-white/10 mx-1 md:mx-4"></div>
           {onClose && (
             <button 
               onClick={onClose}
-              className="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 hover:bg-red-500 hover:text-white transition-all"
+              className="p-3 md:p-5 bg-red-500/10 border border-red-500/20 rounded-xl md:rounded-2xl text-red-400 hover:bg-red-500 hover:text-white transition-all"
             >
-              <X size={24} />
+              <X size={20} className="md:w-6 md:h-6" />
             </button>
           )}
         </div>
@@ -525,7 +525,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       {/* Messages Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 py-8 space-y-6 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
+        className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8 space-y-4 md:space-y-6 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
         style={{
           backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
           backgroundRepeat: 'repeat',
@@ -570,7 +570,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                     {m.senderName}
                   </span>
                 )}
-                <div className={`flex gap-3 max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'} group/msg-container`}>
+                <div className={`flex gap-3 max-w-[80%] md:max-w-[70%] ${isMe ? 'flex-row-reverse' : 'flex-row'} group/msg-container`}>
                   <motion.div 
                     layout
                     onClick={() => {
@@ -812,7 +812,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       </AnimatePresence>
 
       {/* Input Area */}
-      <footer className="px-6 py-6 border-t border-white/10 bg-[#rgba(255,255,255,0.05)] relative">
+      <footer className="px-4 md:px-6 py-4 md:py-6 border-t border-white/10 bg-[#rgba(255,255,255,0.05)] relative shrink-0">
         {/* Reply/Edit Preview */}
         <AnimatePresence>
           {(replyingTo || editingMessage) && (
@@ -870,26 +870,26 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="button"
             onClick={() => document.getElementById('chat-image-upload')?.click()}
-            className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
+            className="p-2 md:p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
             title="Upload Image"
           >
-            <ImageIcon size={24} />
+            <ImageIcon size={20} className="md:w-6 md:h-6" />
           </button>
           
           <button 
             type="button"
             onClick={() => document.getElementById('chat-file-upload')?.click()}
-            className="p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
+            className="p-2 md:p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
             title="Upload File"
           >
-            <Paperclip size={24} />
+            <Paperclip size={20} className="md:w-6 md:h-6" />
           </button>
 
-          <div className="flex-1 relative">
+          <div className="flex-1 relative min-w-0">
             <input 
               type="text" 
               placeholder="Type a message..."
-              className="w-full bg-[#2a3942] border-none rounded-xl px-6 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-white/10 transition-all"
+              className="w-full bg-[#2a3942] border-none rounded-xl px-4 md:px-6 py-2 md:py-3 text-sm text-white outline-none focus:ring-1 focus:ring-white/10 transition-all"
               value={inputText}
               onChange={handleInputChange}
             />
@@ -898,7 +898,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="submit"
             disabled={(!inputText.trim() && Object.keys(uploadProgress).length === 0) || isSending}
-            className={`p-3 rounded-xl transition-all ${
+            className={`p-2 md:p-3 rounded-xl transition-all grow-0 shrink-0 ${
               (inputText.trim() || Object.keys(uploadProgress).length > 0) && !isSending
                 ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20'
                 : 'bg-white/5 text-white/20 cursor-not-allowed'
@@ -907,7 +907,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             {isSending ? (
               <Loader color="black" />
             ) : (
-              <Send size={24} />
+              <Send size={20} className="md:w-6 md:h-6" />
             )}
           </button>
         </form>

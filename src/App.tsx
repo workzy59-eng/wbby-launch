@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp, onSnapshot, doc, query, where } from './firebase';
 import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
@@ -32,6 +32,7 @@ const JoinDeveloper = React.lazy(() => import('./pages/JoinDeveloper'));
 const JoinSales = React.lazy(() => import('./pages/JoinSales'));
 const Privacy = React.lazy(() => import('./pages/Privacy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
+const MessagesModule = React.lazy(() => import('./components/MessagesModule'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const ComponentShowcase = React.lazy(() => import('./pages/ComponentShowcase'));
 const Layout = React.lazy(() => import('./components/Layout'));
@@ -45,6 +46,7 @@ import { useActivityTracker } from './hooks/useActivityTracker';
 
 export default function App() {
   const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   // Track activity for logged in users
@@ -91,9 +93,8 @@ export default function App() {
   }
 
   return (
-    <Router>
-      <React.Suspense fallback={<div className="flex items-center justify-center h-screen bg-black"><Loader size={48} /></div>}>
-          <Layout user={user} profile={profile}>
+    <React.Suspense fallback={<div className="flex items-center justify-center h-screen bg-black"><Loader size={48} /></div>}>
+        <Layout user={user} profile={profile}>
             <Toaster 
               position="top-right"
               toastOptions={{
@@ -149,6 +150,16 @@ export default function App() {
                   element={<OnboardingFlow user={user} profile={profile} />} 
                 />
                 <Route 
+                  path="/messages" 
+                  element={
+                    user ? (
+                      <MessagesModule currentUser={user} profile={profile} onClose={() => navigate('/dashboard')} />
+                    ) : (
+                      <Navigate to="/auth" />
+                    )
+                  } 
+                />
+                <Route 
                   path="/settings" 
                   element={user ? <Settings user={user} profile={profile} /> : <Navigate to="/auth" />} 
                 />
@@ -169,6 +180,10 @@ export default function App() {
                       <Navigate to="/auth" />
                     )
                   } 
+                />
+                <Route 
+                  path="/developer-dashboard" 
+                  element={user && profile?.role === 'developer' ? <DeveloperDashboard user={user} profile={profile} /> : <Navigate to="/auth" />} 
                 />
                 <Route 
                   path="/admin" 
@@ -194,7 +209,6 @@ export default function App() {
               </Routes>
             </AnimatePresence>
           </Layout>
-        </React.Suspense>
-    </Router>
+      </React.Suspense>
   );
 }

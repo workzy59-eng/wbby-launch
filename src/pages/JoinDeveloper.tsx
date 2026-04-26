@@ -101,7 +101,7 @@ export default function JoinDeveloper() {
 
       toast.success("Welcome to the team! Redirecting to dashboard...");
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/developer-dashboard');
       }, 2000);
     } catch (error) {
       console.error("Error in completeOnboarding:", error);
