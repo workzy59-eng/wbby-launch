@@ -251,13 +251,25 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           </select>
 
           {!isManager && (
-            <button 
-              onClick={() => setShowRequestForm(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
-            >
-              <Plus size={16} />
-              Request Meeting
-            </button>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setShowRequestForm(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+              >
+                <Plus size={16} />
+                Request
+              </button>
+              <button 
+                onClick={() => {
+                  setEditingMeeting(undefined);
+                  setShowForm(true);
+                }}
+                className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
+              >
+                <Video size={16} />
+                Schedule
+              </button>
+            </div>
           )}
 
           {isManager && (
@@ -460,6 +472,8 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         {showForm && (
           <MeetingForm 
             clients={allClients}
+            isAdmin={isManager}
+            currentUserId={user.uid}
             initialData={editingMeeting}
             onClose={() => {
               setShowForm(false);

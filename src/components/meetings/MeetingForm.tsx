@@ -16,6 +16,8 @@ import { validateMeetingLink, detectPlatform } from '../../services/meetingServi
 
 interface MeetingFormProps {
   clients: UserProfile[];
+  isAdmin: boolean;
+  currentUserId: string;
   onSubmit: (data: any) => void;
   onClose: () => void;
   initialData?: Meeting;
@@ -23,13 +25,15 @@ interface MeetingFormProps {
 
 export const MeetingForm: React.FC<MeetingFormProps> = ({ 
   clients, 
+  isAdmin,
+  currentUserId,
   onSubmit, 
   onClose,
   initialData 
 }) => {
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
-    clientId: initialData?.clientId || '',
+    clientId: initialData?.clientId || (isAdmin ? '' : currentUserId),
     date: initialData?.date || '',
     time: initialData?.time || '',
     meetingLink: initialData?.meetingLink || '',
@@ -98,27 +102,29 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2 flex items-center gap-2">
-                  <Users size={12} />
-                  Select Client
-                </label>
-                <select 
-                  required
-                  value={formData.clientId}
-                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all appearance-none"
-                >
-                  <option value="" className="bg-[#0A0A0A]">Choose a client</option>
-                  {clients.map(client => (
-                    <option key={client.uid} value={client.uid} className="bg-[#0A0A0A]">
-                      {client.displayName || client.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {isAdmin && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2 flex items-center gap-2">
+                    <Users size={12} />
+                    Select Client
+                  </label>
+                  <select 
+                    required
+                    value={formData.clientId}
+                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all appearance-none"
+                  >
+                    <option value="" className="bg-[#0A0A0A]">Choose a client</option>
+                    {clients.map(client => (
+                      <option key={client.uid} value={client.uid} className="bg-[#0A0A0A]">
+                        {client.displayName || client.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-              <div className="space-y-2">
+              <div className={`space-y-2 ${!isAdmin ? 'sm:col-span-2' : ''}`}>
                 <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2 flex items-center gap-2">
                   <FileText size={12} />
                   Meeting Title
@@ -165,7 +171,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2 flex items-center gap-2">
                 <LinkIcon size={12} />
-                Meeting Link (Google Meet or Zoom)
+                Video Meeting URL (Zoom or Google Meet Only)
               </label>
               <div className="relative">
                 <input 
@@ -173,7 +179,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   type="url"
                   value={formData.meetingLink}
                   onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
-                  placeholder="https://meet.google.com/..."
+                  placeholder="https://meet.google.com/xyz-abc-123"
                   className={`w-full bg-white/5 border rounded-2xl px-6 py-4 text-sm text-white outline-none transition-all pr-32 ${
                     formData.meetingLink 
                       ? validation.isValid ? 'border-green-500/30 focus:border-green-500/50' : 'border-red-500/30 focus:border-red-500/50'

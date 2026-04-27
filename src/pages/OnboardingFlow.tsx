@@ -1526,7 +1526,36 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               <p className="text-subtext font-medium italic">Review our terms before launching your project.</p>
             </div>
 
-            <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50 max-h-[40vh] overflow-y-auto scrollbar-hide relative group">
+            <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50">
+              <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">Project Review</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Business Identity</p>
+                    <p className="text-sm font-bold text-white">{formData.businessName || 'Not Set'}</p>
+                    <p className="text-[10px] text-white/40 italic">{formData.businessType || 'No Type selected'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Target Domain</p>
+                    <p className="text-sm font-bold text-[#c7c42a]" style={{ color: formData.primaryColor }}>{formData.domain || 'Not Set'}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Selected Plan</p>
+                    <p className="text-sm font-bold text-white uppercase">{formData.plan} ({formData.billingCycle})</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Features Activated</p>
+                    <p className="text-[10px] font-bold text-white/40 leading-relaxed">
+                      {formData.selectedFeatures?.join(', ') || 'None selected'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50 max-h-[30vh] overflow-y-auto scrollbar-hide relative group">
               <div className="space-y-8 text-subtext font-medium leading-relaxed">
                 <section className="space-y-4">
                   <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">1. Services</h4>
