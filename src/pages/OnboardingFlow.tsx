@@ -53,6 +53,19 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
     mobile: 'w-[375px] h-[667px] mx-auto scale-[0.9] origin-top',
   };
 
+  const getHeroImage = () => {
+    switch (data.businessType) {
+      case 'Gym': return 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800';
+      case 'Resort & Hospitality': return 'https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=800';
+      case 'Automobiles': return 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800';
+      case 'Logistics': return 'https://images.unsplash.com/photo-1519003722824-191d446dc0e5?q=80&w=800';
+      case 'Clothing store': return 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800';
+      case 'School & Education': return 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=800';
+      case 'Food court': return 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800';
+      default: return 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=800';
+    }
+  };
+
   return (
     <div className={`transition-all duration-700 ease-in-out ${containerClasses[device]}`}>
       <div className="bg-white rounded-t-3xl border-8 border-gray-800 shadow-2xl relative h-full flex flex-col overflow-hidden">
@@ -60,7 +73,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
         <div className="bg-gray-100 px-4 py-2 border-b flex items-center gap-4">
           <div className="flex gap-1.5">
              <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-             <div className="w-2.5 h-2.5 rounded-full bg-#c7c42a" />
+             <div className="w-2.5 h-2.5 rounded-full bg-[#c7c42a]" />
              <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
           </div>
           <div className="flex-1 bg-white rounded-full h-6 flex items-center px-4 text-[10px] text-gray-400 font-mono italic shadow-inner">
@@ -75,61 +88,73 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
               {data.logoUrl ? (
                 <img src={data.logoUrl} alt="Logo" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
               ) : (
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-lg" style={{ backgroundColor: data.primaryColor || '#c7c42a' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-[10px] shadow-lg" style={{ backgroundColor: data.primaryColor || '#c7c42a' }}>
                   {(data.businessName || 'W')[0].toUpperCase()}
                 </div>
               )}
-              <span className="font-black text-sm uppercase tracking-tighter leading-none">{data.businessName || 'WEBBYLAUNCH'}</span>
+              <span className="font-black text-xs uppercase tracking-tighter leading-none">{data.businessName || 'WEBBYLAUNCH'}</span>
             </div>
-            <div className="flex gap-6 items-center">
-               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Home</span>
-               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">About</span>
-               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Contact</span>
+            <div className="flex gap-4 items-center">
+               <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Home</span>
+               <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Services</span>
+               <button className="px-4 py-2 rounded-full font-black text-[8px] uppercase tracking-widest shadow-lg text-white" style={{ backgroundColor: data.primaryColor || '#000000' }}>Contact</button>
             </div>
           </nav>
 
           {/* Hero */}
-          <section className="flex-1 min-h-[400px] flex items-center justify-center p-12 text-center relative overflow-hidden transition-colors duration-1000" style={{ backgroundColor: data.primaryColor || '#000000' }}>
-            <div className="relative z-10 max-w-lg mx-auto space-y-8">
+          <section className="relative min-h-[400px] flex items-center justify-center p-12 text-center overflow-hidden transition-all duration-1000">
+            <div className="absolute inset-0 z-0">
+              <img src={getHeroImage()} alt="Hero" className="w-full h-full object-cover blur-[2px] scale-110 opacity-40" referrerPolicy="no-referrer" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/40 to-white" />
+            </div>
+
+            <div className="relative z-10 max-w-lg mx-auto space-y-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-block px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em] mb-4"
+                style={{ backgroundColor: data.primaryColor + '20' || '#c7c42a20', color: data.primaryColor || '#c7c42a' }}
+              >
+                Welcome to Precision
+              </motion.div>
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-[0.85] italic" 
-                style={{ color: data.secondaryColor || '#c7c42a' }}
+                className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-[0.9] italic text-black" 
               >
-                Premium {data.businessType || 'Solutions'} <br /> For Your Business
+                {data.businessName || 'Premium Solutions'} <br /> 
+                <span style={{ color: data.primaryColor || '#c7c42a' }}>For {data.businessType || 'Your Business'}</span>
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-xs font-semibold max-w-sm mx-auto opacity-70 leading-relaxed uppercase tracking-wider" 
-                style={{ color: data.secondaryColor || '#c7c42a' }}
+                className="text-[10px] font-bold max-w-xs mx-auto text-black/60 leading-relaxed uppercase tracking-wider" 
               >
                 {data.description || 'Elevate your digital presence with high-end development and precision engineering.'}
               </motion.p>
-              <div className="pt-4 drop-shadow-2xl">
+              <div className="pt-6">
                 <button 
-                  className="px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95" 
-                  style={{ backgroundColor: data.secondaryColor || '#c7c42a', color: data.primaryColor || '#000000' }}
+                  className="px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95 text-white" 
+                  style={{ backgroundColor: data.primaryColor || '#000000' }}
                 >
-                  Get Started
+                  Explore Features
                 </button>
               </div>
             </div>
-            
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(${data.secondaryColor} 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
           </section>
 
           {/* Features Grid */}
-          <section className="py-20 px-10 bg-white grid grid-cols-2 gap-6">
+          <section className="py-20 px-8 bg-gray-50 grid grid-cols-2 gap-4">
             {data.selectedFeatures?.slice(0, 4).map((feature: string, i: number) => (
-              <div key={i} className="p-8 rounded-[2rem] border border-gray-100 bg-gray-50 flex flex-col items-center gap-4 text-center group hover:bg-white hover:shadow-xl transition-all">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform" style={{ backgroundColor: data.primaryColor || '#c7c42a', color: data.secondaryColor || '#000000' }}>
-                  <Zap size={24} />
+              <div key={i} className="p-6 rounded-[2rem] bg-white border border-gray-100 flex flex-col items-center gap-4 text-center group hover:shadow-2xl transition-all">
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transform group-hover:rotate-12 transition-transform" 
+                  style={{ backgroundColor: data.primaryColor || '#c7c42a', color: '#FFFFFF' }}
+                >
+                  <Zap size={20} />
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-900">{feature}</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-gray-900 leading-tight">{feature}</span>
               </div>
             ))}
           </section>
@@ -204,7 +229,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       businessNumber: '',
       businessEmail: '',
       businessPhone: '',
-      gstNumber: '',
       addressLine: '',
       city: '',
       state: '',
@@ -213,7 +237,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       businessType: '',
       otherBusinessType: '',
       description: '',
-      location: '',
       websiteName: '',
       domain: '',
       primaryColor: '#c7c42a',
@@ -312,8 +335,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (req.businessName && !formData.businessName) invalid.push('businessName');
         if (req.businessType && !formData.businessType) invalid.push('businessType');
         if (formData.businessType === 'Other' && !formData.otherBusinessType) invalid.push('otherBusinessType');
-        if (req.businessNumber && !formData.businessNumber) invalid.push('businessNumber');
-        if (req.businessLocation && !formData.location) invalid.push('location');
         if (!formData.businessEmail || !validateEmail(formData.businessEmail)) invalid.push('businessEmail');
         if (!formData.businessPhone || !validatePhone(formData.businessPhone)) invalid.push('businessPhone');
         if (!formData.addressLine) invalid.push('addressLine');
@@ -379,20 +400,42 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const handleBack = () => setStep(step - 1);
 
   const handleSubmit = async () => {
-    if (isSubmitting) return;
+    if (isSubmitting) {
+      console.warn('Submission already in progress');
+      return;
+    }
+    
     setIsSubmitting(true);
     setError(null);
+    console.log('Starting project submission...', formData);
 
     try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       let finalProfileUrl = profile?.photoURL || '';
 
       if (profileFile) {
+        console.log('Uploading profile photo...');
         finalProfileUrl = await uploadFile(profileFile, 'profiles');
       }
 
       const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
+      
+      // Sanitize onboardingData to remove potential large blobs or circular refs
+      const sanitizedOnboardingData = { ...formData };
+      
+      // Remove fields that might contain huge base64 strings if they are too large
+      const MAX_BLOB_SIZE = 50 * 1024; // 50KB limit for embedded data
+      ['logoUrl', 'documentsUrl'].forEach(key => {
+        if (typeof (sanitizedOnboardingData as any)[key] === 'string' && (sanitizedOnboardingData as any)[key].length > MAX_BLOB_SIZE) {
+          (sanitizedOnboardingData as any)[key] = '[Large Data Truncated]';
+        }
+      });
+
       const projectData = {
-        userId: user?.uid,
+        userId: user.uid,
         userName: formData.name || '',
         userEmail: formData.email || '',
         userPhone: formData.phone || '',
@@ -400,14 +443,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         businessNumber: formData.businessNumber || '',
         businessEmail: formData.businessEmail || '',
         businessPhone: formData.businessPhone || '',
-        gstNumber: formData.gstNumber || '',
         addressLine: formData.addressLine || '',
         city: formData.city || '',
         state: formData.state || '',
         pincode: formData.pincode || '',
         country: formData.country || 'India',
         businessType: finalBusinessType || '',
-        businessLocation: formData.location || '',
         description: formData.description || '',
         websiteName: formData.websiteName || '',
         domain: formData.domain || '',
@@ -417,46 +458,53 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         tertiaryColor: formData.tertiaryColor || '',
         selectedFeatures: formData.selectedFeatures || [],
         plan: formData.plan || 'basic',
-        paymentStatus: 'paid' as 'pending' | 'paid',
+        billingCycle: formData.billingCycle || 'one-time',
+        paymentStatus: 'pending' as 'pending' | 'paid',
         referenceWebsite: formData.referenceWebsite || '',
         templateId: 'custom-dev',
         estimatedCompletion: null,
         referralSource: formData.referralSource || '',
         salesCode: formData.salesCode || '',
         logoUrl: formData.logoUrl || '',
-        documentsUrl: formData.documentsUrl || ''
+        documentsUrl: formData.documentsUrl || '',
+        onboardingData: sanitizedOnboardingData 
       };
 
+      console.log('Creating project in Firestore...', projectData);
       const projectId = await createProject(projectData);
+      console.log('Project created with ID:', projectId);
 
-      if (user) {
-        await createUserProfile(user, {
-          username: formData.username,
-          phone: formData.phone,
-          photoURL: finalProfileUrl,
-          businessName: formData.businessName,
-          businessType: finalBusinessType,
-          businessEmail: formData.businessEmail,
-          businessPhone: formData.businessPhone,
-          businessLocation: formData.location,
-          onboardingCompleted: true
-        });
-      }
+      console.log('Updating user profile...');
+      await createUserProfile(user, {
+        username: formData.username,
+        phone: formData.phone,
+        photoURL: finalProfileUrl,
+        businessName: formData.businessName,
+        businessType: finalBusinessType,
+        businessEmail: formData.businessEmail,
+        businessPhone: formData.businessPhone,
+        onboardingCompleted: true,
+        lastProjectId: projectId
+      });
+      console.log('User profile updated.');
 
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('onboarding_step');
       
       toast.success("Project submitted successfully! You can handle payment in your dashboard.");
-      setStep(9); // Success state
+      setStep(9); 
+      
+      // Auto-redirect to dashboard after success animation
       setTimeout(() => {
         navigate('/dashboard');
-      }, 3000);
+      }, 5000);
 
     } catch (err: any) {
-      console.error('Error submitting project:', err);
-      setError(err.message || 'Failed to submit project. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      console.error('Error in handleSubmit:', err);
+      const errorMsg = err.message || 'Submission failed. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setIsSubmitting(false); // Reset so they can try again
     }
   };
 
@@ -770,25 +818,27 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text">Business Details</h3>
+              <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Details</h3>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Help us understand your brand ecosystem</p>
             </div>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Name <span className="text-error">*</span></label>
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Name <span className="text-error">*</span></label>
                   <input
                     type="text"
-                    className={getInputClass('businessName')}
+                    className={getInputClass('businessName', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
                     value={formData.businessName}
                     onChange={(e) => handleInputChange('businessName', e.target.value)}
+                    placeholder="E.G. TITAN FORGE"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Phone <span className="text-error">*</span></label>
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Phone <span className="text-error">*</span></label>
                   <input
                     type="tel"
-                    className={getInputClass('businessPhone')}
+                    className={getInputClass('businessPhone', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
                     value={formData.businessPhone}
                     onChange={(e) => handleInputChange('businessPhone', e.target.value)}
                     placeholder="E.G. 9876543210"
@@ -798,65 +848,44 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Registration No. (Optional)</label>
-                  <input
-                    type="text"
-                    className={getInputClass('businessNumber')}
-                    value={formData.businessNumber}
-                    onChange={(e) => handleInputChange('businessNumber', e.target.value)}
-                    placeholder="E.G. REG123456"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Location <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('location')}
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    placeholder="E.G. Mumbai, Maharashtra"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Email <span className="text-error">*</span></label>
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Email <span className="text-error">*</span></label>
                   <input
                     type="email"
-                    className={getInputClass('businessEmail')}
+                    className={getInputClass('businessEmail', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter")}
                     value={formData.businessEmail}
                     onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                    placeholder="HELLO@BRAND.COM"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">GST Number (Optional)</label>
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Registration No. (Optional)</label>
                   <input
                     type="text"
-                    className={getInputClass('gstNumber')}
-                    value={formData.gstNumber}
-                    onChange={(e) => handleInputChange('gstNumber', e.target.value)}
-                    placeholder="22AAAAA0000A1Z5"
+                    className={getInputClass('businessNumber', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                    value={formData.businessNumber}
+                    onChange={(e) => handleInputChange('businessNumber', e.target.value)}
+                    placeholder="E.G. REG-9901"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Address Line <span className="text-error">*</span></label>
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Address Line <span className="text-error">*</span></label>
                   <input
                     type="text"
-                    className={getInputClass('addressLine')}
+                    className={getInputClass('addressLine', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
                     value={formData.addressLine}
                     onChange={(e) => handleInputChange('addressLine', e.target.value)}
+                    placeholder="123 BUSINESS PARK"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Pincode <span className="text-error">*</span></label>
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Pincode <span className="text-error">*</span></label>
                   <input
                     type="text"
                     maxLength={6}
-                    className={getInputClass('pincode')}
+                    className={getInputClass('pincode', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
                     value={formData.pincode}
                     onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
                     placeholder="123456"
@@ -864,28 +893,111 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">State & City <span className="text-error">*</span></label>
-                <StateCityDropdown 
-                  onSelect={(state, city) => {
-                    handleInputChange('state', state);
-                    handleInputChange('city', city);
-                  }}
-                  initialState={formData.state}
-                  initialCity={formData.city}
-                />
-                {invalidFields.includes('state') && <p className="text-[8px] font-bold text-red-500 uppercase tracking-widest ml-4">Please select state and city</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2 relative">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">State <span className="text-error">*</span></label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={getInputClass('state', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.state}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleInputChange('state', val);
+                        handleInputChange('city', '');
+                      }}
+                      placeholder="SEARCH STATE"
+                      onFocus={() => setShowStateDropdown(true)}
+                    />
+                    <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+                  </div>
+                  
+                  {showStateDropdown && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto no-scrollbar">
+                      {INDIAN_STATES.filter(s => s.toLowerCase().includes(formData.state.toLowerCase())).map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => {
+                            handleInputChange('state', s);
+                            handleInputChange('city', '');
+                            setShowStateDropdown(false);
+                          }}
+                          className="w-full text-left px-6 py-4 text-xs font-black uppercase tracking-widest text-white/40 hover:text-primary hover:bg-white/5 transition-all italic"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {showStateDropdown && <div className="fixed inset-0 z-40" onClick={() => setShowStateDropdown(false)} />}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">City <span className="text-error">*</span></label>
+                  <input
+                    type="text"
+                    className={getInputClass('city', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase disabled:opacity-20")}
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder={formData.state ? "ENTER CITY" : "SELECT STATE FIRST"}
+                    disabled={!formData.state}
+                  />
+                </div>
               </div>
 
               <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Documents (Optional)</label>
-                <div className="relative group p-8 rounded-3xl border-2 border-dashed border-white/10 bg-white/5 hover:border-primary/50 transition-all flex flex-col items-center justify-center gap-4 cursor-pointer">
-                  <FileText className="text-subtext w-10 h-10 group-hover:text-primary transition-colors" />
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Category <span className="text-error">*</span></label>
+                <div className="relative">
+                  <select
+                    className={getInputClass('businessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase appearance-none cursor-pointer")}
+                    value={formData.businessType}
+                    onChange={(e) => handleInputChange('businessType', e.target.value)}
+                  >
+                    <option value="">SELECT CATEGORY</option>
+                    <option value="Food Court">FOOD COURT</option>
+                    <option value="Automobiles">AUTOMOBILES</option>
+                    <option value="Clothing">CLOTHING</option>
+                    <option value="Gym">GYM & FITNESS</option>
+                    <option value="Resort & Hospitality">RESORT & HOSPITALITY</option>
+                    <option value="Logistics">LOGISTICS</option>
+                    <option value="Other">OTHER</option>
+                  </select>
+                  <ChevronDown className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+                </div>
+              </div>
+
+              {formData.businessType === 'Other' && (
+                <input
+                  type="text"
+                  placeholder="ENTER YOUR BUSINESS TYPE"
+                  className={getInputClass('otherBusinessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                  value={formData.otherBusinessType}
+                  onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
+                />
+              )}
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Description <span className="text-error">*</span></label>
+                <textarea
+                  className={getInputClass('description', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-lg tracking-tighter uppercase h-40 resize-none")}
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="TELL US ABOUT YOUR BRAND..."
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic text-primary">Branding Assets (Optional)</label>
+                <div className="relative group p-12 rounded-[3rem] border-2 border-dashed border-white/5 bg-white/[0.02] hover:border-primary/50 transition-all flex flex-col items-center justify-center gap-6 cursor-pointer">
+                  <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white/20 group-hover:text-primary group-hover:scale-110 transition-all">
+                    <FileText size={32} />
+                  </div>
                   <div className="text-center">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-text">
-                      {docsName || 'Click or drag to upload Trade License / ID / ROC'}
+                    <p className="text-sm font-black uppercase italic tracking-tighter text-white">
+                      {docsName || 'Drop Business Assets / ID / Trade License'}
                     </p>
-                    <p className="text-[8px] font-bold uppercase tracking-widest text-subtext mt-1 italic">PDF, JPG, PNG (Max 5MB)</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mt-2 italic">PRO TIP: UPLOAD YOUR LOGO IN STEP 5</p>
                   </div>
                   <input
                     type="file"
@@ -907,127 +1019,21 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2 relative">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">State <span className="text-error">*</span></label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      className={getInputClass('state')}
-                      value={formData.state}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        handleInputChange('state', val);
-                        handleInputChange('city', ''); // Clear city when state changes
-                      }}
-                      placeholder="Search State"
-                      onFocus={() => setShowStateDropdown(true)}
-                    />
-                    <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-subtext group-focus:text-primary transition-colors pointer-events-none" size={16} />
-                  </div>
-                  
-                  {showStateDropdown && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-card border border-border rounded-2xl shadow-2xl max-h-48 overflow-y-auto no-scrollbar">
-                      {INDIAN_STATES.filter(s => s.toLowerCase().includes(formData.state.toLowerCase())).map(s => (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => {
-                            handleInputChange('state', s);
-                            handleInputChange('city', '');
-                            setShowStateDropdown(false);
-                          }}
-                          className="w-full text-left px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#8696a0] hover:text-[#c7c42a] hover:bg-[#c7c42a]/5 transition-all"
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {showStateDropdown && <div className="fixed inset-0 z-40" onClick={() => setShowStateDropdown(false)} />}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">City <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('city')}
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    placeholder={formData.state ? "Enter City" : "Select state first"}
-                    disabled={!formData.state}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Pincode <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    className={getInputClass('pincode')}
-                    value={formData.pincode}
-                    onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Country</label>
-                  <input
-                    type="text"
-                    readOnly
-                    className="w-full p-6 rounded-2xl bg-card border border-border text-subtext focus:outline-none font-medium cursor-not-allowed"
-                    value={formData.country}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Business Category <span className="text-error">*</span></label>
-                <select
-                  className={getInputClass('businessType', "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-medium appearance-none")}
-                  value={formData.businessType}
-                  onChange={(e) => handleInputChange('businessType', e.target.value)}
-                >
-                  <option value="">Select Category</option>
-                  <option value="Food Court">Food Court</option>
-                  <option value="Automobiles">Automobiles</option>
-                  <option value="Clothing">Clothing</option>
-                  <option value="Gym">Gym & Fitness</option>
-                  <option value="Logistics">Logistics</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {formData.businessType === 'Other' && (
-                <input
-                  type="text"
-                  placeholder="ENTER YOUR BUSINESS TYPE"
-                  className={getInputClass('otherBusinessType')}
-                  value={formData.otherBusinessType}
-                  onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
-                />
-              )}
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Description <span className="text-error">*</span></label>
-                <textarea
-                  className={getInputClass('description', "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-medium h-32 resize-none")}
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Tell us about your business..."
-                />
-              </div>
             </div>
 
-            <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
+            <div className="flex gap-6 pt-10">
+              <button 
+                onClick={handleBack} 
+                className="flex-[0.4] border-2 border-white/10 text-white/60 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
+              >
+                Back
+              </button>
               <button 
                 onClick={handleNext} 
-                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter"
+                style={{ backgroundColor: formData.primaryColor }}
               >
-                Next
+                Continue
               </button>
             </div>
           </motion.div>

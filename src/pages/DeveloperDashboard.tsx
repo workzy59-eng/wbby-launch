@@ -47,6 +47,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAcceptPopup, setShowAcceptPopup] = useState<string | null>(null);
   const [websiteUrl, setWebsiteUrl] = useState('');
+  const [paymentLinkBasic, setPaymentLinkBasic] = useState('');
+  const [paymentLinkPremium, setPaymentLinkPremium] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [settingsData, setSettingsData] = useState({
     upiId: profile?.paymentDetails?.upiId || '',
@@ -169,13 +171,17 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       await updateProject(projectId, {
         status: 'in-progress',
         websiteUrl,
+        paymentLinkBasic,
+        paymentLinkPremium,
         startedAt: new Date().toISOString(),
         progress: 10
       });
       toast.success('Project accepted!');
-      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: 'in-progress', websiteUrl, progress: 10 } : p));
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: 'in-progress', websiteUrl, paymentLinkBasic, paymentLinkPremium, progress: 10 } : p));
       setShowAcceptPopup(null);
       setWebsiteUrl('');
+      setPaymentLinkBasic('');
+      setPaymentLinkPremium('');
     } catch (error) {
       toast.error('Failed to accept project');
     } finally {
@@ -619,53 +625,85 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   </div>
 
                   <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Pending Payout</p>
-                    <h3 className="text-4xl font-black italic text-white/60">
-                      ₹{payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">In Queue / Processing</p>
+                    <h3 className="text-4xl font-black italic text-white">
+                      ₹{payments.filter(p => !p.status || p.status === 'pending').reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}
                     </h3>
                     <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic pt-4 leading-relaxed">Payments are processed every Monday for completed missions.</p>
                   </div>
 
                   <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-2 flex flex-col justify-center items-center text-center">
-                    <div className="w-14 h-14 bg-white/5 rounded-full flex items-center justify-center text-white/20 mb-4">
+                    <div className="w-14 h-14 bg-[#c7c42a]/10 rounded-full flex items-center justify-center text-[#c7c42a] mb-4">
                       <Wallet size={24} />
                     </div>
                     <h4 className="text-sm font-black uppercase italic tracking-tighter">Settlement Hub</h4>
+                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1 mb-4">Current: {profile?.paymentDetails?.upiId || 'Not Configured'}</p>
                     <button 
                       onClick={() => setActiveTab('settings')}
-                      className="mt-4 px-8 py-3 bg-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest hover:bg-white text-black transition-all"
+                      className="px-8 py-3 bg-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest hover:bg-[#c7c42a] hover:text-black transition-all"
                     >
                       Update Bank Info
                     </button>
                   </div>
                 </div>
 
-                {/* Performance Chart / List */}
-                <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10">
-                  <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-8">Mission Rewards</h3>
-                  <div className="space-y-4">
-                    {payments.map(p => (
-                      <div key={p.id} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 group hover:bg-white/10 transition-all">
-                        <div className="flex items-center gap-6">
-                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${p.status === 'paid' ? 'bg-green-500/10 text-green-500' : 'bg-[#c7c42a]/10 text-[#c7c42a]'}`}>
-                              {p.status === 'paid' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-                           </div>
-                           <div>
-                              <p className="text-sm font-black uppercase italic text-white">{p.projectName || 'Project Reward'}</p>
-                              <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.status === 'paid' ? 'Paid' : 'Pending'} • {formatDate(p.createdAt)}</p>
-                           </div>
-                        </div>
-                        <div className={`text-xl font-black italic ${p.status === 'paid' ? 'text-[#c7c42a]' : 'text-white/40'}`}>
-                          ₹{p.amount?.toLocaleString()}
-                        </div>
+                {/* Detailed Earnings Log */}
+                <div className="bg-[#0A0A0A] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl">
+                   <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/5">
+                      <div>
+                        <h4 className="text-xl font-black uppercase italic tracking-tighter">Earnings Ledger</h4>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Chronological list of all settled missions</p>
                       </div>
-                    ))}
-                    {payments.length === 0 && (
-                      <div className="text-center py-20 text-white/20 font-black uppercase tracking-widest italic grow-0">
-                         No payouts found in your settlement history
+                      <div className="flex gap-2">
+                         <span className="px-4 py-2 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest">{payments.length} Records</span>
                       </div>
-                    )}
-                  </div>
+                   </div>
+                   <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-white/20 border-b border-white/5 bg-white/[0.02]">
+                            <th className="px-10 py-6">Date</th>
+                            <th className="px-10 py-6">Mission / Project</th>
+                            <th className="px-10 py-6">Amount</th>
+                            <th className="px-10 py-6">Method</th>
+                            <th className="px-10 py-6">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 transition-all">
+                          {payments.length > 0 ? payments.map((pay, i) => (
+                            <tr key={i} className="group hover:bg-white/5 transition-all">
+                              <td className="px-10 py-8 text-xs font-bold text-white/40">{pay.createdAt ? new Date(pay.createdAt.seconds * 1000).toLocaleDateString() : 'Recent'}</td>
+                              <td className="px-10 py-8">
+                                <div className="space-y-1">
+                                  <p className="text-sm font-black uppercase italic tracking-tighter">Project #{pay.projectId?.slice(-6).toUpperCase() || 'UNKNOWN'}</p>
+                                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Base Compensation</p>
+                                </div>
+                              </td>
+                              <td className="px-10 py-8 text-sm font-black italic text-[#c7c42a]">₹{pay.amount?.toLocaleString()}</td>
+                              <td className="px-10 py-8 text-[10px] font-black uppercase tracking-widest text-white/40">{pay.method || 'UPI Settlement'}</td>
+                              <td className="px-10 py-8">
+                                <span className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                                  pay.status === 'paid' 
+                                    ? 'bg-green-500/10 text-green-500 border-green-500/20' 
+                                    : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                                }`}>
+                                  {pay.status || 'Pending'}
+                                </span>
+                              </td>
+                            </tr>
+                          )) : (
+                            <tr>
+                              <td colSpan={5} className="px-10 py-20 text-center">
+                                <div className="flex flex-col items-center gap-4 opacity-20">
+                                  <DollarSign size={48} />
+                                  <p className="text-sm font-black uppercase tracking-widest">No earnings data detected in the ledger.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                   </div>
                 </div>
               </motion.div>
             )}
@@ -846,7 +884,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
               <div className="space-y-4">
                 <p className="text-xs font-bold text-white/60 text-center uppercase tracking-widest leading-relaxed">
-                  Enter the staging or production URL of the website you will be developing. This is required to track mission progress.
+                  Enter delivery details. Note: Domain charges are not included and must be communicated separately.
                 </p>
                 
                 <div className="space-y-2">
@@ -859,6 +897,34 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                       value={websiteUrl}
                       onChange={(e) => setWebsiteUrl(e.target.value)}
                       placeholder="https://example.com"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Basic Payment Link</label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                    <input 
+                      type="url" 
+                      value={paymentLinkBasic}
+                      onChange={(e) => setPaymentLinkBasic(e.target.value)}
+                      placeholder="Razorpay/Stripe Link"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Premium Payment Link</label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                    <input 
+                      type="url" 
+                      value={paymentLinkPremium}
+                      onChange={(e) => setPaymentLinkPremium(e.target.value)}
+                      placeholder="Razorpay/Stripe Link"
                       className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                     />
                   </div>

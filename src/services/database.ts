@@ -797,6 +797,72 @@ export const updateMessage = async (projectId: string, messageId: string, update
   }
 };
 
+// Meeting Operations
+export const createMeeting = async (meetingData: Partial<Meeting>) => {
+  const path = 'meetings';
+  try {
+    const docRef = await addDoc(collection(db, 'meetings'), {
+      ...meetingData,
+      status: 'Pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
+};
+
+export const updateMeeting = async (meetingId: string, updateData: Partial<Meeting>) => {
+  const path = `meetings/${meetingId}`;
+  try {
+    await updateDoc(doc(db, 'meetings', meetingId), {
+      ...updateData,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+export const getMeetings = (userId: string, role: string, callback: (meetings: Meeting[]) => void) => {
+  const path = 'meetings';
+  let q = query(collection(db, 'meetings'), orderBy('date', 'asc'), orderBy('time', 'asc'));
+  
+  if (role === 'client') {
+    q = query(collection(db, 'meetings'), where('clientId', '==', userId), orderBy('date', 'asc'), orderBy('time', 'asc'));
+  } else if (role === 'developer') {
+    q = query(collection(db, 'meetings'), where('developerId', '==', userId), orderBy('date', 'asc'), orderBy('time', 'asc'));
+  }
+
+  return onSnapshot(q, (snapshot) => {
+    const meetings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Meeting));
+    callback(meetings);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
+  });
+};
+
+export const getTodayMeetings = async (userId: string, role: string) => {
+  const path = 'meetings';
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    let q = query(collection(db, 'meetings'), where('date', '==', today));
+    
+    if (role === 'client') {
+      q = query(collection(db, 'meetings'), where('date', '==', today), where('clientId', '==', userId));
+    } else if (role === 'developer') {
+      q = query(collection(db, 'meetings'), where('date', '==', today), where('developerId', '==', userId));
+    }
+    
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Meeting));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 export const updateDirectMessage = async (recipientId: string, messageId: string, updateData: any) => {
   if (!auth.currentUser) return;
   const conversationId = getConversationId(auth.currentUser.uid, recipientId);

@@ -16,9 +16,8 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
 const SalesDashboard = React.lazy(() => import('./pages/SalesDashboard'));
-const GlobalAutos = React.lazy(() => import('./pages/GlobalAutos'));
 const Gym = React.lazy(() => import('./pages/Gym'));
-const Cargo = React.lazy(() => import('./pages/Cargo'));
+const Resort = React.lazy(() => import('./pages/Resort'));
 const Autos = React.lazy(() => import('./pages/Autos'));
 const About = React.lazy(() => import('./pages/About'));
 const Contact = React.lazy(() => import('./pages/Contact'));
@@ -211,20 +210,16 @@ export default function App() {
                   element={user && (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
                 />
                 <Route 
-                  path="/portfolio/autos" 
-                  element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Autos />} 
-                />
-                <Route 
-                  path="/portfolio/global-autos" 
-                  element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <GlobalAutos />} 
-                />
-                <Route 
                   path="/portfolio/gym" 
-                  element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Gym />} 
+                  element={<Gym />} 
                 />
                 <Route 
-                  path="/portfolio/cargo" 
-                  element={user && profile?.role === 'client' ? <Navigate to="/dashboard" /> : <Cargo />} 
+                  path="/portfolio/resort" 
+                  element={<Resort />} 
+                />
+                <Route 
+                  path="/portfolio/autos" 
+                  element={<Autos />} 
                 />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

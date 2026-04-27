@@ -41,13 +41,14 @@ import {
   getVisitSessions
 } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
+import { MeetingList } from '../components/meetings/MeetingList';
 
 interface AdminDashboardProps {
   user: FirebaseUser | null;
   profile: UserProfile | null;
 }
 
-type Tab = 'overview' | 'clients' | 'developers' | 'developer-leads' | 'projects' | 'leaves' | 'attendance';
+type Tab = 'overview' | 'clients' | 'developers' | 'developer-leads' | 'projects' | 'leaves' | 'attendance' | 'meetings';
 
 interface DeveloperInvite {
   id?: string;
@@ -1272,6 +1273,15 @@ Requirements:
             </div>
           </div>
         );
+      case 'meetings':
+        return (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Meetings Control</h2>
+            </div>
+            <MeetingList user={user!} profile={profile!} />
+          </div>
+        );
       default:
         return null;
     }
@@ -1299,6 +1309,7 @@ Requirements:
                 { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                 { id: 'clients', label: 'Clients', icon: User },
                 { id: 'projects', label: 'Projects', icon: Briefcase },
+                { id: 'meetings', label: 'Meetings', icon: CalendarIcon },
               ].map((item) => (
                 <button
                   key={item.id}

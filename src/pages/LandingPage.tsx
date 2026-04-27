@@ -47,28 +47,28 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
   }, []);
 
   const portfolios = [
-    { 
-      title: 'Car Business', 
-      category: 'Auto Speed UI', 
-      image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=800&auto=format&fit=crop', 
-      link: '/portfolio/autos',
-      description: 'Premium showroom experience for car dealerships.'
-    },
-    { 
-      title: 'Gym & Fitness', 
-      category: 'Iron Pulse UI', 
-      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop', 
-      link: '/portfolio/gym',
-      description: 'High-energy landing page for fitness centers.'
-    },
-    { 
-      title: 'Cargo Logistics', 
-      category: 'Cargo Flow UI', 
-      image: 'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?q=80&w=800&auto=format&fit=crop', 
-      link: '/portfolio/cargo',
-      description: 'Efficient tracking and management for logistics.'
-    }
-  ];
+      { 
+        title: 'Luxury Resorts', 
+        category: 'Azure Haven UI', 
+        image: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=800&auto=format&fit=crop', 
+        link: '/portfolio/resort',
+        description: 'Ultra-premium hospitality experience for luxury resorts.'
+      },
+      { 
+        title: 'Gym & Fitness', 
+        category: 'Iron Pulse UI', 
+        image: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=800&auto=format&fit=crop', 
+        link: '/portfolio/gym',
+        description: 'High-energy, aggressive aesthetic for elite fitness centers.'
+      },
+      { 
+        title: 'Designer Clothing', 
+        category: 'Urban Thread UI', 
+        image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop', 
+        link: '/portfolio/clothing',
+        description: 'Boutique e-commerce experience for luxury streetwear and high-fashion.'
+      }
+    ];
 
   const testimonialCards: Testimonial[] = [
     { 
@@ -202,43 +202,79 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       {/* Hero Section */}
       <section id="home" className="relative h-screen flex flex-col items-center justify-center overflow-hidden technical-grid">
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#c7c42a]/10 rounded-full blur-[160px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#c7c42a]/5 rounded-full blur-[160px] animate-pulse delay-1000" />
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.2, 1],
+              opacity: [0.1, 0.2, 0.1]
+            }}
+            transition={{ duration: 10, repeat: Infinity }}
+            className="absolute top-1/4 left-1/4 w-[800px] h-[800px] bg-[#c7c42a]/20 rounded-full blur-[200px]" 
+          />
+          <motion.div 
+            animate={{ 
+              scale: [1.2, 1, 1.2],
+              opacity: [0.05, 0.15, 0.05]
+            }}
+            transition={{ duration: 15, repeat: Infinity }}
+            className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-[#c7c42a]/10 rounded-full blur-[180px]" 
+          />
         </div>
 
         <div className="relative z-10 w-full px-6 flex flex-col items-center text-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-block px-4 py-1.5 bg-[#c7c42a] text-black text-[10px] font-black uppercase tracking-[0.4em] transform -skew-x-12 mb-12 italic"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 100 }}
+            className="inline-block px-6 py-2 bg-[#c7c42a] text-black text-[10px] font-black uppercase tracking-[0.6em] transform -skew-x-12 mb-12 italic shadow-[0_0_40px_rgba(199,196,42,0.4)]"
           >
-            Digital Growth Partner
+            Elite Software Forge
           </motion.div>
 
           <div className="relative mb-12">
-            <h1 className="text-[12vw] md:text-[14vw] font-black leading-[0.82] tracking-tighter uppercase italic opacity-0 animate-slam-in flex flex-col">
-              <span>Fastest</span>
-              <span className="text-[#c7c42a] relative">
-                Builds<span className="hidden md:inline">.</span>
-              </span>
+            <h1 className="text-[14vw] md:text-[16vw] font-black leading-[0.75] tracking-tighter uppercase italic flex flex-col">
+              <motion.span 
+                initial={{ x: -200, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "circOut" }}
+              >
+                Hyper
+              </motion.span>
+              <motion.span 
+                initial={{ x: 200, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: "circOut" }}
+                className="text-[#c7c42a] relative"
+              >
+                Speed<span className="hidden md:inline">.</span>
+                <motion.div 
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 1, duration: 1 }}
+                  className="absolute -bottom-4 left-0 w-full h-2 bg-white/10 origin-left" 
+                />
+              </motion.span>
             </h1>
             
-            <div className="absolute -right-12 top-0 hidden xl:block">
-              <div className="w-32 h-32 border border-white/10 rounded-full flex items-center justify-center rotate-12 animate-pulse">
-                <span className="text-[8px] font-black uppercase tracking-widest text-[#c7c42a] text-center px-4">Ready in <br /> 24 Hours</span>
-              </div>
+            <div className="absolute -right-24 top-0 hidden 2xl:block">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="w-40 h-40 border-2 border-dashed border-[#c7c42a]/30 rounded-full flex items-center justify-center"
+              >
+                 <div className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] text-center px-4 -rotate-[inherit]">
+                    Bespoke <br /> Deployment
+                 </div>
+              </motion.div>
             </div>
           </div>
 
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            className="text-xl md:text-2xl max-w-2xl mx-auto mb-16 font-medium text-white/50 leading-tight italic"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 1 }}
+            className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/40 leading-tight italic"
           >
-            We don't just build websites. 
-            <span className="text-white"> We build high-conversion digital assets </span> 
-            at the speed of light.
+            Elevate your presence with <span className="text-white">Industrial-Grade Web Infrastructure</span>. Ready in under 48 hours.
           </motion.p>
 
           <motion.div 

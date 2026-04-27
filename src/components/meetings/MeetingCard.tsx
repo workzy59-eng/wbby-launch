@@ -46,18 +46,18 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
       const diff = differenceInSeconds(meetingDateTime, now);
       
       if (diff > 0) {
-        const hours = Math.floor(diff / 3600);
+        const days = Math.floor(diff / 86400);
+        const hours = Math.floor((diff % 86400) / 3600);
         const mins = Math.floor((diff % 3600) / 60);
         const secs = diff % 60;
         
-        if (hours > 24) {
-          setTimeLeft(`${Math.floor(hours / 24)}d left`);
-        } else if (hours > 0) {
-          setTimeLeft(`${hours}h ${mins}m left`);
-        } else {
-          // Stopwatch style MM:SS
-          setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
-        }
+        let timerStr = '';
+        if (days > 0) timerStr += `${days}d `;
+        if (hours > 0 || days > 0) timerStr += `${hours}hr `;
+        if (mins > 0 || hours > 0 || days > 0) timerStr += `${mins}mins `;
+        timerStr += `${secs}sec left`;
+        
+        setTimeLeft(timerStr);
       } else {
         setTimeLeft('00:00');
       }

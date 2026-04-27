@@ -126,11 +126,15 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
               Professional website development for small businesses in India. Get your business online in 24-48 hours with zero hassle.
             </p>
             <div className="flex gap-4">
-              {['Twitter', 'Instagram', 'LinkedIn'].map((social) => (
-                <a key={social} href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
-                  <span className="text-[10px] font-black uppercase tracking-tighter">{social[0]}</span>
-                </a>
-              ))}
+              <a href="https://twitter.com/webbylaunch" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
+                <span className="text-[10px] font-black uppercase tracking-tighter">T</span>
+              </a>
+              <a href="https://www.instagram.com/webbylaunch/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
+                <span className="text-[10px] font-black uppercase tracking-tighter">I</span>
+              </a>
+              <a href="https://linkedin.com/company/webbylaunch" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
+                <span className="text-[10px] font-black uppercase tracking-tighter">L</span>
+              </a>
             </div>
           </div>
 

@@ -882,13 +882,36 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                      <h4 className="text-2xl font-black uppercase italic tracking-tighter">Payment Pending</h4>
                                      <p className="text-white/40 text-xs font-medium italic">Complete your payment to start development.</p>
                                    </div>
-                                   <div className="pt-4">
-                                     <button 
-                                       onClick={() => handlePayment(selectedProject)}
-                                       className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20"
-                                     >
-                                       Pay & Start Project
-                                     </button>
+                                   <div className="pt-4 space-y-4">
+                                     {selectedProject.paymentLinkBasic && (
+                                       <button 
+                                         onClick={() => window.open(selectedProject.paymentLinkBasic, '_blank')}
+                                         className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20 flex items-center justify-center gap-3"
+                                       >
+                                         <CreditCard size={20} />
+                                         Pay Basic (₹5,000)
+                                       </button>
+                                     )}
+                                     {selectedProject.paymentLinkPremium && (
+                                       <button 
+                                         onClick={() => window.open(selectedProject.paymentLinkPremium, '_blank')}
+                                         className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-3"
+                                       >
+                                         <ShieldCheck size={20} />
+                                         Pay Premium (₹15,000)
+                                       </button>
+                                     )}
+                                     {!selectedProject.paymentLinkBasic && (
+                                       <button 
+                                         onClick={() => handlePayment(selectedProject)}
+                                         className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20"
+                                       >
+                                         Generic Payment Link
+                                       </button>
+                                     )}
+                                     <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-4">
+                                       Note: Please refresh the dashboard after completing the payment to update status.
+                                     </p>
                                    </div>
                                  </>
                                )}
@@ -989,6 +1012,47 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       </div>
                     ))}
                   </div>
+
+                  {/* Today's Meetings Highlight */}
+                  {meetings.filter(m => {
+                    const today = new Date().toDateString();
+                    const mDate = new Date(m.startTime).toDateString();
+                    return today === mDate && m.status === 'scheduled';
+                  }).length > 0 && (
+                    <div className="bg-[#c7c42a] p-10 rounded-[3rem] text-black relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:scale-110 transition-transform">
+                        <Video size={120} />
+                      </div>
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="px-3 py-1 bg-black text-[#c7c42a] text-[8px] font-black uppercase rounded-full">Happening Today</div>
+                        </div>
+                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-8 leading-none">Upcoming<br />Briefings.</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {meetings.filter(m => {
+                            const today = new Date().toDateString();
+                            const mDate = new Date(m.startTime).toDateString();
+                            return today === mDate && m.status === 'scheduled';
+                          }).map((meeting, idx) => (
+                            <div key={idx} className="bg-black/10 border border-black/10 rounded-2xl p-6 backdrop-blur-md">
+                              <div className="flex justify-between items-start mb-4">
+                                <div className="text-xl font-black uppercase italic tracking-tight">{meeting.title}</div>
+                                <div className="px-3 py-1 border border-black/20 rounded-full text-[8px] font-black uppercase">
+                                  {new Date(meeting.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => meeting.meetLink && window.open(meeting.meetLink, '_blank')}
+                                className="w-full py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2"
+                              >
+                                Join Session <ArrowRight size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                       {projects.length === 0 ? (
                         <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
