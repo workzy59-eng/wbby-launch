@@ -21,7 +21,9 @@ import {
   Plus,
   Wallet,
   Video,
-  Award
+  Award,
+  Settings2,
+  XCircle
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
@@ -48,10 +50,13 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [payments, setPayments] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAcceptPopup, setShowAcceptPopup] = useState<string | null>(null);
+  const [showRejectPopup, setShowRejectPopup] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [paymentLinkBasic, setPaymentLinkBasic] = useState('');
   const [paymentLinkPremium, setPaymentLinkPremium] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [settingsData, setSettingsData] = useState({
     emailNotifications: true,
@@ -214,6 +219,31 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       setPaymentLinkPremium('');
     } catch (error) {
       toast.error('Failed to accept project');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRejectProject = async (projectId: string) => {
+    if (!rejectionReason.trim()) {
+      toast.error('Rejection reason is required');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await updateProject(projectId, {
+        status: 'pending',
+        rejectionReason,
+        rejectedAt: new Date().toISOString(),
+        developerId: null,
+        assignedTo: null
+      });
+      toast.success('Project returned to pool');
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+      setShowRejectPopup(null);
+      setRejectionReason('');
+    } catch (error) {
+      toast.error('Failed to reject project');
     } finally {
       setIsSubmitting(false);
     }
@@ -466,14 +496,22 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                         )}
 
                         {/* Actions */}
-                        <div className="pt-2">
+                        <div className="pt-2 flex gap-3">
                           {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' ? (
-                            <button 
-                              onClick={() => setShowAcceptPopup(p.id)}
-                              className="w-full py-4 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/10"
-                            >
-                              Accept Project
-                            </button>
+                            <>
+                              <button 
+                                onClick={() => setShowAcceptPopup(p.id)}
+                                className="flex-1 py-4 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/10"
+                              >
+                                Accept Project
+                              </button>
+                              <button 
+                                onClick={() => setShowRejectPopup(p.id)}
+                                className="px-6 py-4 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
+                              >
+                                Reject
+                              </button>
+                            </>
                           ) : (
                             <div className="flex gap-2">
                               {p.websiteUrl && (
@@ -487,7 +525,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                                 </a>
                               )}
                               <button 
-                                onClick={() => setActiveTab('projects')}
+                                onClick={() => setEditingProject(p)}
                                 className="flex-1 py-4 bg-white/5 border border-white/10 text-white font-black uppercase italic text-[10px] tracking-widest rounded-2xl hover:bg-white/10 transition-all"
                               >
                                 Manage
@@ -633,15 +671,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
                            <div className="grid grid-cols-2 gap-3">
                               <button 
-                                onClick={() => {
-                                  if (confirm('Complete project?')) {
-                                    updateProject(p.id, { status: 'completed', progress: 100 });
-                                    toast.success('Project Completed!');
-                                  }
-                                }}
-                                className="py-4 bg-green-500/10 border border-green-500/20 text-green-500 rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:bg-green-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                                onClick={() => setEditingProject(p)}
+                                className="py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2"
                               >
-                                Complete <CheckCircle2 size={16} />
+                                Edit Details <Settings2 size={16} />
                               </button>
                               <button 
                                 onClick={() => setActiveTab('chat')}
@@ -649,6 +682,17 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                               >
                                 Contact Client
                               </button>
+                           </div>
+                           
+                           <div className="pt-2">
+                             {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' ? (
+                               <button 
+                                 onClick={() => setShowRejectPopup(p.id)}
+                                 className="w-full py-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-black uppercase italic text-[10px] tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
+                               >
+                                 Reject Mission
+                               </button>
+                             ) : null}
                            </div>
                         </div>
                       </div>
@@ -1028,6 +1072,173 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   className="flex-1 py-4 rounded-2xl bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/20 disabled:opacity-50"
                 >
                   {isSubmitting ? 'Processing...' : 'Accept Mission'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Reject Project Popup */}
+      <AnimatePresence>
+        {showRejectPopup && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-3xl"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="max-w-md w-full bg-[#111] border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-red-500" />
+              
+              <div className="text-center space-y-4">
+                <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto text-red-500 shadow-2xl">
+                  <XCircle size={40} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Reject Assignment</h3>
+                  <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] italic">Abort Mission Protocol</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-xs font-bold text-white/60 text-center uppercase tracking-widest leading-relaxed">
+                  Provide a detailed reason for rejecting this assignment. This will be shared with the system administrators.
+                </p>
+                
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black text-red-500 uppercase tracking-[0.3em] ml-4">Rejection Reason</label>
+                  <textarea 
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="e.g. Scope outside of technical domain, Unclear requirements, etc."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white font-bold outline-none focus:border-red-500 transition-all min-h-[150px] resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => {
+                    setShowRejectPopup(null);
+                    setRejectionReason('');
+                  }} 
+                  className="flex-1 py-4 rounded-2xl border border-white/10 text-white font-black uppercase italic text-xs tracking-widest hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => handleRejectProject(showRejectPopup)}
+                  disabled={isSubmitting || !rejectionReason.trim()}
+                  className="flex-1 py-4 rounded-2xl bg-red-500 text-white font-black uppercase italic text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-500/20 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Aborting...' : 'Confirm Rejection'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editingProject && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-3xl"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="max-w-md w-full bg-[#111] border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />
+              
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Edit Project</h3>
+                  <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] italic">{editingProject.businessName}</p>
+                </div>
+                <button onClick={() => setEditingProject(null)} className="p-2 hover:bg-white/5 rounded-xl text-white/20 hover:text-white transition-all">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Project Status</label>
+                  <select 
+                    value={editingProject.status}
+                    onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value as any })}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                  >
+                     <option value="pending" className="bg-[#111]">Pending</option>
+                     <option value="Under Review" className="bg-[#111]">Under Review</option>
+                     <option value="Assigned" className="bg-[#111]">Assigned</option>
+                     <option value="Development Started" className="bg-[#111]">Development Started</option>
+                     <option value="in-progress" className="bg-[#111]">In Progress</option>
+                     <option value="completed" className="bg-[#111]">Completed</option>
+                     <option value="rejected" className="bg-[#111]">Rejected</option>
+                  </select>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Deployment URL</label>
+                  <input 
+                    type="url"
+                    value={editingProject.websiteUrl || ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, websiteUrl: e.target.value })}
+                    placeholder="https://your-site-url.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between px-4">
+                    <label className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em]">Progress</label>
+                    <span className="text-xs font-black text-[#c7c42a] italic">{editingProject.progress || 0}%</span>
+                  </div>
+                  <input 
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={editingProject.progress || 0}
+                    onChange={(e) => setEditingProject({ ...editingProject, progress: parseInt(e.target.value) })}
+                    className="w-full accent-[#c7c42a] h-2 bg-white/5 rounded-full appearance-none cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  onClick={async () => {
+                    if (!editingProject) return;
+                    setIsSubmitting(true);
+                    try {
+                      await updateProject(editingProject.id, {
+                        status: editingProject.status,
+                        progress: editingProject.progress,
+                        websiteUrl: editingProject.websiteUrl,
+                        updatedAt: new Date().toISOString()
+                      });
+                      toast.success('Project details updated');
+                      setEditingProject(null);
+                    } catch (error) {
+                      toast.error('Failed to update project');
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="w-full py-5 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/20 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Syncing...' : 'Apply System Updates'}
                 </button>
               </div>
             </motion.div>

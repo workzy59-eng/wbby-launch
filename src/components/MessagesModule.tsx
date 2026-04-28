@@ -119,6 +119,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   
+  const getEffectiveSenderName = () => {
+    if (profile?.role === 'developer' && activeConversation?.recipientProfile?.role === 'client') {
+      return 'Webby Launch';
+    }
+    return currentUser.displayName || profile?.displayName || 'User';
+  };
+  
   useEffect(() => {
     if (initialRecipientId) {
       const existing = conversations.find(c => c.participants.includes(initialRecipientId));
@@ -378,14 +385,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         type = 'image';
       }
 
-      // Check if we need to mask sender name as "Webby Launch"
-      // This happens if a developer is messaging a client
-      const recipientProfile = activeConversation.recipientProfile;
-      let senderName = currentUser.displayName || profile?.displayName || 'User';
-      
-      if (profile?.role === 'developer' && recipientProfile?.role === 'client') {
-        senderName = 'Webby Launch';
-      }
+      const senderName = getEffectiveSenderName();
 
       if (editingMessage) {
         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
@@ -513,8 +513,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       };
 
       recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        const audioFile = new File([audioBlob], 'voice_message.webm', { type: 'audio/webm' });
+        const audioBlob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+        const audioFile = new File([audioBlob], 'voice_message.webm', { type: 'audio/webm;codecs=opus' });
 
         if (recordingDuration < 1) {
           toast.error('Voice message too short');
@@ -529,7 +529,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             const messageData = {
               text: '🎤 Voice message',
               senderId: currentUser.uid,
-              senderName: profile?.displayName || 'User',
+              senderName: getEffectiveSenderName(),
               type: 'voice',
               mediaUrl: voiceUrl,
               duration: recordingDuration,
@@ -704,8 +704,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               e.stopPropagation();
               const audio = document.getElementById(`audio-${m.id}`) as HTMLAudioElement;
               if (audio) {
-                if (audio.paused) audio.play();
-                else audio.pause();
+                if (audio.paused) {
+                  audio.play().catch(err => {
+                    console.error('Playback failed:', err);
+                    toast.error('Voice playback error');
+                  });
+                } else {
+                  audio.pause();
+                }
               }
             }}
             className="w-10 h-10 bg-[#c7c42a] rounded-full flex items-center justify-center text-black shrink-0 hover:scale-105 active:scale-95 transition-all shadow-lg"
@@ -733,10 +739,17 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </div>
              </div>
           </div>
-          <audio id={`audio-${m.id}`} src={mediaUrl} className="hidden" onPlay={(e) => {
-             const btn = e.currentTarget.previousElementSibling?.querySelector('button');
-             // We can manipulate UI via classes if needed
-          }} />
+          <audio 
+            id={`audio-${m.id}`} 
+            src={mediaUrl} 
+            className="hidden" 
+            onPlay={(e) => {
+               // Update UI if needed
+            }} 
+            onError={() => {
+              console.error('Audio load failed');
+            }}
+          />
         </div>
       );
     }
@@ -812,11 +825,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
           // Final message send
           const recipientProfile = activeConversation.recipientProfile;
-          let senderName = currentUser.displayName || profile?.displayName || 'User';
-          
-          if (profile?.role === 'developer' && recipientProfile?.role === 'client') {
-            senderName = 'Webby Launch';
-          }
+          let senderName = getEffectiveSenderName();
 
           const messageData = {
             senderId: currentUser.uid,
