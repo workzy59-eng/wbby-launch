@@ -400,112 +400,111 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const handleBack = () => setStep(step - 1);
 
   const handleSubmit = async () => {
-    if (isSubmitting) {
-      console.warn('Submission already in progress');
-      return;
-    }
+    if (isSubmitting) return;
     
     setIsSubmitting(true);
     setError(null);
-    console.log('Starting project submission...', formData);
+    console.log('Starting project submission...');
 
-    try {
-      if (!user) {
-        throw new Error('User not authenticated');
+    // Use a one-time listener to get the most accurate auth state
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      unsubscribe(); // Unsubscribe immediately
+      
+      if (!currentUser) {
+        setError('Your session has expired. Please log in again.');
+        setIsSubmitting(false);
+        return;
       }
 
-      let finalProfileUrl = profile?.photoURL || '';
+      console.log("Auth verified for submission:", currentUser.uid);
 
-      if (profileFile) {
-        console.log('Uploading profile photo...');
-        finalProfileUrl = await uploadFile(profileFile, 'profiles');
-      }
+      try {
+        let finalProfileUrl = profile?.photoURL || '';
 
-      const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
-      
-      // Sanitize onboardingData to remove potential large blobs or circular refs
-      const sanitizedOnboardingData = { ...formData };
-      
-      // Remove fields that might contain huge base64 strings if they are too large
-      const MAX_BLOB_SIZE = 50 * 1024; // 50KB limit for embedded data
-      ['logoUrl', 'documentsUrl'].forEach(key => {
-        if (typeof (sanitizedOnboardingData as any)[key] === 'string' && (sanitizedOnboardingData as any)[key].length > MAX_BLOB_SIZE) {
-          (sanitizedOnboardingData as any)[key] = '[Large Data Truncated]';
+        if (profileFile) {
+          console.log('Uploading profile photo...');
+          finalProfileUrl = await uploadFile(profileFile, 'profiles');
         }
-      });
 
-      const projectData = {
-        userId: user.uid,
-        userName: formData.name || '',
-        userEmail: formData.email || '',
-        userPhone: formData.phone || '',
-        businessName: formData.businessName || '',
-        businessNumber: formData.businessNumber || '',
-        businessEmail: formData.businessEmail || '',
-        businessPhone: formData.businessPhone || '',
-        addressLine: formData.addressLine || '',
-        city: formData.city || '',
-        state: formData.state || '',
-        pincode: formData.pincode || '',
-        country: formData.country || 'India',
-        businessType: finalBusinessType || '',
-        description: formData.description || '',
-        websiteName: formData.websiteName || '',
-        domain: formData.domain || '',
-        domainPreferences: formData.domainPreferences || ['', '', ''],
-        primaryColor: formData.primaryColor || '#c7c42a',
-        secondaryColor: formData.secondaryColor || '#000000',
-        tertiaryColor: formData.tertiaryColor || '',
-        selectedFeatures: formData.selectedFeatures || [],
-        plan: formData.plan || 'basic',
-        billingCycle: formData.billingCycle || 'one-time',
-        paymentStatus: 'pending' as 'pending' | 'paid',
-        referenceWebsite: formData.referenceWebsite || '',
-        templateId: 'custom-dev',
-        estimatedCompletion: null,
-        referralSource: formData.referralSource || '',
-        salesCode: formData.salesCode || '',
-        logoUrl: formData.logoUrl || '',
-        documentsUrl: formData.documentsUrl || '',
-        onboardingData: sanitizedOnboardingData 
-      };
+        const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
+        
+        const sanitizedOnboardingData = { ...formData };
+        const MAX_BLOB_SIZE = 50 * 1024;
+        ['logoUrl', 'documentsUrl'].forEach(key => {
+          if (typeof (sanitizedOnboardingData as any)[key] === 'string' && (sanitizedOnboardingData as any)[key].length > MAX_BLOB_SIZE) {
+            (sanitizedOnboardingData as any)[key] = '[Large Data Truncated]';
+          }
+        });
 
-      console.log('Creating project in Firestore...', projectData);
-      const projectId = await createProject(projectData);
-      console.log('Project created with ID:', projectId);
+        const projectData = {
+          userId: currentUser.uid,
+          userName: formData.name || '',
+          userEmail: formData.email || '',
+          userPhone: formData.phone || '',
+          businessName: formData.businessName || '',
+          businessNumber: formData.businessNumber || '',
+          businessEmail: formData.businessEmail || '',
+          businessPhone: formData.businessPhone || '',
+          addressLine: formData.addressLine || '',
+          city: formData.city || '',
+          state: formData.state || '',
+          pincode: formData.pincode || '',
+          country: formData.country || 'India',
+          businessType: finalBusinessType || '',
+          description: formData.description || '',
+          websiteName: formData.websiteName || '',
+          domain: formData.domain || '',
+          domainPreferences: formData.domainPreferences || ['', '', ''],
+          primaryColor: formData.primaryColor || '#c7c42a',
+          secondaryColor: formData.secondaryColor || '#000000',
+          tertiaryColor: formData.tertiaryColor || '',
+          selectedFeatures: formData.selectedFeatures || [],
+          plan: formData.plan || 'basic',
+          billingCycle: formData.billingCycle || 'one-time',
+          paymentStatus: 'pending' as 'pending' | 'paid',
+          referenceWebsite: formData.referenceWebsite || '',
+          templateId: 'custom-dev',
+          estimatedCompletion: null,
+          referralSource: formData.referralSource || '',
+          salesCode: formData.salesCode || '',
+          logoUrl: formData.logoUrl || '',
+          documentsUrl: formData.documentsUrl || '',
+          onboardingData: sanitizedOnboardingData 
+        };
 
-      console.log('Updating user profile...');
-      await createUserProfile(user, {
-        username: formData.username,
-        phone: formData.phone,
-        photoURL: finalProfileUrl,
-        businessName: formData.businessName,
-        businessType: finalBusinessType,
-        businessEmail: formData.businessEmail,
-        businessPhone: formData.businessPhone,
-        onboardingCompleted: true,
-        lastProjectId: projectId
-      });
-      console.log('User profile updated.');
+        console.log("Saving project...");
+        const projectId = await createProject(projectData);
+        
+        console.log("Updating profile...");
+        await createUserProfile(currentUser, {
+          username: formData.username,
+          phone: formData.phone,
+          photoURL: finalProfileUrl,
+          businessName: formData.businessName,
+          businessType: finalBusinessType,
+          businessEmail: formData.businessEmail,
+          businessPhone: formData.businessPhone,
+          onboardingCompleted: true,
+          lastProjectId: projectId
+        });
 
-      localStorage.removeItem('onboarding_data');
-      localStorage.removeItem('onboarding_step');
-      
-      toast.success("Project submitted successfully! You can handle payment in your dashboard.");
-      setStep(9); 
-      
-      // Auto-redirect to dashboard after success animation
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 5000);
-
-    } catch (err: any) {
-      console.error('Error in handleSubmit:', err);
-      const errorMsg = err.message || 'Submission failed. Please try again.';
-      setError(errorMsg);
-      toast.error(errorMsg);
-      setIsSubmitting(false); // Reset so they can try again
-    }
+        localStorage.removeItem('onboarding_data');
+        localStorage.removeItem('onboarding_step');
+        
+        toast.success("Project submitted successfully! Check your dashboard for next steps.");
+        setStep(9); 
+        
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 5000);
+      } catch (err: any) {
+        console.error("CRITICAL SUBMISSION ERROR:", err);
+        const errorMsg = err.message || 'Submission failed. Please try again.';
+        setError(errorMsg);
+        toast.error(errorMsg);
+        setIsSubmitting(false);
+      }
+    });
   };
 
   const handleDownloadSummary = () => {

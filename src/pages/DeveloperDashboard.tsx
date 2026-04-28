@@ -50,14 +50,25 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [paymentLinkBasic, setPaymentLinkBasic] = useState('');
   const [paymentLinkPremium, setPaymentLinkPremium] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [settingsData, setSettingsData] = useState({
-    upiId: profile?.paymentDetails?.upiId || '',
-    skills: profile?.devRole || '',
-    paymentLinks: profile?.paymentLinks || {}
-  });
-  const navigate = useNavigate();
+  const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
 
-  // Redirect if not developer
+  useEffect(() => {
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
+    if (user?.email && devEmails.includes(user.email.toLowerCase())) {
+      const hasSeen = localStorage.getItem(`dev_welcome_${user.uid}`);
+      if (!hasSeen) {
+        setShowDeveloperWelcome(true);
+      }
+    }
+  }, [user]);
+
+  const handleCloseWelcome = () => {
+    if (user) {
+      localStorage.setItem(`dev_welcome_${user.uid}`, 'true');
+    }
+    setShowDeveloperWelcome(false);
+  };
+
   useEffect(() => {
     if (!loading && profile && profile.role !== 'developer') {
       navigate('/');
@@ -235,7 +246,58 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   );
 
   return (
-    <div className="h-screen flex flex-col md:flex-row bg-[#050505] text-white overflow-hidden font-sans">
+    <>
+      <AnimatePresence>
+        {showDeveloperWelcome && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-3xl"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="w-full max-w-2xl bg-[#0a0a0a] rounded-[3rem] border border-[#c7c42a]/20 overflow-hidden relative shadow-[0_0_100px_rgba(199,196,42,0.1)]"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,_#c7c42a15,_transparent_70%)]" />
+              
+              <div className="p-12 relative z-10 text-center">
+                <div className="w-24 h-24 bg-[#c7c42a]/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-[#c7c42a]/20">
+                  <Award size={48} className="text-[#c7c42a]" />
+                </div>
+                
+                <h2 className="text-5xl font-bold text-white tracking-tighter mb-4 italic uppercase leading-none">Welcome Aboard,<br/>Special Agent.</h2>
+                <p className="text-white/60 text-lg leading-relaxed mb-10 max-w-md mx-auto">
+                  Your developer credentials have been verified. Access to the internal dashboard and project pool is now authorized.
+                </p>
+
+                <div className="grid grid-cols-3 gap-4 mb-12">
+                  {[
+                    { label: 'Direct Chat', icon: MessageSquare },
+                    { label: 'Project Pool', icon: Briefcase },
+                    { label: 'Fast Payouts', icon: Wallet }
+                  ].map((feat, i) => (
+                    <div key={i} className="bg-white/5 p-4 rounded-3xl border border-white/5">
+                      <feat.icon size={20} className="text-[#c7c42a] mx-auto mb-2" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{feat.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={handleCloseWelcome}
+                  className="w-full bg-[#c7c42a] text-black py-6 rounded-full font-black text-sm uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(199,196,42,0.3)]"
+                >
+                  Enter Dashboard
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="h-screen flex flex-col md:flex-row bg-[#050505] text-white overflow-hidden font-sans">
       
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex w-72 flex-col bg-[#111] border-r border-white/5 p-8 space-y-10">

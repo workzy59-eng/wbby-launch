@@ -335,9 +335,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
     const messageText = inputText.trim();
     const currentReplyingTo = replyingTo;
-    const currentEditingMessage = editingMessage;
-    const currentMentions = mentions;
     const imageToUpload = previewImage;
+    const currentMentions = mentions;
     
     setIsSending(true);
     try {
@@ -349,10 +348,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         type = 'image';
       }
 
-      if (currentEditingMessage) {
+      if (editingMessage) {
         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
         if (recipientId) {
-          await updateDirectMessage(recipientId, currentEditingMessage.id, {
+          await updateDirectMessage(recipientId, editingMessage.id, {
             text: messageText,
             edited: true,
             mentions: currentMentions,
@@ -377,7 +376,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           } : null
         };
 
-        if (activeConversation.isProject) {
+        if (activeConversation.id === 'new' && !activeConversation.isProject && recipientId) {
+          await sendDirectMessage(recipientId, msgData);
+        } else if (activeConversation.isProject) {
           await sendMessage(activeConversation.id, msgData);
         } else if (recipientId) {
           await sendDirectMessage(recipientId, msgData);
@@ -571,6 +572,41 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     setShowMentions(false);
   };
 
+  const renderReactionPopup = () => {
+    if (!reactionAnchor) return null;
+    const reactions = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🙏'];
+    return (
+      <div 
+        className="fixed z-[100] bg-[#233138] p-2 rounded-full shadow-2xl flex gap-1 animate-in fade-in zoom-in duration-200 border border-white/10"
+        style={{ left: Math.min(reactionAnchor.x, window.innerWidth - 300), top: reactionAnchor.y - 60 }}
+      >
+        {reactions.map(emoji => (
+          <button 
+            key={emoji}
+            onClick={() => {
+              handleToggleReaction(reactionAnchor.messageId, emoji);
+              setReactionAnchor(null);
+            }}
+            className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-all text-xl"
+          >
+            {emoji}
+          </button>
+        ))}
+        <div className="w-[1px] h-6 bg-white/10 my-auto mx-1" />
+        <button 
+          onClick={() => {
+            const msg = messages.find(m => m.id === reactionAnchor.messageId);
+            if (msg) setReplyingTo(msg);
+            setReactionAnchor(null);
+          }}
+          className="p-2 hover:bg-white/10 rounded-full text-white/60"
+        >
+          <Reply size={18} />
+        </button>
+      </div>
+    );
+  };
+
   const renderMedia = (m: Message) => {
     if (m.isDeleted) return null;
     
@@ -672,6 +708,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0 || !activeConversation || isSending) return;
     
+    // For single image, show preview first
+    if (files.length === 1 && files[0].type.startsWith('image/')) {
+      setPreviewImage(files[0]);
+      return;
+    }
+
     let recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
     if (!recipientId) return;
 
@@ -1034,6 +1076,52 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       exit={{ opacity: 0, y: -20 }}
       className={containerClasses}
     >
+      {/* Reaction Floating Tray */}
+      <AnimatePresence>
+        {reactionAnchor && (
+          <>
+            <div 
+              className="fixed inset-0 z-[300]" 
+              onClick={() => setReactionAnchor(null)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 10 }}
+              style={{ 
+                left: Math.min(window.innerWidth - 300, Math.max(20, reactionAnchor.x - 150)),
+                top: reactionAnchor.y - 80 
+              }}
+              className="fixed z-[310] flex items-center gap-1 bg-[#2a3942] p-2 rounded-full border border-white/10 shadow-2xl"
+            >
+              {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
+                <button 
+                  key={emoji}
+                  onClick={() => {
+                    handleToggleReaction(reactionAnchor.messageId, emoji);
+                    setReactionAnchor(null);
+                  }}
+                  className="p-2 hover:scale-150 transition-transform text-2xl"
+                >
+                  {emoji}
+                </button>
+              ))}
+              <div className="w-px h-6 bg-white/10 mx-1" />
+              <button 
+                onClick={() => {
+                  const msg = messages.find(m => m.id === reactionAnchor.messageId);
+                  if (msg) setReplyingTo(msg);
+                  setReactionAnchor(null);
+                }}
+                className="p-2 hover:bg-white/5 rounded-full text-[#8696a0] hover:text-[#00a884]"
+              >
+                <CornerUpLeft size={20} />
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Sidebar / List View */}
       <div className={`w-full md:w-[420px] border-r border-[#ffffff05] flex flex-col bg-[#111b21] h-full ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
         {/* Sidebar Header */}

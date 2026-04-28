@@ -33,6 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (firebaseUser) {
+        // Automatically create/sync profile on login
+        createUserProfile(firebaseUser).catch(err => {
+          console.error("Profile sync error on login:", err);
+        });
+
         profileUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
           if (docSnap.exists()) {
             setProfile(docSnap.data() as UserProfile);
