@@ -1,6 +1,6 @@
 import { 
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit,
-  ref, uploadBytes, getDownloadURL, storage, getDocFromServer
+  ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting } from '../types';
@@ -115,34 +115,29 @@ export const uploadFile = async (file: File, folder: string = 'uploads'): Promis
 
 // User Profile Operations
 export const createUserProfile = async (user: FirebaseUser, additionalData: any = {}) => {
+  if (!user?.uid) return;
   const path = `users/${user.uid}`;
   try {
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (!userDoc.exists()) {
-      let role = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'client';
-      if (user.email?.toLowerCase() === 'aither2029@gmail.com') {
-        role = 'developer';
-      }
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        role: role,
-        status: 'online',
-        lastSeen: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        ...additionalData
-      });
-    } else {
-      await updateDoc(doc(db, 'users', user.uid), {
-        updatedAt: serverTimestamp(),
-        status: 'online',
-        lastSeen: serverTimestamp(),
-        ...additionalData
-      });
+    let role = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'client';
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
+    if (devEmails.includes(user.email?.toLowerCase() || '')) {
+      role = 'developer';
     }
+
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      role: role,
+      status: 'online',
+      lastSeen: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      ...additionalData
+    }, { merge: true });
+    
+    // Set createdAt only if it doesn't exist (handled by Firestore rules or manual check if needed, 
+    // but setDoc with merge is generally safer here)
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -595,6 +590,8 @@ export const sendMessage = async (projectId: string, messageData: any) => {
       status: 'sent',
       seen: false,
       attachments: messageData.attachments || [],
+      replyTo: messageData.replyTo || null,
+      reactions: {},
     });
 
     // Update project metadata for unread counts
@@ -677,6 +674,8 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       status: 'sent',
       seen: false,
       attachments: messageData.attachments || [],
+      replyTo: messageData.replyTo || null,
+      reactions: {},
     });
     
     return docRef.id;
@@ -1203,19 +1202,15 @@ export const toggleMessageReaction = async (projectId: string, messageId: string
   const docRef = doc(db, 'projects', projectId, 'messages', messageId);
   try {
     const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      const data = snap.data();
-      const reactions = data.reactions || {};
-      const emojiReactions = reactions[emoji] || [];
-      
-      if (emojiReactions.includes(userId)) {
-        reactions[emoji] = emojiReactions.filter((id: string) => id !== userId);
-      } else {
-        reactions[emoji] = [...emojiReactions, userId];
-      }
-      
-      await updateDoc(docRef, { reactions });
-    }
+    if (!snap.exists()) return;
+    
+    const reactions = snap.data().reactions || {};
+    const emojiReactions = reactions[emoji] || [];
+    const hasReacted = emojiReactions.includes(userId);
+
+    await updateDoc(docRef, {
+      [`reactions.${emoji}`]: hasReacted ? arrayRemove(userId) : arrayUnion(userId)
+    });
   } catch (error) {
     console.error("Error toggling reaction:", error);
   }
@@ -1226,19 +1221,15 @@ export const toggleDirectMessageReaction = async (recipientId: string, messageId
   const docRef = doc(db, 'conversations', conversationId, 'messages', messageId);
   try {
     const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      const data = snap.data();
-      const reactions = data.reactions || {};
-      const emojiReactions = reactions[emoji] || [];
-      
-      if (emojiReactions.includes(currentUserId)) {
-        reactions[emoji] = emojiReactions.filter((id: string) => id !== currentUserId);
-      } else {
-        reactions[emoji] = [...emojiReactions, currentUserId];
-      }
-      
-      await updateDoc(docRef, { reactions });
-    }
+    if (!snap.exists()) return;
+
+    const reactions = snap.data().reactions || {};
+    const emojiReactions = reactions[emoji] || [];
+    const hasReacted = emojiReactions.includes(currentUserId);
+
+    await updateDoc(docRef, {
+      [`reactions.${emoji}`]: hasReacted ? arrayRemove(currentUserId) : arrayUnion(currentUserId)
+    });
   } catch (error) {
     console.error("Error toggling direct reaction:", error);
   }

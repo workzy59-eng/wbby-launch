@@ -154,6 +154,19 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [previewImage, setPreviewImage] = useState<File | null>(null);
+  const [reactionAnchor, setReactionAnchor] = useState<{ x: number, y: number, messageId: string } | null>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLongPressStart = (messageId: string, x: number, y: number) => {
+    longPressTimer.current = setTimeout(() => {
+      setReactionAnchor({ x, y, messageId });
+    }, 500);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
 
   // New states for voice messages
   const [isRecording, setIsRecording] = useState(false);
@@ -318,15 +331,24 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!inputText.trim() && Object.keys(uploadProgress).length === 0) || !activeConversation || isSending) return;
+    if ((!inputText.trim() && !previewImage) || !activeConversation || isSending) return;
 
     const messageText = inputText.trim();
     const currentReplyingTo = replyingTo;
     const currentEditingMessage = editingMessage;
     const currentMentions = mentions;
+    const imageToUpload = previewImage;
     
     setIsSending(true);
     try {
+      let mediaUrl = null;
+      let type = 'text';
+
+      if (imageToUpload) {
+        mediaUrl = await uploadFile(imageToUpload);
+        type = 'image';
+      }
+
       if (currentEditingMessage) {
         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
         if (recipientId) {
@@ -340,24 +362,30 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         setEditingMessage(null);
       } else {
         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-        if (recipientId) {
-          await sendDirectMessage(recipientId, {
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || profile?.displayName || 'User',
-            text: messageText,
-            status: 'sent',
-            mentions: currentMentions,
-            type: 'text',
-            replyTo: currentReplyingTo ? {
-              id: currentReplyingTo.id,
-              text: currentReplyingTo.text,
-              senderName: currentReplyingTo.senderName
-            } : null
-          });
+        const msgData = {
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || profile?.displayName || 'User',
+          text: messageText || (type === 'image' ? 'Sent a photo' : ''),
+          status: 'sent',
+          mentions: currentMentions,
+          type: type,
+          mediaUrl: mediaUrl,
+          replyTo: currentReplyingTo ? {
+            id: currentReplyingTo.id,
+            text: currentReplyingTo.text,
+            senderName: currentReplyingTo.senderName
+          } : null
+        };
+
+        if (activeConversation.isProject) {
+          await sendMessage(activeConversation.id, msgData);
+        } else if (recipientId) {
+          await sendDirectMessage(recipientId, msgData);
         }
         setReplyingTo(null);
       }
       setInputText('');
+      setPreviewImage(null);
       setMentions([]);
       setShowMentions(false);
       // Clear typing status
@@ -816,6 +844,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             className={`flex items-end mb-0.5 group ${isMe ? 'justify-end' : 'justify-start'}`}
             onMouseEnter={() => setShowActions(m.id)}
             onMouseLeave={() => setShowActions(null)}
+            onMouseDown={(e) => handleLongPressStart(m.id, e.clientX, e.clientY)}
+            onMouseUp={handleLongPressEnd}
+            onTouchStart={(e) => handleLongPressStart(m.id, e.touches[0].clientX, e.touches[0].clientY)}
+            onTouchEnd={handleLongPressEnd}
           >
             <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] md:max-w-[70%] relative`}>
               {/* Message Actions Dropdown */}
@@ -1350,6 +1382,31 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                  ) : (
                     <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2 min-w-0">
                        <div className="flex-1 relative min-w-0">
+                         <AnimatePresence>
+                           {previewImage && (
+                             <motion.div 
+                               initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                               animate={{ opacity: 1, y: 0, scale: 1 }}
+                               exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                               className="absolute bottom-full left-0 mb-4 bg-[#2a3942] p-2 rounded-xl border border-white/5 shadow-2xl z-50 group"
+                             >
+                               <div className="relative w-32 h-32 rounded-lg overflow-hidden">
+                                 <img src={URL.createObjectURL(previewImage)} alt="Preview" className="w-full h-full object-cover" />
+                                 <button 
+                                   type="button"
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     setPreviewImage(null);
+                                   }}
+                                   className="absolute top-1 right-1 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+                                 >
+                                   <X size={14} />
+                                 </button>
+                               </div>
+                               <div className="absolute -bottom-1.5 left-4 w-3 h-3 bg-[#2a3942] rotate-45 border-r border-b border-white/5" />
+                             </motion.div>
+                           )}
+                         </AnimatePresence>
                          <input 
                            type="text"
                            value={inputText}
