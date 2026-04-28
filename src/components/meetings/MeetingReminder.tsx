@@ -18,7 +18,16 @@ export const MeetingReminder: React.FC<MeetingReminderProps> = ({ meetings }) =>
       meetings.forEach(meeting => {
         if (meeting.status !== 'Accepted' && meeting.status !== 'Pending') return;
         
-        const meetingTime = parseISO(`${meeting.date}T${meeting.time}`);
+        if (!meeting.date || !meeting.time) return;
+        
+        let meetingTime;
+        try {
+          meetingTime = parseISO(`${meeting.date}T${meeting.time}`);
+          if (isNaN(meetingTime.getTime())) return;
+        } catch (e) {
+          return;
+        }
+        
         const diff = differenceInMinutes(meetingTime, now);
         
         // 1 hour reminder
