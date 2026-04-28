@@ -304,6 +304,7 @@ export interface Message {
     text: string;
     senderName: string;
   };
+  reactions?: Record<string, string[]>; // emoji -> [uids]
 }
 
 export interface SystemSettings {

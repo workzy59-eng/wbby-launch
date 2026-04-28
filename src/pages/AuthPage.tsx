@@ -31,7 +31,10 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
     try {
-      await signInWithGoogle();
+      const cred = await signInWithGoogle();
+      if (cred && cred.user) {
+        await createUserProfile(cred.user);
+      }
       toast.success('Welcome back!');
     } catch (err: any) {
       setError(err.message);

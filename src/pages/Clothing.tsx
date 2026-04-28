@@ -78,7 +78,7 @@ export default function Clothing() {
           >
             RAW <br />
             <span className="text-transparent font-outline-2 text-white/20 italic">VIRTUE.</span>
-          </h1 >
+          </motion.h1>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

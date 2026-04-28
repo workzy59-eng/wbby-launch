@@ -1,18 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { initializeFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer, or } from 'firebase/firestore';
+import { initializeFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer, or, memoryLocalCache } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Log initialization for debugging
-console.log("🔥 Initializing Firebase with Project ID:", firebaseConfig.projectId);
+console.log("🔥 Initialized Firebase for Project:", firebaseConfig.projectId);
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Enable long polling to fix "Could not reach Firestore" errors in some network environments
+// Use memory cache to avoid "ID: ca9" assertion errors in restricted iframe environments
 export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
+  localCache: memoryLocalCache(),
 }, firebaseConfig.firestoreDatabaseId);
 
 export const storage = getStorage(app);

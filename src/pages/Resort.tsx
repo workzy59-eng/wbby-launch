@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'motion/react';
-import { Palmtree, MapPin, Star, ArrowRight, Instagram, Facebook, Twitter, Phone, Mail, Waves, Wind, Sun, Anchor } from 'lucide-react';
+import { Palmtree, MapPin, Star, ArrowRight, Instagram, Facebook, Twitter, Phone, Mail, Waves, Wind, Sun, Anchor, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRef } from 'react';
 

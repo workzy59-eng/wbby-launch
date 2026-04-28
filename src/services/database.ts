@@ -3,7 +3,7 @@ import {
   ref, uploadBytes, getDownloadURL, storage, getDocFromServer
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
-import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings } from '../types';
+import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting } from '../types';
 import { ADMIN_EMAIL } from '../constants';
 import { toast } from 'react-hot-toast';
 
@@ -14,6 +14,44 @@ export enum OperationType {
   LIST = 'list',
   GET = 'get',
   WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error Details:', JSON.stringify(errInfo, null, 2));
+  throw new Error(JSON.stringify(errInfo));
 }
 
 // File Upload Helper (Base64 conversion)
@@ -1128,12 +1166,16 @@ export const markInviteUsed = async (inviteId: string) => {
 
 // Activity Tracking
 export const createVisitSession = async (userId: string) => {
-  const docRef = await addDoc(collection(db, 'visit_sessions'), {
-    userId,
-    startTime: serverTimestamp(),
-    durationMinutes: 0
-  });
-  return docRef.id;
+  try {
+    const docRef = await addDoc(collection(db, 'visit_sessions'), {
+      userId,
+      startTime: serverTimestamp(),
+      durationMinutes: 0
+    });
+    return docRef.id;
+  } catch (error) {
+    return handleFirestoreError(error, OperationType.CREATE, 'visit_sessions');
+  }
 };
 
 export const endVisitSession = async (sessionId: string) => {
@@ -1195,3 +1237,48 @@ export const getPayments = async (developerId: string) => {
 
 export const verifyDeveloperInvite = getInviteByCode;
 export const useDeveloperInvite = markInviteUsed;
+
+export const toggleMessageReaction = async (projectId: string, messageId: string, emoji: string, userId: string) => {
+  const docRef = doc(db, 'projects', projectId, 'messages', messageId);
+  try {
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      const reactions = data.reactions || {};
+      const emojiReactions = reactions[emoji] || [];
+      
+      if (emojiReactions.includes(userId)) {
+        reactions[emoji] = emojiReactions.filter((id: string) => id !== userId);
+      } else {
+        reactions[emoji] = [...emojiReactions, userId];
+      }
+      
+      await updateDoc(docRef, { reactions });
+    }
+  } catch (error) {
+    console.error("Error toggling reaction:", error);
+  }
+};
+
+export const toggleDirectMessageReaction = async (recipientId: string, messageId: string, emoji: string, currentUserId: string) => {
+  const conversationId = getConversationId(currentUserId, recipientId);
+  const docRef = doc(db, 'conversations', conversationId, 'messages', messageId);
+  try {
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      const reactions = data.reactions || {};
+      const emojiReactions = reactions[emoji] || [];
+      
+      if (emojiReactions.includes(currentUserId)) {
+        reactions[emoji] = emojiReactions.filter((id: string) => id !== currentUserId);
+      } else {
+        reactions[emoji] = [...emojiReactions, currentUserId];
+      }
+      
+      await updateDoc(docRef, { reactions });
+    }
+  } catch (error) {
+    console.error("Error toggling direct reaction:", error);
+  }
+};

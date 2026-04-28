@@ -268,8 +268,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   }, [user.uid, profile]);
 
   useEffect(() => {
-    if (!profile) return;
-    const unsubscribe = subscribeToMeetings(profile?.role as 'admin' | 'client' | 'developer', user.uid, (data) => {
+    if (!profile?.role || !user?.uid) return;
+    const unsubscribe = subscribeToMeetings(profile.role as 'admin' | 'client' | 'developer', user.uid, (data) => {
       setMeetings(data);
     });
     return () => unsubscribe();
@@ -1016,8 +1016,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   {/* Today's Meetings Highlight */}
                   {meetings.filter(m => {
                     const today = new Date().toDateString();
-                    const mDate = new Date(m.startTime).toDateString();
-                    return today === mDate && m.status === 'scheduled';
+                    const mDate = new Date(m.date).toDateString();
+                    return today === mDate && m.status === 'Accepted';
                   }).length > 0 && (
                     <div className="bg-[#c7c42a] p-10 rounded-[3rem] text-black relative overflow-hidden group">
                       <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:scale-110 transition-transform">
@@ -1031,18 +1031,18 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           {meetings.filter(m => {
                             const today = new Date().toDateString();
-                            const mDate = new Date(m.startTime).toDateString();
-                            return today === mDate && m.status === 'scheduled';
+                            const mDate = new Date(m.date).toDateString();
+                            return today === mDate && m.status === 'Accepted';
                           }).map((meeting, idx) => (
                             <div key={idx} className="bg-black/10 border border-black/10 rounded-2xl p-6 backdrop-blur-md">
                               <div className="flex justify-between items-start mb-4">
                                 <div className="text-xl font-black uppercase italic tracking-tight">{meeting.title}</div>
                                 <div className="px-3 py-1 border border-black/20 rounded-full text-[8px] font-black uppercase">
-                                  {new Date(meeting.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  {meeting.time}
                                 </div>
                               </div>
                               <button 
-                                onClick={() => meeting.meetLink && window.open(meeting.meetLink, '_blank')}
+                                onClick={() => meeting.meetingLink && window.open(meeting.meetingLink, '_blank')}
                                 className="w-full py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2"
                               >
                                 Join Session <ArrowRight size={14} />

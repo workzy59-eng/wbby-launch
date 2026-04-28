@@ -77,6 +77,8 @@ import {
   markMessageAsDelivered,
   markMessageAsSeen,
   deleteDirectMessage,
+  toggleDirectMessageReaction,
+  toggleMessageReaction,
   searchUsers // Added
 } from '../services/database';
 import { formatDate, isSameDay } from '../lib/utils';
@@ -139,6 +141,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
@@ -405,6 +408,24 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     } else {
       setShowMentions(false);
     }
+  };
+
+  const handleToggleReaction = async (messageId: string, emoji: string) => {
+    if (!activeConversation) return;
+
+    try {
+      if (activeConversation.isProject) {
+        await toggleMessageReaction(activeConversation.id, messageId, emoji, currentUser.uid);
+      } else {
+        const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+        if (recipientId) {
+          await toggleDirectMessageReaction(recipientId, messageId, emoji, currentUser.uid);
+        }
+      }
+    } catch (e) {
+      console.error("Error toggling reaction:", e);
+    }
+    setShowReactionPicker(null);
   };
 
   const onEmojiClick = (emojiData: any) => {
@@ -750,9 +771,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const filteredConversations = conversations.filter(c => {
     // Search
+    const searchLow = searchQuery.toLowerCase();
     const matchesSearch = c.isProject 
-      ? c.project?.businessName.toLowerCase().includes(searchQuery.toLowerCase())
-      : c.recipientProfile?.displayName.toLowerCase().includes(searchQuery.toLowerCase());
+      ? (c.project?.businessName?.toLowerCase()?.includes(searchLow) ?? false)
+      : (c.recipientProfile?.displayName?.toLowerCase()?.includes(searchLow) ?? false);
     
     if (!matchesSearch) return false;
 
@@ -765,8 +787,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   });
 
   const renderMessages = () => {
+    const searchLow = messageSearchQuery.toLowerCase();
     const filteredMessages = messageSearchQuery
-      ? messages.filter(m => m.text.toLowerCase().includes(messageSearchQuery.toLowerCase()))
+      ? messages.filter(m => (m.text?.toLowerCase()?.includes(searchLow) ?? false))
       : messages;
 
     let lastDate = '';
@@ -797,13 +820,26 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] md:max-w-[70%] relative`}>
               {/* Message Actions Dropdown */}
               <AnimatePresence>
-                {isActionsVisible && !m.isDeleted && (
+                {(isActionsVisible || showReactionPicker === m.id) && !m.isDeleted && (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     className={`absolute top-0 ${isMe ? 'right-full mr-2' : 'left-full ml-2'} z-10 flex items-center gap-1 bg-[#2a3942] p-1 rounded-xl border border-white/10 shadow-2xl`}
                   >
+                    {/* Reaction Selection Menu */}
+                    <div className="flex items-center gap-0.5 border-r border-white/10 pr-1 mr-1">
+                      {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
+                        <button 
+                          key={emoji}
+                          onClick={() => handleToggleReaction(m.id, emoji)}
+                          className="p-1.5 hover:scale-125 transition-transform text-base"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                    
                     <button 
                       onClick={() => setReplyingTo(m)}
                       className="p-2 hover:bg-white/5 rounded-lg text-[#8696a0] hover:text-[#00a884] transition-all"
@@ -836,7 +872,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 )}
               </AnimatePresence>
 
-              <div className={`relative px-4 py-2 rounded-xl text-[14.5px] leading-[20px] shadow-sm ${
+              <div 
+                onClick={() => !m.isDeleted && setShowReactionPicker(showReactionPicker === m.id ? null : m.id)}
+                className={`relative px-4 py-2 rounded-xl text-[14.5px] leading-[20px] shadow-sm cursor-pointer hover:brightness-110 transition-all ${
                 isMe 
                   ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none' 
                   : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
@@ -903,6 +941,29 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           </span>
                         )}
                       </p>
+                    )}
+
+                    {/* Reactions Display */}
+                    {m.reactions && Object.keys(m.reactions).length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {Object.entries(m.reactions).map(([emoji, uids]) => uids.length > 0 && (
+                          <button
+                            key={emoji}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleReaction(m.id, emoji);
+                            }}
+                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                              uids.includes(currentUser.uid)
+                                ? 'bg-[#00a884]/20 border-[#00a884] text-[#00a884]'
+                                : 'bg-black/20 border-white/10 text-[#8696a0]'
+                            }`}
+                          >
+                            <span>{emoji}</span>
+                            <span>{uids.length}</span>
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </>
                 )}

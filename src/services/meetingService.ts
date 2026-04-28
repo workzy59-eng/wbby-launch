@@ -12,6 +12,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { handleFirestoreError, OperationType } from './database';
 import { Meeting, MeetingStatus, MeetingRequest } from '../types';
 
 const COLLECTION_NAME = 'meetings';
@@ -116,7 +117,7 @@ export const subscribeToMeetings = (
     })) as Meeting[];
     callback(meetings);
   }, (error) => {
-    console.error("Error subscribing to meetings:", error);
+    handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
   });
 };
 
