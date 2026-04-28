@@ -71,6 +71,7 @@ import {
   getProfiles,
   getAdmins,
   getUserProfile,
+  getProjectsAsync,
   setUserTyping,
   getTypingStatus,
   uploadFile,
@@ -150,6 +151,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [showUserList, setShowUserList] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
+  const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -204,8 +206,15 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       
       let filteredProfiles = profiles.filter(p => p.uid !== currentUser.uid) as UserProfile[];
       
-      // Messaging Restriction: Developers and Clients can only message Admin
-      if (profile?.role !== 'admin') {
+      // Messaging Restriction: 
+      // Admin: Can message everyone
+      // Developer: Can message Admin and Clients
+      // Client: Can message Admin (or their assigned Developer)
+      if (profile?.role === 'developer') {
+        filteredProfiles = filteredProfiles.filter(p => p.role === 'admin' || p.role === 'client');
+      } else if (profile?.role === 'client') {
+        filteredProfiles = filteredProfiles.filter(p => p.role === 'admin');
+      } else if (profile?.role !== 'admin') {
         filteredProfiles = filteredProfiles.filter(p => p.role === 'admin');
       }
       
@@ -231,19 +240,38 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
         // If client, ensure they can see the Admin even if no conversation exists yet
         if (profile?.role === 'client') {
+          // Fetch assigned developer if any
+          const userProjects = projects.length > 0 ? projects : (await getProjectsAsync(currentUser.uid));
+          const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
+          let devProfile: UserProfile | null = null;
+          
+          if (activeProjWithDev) {
+            const devId = activeProjWithDev.assignedTo || activeProjWithDev.developerId;
+            if (devId) {
+              const profile = await getUserProfile(devId);
+              if (profile) {
+                devProfile = profile as UserProfile;
+                setAssignedDeveloper(devProfile);
+              }
+            }
+          }
+
           const admins = await getAdmins();
           const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
           
-          if (mainAdmin) {
-            const adminConvExists = enrichedConvs.some(c => c.participants.includes(mainAdmin.uid));
+          // Target for "Webby Launch" Support: Assigned Dev if exists, else Admin
+          const supportTarget = devProfile || mainAdmin;
+
+          if (supportTarget) {
+            const adminConvExists = enrichedConvs.some(c => c.participants.includes(supportTarget.uid));
             if (!adminConvExists) {
               enrichedConvs.push({
                 id: 'new_admin',
                 lastMessage: 'Contact Webby Launch Support',
                 lastMessageAt: null,
                 lastSenderId: '',
-                participants: [currentUser.uid, mainAdmin.uid],
-                recipientProfile: mainAdmin
+                participants: [currentUser.uid, supportTarget.uid],
+                recipientProfile: supportTarget
               } as any);
             }
           }
@@ -350,6 +378,15 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         type = 'image';
       }
 
+      // Check if we need to mask sender name as "Webby Launch"
+      // This happens if a developer is messaging a client
+      const recipientProfile = activeConversation.recipientProfile;
+      let senderName = currentUser.displayName || profile?.displayName || 'User';
+      
+      if (profile?.role === 'developer' && recipientProfile?.role === 'client') {
+        senderName = 'Webby Launch';
+      }
+
       if (editingMessage) {
         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
         if (recipientId) {
@@ -365,7 +402,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
         const msgData = {
           senderId: currentUser.uid,
-          senderName: currentUser.displayName || profile?.displayName || 'User',
+          senderName: senderName,
           text: messageText || (type === 'image' ? 'Sent a photo' : ''),
           status: 'sent',
           mentions: currentMentions,
@@ -774,9 +811,16 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
           // Final message send
+          const recipientProfile = activeConversation.recipientProfile;
+          let senderName = currentUser.displayName || profile?.displayName || 'User';
+          
+          if (profile?.role === 'developer' && recipientProfile?.role === 'client') {
+            senderName = 'Webby Launch';
+          }
+
           const messageData = {
             senderId: currentUser.uid,
-            senderName: currentUser.displayName || profile?.displayName || 'User',
+            senderName: senderName,
             text: isImage ? 'Sent an image' : (isVideo ? 'Sent a video' : `Shared ${file.name}`),
             type: isImage ? 'image' : (isVideo ? 'video' : 'file'),
             mediaUrl: url,
@@ -809,6 +853,20 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const handleMessageAdmin = async () => {
     setIsLoading(true);
     try {
+      // Check if client has an assigned developer
+      if (profile?.role === 'client') {
+        const userProjects = projects.length > 0 ? projects : (await getProjectsAsync(currentUser.uid));
+        const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
+        if (activeProjWithDev) {
+          const devId = activeProjWithDev.assignedTo || activeProjWithDev.developerId;
+          const devProfile = await getUserProfile(devId!);
+          if (devProfile) {
+            startNewChat(devProfile as UserProfile);
+            return;
+          }
+        }
+      }
+
       const admins = await getAdmins();
       if (admins.length > 0) {
         // Find the main admin by email if possible, else take the first one
@@ -967,7 +1025,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 
                 {!isMe && isFirstOfGroup && (
                   <p className="text-[12px] font-bold text-[#34b7f1] mb-1">
-                    {m.senderName === 'SAI ROSHAN' ? 'Webby Launch' : m.senderName}
+                    {(m.senderName === 'SAI ROSHAN' || (profile?.role === 'client' && m.senderId === assignedDeveloper?.uid)) ? 'Webby Launch' : m.senderName}
                   </p>
                 )}
                 
@@ -1232,7 +1290,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <div className="divide-y divide-[#202c33]/20">
               {filteredConversations.map((conv) => {
                 const unread = conv.unreadCount?.[currentUser.uid] || 0;
-                const isWL = conv.recipientProfile?.email === 'workzy59@gmail.com';
+                const isAssignedDev = profile?.role === 'client' && conv.recipientProfile?.uid === assignedDeveloper?.uid;
+                const isWL = conv.recipientProfile?.email === 'workzy59@gmail.com' || isAssignedDev;
                 
                 return (
                   <button
@@ -1309,9 +1368,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 <div className="relative">
                    <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm md:text-lg shadow-md ${
                     activeConversation.isProject ? 'bg-[#c7c42a] text-black' : 
-                    activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'bg-[#ffc107] text-black' : 'bg-[#3b4a54] text-white'
+                    (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid)) ? 'bg-[#ffc107] text-black' : 'bg-[#3b4a54] text-white'
                   }`}>
-                    {activeConversation.isProject ? <Briefcase size={20} /> : (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'WL' : (activeConversation.recipientProfile?.displayName?.[0] || 'U'))}
+                    {activeConversation.isProject ? <Briefcase size={20} /> : ((activeConversation.recipientProfile?.email === 'workzy59@gmail.com' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid)) ? 'WL' : (activeConversation.recipientProfile?.displayName?.[0] || 'U'))}
                   </div>
                   {!activeConversation.isProject && activeConversation.recipientProfile?.status === 'online' && (
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#0ed145] border-2 border-[#202c33] rounded-full" />
@@ -1319,7 +1378,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </div>
                 <div>
                   <h3 className="font-medium text-[#e9edef] text-base leading-tight">
-                    {activeConversation.isProject ? (activeConversation.project?.businessName || 'Project Team') : (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' ? 'Webby Launch' : (activeConversation.recipientProfile?.displayName || 'User'))}
+                    {activeConversation.isProject ? (activeConversation.project?.businessName || 'Project Team') : ((activeConversation.recipientProfile?.email === 'workzy59@gmail.com' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid)) ? 'Webby Launch' : (activeConversation.recipientProfile?.displayName || 'User'))}
                   </h3>
                   <div className="flex items-center gap-2">
                     {typingUsers.length > 0 ? (

@@ -19,13 +19,16 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == 'workzy59@gmail.com' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        request.auth.token.email in ['workzy59@gmail.com', 'sain17296174@gmail.com'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
     }
     
     function isDeveloper() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer';
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer') ||
+        isAdmin()
+      );
     }
 
     function isSales() {
@@ -102,28 +105,28 @@ service cloud.firestore {
       allow get: if isSignedIn() && isValidId(projectId) && (
         isOwner(resource.data.userId) || 
         isAdmin() || 
-        (isDeveloper() && resource.data.developerId == request.auth.uid) ||
-        (resource.data.assignedTo == request.auth.uid)
+        isDeveloper()
       );
       allow list: if isSignedIn() && (
         isAdmin() || 
-        resource.data.userId == request.auth.uid || 
-        resource.data.developerId == request.auth.uid ||
-        resource.data.assignedTo == request.auth.uid
+        isDeveloper() ||
+        resource.data.userId == request.auth.uid
       );
       allow create: if isSignedIn() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
       allow update: if isSignedIn() && isValidId(projectId) && (
         isAdmin() ||
+        (isDeveloper() && (
+          resource.data.developerId == request.auth.uid || 
+          resource.data.assignedTo == request.auth.uid ||
+          !('developerId' in resource.data) || 
+          resource.data.developerId == null ||
+          resource.data.developerId == ""
+        )) ||
         (isOwner(existing().userId) && incoming().diff(existing()).affectedKeys().hasOnly([
           'isDeleted', 'updatedAt', 'businessName', 'description', 'onboardingData', 
           'primaryColor', 'secondaryColor', 'plan', 'paymentStatus', 'unreadCount', 
-          'lastMessage', 'lastMessageAt', 'lastSenderId'
-        ])) ||
-        (isDeveloper() && (existing().developerId == request.auth.uid || existing().assignedTo == request.auth.uid) && 
-         incoming().diff(existing()).affectedKeys().hasOnly([
-           'status', 'progress', 'previewUrl', 'updatedAt', 'unreadCount', 
-           'lastMessage', 'lastMessageAt', 'lastSenderId'
-         ]))
+          'lastMessage', 'lastMessageAt', 'lastSenderId', 'status'
+        ]))
       );
       allow delete: if isAdmin() && isValidId(projectId);
 
@@ -132,25 +135,23 @@ service cloud.firestore {
         allow get: if isSignedIn() && isValidId(messageId) && (
           get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
           isAdmin() ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid
+          isDeveloper()
         );
         allow list: if isSignedIn() && (
           isAdmin() ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid
+          isDeveloper() ||
+          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid
         );
         allow create: if isSignedIn() && isValidId(messageId) && isValidMessage(incoming()) && incoming().senderId == request.auth.uid && (
           get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
           isAdmin() ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid
+          isDeveloper()
         );
         allow update: if isSignedIn() && isValidId(messageId) && (
           isAdmin() ||
+          isDeveloper() ||
           (existing().senderId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['reactions', 'isDeleted', 'text', 'seen', 'status', 'seenTime', 'deliveredTime', 'deletedForEveryone', 'hiddenFor'])) ||
-          (isAdmin() || get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid || get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid) && incoming().diff(existing()).affectedKeys().hasOnly(['seen', 'status', 'seenTime', 'deliveredTime'])
+          (isAdmin() || isDeveloper() || get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid) && incoming().diff(existing()).affectedKeys().hasOnly(['seen', 'status', 'seenTime', 'deliveredTime'])
         );
       }
     }
@@ -159,7 +160,7 @@ service cloud.firestore {
     match /conversations/{conversationId} {
       allow get: if isSignedIn() && isValidId(conversationId) && (isAdmin() || request.auth.uid in resource.data.participants);
       allow list: if isSignedIn() && (isAdmin() || resource.data.participants.hasAny([request.auth.uid]));
-      allow create: if isSignedIn() && isValidId(conversationId) && request.auth.uid in incoming().participants;
+      allow create: if isSignedIn() && isValidId(conversationId) && (isAdmin() || isDeveloper() || request.auth.uid in incoming().participants);
       allow update: if isSignedIn() && isValidId(conversationId) && (isAdmin() || request.auth.uid in resource.data.participants) && 
                     incoming().diff(existing()).affectedKeys().hasOnly(['lastMessage', 'lastMessageAt', 'lastSenderId', 'unreadCount', 'updatedAt', 'participants']);
 
@@ -175,23 +176,23 @@ service cloud.firestore {
       }
       
       match /typing/{userId} {
-        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-        allow write: if isOwner(userId) && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow read: if isSignedIn() && (isAdmin() || isDeveloper() || request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
+        allow write: if isOwner(userId) && (isAdmin() || isDeveloper() || request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
       }
     }
 
     // --- Meetings ---
     match /meetings/{meetingId} {
-      allow get: if isSignedIn() && isValidId(meetingId) && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin());
-      allow list: if isSignedIn() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && isValidId(meetingId) && isValidMeeting(incoming()) && (incoming().clientId == request.auth.uid || isAdmin());
-      allow update: if isSignedIn() && isValidId(meetingId) && (isAdmin() || resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid);
+      allow get: if isSignedIn() && isValidId(meetingId) && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isDeveloper());
+      allow list: if isSignedIn() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isDeveloper());
+      allow create: if isSignedIn() && isValidId(meetingId) && isValidMeeting(incoming()) && (incoming().clientId == request.auth.uid || isAdmin() || isDeveloper());
+      allow update: if isSignedIn() && isValidId(meetingId) && (isAdmin() || isDeveloper() || resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid);
     }
     
     match /meeting_requests/{requestId} {
-      allow get, list: if isSignedIn() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow get, list: if isSignedIn() && (resource.data.clientId == request.auth.uid || isAdmin() || isDeveloper());
       allow create: if isSignedIn() && isValidId(requestId) && incoming().clientId == request.auth.uid;
-      allow update: if isAdmin() || (isSignedIn() && isValidId(requestId) && existing().clientId == request.auth.uid);
+      allow update: if isAdmin() || isDeveloper() || (isSignedIn() && isValidId(requestId) && existing().clientId == request.auth.uid);
     }
 
     // --- Developer Applications & Invites ---
@@ -204,7 +205,7 @@ service cloud.firestore {
     
     match /developer_invites/{inviteId} {
       allow get: if isSignedIn() && isValidId(inviteId);
-      allow list: if isSignedIn();
+      allow list: if isSignedIn() && (isAdmin() || isDeveloper());
       allow write: if isAdmin();
     }
 
