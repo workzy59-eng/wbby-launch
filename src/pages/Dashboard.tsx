@@ -165,21 +165,32 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
+  const [showAdminWelcome, setShowAdminWelcome] = useState(false);
 
   useEffect(() => {
     if (!profile || !user.email) return;
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     const isDeveloper = devEmails.includes(user.email.toLowerCase());
-    const hasSeenWelcome = localStorage.getItem(`dev_welcome_seen_${user.uid}`);
     
-    if (isDeveloper && !hasSeenWelcome) {
+    const hasSeenDevWelcome = localStorage.getItem(`dev_welcome_seen_${user.uid}`);
+    const hasSeenAdminWelcome = localStorage.getItem(`admin_welcome_seen_${user.uid}`);
+    
+    if (isDeveloper && !hasSeenDevWelcome) {
       setShowDeveloperWelcome(true);
+    } else if (isAdmin && !hasSeenAdminWelcome) {
+      setShowAdminWelcome(true);
     }
   }, [profile, user.email, user.uid]);
 
   const handleCloseWelcome = () => {
     setShowDeveloperWelcome(false);
-    localStorage.setItem(`dev_welcome_seen_${user.uid}`, 'true');
+    setShowAdminWelcome(false);
+    if (profile?.role === 'admin') {
+      localStorage.setItem(`admin_welcome_seen_${user.uid}`, 'true');
+    } else {
+      localStorage.setItem(`dev_welcome_seen_${user.uid}`, 'true');
+    }
   };
 
   useEffect(() => {
@@ -361,6 +372,74 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 >
                   Start Development
                 </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showAdminWelcome && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="w-full max-w-2xl relative overflow-hidden"
+            >
+              <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-20" />
+              
+              <div className="relative bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-12 md:p-20 text-center shadow-2xl">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-block px-4 py-1 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full mb-8 text-[#c7c42a] text-[10px] font-black uppercase tracking-[0.4em]"
+                >
+                  Root Access: Admin
+                </motion.div>
+                
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] mb-10"
+                >
+                  Welcome<br />
+                  <span style={{ color: '#c7c42a' }}>Admin 👑</span>
+                </motion.h2>
+                
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-white/40 text-sm font-medium leading-relaxed max-w-md mx-auto mb-12"
+                >
+                  Supreme control active. You can now manage all projects, developers, and system configurations.
+                </motion.p>
+                
+                <div className="flex flex-col md:flex-row gap-4 justify-center">
+                  <motion.button 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    onClick={handleCloseWelcome}
+                    className="group relative px-12 py-5 bg-[#c7c42a] text-black rounded-full font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(199,196,42,0.3)]"
+                  >
+                    View System
+                  </motion.button>
+                  <motion.button 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    onClick={() => navigate('/admin')}
+                    className="px-12 py-5 bg-white/5 border border-white/10 text-white rounded-full font-black uppercase italic tracking-widest hover:bg-white/10 transition-all"
+                  >
+                    Admin Panel
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

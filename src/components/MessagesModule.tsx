@@ -31,7 +31,9 @@ import {
   ArrowLeft,
   Loader2,
   Maximize2,
-  ExternalLink
+  ExternalLink,
+  Reply,
+  Download
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -886,10 +888,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             className={`flex items-end mb-0.5 group ${isMe ? 'justify-end' : 'justify-start'}`}
             onMouseEnter={() => setShowActions(m.id)}
             onMouseLeave={() => setShowActions(null)}
-            onMouseDown={(e) => handleLongPressStart(m.id, e.clientX, e.clientY)}
-            onMouseUp={handleLongPressEnd}
-            onTouchStart={(e) => handleLongPressStart(m.id, e.touches[0].clientX, e.touches[0].clientY)}
-            onTouchEnd={handleLongPressEnd}
+            onPointerDown={(e) => handleLongPressStart(m.id, e.clientX, e.clientY)}
+            onPointerUp={handleLongPressEnd}
+            onPointerLeave={handleLongPressEnd}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setReactionAnchor({ x: e.clientX, y: e.clientY, messageId: m.id });
+            }}
           >
             <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] md:max-w-[70%] relative`}>
               {/* Message Actions Dropdown */}
@@ -1020,7 +1025,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     {/* Reactions Display */}
                     {m.reactions && Object.keys(m.reactions).length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {Object.entries(m.reactions).map(([emoji, uids]) => uids.length > 0 && (
+                        {Object.entries(m.reactions).map(([emoji, uids]) => (Array.isArray(uids) && uids.length > 0) && (
                           <button
                             key={emoji}
                             onClick={(e) => {
@@ -1363,6 +1368,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 renderMessages()
               )}
             </div>
+            {renderReactionPopup()}
 
 
             {/* Input Area */}

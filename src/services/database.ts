@@ -118,9 +118,13 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   if (!user?.uid) return;
   const path = `users/${user.uid}`;
   try {
-    let role = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'client';
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
-    if (devEmails.includes(user.email?.toLowerCase() || '')) {
+    let role = 'client';
+    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com'];
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    
+    if (adminEmails.includes(user.email?.toLowerCase() || '')) {
+      role = 'admin';
+    } else if (devEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'developer';
     }
 
@@ -135,9 +139,6 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
       updatedAt: serverTimestamp(),
       ...additionalData
     }, { merge: true });
-    
-    // Set createdAt only if it doesn't exist (handled by Firestore rules or manual check if needed, 
-    // but setDoc with merge is generally safer here)
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
