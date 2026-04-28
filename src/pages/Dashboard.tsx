@@ -286,14 +286,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     if (!profile) return;
+    console.log("FETCHING PROJECTS FOR:", user.uid, "ROLE:", profile.role);
     const unsubscribe = getProjects((projectsData) => {
+      console.log("PROJECTS RECEIVED:", projectsData.length);
       setProjects(projectsData as Project[]);
       if (projectsData.length > 0 && !selectedProject) {
         setSelectedProject(projectsData[0] as Project);
       }
     }, user.uid, profile.role);
     return () => unsubscribe();
-  }, [user.uid, profile]);
+  }, [user.uid, profile?.role]);
 
   useEffect(() => {
     if (!profile?.role || !user?.uid) return;

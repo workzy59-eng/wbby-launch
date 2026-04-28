@@ -20,7 +20,8 @@ import {
   X,
   Plus,
   Wallet,
-  Video
+  Video,
+  Award
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
@@ -38,6 +39,7 @@ interface DeveloperDashboardProps {
 type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'meetings' | 'earnings' | 'settings';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -51,6 +53,17 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [paymentLinkPremium, setPaymentLinkPremium] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
+  const [settingsData, setSettingsData] = useState({
+    emailNotifications: true,
+    pushNotifications: true,
+    theme: 'dark',
+    upiId: '',
+    skills: '',
+    paymentLinks: {
+      oneTime: { basic: '', standard: '', premium: '' },
+      subscription: { basic: '', standard: '', premium: '' }
+    }
+  });
 
   useEffect(() => {
     const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
@@ -114,7 +127,13 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       setSettingsData({
         upiId: profile.paymentDetails?.upiId || '',
         skills: profile.devRole || '',
-        paymentLinks: profile.paymentLinks || {}
+        paymentLinks: (profile as any).paymentLinks || { 
+          oneTime: { basic: '', standard: '', premium: '' }, 
+          subscription: { basic: '', standard: '', premium: '' } 
+        },
+        emailNotifications: true,
+        pushNotifications: true,
+        theme: 'dark'
       });
     }
   }, [profile]);
@@ -1017,5 +1036,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       </AnimatePresence>
 
     </div>
+    </>
   );
 }

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FirebaseUser } from '../firebase';
+import { FirebaseUser, auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { serverTimestamp } from 'firebase/firestore';
 import { UserProfile } from '../types';
 import { Check, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
 
@@ -404,86 +406,55 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     
     setIsSubmitting(true);
     setError(null);
-    console.log('Starting project submission...');
+    console.log("STARTING SUBMISSION... AUTH CHECK IN PROGRESS");
 
-    // Use a one-time listener to get the most accurate auth state
+    // CRITICAL: Robust auth wait as requested by user
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      unsubscribe(); // Unsubscribe immediately
+      unsubscribe();
       
       if (!currentUser) {
-        setError('Your session has expired. Please log in again.');
+        console.error("AUTH FAILED IN SUBMIT");
+        setError("Your session is not ready. Please wait a moment and try again.");
         setIsSubmitting(false);
         return;
       }
 
-      console.log("Auth verified for submission:", currentUser.uid);
+      console.log("AUTH READY:", currentUser.uid);
 
       try {
         let finalProfileUrl = profile?.photoURL || '';
 
         if (profileFile) {
-          console.log('Uploading profile photo...');
           finalProfileUrl = await uploadFile(profileFile, 'profiles');
         }
 
         const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
-        
         const sanitizedOnboardingData = { ...formData };
-        const MAX_BLOB_SIZE = 50 * 1024;
-        ['logoUrl', 'documentsUrl'].forEach(key => {
-          if (typeof (sanitizedOnboardingData as any)[key] === 'string' && (sanitizedOnboardingData as any)[key].length > MAX_BLOB_SIZE) {
-            (sanitizedOnboardingData as any)[key] = '[Large Data Truncated]';
-          }
-        });
-
+        
         const projectData = {
           userId: currentUser.uid,
           userName: formData.name || '',
           userEmail: formData.email || '',
-          userPhone: formData.phone || '',
           businessName: formData.businessName || '',
-          businessNumber: formData.businessNumber || '',
-          businessEmail: formData.businessEmail || '',
-          businessPhone: formData.businessPhone || '',
-          addressLine: formData.addressLine || '',
-          city: formData.city || '',
-          state: formData.state || '',
-          pincode: formData.pincode || '',
-          country: formData.country || 'India',
           businessType: finalBusinessType || '',
           description: formData.description || '',
-          websiteName: formData.websiteName || '',
-          domain: formData.domain || '',
-          domainPreferences: formData.domainPreferences || ['', '', ''],
           primaryColor: formData.primaryColor || '#c7c42a',
           secondaryColor: formData.secondaryColor || '#000000',
-          tertiaryColor: formData.tertiaryColor || '',
-          selectedFeatures: formData.selectedFeatures || [],
           plan: formData.plan || 'basic',
-          billingCycle: formData.billingCycle || 'one-time',
-          paymentStatus: 'pending' as 'pending' | 'paid',
-          referenceWebsite: formData.referenceWebsite || '',
-          templateId: 'custom-dev',
-          estimatedCompletion: null,
-          referralSource: formData.referralSource || '',
-          salesCode: formData.salesCode || '',
-          logoUrl: formData.logoUrl || '',
-          documentsUrl: formData.documentsUrl || '',
+          paymentStatus: 'pending',
+          isDeleted: false,
           onboardingData: sanitizedOnboardingData 
         };
 
-        console.log("Saving project...");
+        console.log("WRITING PROJECT TO FIRESTORE...");
         const projectId = await createProject(projectData);
         
-        console.log("Updating profile...");
+        console.log("WRITING USER PROFILE TO FIRESTORE...");
         await createUserProfile(currentUser, {
           username: formData.username,
           phone: formData.phone,
           photoURL: finalProfileUrl,
           businessName: formData.businessName,
-          businessType: finalBusinessType,
-          businessEmail: formData.businessEmail,
-          businessPhone: formData.businessPhone,
           onboardingCompleted: true,
           lastProjectId: projectId
         });
@@ -491,17 +462,14 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         localStorage.removeItem('onboarding_data');
         localStorage.removeItem('onboarding_step');
         
-        toast.success("Project submitted successfully! Check your dashboard for next steps.");
+        toast.success("SUCCESS: DATA SAVED");
         setStep(9); 
         
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 5000);
+        setTimeout(() => navigate('/dashboard'), 5000);
       } catch (err: any) {
-        console.error("CRITICAL SUBMISSION ERROR:", err);
-        const errorMsg = err.message || 'Submission failed. Please try again.';
-        setError(errorMsg);
-        toast.error(errorMsg);
+        console.error("PERMISSION OR SYSTEM ERROR:", err);
+        setError("Submission failed. Permission denied or network issue.");
+        toast.error("ERROR: PLEASE TRY AGAIN");
         setIsSubmitting(false);
       }
     });

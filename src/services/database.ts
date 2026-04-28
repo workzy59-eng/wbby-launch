@@ -512,16 +512,20 @@ export const getProjectsAsync = async (userId?: string, developerId?: string) =>
 
 export const getProjects = (callback: (projects: any[]) => void, userId?: string, role?: string) => {
   const path = 'projects';
-  let q = query(collection(db, 'projects'), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+  // Use a more lenient query that doesn't strictly require isDeleted field for existing docs
+  let q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
   
   if (role === 'client' && userId) {
-    q = query(collection(db, 'projects'), where('userId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+    q = query(collection(db, 'projects'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
   } else if (role === 'developer' && userId) {
-    q = query(collection(db, 'projects'), where('developerId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+    q = query(collection(db, 'projects'), where('developerId', '==', userId), orderBy('createdAt', 'desc'));
   }
 
   return onSnapshot(q, (snapshot) => {
-    const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+    // Filter in-memory for isDeleted for better robustness with existing docs
+    const projects = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as Project))
+      .filter(p => p.isDeleted !== true);
     callback(projects);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, path);
