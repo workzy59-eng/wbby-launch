@@ -169,7 +169,9 @@ export default function App() {
                       profile ? (
                         (profile.role === 'admin' || 
                          user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
-                         user.email?.toLowerCase() === 'workzy59@gmail.com') ? (
+                         user.email?.toLowerCase() === 'workzy59@gmail.com' ||
+                         user.email?.toLowerCase() === 'aither2029@gmail.com' ||
+                         user.email?.toLowerCase() === 'sain17296174@gmail.com') ? (
                           <AdminPanel user={user} profile={profile} />
                         ) : profile.role === 'developer' ? (
                           <DeveloperDashboard user={user} profile={profile} />

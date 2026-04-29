@@ -66,6 +66,8 @@ import { HYPHENATED_NAME } from '../constants';
 import { generateAIImageFromMessage } from '../services/geminiService';
 import imageCompression from 'browser-image-compression';
 
+import FilePreviewEditor from './chat/FilePreviewEditor';
+
 interface ChatSystemProps {
   projectId?: string;
   isDirect?: boolean;
@@ -99,8 +101,10 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [showMentions, setShowMentions] = useState(false);
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentions, setMentions] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -374,25 +378,27 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0 || isSending) return;
     
+    const fileList = Array.from(files);
+    const images = fileList.filter(f => f.type.startsWith('image/'));
+    const others = fileList.filter(f => !f.type.startsWith('image/'));
+
+    if (images.length > 0) {
+      setPendingFiles(prev => [...prev, ...images]);
+    }
+
+    if (others.length > 0) {
+      // Direct upload for non-images
+      uploadNonImages(others);
+    }
+  };
+
+  const uploadNonImages = async (files: File[]) => {
     setIsSending(true);
-    
     try {
-      for (let i = 0; i < files.length; i++) {
-        let file = files[i];
-        const isImage = file.type.startsWith('image/');
-        const isVideo = file.type.startsWith('video/');
-        
-        // Validate size (10MB max)
+      for (let file of files) {
         if (file.size > 10 * 1024 * 1024) {
           alert(`File ${file.name} is too large. Max 10MB.`);
           continue;
-        }
-
-        // Compress images
-        if (isImage) {
-          try {
-            file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
-          } catch (e) { console.error(e); }
         }
 
         setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
@@ -404,8 +410,51 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           const messageData = {
             senderId: currentUser.uid,
             senderName: currentUser.displayName || profile?.displayName || 'User',
-            text: isImage ? 'Sent an image' : (isVideo ? 'Sent a video' : `Shared ${file.name}`),
-            type: isImage ? 'image' : (isVideo ? 'video' : 'file'),
+            text: `Shared ${file.name}`,
+            type: 'file',
+            mediaUrl: url,
+            fileName: file.name
+          };
+
+          if (isDirect && recipientUser) {
+            await sendDirectMessage(recipientUser.uid, messageData);
+          } else if (projectId) {
+            await sendMessage(projectId, messageData);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    } finally {
+      setIsSending(false);
+      setTimeout(() => setUploadProgress({}), 1000);
+    }
+  };
+
+  const handleSendFromEditor = async (data: { file: File; caption: string }[]) => {
+    setPendingFiles([]);
+    setIsSending(true);
+    
+    try {
+      for (let item of data) {
+        let file = item.file;
+        
+        // Compress images
+        try {
+          file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
+        } catch (e) { console.error(e); }
+
+        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
+        
+        try {
+          const url = await uploadFile(file);
+          setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+
+          const messageData = {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: item.caption || 'Sent an image',
+            type: 'image',
             mediaUrl: url,
             fileName: file.name
           };
@@ -476,6 +525,17 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       exit={{ opacity: 0, scale: 0.95 }}
       className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex flex-col font-sans h-[100dvh]"
     >
+      <AnimatePresence>
+        {pendingFiles.length > 0 && (
+          <FilePreviewEditor 
+            files={pendingFiles}
+            onCancel={() => setPendingFiles([])}
+            onSend={handleSendFromEditor}
+            onAddMore={() => fileInputRef.current?.click()}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <header className="px-4 md:px-10 py-4 md:py-8 border-b border-white/10 flex items-center justify-between bg-white/5 shrink-0">
         <div className="flex items-center gap-3 md:gap-6">
@@ -852,37 +912,21 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           className="max-w-5xl mx-auto flex items-center gap-2"
         >
           <input 
+            ref={fileInputRef}
             type="file" 
-            id="chat-image-upload" 
-            className="hidden" 
-            accept="image/*" 
-            multiple 
-            onChange={(e) => handleFileUpload(e.target.files)}
-          />
-          <input 
-            type="file" 
-            id="chat-file-upload" 
             className="hidden" 
             multiple 
             onChange={(e) => handleFileUpload(e.target.files)}
+            accept="image/*,video/*,.pdf,.doc,.docx"
           />
           
           <button 
             type="button"
-            onClick={() => document.getElementById('chat-image-upload')?.click()}
+            onClick={() => fileInputRef.current?.click()}
             className="p-2 md:p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
-            title="Upload Image"
+            title="Upload Files"
           >
             <ImageIcon size={20} className="md:w-6 md:h-6" />
-          </button>
-          
-          <button 
-            type="button"
-            onClick={() => document.getElementById('chat-file-upload')?.click()}
-            className="p-2 md:p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
-            title="Upload File"
-          >
-            <Paperclip size={20} className="md:w-6 md:h-6" />
           </button>
 
           <div className="flex-1 relative min-w-0">

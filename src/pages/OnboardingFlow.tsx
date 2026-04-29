@@ -243,7 +243,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         'Fast Loading Performance'
       ],
       plan: 'basic' as 'basic' | 'standard' | 'pro',
-      billingCycle: 'one-time' as 'one-time' | 'subscription',
+      billingCycle: 'one-time' as 'one-time',
       referenceWebsite: '',
       templateId: '',
       domainPreferences: ['', '', ''],

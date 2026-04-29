@@ -123,12 +123,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
     const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
-      // Prioritize developer role for these two so they can use the "3 devs" logic
-      if (['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) {
-        role = 'developer';
-      } else {
-        role = 'admin';
-      }
+      role = 'admin';
     } else if (devEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'developer';
     }

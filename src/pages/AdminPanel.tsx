@@ -40,7 +40,8 @@ import {
   Video,
   Download,
   Shield,
-  Database
+  Database,
+  Briefcase
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { 
@@ -153,7 +154,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers'>('dashboard');
 
   const [developerInvites, setDeveloperInvites] = useState<any[]>([]);
 
@@ -325,8 +326,10 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       const project = projects.find(p => p.id === projectId);
       await updateProject(projectId, { 
         status: 'Accepted',
-        progress: 10,
+        progress: 15,
         acceptedAt: serverTimestamp(),
+        developerId: user.uid,
+        assignedTo: user.uid,
         estimatedCompletion: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
       });
 
@@ -336,21 +339,30 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         await sendDirectMessage(project.userId, {
           senderId: user.uid,
           senderName: 'ADMIN',
-          text: `We have received your project ${project.businessName}, you can message me now`,
+          text: `👋 Hi, I've accepted your project ${project.businessName}. I'll leading the development and keep you updated here.`,
           status: 'sent'
         });
       }
-
-      // Auto action: Development Started
-      setTimeout(async () => {
-        await updateProject(projectId, { 
-          status: 'Development Started',
-          progress: 20
-        });
-      }, 2000);
+      toast.success('Project accepted and assigned to you!');
     } catch (error) {
       console.error("Error accepting project:", error);
+      toast.error('Failed to accept project');
     }
+  };
+
+  const handleDownloadPrompt = (project: Project) => {
+    if (!project.aiPrompt) {
+      toast.error('No AI prompt available for this project');
+      return;
+    }
+    const element = document.createElement("a");
+    const file = new Blob([project.aiPrompt], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${project.businessName}_prompt.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success('Prompt downloaded');
   };
 
   const handleUpdateProgress = async () => {
@@ -560,7 +572,7 @@ Generated on: ${new Date().toLocaleString()}
     activeProjects: projects.filter(p => !p.isDeleted && ['Accepted', 'Development Started', 'assigned', 'pending'].includes(p.status)).length,
     pendingRequests: projects.filter(p => p.status === 'Waiting for Review' && !p.isDeleted).length,
     completedProjects: projects.filter(p => p.status === 'Completed' && !p.isDeleted).length,
-    totalRevenue: projects.reduce((acc, p) => acc + (p.plan === 'Basic' ? 5000 : p.plan === 'Standard' ? 15000 : 30000), 0),
+    totalRevenue: projects.filter(p => !p.isDeleted && p.paymentStatus === 'paid').reduce((acc, p) => acc + (p.plan === 'Basic' ? 5000 : p.plan === 'Standard' ? 15000 : p.plan === 'Premium' ? 30000 : 0), 0),
   };
 
   const projectStatusData = [
@@ -749,7 +761,7 @@ Generated on: ${new Date().toLocaleString()}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {projects.filter(p => (p.status === 'Waiting for Review' || p.status === 'Rejected') && !p.isDeleted).map((p) => (
+        {projects.filter(p => !p.developerId && !p.isDeleted).map((p) => (
           <div key={p.id} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 flex flex-col h-full group hover:border-[#c7c42a]/30 transition-all">
             <div className="flex justify-between items-start mb-8">
               <div>
@@ -815,6 +827,20 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed mb-10 flex-1">{p.description}</p>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <button 
+                onClick={() => handleDownloadPrompt(p)}
+                className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all"
+              >
+                AI Prompt <Download size={14} />
+              </button>
+              <button 
+                onClick={() => handleDownloadDescription(p, 'txt')}
+                className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+              >
+                Details <User size={14} />
+              </button>
+            </div>
             <div className="flex gap-3">
               <button 
                 onClick={() => handleAccept(p.id)}
@@ -1220,6 +1246,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <td className="p-8 text-right">
                       <div className="flex justify-end gap-2">
                         <button 
+                          onClick={() => handleDownloadPrompt(p)}
+                          className="p-3 bg-white/5 rounded-xl text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all"
+                          title="Download AI Prompt"
+                        >
+                          <Download size={16} />
+                        </button>
+                        <button 
                           onClick={() => {
                             const client = users.find(u => u.uid === p.userId);
                             if (client) {
@@ -1269,6 +1302,88 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMyTasks = () => {
+    const myProjects = projects.filter(p => (p.developerId === user.uid || p.assignedTo === user.uid) && !p.isDeleted);
+    
+    return (
+      <div className="space-y-12">
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Missions</span>
+          <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">MY ASSIGNMENTS</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {myProjects.map((p) => (
+            <div key={p.id} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
+              <div className="flex justify-between items-start mb-8 relative z-10">
+                <div>
+                  <h3 className="text-2xl font-bold tracking-tighter text-white mb-1 uppercase italic">{p.businessName}</h3>
+                  <div className="flex items-center gap-2">
+                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName}</div>
+                    <div className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                      p.paymentStatus === 'paid' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'
+                    }`}>
+                      {p.paymentStatus || 'pending'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
+                    className="p-3 bg-white/5 rounded-xl text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all"
+                  >
+                    <ArrowRight size={18} />
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedProject(p); setShowChat(true); }}
+                    className="p-3 bg-white/5 rounded-xl text-white hover:bg-[#c7c42a] hover:text-black transition-all"
+                  >
+                    <MessageCircle size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <button onClick={() => handleDownloadPrompt(p)} className="flex items-center justify-center gap-2 py-3 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">
+                  AI Prompt <Download size={12} />
+                </button>
+                <button onClick={() => handleDownloadDescription(p, 'txt')} className="flex items-center justify-center gap-2 py-3 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">
+                  Details <User size={12} />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">
+                  <span>Progress</span>
+                  <span className="text-[#c7c42a]">{p.progress}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${p.progress}%` }}
+                    className="h-full bg-[#c7c42a]"
+                  />
+                </div>
+              </div>
+
+              <button 
+                onClick={() => { setSelectedProject(p); setNewProgress(p.progress || 0); setShowProgressModal(true); }}
+                className="w-full py-4 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-[#c7c42a] transition-all"
+              >
+                Update Mission Status
+              </button>
+            </div>
+          ))}
+          {myProjects.length === 0 && (
+            <div className="col-span-full py-32 text-center bg-white/5 rounded-[3rem] border border-dashed border-white/10">
+              <p className="text-white/20 text-sm font-bold uppercase tracking-[0.5em]">No missions assigned to you yet</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1677,13 +1792,16 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             <div className="flex items-center gap-2">
               <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
             </div>
-            <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">Admin Panel</div>
+            <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">
+              {['workzy59@gmail.com', 'aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '') ? 'Developer Dashboard' : 'Admin Panel'}
+            </div>
           </div>
         </div>
         <nav className="flex-1 p-6 space-y-3">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-            { id: 'requests', label: 'Requests', icon: FileText },
+            {id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard},
+            {id: 'my-tasks', label: 'My Projects', icon: Briefcase},
+            {id: 'requests', label: 'Job Pool', icon: FileText},
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'clients', label: 'Clients', icon: Users },
@@ -1733,6 +1851,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
             {activeTab === 'dashboard' && renderDashboard()}
+            {activeTab === 'my-tasks' && renderMyTasks()}
             {activeTab === 'requests' && renderRequests()}
             {activeTab === 'active' && renderActiveProjects()}
             {activeTab === 'projects' && renderProjectDetails()}
@@ -2669,29 +2788,6 @@ ${viewingProject.description}
                                 paymentLinks: {
                                   ...inviteForm.paymentLinks,
                                   oneTime: { ...inviteForm.paymentLinks.oneTime, [plan]: e.target.value }
-                                }
-                              })}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <p className="text-[9px] font-black text-white/40 uppercase tracking-widest ml-1">Subscription Links</p>
-                      <div className="grid grid-cols-3 gap-3">
-                        {['basic', 'standard', 'premium'].map((plan) => (
-                          <div key={plan} className="space-y-1">
-                            <label className="text-[7px] font-black text-white/20 uppercase tracking-widest ml-2">{plan}</label>
-                            <input 
-                              placeholder="URL"
-                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] text-white outline-none focus:border-[#c7c42a]/50 transition-all"
-                              value={inviteForm.paymentLinks.subscription[plan as keyof typeof inviteForm.paymentLinks.subscription]}
-                              onChange={(e) => setInviteForm({
-                                ...inviteForm,
-                                paymentLinks: {
-                                  ...inviteForm.paymentLinks,
-                                  subscription: { ...inviteForm.paymentLinks.subscription, [plan]: e.target.value }
                                 }
                               })}
                             />

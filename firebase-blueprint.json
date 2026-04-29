@@ -89,7 +89,7 @@
         "planId": { "type": "string" },
         "planName": { "type": "string" },
         "amount": { "type": "number" },
-        "type": { "type": "string", "enum": ["one-time", "subscription"] },
+        "type": { "type": "string", "enum": ["one-time"] },
         "status": { "type": "string", "enum": ["pending", "completed"] },
         "stripeSessionId": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }

@@ -135,8 +135,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         upiId: profile.paymentDetails?.upiId || '',
         skills: profile.devRole || '',
         paymentLinks: (profile as any).paymentLinks || { 
-          oneTime: { basic: '', standard: '', premium: '' }, 
-          subscription: { basic: '', standard: '', premium: '' } 
+          oneTime: { basic: '', standard: '', premium: '' }
         },
         emailNotifications: true,
         pushNotifications: true,
