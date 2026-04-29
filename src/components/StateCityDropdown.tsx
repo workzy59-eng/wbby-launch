@@ -43,9 +43,10 @@ interface StateCityDropdownProps {
   onSelect: (state: string, city: string) => void;
   initialState?: string;
   initialCity?: string;
+  error?: string;
 }
 
-export default function StateCityDropdown({ onSelect, initialState = '', initialCity = '' }: StateCityDropdownProps) {
+export default function StateCityDropdown({ onSelect, initialState = '', initialCity = '', error }: StateCityDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedState, setSelectedState] = useState(initialState);
   const [selectedCity, setSelectedCity] = useState(initialCity);
@@ -96,16 +97,26 @@ export default function StateCityDropdown({ onSelect, initialState = '', initial
     <div className="relative font-sans" ref={dropdownRef}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-white/10 transition-all"
+        className={`w-full bg-white/5 border ${error ? 'border-red-500/50' : 'border-white/10'} rounded-2xl px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-white/10 transition-all`}
       >
         <div className="flex items-center gap-3">
-          <MapPin size={20} className="text-[#c7c42a]" />
-          <span className="text-white font-medium">
+          <MapPin size={20} className={error ? 'text-red-500' : 'text-[#c7c42a]'} />
+          <span className={`font-medium ${error ? 'text-red-500/80' : 'text-white'}`}>
             {selectedState && selectedCity ? `${selectedCity}, ${selectedState}` : 'Select State & City'}
           </span>
         </div>
         <ChevronDown size={20} className={`text-white/40 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </div>
+      
+      {error && (
+        <motion.p 
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-[10px] font-black uppercase tracking-widest text-red-500 mt-2 ml-4 italic"
+        >
+          {error}
+        </motion.p>
+      )}
 
       <AnimatePresence>
         {isOpen && (

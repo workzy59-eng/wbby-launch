@@ -787,22 +787,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               </div>
             </div>
 
-            {/* Billing Toggle */}
-            <div className="flex items-center justify-center gap-8 py-8">
-              <button 
-                onClick={() => setBillingType('one-time')}
-                className={`text-xs font-black uppercase tracking-widest transition-all px-6 py-2 border-b-2 ${billingType === 'one-time' ? 'text-[#c7c42a] border-[#c7c42a]' : 'text-white/20 border-transparent hover:text-white/40'}`}
-              >
-                One-Time
-              </button>
-              <button 
-                onClick={() => setBillingType('subscription')}
-                className={`text-xs font-black uppercase tracking-widest transition-all px-6 py-2 border-b-2 ${billingType === 'subscription' ? 'text-[#c7c42a] border-[#c7c42a]' : 'text-white/20 border-transparent hover:text-white/40'}`}
-              >
-                Subscription
-              </button>
-            </div>
-
             <div className="flex flex-col items-center gap-4">
                <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -818,21 +802,21 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             {[
               { 
                 name: 'Basic', 
-                price: billingType === 'one-time' ? '5,000' : '999', 
+                price: '5,000', 
                 features: ['1–3 Pages Website', 'Basic Design', 'Mobile Responsive', 'Hosting Included', 'Free SEO Setup', 'Domain (1st Year Free)'],
                 popular: false,
                 color: 'text-white/40'
               },
               { 
                 name: 'Standard', 
-                price: billingType === 'one-time' ? '15,000' : '5,999', 
+                price: '15,000', 
                 features: ['5–7 Pages Website', 'Premium Design', 'Free SEO Setup', 'Meeting System', 'Priority Support', 'Domain (1st Year Free)', 'Custom Email Setup'],
                 popular: true,
                 color: 'text-[#c7c42a]'
               },
               { 
                 name: 'Custom', 
-                price: billingType === 'one-time' ? '30,000' : '9,999', 
+                price: '30,000', 
                 features: ['Full Custom Website', 'Admin Dashboard', 'Free SEO Setup', 'Meetings + Chat System', 'Fast Support', 'Domain (1st Year Free)', 'Advanced Analytics'],
                 popular: false,
                 color: 'text-white'
@@ -858,7 +842,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-serif italic text-white/20">₹</span>
                     <span className="text-8xl font-black tracking-tighter text-white">{plan.price}</span>
-                    <span className="text-xs font-black uppercase tracking-widest text-white/20 ml-2 italic">{billingType === 'one-time' ? 'Fixed' : '/mo'}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-white/20 ml-2 italic">Fixed</span>
                   </div>
 
                   <div className="w-12 h-px bg-white/10" />

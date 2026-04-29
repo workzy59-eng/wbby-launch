@@ -201,6 +201,9 @@ interface OnboardingFlowProps {
 }
 
 export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { signInWithGoogle } = useAuth();
 
   useEffect(() => {
     if (!user) {

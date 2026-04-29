@@ -80,7 +80,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'analytics'>('dashboard');
-  const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   
@@ -947,26 +946,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 <div className="space-y-10">
                   <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                     <div className="space-y-4">
-                      <h2 className="text-xs font-black text-[#c7c42a] uppercase tracking-[0.4em]">Billing & Subscription</h2>
+                      <h2 className="text-xs font-black text-[#c7c42a] uppercase tracking-[0.4em]">Billing Information</h2>
                       <h3 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Payments</h3>
-                    </div>
-                    
-                    {/* Billing Toggle */}
-                    <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
-                      <button 
-                        onClick={() => setBillingType('one-time')}
-                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'one-time' ? 'text-black' : 'text-white/40 hover:text-white'}`}
-                        style={billingType === 'one-time' ? { backgroundColor: primaryColor } : {}}
-                      >
-                        One-Time
-                      </button>
-                      <button 
-                        onClick={() => setBillingType('subscription')}
-                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${billingType === 'subscription' ? 'text-black' : 'text-white/40 hover:text-white'}`}
-                        style={billingType === 'subscription' ? { backgroundColor: primaryColor } : {}}
-                      >
-                        Monthly
-                      </button>
                     </div>
                   </div>
 
@@ -979,7 +960,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         <div className="space-y-1">
                           <div className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Current Plan</div>
                           <h4 className="text-3xl font-black uppercase italic tracking-tighter">
-                            {selectedProject?.plan || 'Basic'} {billingType === 'one-time' ? '(One-Time)' : '(Subscription)'}
+                            {selectedProject?.plan || 'Basic'} (One-Time)
                           </h4>
                         </div>
                         <div className="px-4 py-1.5 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
@@ -990,22 +971,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       <div className="space-y-4 relative z-10">
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-white/40 font-bold uppercase tracking-widest">
-                            {billingType === 'one-time' ? 'Total Cost' : 'Monthly Cost'}
+                            Total Cost
                           </span>
                           <span className="text-white font-black italic">
-                            {billingType === 'one-time' ? (
-                              selectedProject?.plan === 'Standard' ? '₹15,000' : selectedProject?.plan === 'Pro' ? '₹30,000' : '₹5,000'
-                            ) : (
-                              selectedProject?.plan === 'Standard' ? '₹5,999' : selectedProject?.plan === 'Premium' ? '₹9,999' : '₹999'
-                            )}/-
+                            {selectedProject?.plan === 'Standard' ? '₹15,000' : selectedProject?.plan === 'Pro' ? '₹30,000' : '₹5,000'}/-
                           </span>
                         </div>
-                        {billingType === 'subscription' && (
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-white/40 font-bold uppercase tracking-widest">Next Billing Date</span>
-                            <span className="text-white font-black italic">May 15, 2026</span>
-                          </div>
-                        )}
                       </div>
 
                       <div className="pt-4 relative z-10">
