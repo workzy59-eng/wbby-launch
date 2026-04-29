@@ -119,8 +119,8 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   const path = `users/${user.uid}`;
   try {
     let role = 'client';
-    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com'];
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'sain17296174@gmail.com'];
+    const devEmails = ['aither2029@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
@@ -128,6 +128,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
       role = 'developer';
     }
 
+    // PART 1: Strict merge using setDoc
     await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       email: user.email,
@@ -579,58 +580,34 @@ export const getConversationId = (uid1: string, uid2: string) => {
 };
 
 export const sendMessage = async (projectId: string, messageData: any) => {
+  if (!auth.currentUser) return;
   const path = `projects/${projectId}/messages`;
   try {
-    const text = messageData.text || '';
-    const type = messageData.type || (messageData.fileUrl || messageData.mediaUrl ? 'image' : 'text');
-    const mediaUrl = messageData.mediaUrl || messageData.fileUrl || messageData.imageUrl || null;
+    const text = messageData.text || null;
+    const type = messageData.type || (messageData.imageUrl || messageData.mediaUrl ? 'image' : 'text');
+    const imageUrl = messageData.imageUrl || messageData.mediaUrl || null;
 
     const docRef = await addDoc(collection(db, 'projects', projectId, 'messages'), {
-      ...messageData,
       text,
+      imageUrl,
+      senderId: auth.currentUser.uid,
+      senderName: messageData.senderName || auth.currentUser.displayName || 'User',
       type,
-      mediaUrl,
-      projectId,
       createdAt: serverTimestamp(),
-      status: 'sent',
       seen: false,
-      attachments: messageData.attachments || [],
-      replyTo: messageData.replyTo || null,
+      status: 'sent',
       reactions: {},
+      replyTo: messageData.replyTo || null,
     });
 
-    // Update project metadata for unread counts
-    const projectDoc = await getDoc(doc(db, 'projects', projectId));
-    if (projectDoc.exists()) {
-      const data = projectDoc.data();
-      const unreadCount = data.unreadCount || {};
-      
-      const participants = [data.userId, data.developerId, data.assignedTo].filter(id => id && id !== messageData.senderId);
-      const admins = await getAdmins();
-      admins.forEach(admin => {
-        if (admin.uid !== messageData.senderId) {
-          participants.push(admin.uid);
-        }
-      });
+    // Update project metadata
+    await updateDoc(doc(db, 'projects', projectId), {
+      lastMessage: text || (imageUrl ? '📷 Photo' : 'New message'),
+      lastMessageAt: serverTimestamp(),
+      lastSenderId: auth.currentUser.uid,
+      updatedAt: serverTimestamp(),
+    });
 
-      const uniqueParticipants = Array.from(new Set(participants));
-      uniqueParticipants.forEach(uid => {
-        unreadCount[uid] = (unreadCount[uid] || 0) + 1;
-      });
-
-      let lastMessagePreview = text;
-      if (type === 'image') lastMessagePreview = '📷 Image';
-      else if (type === 'video') lastMessagePreview = '🎥 Video';
-      else if (type === 'file') lastMessagePreview = '📁 File';
-
-      await updateDoc(doc(db, 'projects', projectId), {
-        lastMessage: lastMessagePreview,
-        lastMessageAt: serverTimestamp(),
-        lastSenderId: messageData.senderId,
-        unreadCount,
-        updatedAt: serverTimestamp(),
-      });
-    }
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);

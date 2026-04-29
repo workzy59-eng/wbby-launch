@@ -263,6 +263,8 @@ export interface Project {
   websiteUrl?: string;
   acceptedAt?: string | Timestamp;
   urlSubmittedAt?: string | Timestamp;
+  aiPrompt?: string;
+  startedAt?: string | Timestamp;
 }
 
 export interface Attachment {

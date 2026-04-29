@@ -1,14 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // 0. Global Safety Net
+    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
 
     // --- Helper Functions ---
-    
     function isSignedIn() {
       return request.auth != null;
     }
@@ -17,26 +15,24 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email in ['workzy59@gmail.com', 'sain17296174@gmail.com'] ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
-      );
-    }
-    
-    function isDeveloper() {
-      return isSignedIn() && (
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer') ||
-        isAdmin()
-      );
+    function getUserData(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
     }
 
-    function isSales() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'sales';
+    function getRole(uid) {
+      return getUserData(uid).role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getRole(request.auth.uid) == 'admin';
+    }
+
+    function isDeveloper() {
+      return isSignedIn() && getRole(request.auth.uid) == 'developer';
     }
 
     function isClient() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'client';
+      return isSignedIn() && getRole(request.auth.uid) == 'client';
     }
 
     function incoming() {
@@ -51,216 +47,93 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- Validation Blueprints ---
-
+    // --- Validation Helpers ---
     function isValidUser(data) {
-      return data.keys().hasAll(['uid', 'email']) &&
-             data.uid is string && data.uid.size() <= 128 &&
-             data.email is string && data.email.size() <= 128 &&
-             (!('role' in data) || data.role in ['admin', 'client', 'developer', 'sales']) &&
-             (!('updatedAt' in data) || data.updatedAt == request.time);
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid == request.auth.uid &&
+             data.role in ['client', 'developer', 'admin'] &&
+             data.email is string && data.email.size() <= 128;
     }
 
     function isValidProject(data) {
       return data.keys().hasAll(['userId', 'businessName', 'status']) &&
              data.userId is string && data.userId.size() <= 128 &&
              data.businessName is string && data.businessName.size() <= 200 &&
-             data.status is string && data.status.size() <= 50 &&
-             (!('updatedAt' in data) || data.updatedAt == request.time);
+             data.status in ['pending', 'assigned', 'in_progress', 'completed'] &&
+             (!('developerId' in data) || data.developerId == null || isValidId(data.developerId));
     }
 
     function isValidMessage(data) {
-      return data.keys().hasAll(['senderId', 'text', 'createdAt']) &&
-             data.senderId is string && data.senderId.size() <= 128 &&
-             data.text is string && data.text.size() <= 10000 &&
-             data.createdAt == request.time;
+      return data.keys().hasAll(['senderId', 'createdAt']) &&
+             data.senderId == request.auth.uid &&
+             data.createdAt == request.time &&
+             (!('text' in data) || (data.text is string && data.text.size() <= 5000)) &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000));
     }
 
-    function isValidMeeting(data) {
-      return data.keys().hasAll(['clientId', 'status']) &&
-             data.clientId is string && data.clientId.size() <= 128 &&
-             data.status is string && data.status.size() <= 50;
-    }
+    // --- Rules ---
 
-    // --- User Profiles ---
+    // User profiles
     match /users/{userId} {
-      allow get: if isSignedIn() && isValidId(userId);
-      allow list: if isSignedIn(); // Allow searching for admins/devs
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
       allow create: if isOwner(userId) && isValidUser(incoming());
-      allow update: if isSignedIn() && isValidId(userId) && (
-        isAdmin() ||
-        (isOwner(userId) && isValidUser(incoming()) && 
-         incoming().diff(existing()).affectedKeys().hasOnly([
-           'username', 'phone', 'photoURL', 'onboardingCompleted', 'lastProjectId', 
-           'paymentDetails', 'devRole', 'experience', 'skills', 'paymentLinks', 
-           'updatedAt', 'profileUrl', 'businessName', 'businessType', 'businessEmail', 
-           'businessPhone', 'emailNotifications', 'pushNotifications', 'theme', 'upiId',
-           'status', 'lastSeen', 'displayName'
-         ]))
+      allow update: if isOwner(userId) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'onboardingCompleted', 'updatedAt']) ||
+        isAdmin()
       );
     }
 
-    // --- Projects ---
+    // Projects
     match /projects/{projectId} {
-      allow get: if isSignedIn() && isValidId(projectId) && (
+      allow get: if isSignedIn() && (
         isOwner(resource.data.userId) || 
-        isAdmin() || 
-        isDeveloper()
+        isOwner(resource.data.developerId) ||
+        isAdmin()
       );
+      
       allow list: if isSignedIn() && (
         isAdmin() || 
-        isDeveloper() ||
+        (isDeveloper() && resource.data.developerId == request.auth.uid) ||
         resource.data.userId == request.auth.uid
       );
-      allow create: if isSignedIn() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
-      allow update: if isSignedIn() && isValidId(projectId) && (
+      
+      allow create: if isClient() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
+      
+      allow update: if isSignedIn() && (
         isAdmin() ||
         (isDeveloper() && (
-          resource.data.developerId == request.auth.uid || 
-          resource.data.assignedTo == request.auth.uid ||
-          !('developerId' in resource.data) || 
-          resource.data.developerId == null ||
-          resource.data.developerId == ""
+          // Allow claiming if unassigned
+          (!('developerId' in existing()) || existing().developerId == null) &&
+          incoming().developerId == request.auth.uid &&
+          incoming().status == 'in_progress'
+        ) || (
+          // Allow updates if assigned
+          existing().developerId == request.auth.uid &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'progress', 'updatedAt', 'lastMessage', 'lastMessageAt', 'unreadCount'])
         )) ||
-        (isOwner(existing().userId) && incoming().diff(existing()).affectedKeys().hasOnly([
-          'isDeleted', 'updatedAt', 'businessName', 'description', 'onboardingData', 
-          'primaryColor', 'secondaryColor', 'plan', 'paymentStatus', 'unreadCount', 
-          'lastMessage', 'lastMessageAt', 'lastSenderId', 'status'
-        ]))
+        (isOwner(existing().userId) && 
+          incoming().diff(existing()).affectedKeys().hasOnly(['businessName', 'aiPrompt', 'clientDetails', 'updatedAt', 'unreadCount'])
+        )
       );
-      allow delete: if isAdmin() && isValidId(projectId);
 
       // Project Messages
       match /messages/{messageId} {
-        allow get: if isSignedIn() && isValidId(messageId) && (
-          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
-          isAdmin() ||
-          isDeveloper()
-        );
-        allow list: if isSignedIn() && (
-          isAdmin() ||
-          isDeveloper() ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid
-        );
-        allow create: if isSignedIn() && isValidId(messageId) && isValidMessage(incoming()) && incoming().senderId == request.auth.uid && (
-          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
-          isAdmin() ||
-          isDeveloper()
-        );
-        allow update: if isSignedIn() && isValidId(messageId) && (
-          isAdmin() ||
-          isDeveloper() ||
-          (existing().senderId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['reactions', 'isDeleted', 'text', 'seen', 'status', 'seenTime', 'deliveredTime', 'deletedForEveryone', 'hiddenFor'])) ||
-          ((isAdmin() || isDeveloper() || get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid) && incoming().diff(existing()).affectedKeys().hasOnly(['reactions', 'seen', 'status', 'seenTime', 'deliveredTime']))
-        );
+        function canChat() {
+          let project = get(/databases/$(database)/documents/projects/$(projectId)).data;
+          return (request.auth.uid == project.userId || request.auth.uid == project.developerId) && 
+                 (project.developerId != null);
+        }
+
+        allow read: if isSignedIn() && canChat();
+        allow create: if isSignedIn() && canChat() && isValidMessage(incoming());
+        allow update, delete: if false;
       }
     }
 
-    // --- Conversations (Direct Messages) ---
-    match /conversations/{conversationId} {
-      allow get: if isSignedIn() && isValidId(conversationId) && (isAdmin() || request.auth.uid in resource.data.participants);
-      allow list: if isSignedIn() && (isAdmin() || resource.data.participants.hasAny([request.auth.uid]));
-      allow create: if isSignedIn() && isValidId(conversationId) && (isAdmin() || isDeveloper() || request.auth.uid in incoming().participants);
-      allow update: if isSignedIn() && isValidId(conversationId) && (isAdmin() || request.auth.uid in resource.data.participants) && 
-                    incoming().diff(existing()).affectedKeys().hasOnly(['lastMessage', 'lastMessageAt', 'lastSenderId', 'unreadCount', 'updatedAt', 'participants']);
-
-      match /messages/{messageId} {
-        allow get: if isSignedIn() && isValidId(messageId) && (isAdmin() || request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
-        allow list: if isSignedIn() && (isAdmin() || get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants.hasAny([request.auth.uid]));
-        allow create: if isSignedIn() && isValidId(messageId) && isValidMessage(incoming()) && incoming().senderId == request.auth.uid && (isAdmin() || request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
-        allow update: if isSignedIn() && isValidId(messageId) && (
-          isAdmin() ||
-          (existing().senderId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['reactions', 'isDeleted', 'text', 'seen', 'status', 'seenTime', 'deliveredTime', 'deletedForEveryone', 'hiddenFor'])) ||
-          (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants) && incoming().diff(existing()).affectedKeys().hasOnly(['reactions', 'seen', 'status', 'seenTime', 'deliveredTime'])
-        );
-      }
-      
-      match /typing/{userId} {
-        allow read: if isSignedIn() && (isAdmin() || isDeveloper() || request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
-        allow write: if isOwner(userId) && (isAdmin() || isDeveloper() || request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
-      }
-    }
-
-    // --- Meetings ---
-    match /meetings/{meetingId} {
-      allow get: if isSignedIn() && isValidId(meetingId) && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isDeveloper());
-      allow list: if isSignedIn() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isDeveloper());
-      allow create: if isSignedIn() && isValidId(meetingId) && isValidMeeting(incoming()) && (incoming().clientId == request.auth.uid || isAdmin() || isDeveloper());
-      allow update: if isSignedIn() && isValidId(meetingId) && (isAdmin() || isDeveloper() || resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid);
-    }
-    
-    match /meeting_requests/{requestId} {
-      allow get, list: if isSignedIn() && (resource.data.clientId == request.auth.uid || isAdmin() || isDeveloper());
-      allow create: if isSignedIn() && isValidId(requestId) && incoming().clientId == request.auth.uid;
-      allow update: if isAdmin() || isDeveloper() || (isSignedIn() && isValidId(requestId) && existing().clientId == request.auth.uid);
-    }
-
-    // --- Developer Applications & Invites ---
-    match /developer_requests/{requestId} {
-      allow create: if isSignedIn();
-      allow get: if isSignedIn() && isValidId(requestId) && (isAdmin() || resource.data.userId == request.auth.uid || resource.data.email == request.auth.token.email);
-      allow list: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid || resource.data.email == request.auth.token.email);
-      allow update, delete: if isAdmin();
-    }
-    
-    match /developer_invites/{inviteId} {
-      allow get: if isSignedIn() && isValidId(inviteId);
-      allow list: if isSignedIn() && (isAdmin() || isDeveloper());
-      allow write: if isAdmin();
-    }
-
-    // --- Visit Sessions ---
-    match /visit_sessions/{sessionId} {
-      allow create: if isSignedIn() && (incoming().userId == request.auth.uid || !('userId' in incoming()));
-      allow get: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
-      allow list: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
-      allow update: if isSignedIn() && (isAdmin() || existing().userId == request.auth.uid);
-    }
-    
-    // --- Leave Requests & Attendance ---
-    match /leave_requests/{requestId} {
-      allow create: if isSignedIn() && isValidId(requestId) && incoming().userId == request.auth.uid;
-      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow update: if isAdmin();
-    }
-    
-    match /attendance/{attendanceId} {
-      allow create: if isSignedIn() && isValidId(attendanceId) && incoming().userId == request.auth.uid;
-      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow update: if isAdmin();
-    }
-    
-    // --- Leads & Sales ---
-    match /leads/{leadId} {
-      allow read, write: if isAdmin() || isSales();
-    }
-    
-    match /sales_applications/{applicationId} {
-      allow create: if isSignedIn();
-      allow read, update, delete: if isAdmin();
-    }
-
-    // --- Global Read Only Collections ---
-    match /blog_posts/{postId} {
+    // Settings (Public Read, Admin Write)
+    match /settings/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /system_settings/{settingId} {
-      allow read: if true;
-      allow write: if isAdmin() || isSignedIn();
-    }
-
-    // --- Payments ---
-    match /payments/{paymentId} {
-      allow get: if isSignedIn() && isValidId(paymentId) && (resource.data.userId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin());
-      allow list: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid || resource.data.developerId == request.auth.uid);
-      allow write: if isAdmin();
-    }
-
-    match /commissions/{commissionId} {
-      allow get: if isSignedIn() && isValidId(commissionId) && (resource.data.salesId == request.auth.uid || isAdmin());
-      allow list: if isSignedIn() && (isAdmin() || resource.data.salesId == request.auth.uid);
       allow write: if isAdmin();
     }
   }

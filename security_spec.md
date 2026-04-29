@@ -1,49 +1,34 @@
-# Firebase Security Specification
+# Firebase Security Specification - WebbyLaunch SaaS
 
 ## 1. Data Invariants
-- **Users**: A user profile can only be created by the authenticated user with the matching UID. Only Admins can change a user's role to 'admin' or 'developer'.
-- **Projects**: A project must have a valid `userId`. Only the owner (client) or an admin can access/modify the project. Assigned developers can also access assigned projects.
-- **Messages**: Messages must belong to a project or a conversation. The senderId must match the authenticated user.
-- **Conversations**: Participants must be listed in the `participants` array. Access is strictly restricted to participants.
-- **Meetings**: Scheduled between a client and an admin. Both must be able to view/update status.
-- **Leads/Applications**: Strictly for internal use (Sales/Admins).
+- A **User** profile must exist for every authenticated user.
+- A **Project** must have a `userId` (client).
+- A **Project** can optionally have a `developerId` (once assigned).
+- A **Message** in a project must belong to a project that exists.
+- A **Message** can only be sent if the developer is assigned to the project.
+- **Roles** are strictly: `client`, `developer`, `admin`.
 
-## 2. The "Dirty Dozen" Payloads
-1. **Identity Spoofing**: `{"uid": "attacker_id", "email": "victim@example.com"}` written to `/users/victim_id`.
-2. **Privilege Escalation**: `{"role": "admin"}` written to `/users/attacker_id` by the attacker.
-3. **Ghost Project**: Creating a project with `userId: "other_user_id"`.
-4. **Relational Break**: Creating a message for a project the user doesn't belong to.
-5. **ID Poisoning**: Document ID `../../bad/path` or a 1MB string as ID.
-6. **Immutable Override**: Changing `createdAt` or `userId` on an existing project.
-7. **Shadow Field**: Adding `isApproved: true` to a developer application via a client update.
-8. **PII Scraping**: Trying to `list` the `/users` collection without being an admin.
-9. **Query Scrape**: Querying `/projects` without a `where` clause on `userId` (rules must block).
-10. **State Skipping**: Moving a project from "Pending" directly to "Completed" without internal steps (if enforced).
-11. **Massive Payload**: Writing a 1MB string into a chat message text field.
-12. **Orphaned Message**: Creating a message in a conversation that doesn't exist.
+## 2. Access Control Matrix
+| Collection | Path | Read | Create | Update | Delete |
+|------------|------|------|--------|--------|--------|
+| users | `/users/{uid}` | Signed In | Owner | Owner (Filtered) | Admin |
+| projects | `/projects/{pid}` | Owner / Assigned Dev / Admin | Signed In (initially as client) | Owner / Assigned Dev / Admin | Admin |
+| messages | `/projects/{pid}/messages/{mid}` | Owner / Assigned Dev | Owner / Assigned Dev | None (Immutable) | None |
 
-## 3. The Test Runner (firestore.rules.test.ts)
-```typescript
-import { assertFails, assertSucceeds, initializeTestEnvironment, RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import { setDoc, doc, getDoc } from 'firebase/firestore';
+## 3. The "Dirty Dozen" Payloads (Denial Tests)
+1. **Identity Spoofing**: Attempt to create a user profile with a different `uid` than `request.auth.uid`.
+2. **Role Escalation**: Attempt to update own role to `admin`.
+3. **Project Hijack**: Attempt to assign self as `developerId` to a project already assigned to someone else.
+4. **Unauthorized Read**: Client trying to read messages of a project they don't own.
+5. **Unauthorized Write**: Developer trying to send a message to a project they are not assigned to.
+6. **Orphaned Message**: Create a message in a non-existent project ID.
+7. **Bypass Assignment**: Send message to a project where `developerId` is null.
+8. **Shadow Field Injection**: Update project with `extraField: "hack"`.
+9. **Timestamp Spoofing**: Provide a future/past `createdAt` instead of `request.time`.
+10. **Admin Infiltration**: Admin trying to read messages (if strictly blocked as per user request).
+11. **PII Leak**: Non-admin reading list of all users' private details.
+12. **Denial of Wallet**: Sending a 1MB string message.
 
-let testEnv: RulesTestEnvironment;
-
-beforeAll(async () => {
-  testEnv = await initializeTestEnvironment({
-    projectId: 'webbylaunch-test',
-    firestore: { rules: await fs.readFile('firestore.rules', 'utf8') },
-  });
-});
-
-test('Identity Spoofing: should deny writing to other user profile', async () => {
-  const alice = testEnv.authenticatedContext('alice');
-  await assertFails(setDoc(doc(alice.firestore(), 'users/bob'), { name: 'Alice' }));
-});
-
-test('Privilege Escalation: client should not be able to make themselves admin', async () => {
-  const alice = testEnv.authenticatedContext('alice');
-  await assertFails(setDoc(doc(alice.firestore(), 'users/alice'), { role: 'admin' }, { merge: true }));
-});
-// ... (additional tests mapping to Dirty Dozen)
-```
+## 4. Test Runner Plan
+- Implement `firestore.rules.test.ts` (conceptual).
+- Verify all payloads above result in `PERMISSION_DENIED`.
