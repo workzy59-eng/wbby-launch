@@ -537,14 +537,14 @@ export const getUnassignedProjects = (callback: (projects: Project[]) => void) =
   const path = 'projects';
   const q = query(
     collection(db, 'projects'), 
+    where('developerId', '==', null),
     where('isDeleted', '==', false), 
     orderBy('createdAt', 'desc')
   );
 
   return onSnapshot(q, (snapshot) => {
     const projects = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() } as Project))
-      .filter(p => !p.developerId && !p.assignedTo);
+      .map(doc => ({ id: doc.id, ...doc.data() } as Project));
     callback(projects);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, path);
