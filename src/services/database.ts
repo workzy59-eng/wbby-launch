@@ -488,7 +488,10 @@ export const createProject = async (projectData: any) => {
 export const updateProject = async (projectId: string, updateData: any) => {
   const path = `projects/${projectId}`;
   try {
-    await updateDoc(doc(db, 'projects', projectId), updateData);
+    await updateDoc(doc(db, 'projects', projectId), {
+      ...updateData,
+      updatedAt: serverTimestamp()
+    });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -498,11 +501,23 @@ export const getProjectsAsync = async (userId?: string, developerId?: string) =>
   const path = 'projects';
   try {
     let q = query(collection(db, 'projects'), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
-    if (userId) {
+    
+    // If not admin and no specific filter, force filter by current user
+    if (!userId && !developerId) {
+      const userDoc = auth.currentUser ? await getDoc(doc(db, 'users', auth.currentUser.uid)) : null;
+      const role = userDoc?.exists() ? userDoc.data().role : 'client';
+      const isAdmin = role === 'admin' || auth.currentUser?.email === ADMIN_EMAIL;
+      
+      if (!isAdmin && auth.currentUser) {
+        // Default to client filter if not admin
+        q = query(collection(db, 'projects'), where('userId', '==', auth.currentUser.uid), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+      }
+    } else if (userId) {
       q = query(collection(db, 'projects'), where('userId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
     } else if (developerId) {
       q = query(collection(db, 'projects'), where('developerId', '==', developerId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
     }
+    
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
   } catch (error) {
@@ -943,7 +958,6 @@ export const getConversations = (userId: string, callback: (conversations: any[]
 
 // System Settings Operations
 export const getSystemSettings = async () => {
-  const path = 'system_settings/default';
   const defaultSettings: SystemSettings = {
     id: 'default',
     requiredFields: {
@@ -970,35 +984,28 @@ export const getSystemSettings = async () => {
   };
 
   try {
-    const docSnap = await getDocFromServer(doc(db, 'system_settings', 'default'));
+    const docRef = doc(db, 'system_settings', 'default');
+    const docSnap = await getDoc(docRef);
+    
     if (docSnap.exists()) {
       return docSnap.data() as SystemSettings;
-    } else {
-      console.log('System settings doc does not exist, creating default...');
-      // Only admins can create settings if they don't exist
-      try {
-        if (auth.currentUser) {
-          // Check if admin before attempting setDoc to avoid noisy permission errors
-          console.log('Checking if user is admin to initialize settings...', auth.currentUser.uid);
-          const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-          if (userDoc.exists() && userDoc.data().role === 'admin') {
-            await setDoc(doc(db, 'system_settings', 'default'), defaultSettings);
-            console.log('System settings initialized successfully');
-          } else {
-            console.log('User is not an admin, skipping settings initialization');
-          }
+    }
+    
+    // If not exists, try to create ONLY if admin and logged in
+    if (auth.currentUser) {
+      const isAdmin = auth.currentUser.email === ADMIN_EMAIL;
+      if (isAdmin) {
+        try {
+          await setDoc(docRef, defaultSettings);
+        } catch (e) {
+          console.warn("Silent failure initializing settings:", e);
         }
-      } catch (e) {
-        console.warn('Could not initialize system settings (permission or other):', e);
       }
-      return defaultSettings;
     }
+    
+    return defaultSettings;
   } catch (error) {
-    console.error('Error fetching system settings, using defaults:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', error.message);
-    }
-    // Don't throw here to allow the app to boot even if settings are inaccessible
+    console.warn('System settings inaccessible, using defaults');
     return defaultSettings;
   }
 };
@@ -1142,17 +1149,17 @@ export const endVisitSession = async (sessionId: string) => {
 };
 
 export const getVisitSessions = async (userId?: string, role?: string) => {
-  const isAdmin = role === 'admin' || role === 'developer' || auth.currentUser?.email === ADMIN_EMAIL;
+  const isTrulyAdmin = role === 'admin' || auth.currentUser?.email === ADMIN_EMAIL;
   
   let q;
-  if (isAdmin) {
+  if (isTrulyAdmin) {
     if (userId) {
       q = query(collection(db, 'visit_sessions'), where('userId', '==', userId), orderBy('startTime', 'desc'));
     } else {
       q = query(collection(db, 'visit_sessions'), orderBy('startTime', 'desc'));
     }
   } else {
-    // Force filter by current user if not admin
+    // Force filter by current user if not truly admin
     q = query(collection(db, 'visit_sessions'), where('userId', '==', auth.currentUser?.uid), orderBy('startTime', 'desc'));
   }
   
