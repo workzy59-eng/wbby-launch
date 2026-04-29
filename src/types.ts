@@ -96,11 +96,6 @@ export interface UserProfile {
       standard: string;
       premium: string;
     };
-    subscription: {
-      basic: string;
-      standard: string;
-      premium: string;
-    };
   };
 }
 
@@ -162,7 +157,7 @@ export interface Payment {
   planId: string;
   planName: string;
   amount: number;
-  type: 'one-time' | 'subscription';
+  type: 'one-time';
   status: 'pending' | 'completed';
   stripeSessionId?: string;
   createdAt: Timestamp;
@@ -240,7 +235,6 @@ export interface Project {
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Standard' | 'Premium' | 'Pro';
   paymentStatus?: 'pending' | 'paid';
-  subscriptionStatus?: 'active' | 'past_due' | 'suspended' | 'canceled';
   nextBillingDate?: string | Timestamp;
   status: ProjectStatus;
   progress: number;

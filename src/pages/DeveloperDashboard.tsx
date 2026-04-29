@@ -68,8 +68,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     upiId: '',
     skills: '',
     paymentLinks: {
-      oneTime: { basic: '', standard: '', premium: '' },
-      subscription: { basic: '', standard: '', premium: '' }
+      oneTime: { basic: '', standard: '', premium: '' }
     }
   });
 
@@ -202,10 +201,14 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const handleAcceptProject = async (projectId: string) => {
     setIsSubmitting(true);
     try {
+      if (!user?.uid) return;
+      
       await updateProject(projectId, {
         status: 'accepted',
         acceptedAt: new Date().toISOString(),
-        progress: 15
+        progress: 15,
+        developerId: user.uid,
+        assignedTo: user.uid
       });
 
       // Send auto-message to client
@@ -540,7 +543,7 @@ Created At: ${formatDate(project.createdAt)}
 
                         {/* Actions */}
                         <div className="pt-2 flex gap-3">
-                          {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' ? (
+                          {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId ? (
                             <>
                               <button 
                                 onClick={() => handleAcceptProject(p.id)}
@@ -548,12 +551,14 @@ Created At: ${formatDate(project.createdAt)}
                               >
                                 Accept Project
                               </button>
-                              <button 
-                                onClick={() => setShowRejectPopup(p.id)}
-                                className="px-6 py-4 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
-                              >
-                                Reject
-                              </button>
+                              {p.developerId && (
+                                <button 
+                                  onClick={() => setShowRejectPopup(p.id)}
+                                  className="px-6 py-4 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
+                                >
+                                  Reject
+                                </button>
+                              )}
                             </>
                           ) : (
                             <div className="flex gap-2 w-full">

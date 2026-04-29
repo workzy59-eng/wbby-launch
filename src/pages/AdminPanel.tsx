@@ -186,8 +186,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       canViewProjects: true
     },
     paymentLinks: {
-      oneTime: { basic: '', standard: '', premium: '' },
-      subscription: { basic: '', standard: '', premium: '' }
+      oneTime: { basic: '', standard: '', premium: '' }
     }
   });
 
@@ -224,8 +223,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
           canViewProjects: true
         },
         paymentLinks: {
-          oneTime: { basic: '', standard: '', premium: '' },
-          subscription: { basic: '', standard: '', premium: '' }
+          oneTime: { basic: '', standard: '', premium: '' }
         }
       });
       toast.success("Developer invite created! Code: " + inviteData.code);
@@ -562,7 +560,7 @@ Generated on: ${new Date().toLocaleString()}
     activeProjects: projects.filter(p => !p.isDeleted && ['Accepted', 'Development Started', 'assigned', 'pending'].includes(p.status)).length,
     pendingRequests: projects.filter(p => p.status === 'Waiting for Review' && !p.isDeleted).length,
     completedProjects: projects.filter(p => p.status === 'Completed' && !p.isDeleted).length,
-    totalRevenue: projects.reduce((acc, p) => acc + (p.plan === 'Basic' ? 1499 : p.plan === 'Standard' ? 3499 : 9999), 0),
+    totalRevenue: projects.reduce((acc, p) => acc + (p.plan === 'Basic' ? 5000 : p.plan === 'Standard' ? 15000 : 30000), 0),
   };
 
   const projectStatusData = [

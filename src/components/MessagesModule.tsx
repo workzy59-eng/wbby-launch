@@ -265,8 +265,16 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         // Merge both
         let allEnriched = [...enrichedConvs, ...projectConvs];
 
-        // If client, ensure they can see the Admin and Dev as separate support options if needed
+        // Filter out admin conversations for clients
         if (profile?.role === 'client') {
+          allEnriched = allEnriched.filter(conv => {
+            if (conv.isProject) return true; // Project conversations are okay (usually with dev)
+            const recipientProfile = conv.recipientProfile;
+            if (recipientProfile?.role === 'admin') return false;
+            return true;
+          });
+
+          // Ensure they can see the Dev as separate support options if needed
           const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
           let devProfile: UserProfile | null = null;
           

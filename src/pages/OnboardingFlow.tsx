@@ -1335,18 +1335,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
               <div className="flex items-center gap-4 bg-card p-2 rounded-2xl border border-border">
                 <button 
-                  onClick={() => setFormData({ ...formData, billingCycle: 'one-time' })}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.billingCycle === 'one-time' ? 'text-white' : 'text-subtext hover:text-text'}`}
-                  style={formData.billingCycle === 'one-time' ? { backgroundColor: formData.primaryColor } : {}}
+                  className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-white"
+                  style={{ backgroundColor: formData.primaryColor }}
                 >
-                  One-Time
-                </button>
-                <button 
-                  onClick={() => setFormData({ ...formData, billingCycle: 'subscription' })}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.billingCycle === 'subscription' ? 'text-white' : 'text-subtext hover:text-text'}`}
-                  style={formData.billingCycle === 'subscription' ? { backgroundColor: formData.primaryColor } : {}}
-                >
-                  Monthly
+                  One-Time Payment
                 </button>
               </div>
             </div>
@@ -1356,19 +1348,19 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 { 
                   id: 'basic', 
                   name: 'Basic', 
-                  price: formData.billingCycle === 'one-time' ? '₹5,000/-' : '₹1,499/-', 
+                  price: '₹5,000/-', 
                   features: ['5 Pages', 'Basic SEO', 'Email Support'] 
                 },
                 { 
                   id: 'standard', 
                   name: 'Standard', 
-                  price: formData.billingCycle === 'one-time' ? '₹15,000/-' : '₹3,499/-', 
+                  price: '₹15,000/-', 
                   features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] 
                 },
                 { 
                   id: 'pro', 
                   name: 'Pro', 
-                  price: formData.billingCycle === 'one-time' ? '₹30,000/-' : '₹9,999/-', 
+                  price: '₹30,000/-', 
                   features: ['Everything in Standard', 'E-commerce', 'AI features'] 
                 }
               ].map((plan) => (

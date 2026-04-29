@@ -119,11 +119,16 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   const path = `users/${user.uid}`;
   try {
     let role = 'client';
-    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'sain17296174@gmail.com', 'aither2029@gmail.com'];
-    const devEmails = [];
+    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
-      role = 'admin';
+      // Prioritize developer role for these two so they can use the "3 devs" logic
+      if (['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) {
+        role = 'developer';
+      } else {
+        role = 'admin';
+      }
     } else if (devEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'developer';
     }
@@ -398,59 +403,7 @@ export const createProject = async (projectData: any) => {
         const clientName = projectData.userName || 'Client';
         
         const conversationId = getConversationId(adminUid, clientUid);
-        const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${projectData.businessName}" has been successfully received. We've assigned our team to review your requirements.\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
-
-        try {
-          // Find the specific developer aither2029@gmail.com
-          const devQ = query(collection(db, 'users'), where('email', '==', 'aither2029@gmail.com'));
-          const devSnap = await getDocs(devQ);
-          
-          if (!devSnap.empty) {
-            const assignedDev = { uid: devSnap.docs[0].id, ...devSnap.docs[0].data() } as UserProfile;
-            await updateDoc(doc(db, 'projects', projectId), {
-              assignedTo: assignedDev.uid,
-              developerId: assignedDev.uid,
-              assignedAt: serverTimestamp(),
-              status: 'Under Review'
-            });
-
-            await updateDoc(doc(db, 'users', assignedDev.uid), {
-              activeProjects: ((assignedDev as any).activeProjects || 0) + 1,
-              role: 'developer' // Double check role
-            });
-          } else {
-            // Fallback to previous logic if specific dev not found
-            const degsQ = query(collection(db, 'users'), where('role', '==', 'developer'), where('status', '==', 'approved'));
-            const devsSnap = await getDocs(degsQ);
-            const devs = devsSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-
-            if (devs.length > 0) {
-              const sortedDevs = devs.sort((a, b) => {
-                const projectsA = (a as any).activeProjects || 0;
-                const projectsB = (b as any).activeProjects || 0;
-                if (projectsA !== projectsB) return projectsA - projectsB;
-
-                const expA = parseInt(String(a.experience || '0'), 10);
-                const expB = parseInt(String(b.experience || '0'), 10);
-                return expB - expA;
-              });
-
-              const assignedDev = sortedDevs[0];
-              await updateDoc(doc(db, 'projects', projectId), {
-                assignedTo: assignedDev.uid,
-                developerId: assignedDev.uid,
-                assignedAt: serverTimestamp(),
-                status: 'Under Review'
-              });
-
-              await updateDoc(doc(db, 'users', assignedDev.uid), {
-                activeProjects: ((assignedDev as any).activeProjects || 0) + 1
-              });
-            }
-          }
-        } catch (assignError) {
-          console.error('Auto-assignment failed:', assignError);
-        }
+        const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${projectData.businessName}" has been successfully received. A developer will claim your project and contact you shortly. 👋\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
 
         await setDoc(doc(db, 'conversations', conversationId), {
           participants: [adminUid, clientUid],

@@ -133,7 +133,7 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
             </div>
             <div>
               <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Current Plan</h3>
-              <p className="text-white/40 text-xs italic uppercase tracking-widest">Manage your subscription.</p>
+              <p className="text-white/40 text-xs italic uppercase tracking-widest">Your current service plan.</p>
             </div>
           </div>
           <span className="px-4 py-2 bg-[#c7c42a] text-black rounded-full text-[10px] font-black uppercase tracking-widest">
@@ -141,18 +141,14 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
           <div className="p-6 bg-black/40 border border-white/5 rounded-3xl space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Next Billing</p>
-            <p className="text-lg font-black text-white italic tracking-tighter">May 12, 2026</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Pricing Model</p>
+            <p className="text-lg font-black text-white italic tracking-tighter">One-Time Payment</p>
           </div>
           <div className="p-6 bg-black/40 border border-white/5 rounded-3xl space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Amount Due</p>
-            <p className="text-lg font-black text-white italic tracking-tighter">₹ 4,999</p>
-          </div>
-          <div className="p-6 bg-black/40 border border-white/5 rounded-3xl space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Payment Method</p>
-            <p className="text-lg font-black text-white italic tracking-tighter">UPI / Card</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Status</p>
+            <p className="text-lg font-black text-[#c7c42a] italic tracking-tighter uppercase">Active</p>
           </div>
         </div>
 

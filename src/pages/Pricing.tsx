@@ -54,51 +54,6 @@ export default function Pricing() {
     }
   ];
 
-  const subscriptionPlans = [
-    {
-      name: 'Basic',
-      price: '₹999',
-      period: '/mo',
-      description: 'Hosting and basic support to keep your website running smoothly.',
-      features: [
-        'Hosting Included',
-        'Basic Support',
-        'Security Updates',
-        'Monthly Backups'
-      ],
-      stripeLink: 'https://buy.stripe.com/test_28E7sK4eo4j28Hi91BbAs07'
-    },
-    {
-      name: 'Standard',
-      price: '₹5,999',
-      period: '/mo',
-      description: 'Maintenance, updates, and priority support for active businesses.',
-      features: [
-        'Everything in Basic',
-        'Ongoing Maintenance',
-        'Content Updates',
-        'Priority Support',
-        'Performance Optimization'
-      ],
-      popular: true,
-      stripeLink: 'https://buy.stripe.com/test_28E28q5is4j29Lmgu3bAs08'
-    },
-    {
-      name: 'Pro',
-      price: '₹9,999',
-      period: '/mo',
-      description: 'Full support and priority updates for enterprise-level needs.',
-      features: [
-        'Everything in Standard',
-        'Full Support',
-        'Priority Updates',
-        'Monthly Performance Review',
-        'Dedicated Manager'
-      ],
-      stripeLink: 'https://buy.stripe.com/test_eVqeVccKU9Dm2iU2DdbAs09'
-    }
-  ];
-
   const plans = oneTimePlans;
 
   const navigate = useNavigate();
