@@ -1,217 +1,208 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
-    }
 
-    // --- Helper Functions ---
-    function isSignedIn() {
+    // =========================
+    // HELPERS
+    // =========================
+    function isAuth() {
       return request.auth != null;
     }
 
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    function getUserData(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data;
-    }
-
-    function getRole(uid) {
-      return getUserData(uid).role;
-    }
-
     function isAdmin() {
-      return isSignedIn() && (
-        getRole(request.auth.uid) == 'admin' || 
-        request.auth.token.email == 'workzy59@gmail.com' ||
-        request.auth.token.email == 'sain17296174@gmail.com'
-      );
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
     function isDeveloper() {
-      return isSignedIn() && getRole(request.auth.uid) == 'developer';
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "developer";
     }
 
-    function isClient() {
-      return isSignedIn() && getRole(request.auth.uid) == 'client';
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
     }
 
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // --- Validation Helpers ---
-    function isValidUser(data) {
-      return data.keys().hasAll(['uid', 'email', 'role']) &&
-             data.uid == request.auth.uid &&
-             data.role in ['client', 'developer', 'admin'] &&
-             data.email is string && data.email.size() <= 128;
-    }
-
-    function isValidProject(data) {
-      return data.keys().hasAll(['userId', 'businessName', 'status']) &&
-             data.userId is string && data.userId.size() <= 128 &&
-             data.businessName is string && data.businessName.size() <= 200 &&
-             data.status in ['pending', 'assigned', 'in_progress', 'completed'] &&
-             (!('developerId' in data) || data.developerId == null || isValidId(data.developerId));
-    }
-
-    function isValidMessage(data) {
-      return data.keys().hasAll(['senderId', 'createdAt']) &&
-             data.senderId == request.auth.uid &&
-             data.createdAt == request.time &&
-             (!('text' in data) || (data.text is string && data.text.size() <= 5000)) &&
-             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000));
-    }
-
-    // --- Rules ---
-
-    // User profiles
+    // =========================
+    // USERS
+    // =========================
     match /users/{userId} {
-      allow get: if isSignedIn();
-      allow list: if isAdmin();
-      allow create: if isOwner(userId) && isValidUser(incoming());
-      allow update: if isOwner(userId) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'onboardingCompleted', 'updatedAt']) ||
-        isAdmin()
+
+      // Create own profile
+      allow create: if isAuth() && request.auth.uid == userId;
+
+      // Read own + admin
+      allow read: if isAuth() && (
+        request.auth.uid == userId || isAdmin()
       );
+
+      // Update own + admin
+      allow update: if isAuth() && (
+        request.auth.uid == userId || isAdmin()
+      );
+
+      allow delete: if isAdmin();
     }
 
-    // Projects
+    // =========================
+    // PROJECTS
+    // =========================
     match /projects/{projectId} {
-      allow get: if isSignedIn() && (
-        isOwner(resource.data.userId) || 
-        isOwner(resource.data.developerId) ||
+
+      // Create project (client only)
+      allow create: if isAuth() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // Read project
+      allow read: if isAuth() && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.developerId ||
         isAdmin()
       );
-      
-      allow list: if isSignedIn() && (
-        isAdmin() || 
-        (isDeveloper() && (resource.data.developerId == request.auth.uid || !('developerId' in resource.data) || resource.data.developerId == null)) ||
-        resource.data.userId == request.auth.uid
-      );
-      
-      allow create: if isClient() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
-      
-      allow update: if isSignedIn() && (
-        isAdmin() ||
-        (isDeveloper() && (
-          // Allow claiming if unassigned
-          (!('developerId' in existing()) || existing().developerId == null) &&
-          incoming().developerId == request.auth.uid &&
-          (incoming().status == 'in_progress' || incoming().status == 'Under Review')
-        ) || (
-          // Allow updates if assigned
-          existing().developerId == request.auth.uid &&
-          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'progress', 'updatedAt', 'lastMessage', 'lastMessageAt', 'unreadCount', 'isLocked', 'isDeleted'])
-        )) ||
-        (isOwner(existing().userId) && 
-          incoming().diff(existing()).affectedKeys().hasOnly(['businessName', 'aiPrompt', 'clientDetails', 'updatedAt', 'unreadCount'])
-        )
+
+      // Update project
+      allow update: if isAuth() && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.developerId ||
+        isAdmin()
       );
 
-      // Project Messages
+      // Delete project
+      allow delete: if isAdmin();
+
+      // =========================
+      // PROJECT CHAT
+      // =========================
       match /messages/{messageId} {
-        function canChat() {
-          let project = get(/databases/$(database)/documents/projects/$(projectId)).data;
-          return (request.auth.uid == project.userId || request.auth.uid == project.developerId) && 
-                 (project.developerId != null);
-        }
 
-        allow read: if isSignedIn() && canChat();
-        allow create: if isSignedIn() && canChat() && isValidMessage(incoming());
+        allow read: if isAuth() && (
+          request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.userId ||
+          request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.developerId
+        );
+
+        allow create: if isAuth() &&
+          request.resource.data.senderId == request.auth.uid &&
+          (
+            request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.userId ||
+            request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.developerId
+          );
+
         allow update, delete: if false;
       }
     }
 
-    // Direct Conversations
+    // =========================
+    // CONVERSATIONS (OPTIONAL DM)
+    // =========================
     match /conversations/{conversationId} {
-      function isParticipant() {
-        return isSignedIn() && request.auth.uid in resource.data.participants;
-      }
-      
-      allow get: if isParticipant();
-      allow list: if isSignedIn() && request.auth.uid in resource.data.participants;
-      allow create: if isSignedIn() && request.auth.uid in incoming().participants;
-      allow update: if isParticipant();
+
+      allow read: if isAuth() &&
+        request.auth.uid in resource.data.participants;
+
+      allow create: if isAuth() &&
+        request.auth.uid in request.resource.data.participants;
 
       match /messages/{messageId} {
-        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-        allow create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-      }
-      
-      match /typing/{userId} {
-        allow read, write: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+
+        allow read: if isAuth() &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+
+        allow create: if isAuth() &&
+          request.resource.data.senderId == request.auth.uid &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+
+        allow update, delete: if false;
       }
     }
 
-    // Settings (Public Read, Admin Write)
-    match /system_settings/{docId} {
+    // =========================
+    // MEETINGS
+    // =========================
+    match /meetings/{meetingId} {
+
+      allow create: if isAuth();
+
+      allow read: if isAuth() && (
+        request.auth.uid == resource.data.clientId ||
+        isAdmin()
+      );
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================
+    // ADMIN ONLY COLLECTIONS
+    // =========================
+    match /developer_requests/{id} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /sales_applications/{id} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /payments/{id} {
+      allow read: if isAuth() &&
+        (request.auth.uid == resource.data.userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /commissions/{id} {
+      allow read: if isAuth() &&
+        (request.auth.uid == resource.data.salesId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /blog_posts/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Visit Sessions
-    match /visit_sessions/{sessionId} {
-      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    match /system_settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // Developer Invites
-    match /developer_invites/{inviteId} {
-      allow get: if isSignedIn();
-      allow list: if isAdmin();
-      allow create: if isAdmin();
-      allow update: if isAdmin() || (isSignedIn() && existing().email == request.auth.token.email);
+    match /developer_invites/{id} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
 
-    // Developer Requests
-    match /developer_requests/{requestId} {
-      allow create: if isSignedIn();
-      allow read, write: if isAdmin();
+    match /visit_sessions/{id} {
+      allow create: if isAuth() &&
+        request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin();
     }
 
-    // Leave Requests
-    match /leave_requests/{requestId} {
-      allow create: if isSignedIn();
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    match /leave_requests/{id} {
+      allow create: if isDeveloper() &&
+        request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() ||
+        request.auth.uid == resource.data.userId;
       allow update: if isAdmin();
     }
 
-    // Attendance
-    match /attendance/{attendanceId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if isAdmin();
+    match /attendance/{id} {
+      allow create: if isDeveloper() &&
+        request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() ||
+        request.auth.uid == resource.data.userId;
+      allow update: if isAdmin();
     }
 
-    // Blog Posts
-    match /blog_posts/{postId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    match /leads/{id} {
+      allow read, write: if isAdmin();
     }
 
-    // Meetings
-    match /meetings/{meetingId} {
-      allow read, update: if isSignedIn() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin());
-      allow create: if isAdmin();
-    }
-
-    // Payments
-    match /payments/{paymentId} {
-      allow read: if isSignedIn() && (resource.data.developerId == request.auth.uid || isAdmin());
-      allow write: if isAdmin();
+    // =========================
+    // DEFAULT BLOCK
+    // =========================
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
