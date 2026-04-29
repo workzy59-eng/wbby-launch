@@ -698,6 +698,28 @@ export const markConversationAsSeen = async (conversationId: string, userId: str
   }
 };
 
+export const toggleFavoriteConversation = async (userId: string, conversationId: string) => {
+  const path = `users/${userId}`;
+  try {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (userDoc.exists()) {
+      const favorites = userDoc.data().favoriteConversations || [];
+      const isFavorite = favorites.includes(conversationId);
+      const newFavorites = isFavorite 
+        ? favorites.filter((id: string) => id !== conversationId)
+        : [...favorites, conversationId];
+      
+      await updateDoc(doc(db, 'users', userId), {
+        favoriteConversations: newFavorites
+      });
+      return !isFavorite;
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+  return false;
+};
+
 export const markProjectAsSeen = async (projectId: string, userId: string) => {
   const path = `projects/${projectId}`;
   try {

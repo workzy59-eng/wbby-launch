@@ -33,7 +33,8 @@ import {
   Maximize2,
   ExternalLink,
   Reply,
-  Download
+  Download,
+  Star
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -65,7 +66,8 @@ import { UserProfile, Message, Project, Attachment } from '../types';
 import { 
   sendDirectMessage, 
   sendMessage,
-  getDirectMessages, 
+  getDirectMessages,
+  getMessages, 
   updateDirectMessage,
   getConversations,
   getProfiles,
@@ -82,7 +84,8 @@ import {
   deleteDirectMessage,
   toggleDirectMessageReaction,
   toggleMessageReaction,
-  searchUsers // Added
+  searchUsers,
+  toggleFavoriteConversation
 } from '../services/database';
 import { formatDate, isSameDay } from '../lib/utils';
 import ChatSystem from './ChatSystem';
@@ -245,19 +248,33 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           }
         }));
 
-        // If client, ensure they can see the Admin even if no conversation exists yet
+        // Fetch projects to include in conversations
+        const userProjects = projects.length > 0 ? projects : (await getProjectsAsync(currentUser.uid, profile?.role));
+        const projectConvs = userProjects.map(p => ({
+          id: p.id,
+          lastMessage: p.lastMessage || 'Project channel active',
+          lastMessageAt: p.lastMessageAt || p.createdAt,
+          lastSenderId: p.lastSenderId || '',
+          participants: [p.userId, p.developerId].filter(Boolean) as string[],
+          unreadCount: p.unreadCount || {},
+          isProject: true,
+          project: p
+        }));
+
+        // Merge both
+        let allEnriched = [...enrichedConvs, ...projectConvs];
+
+        // If client, ensure they can see the Admin/Dev even if no conversation existsyet
         if (profile?.role === 'client') {
-          // Fetch assigned developer if any
-          const userProjects = projects.length > 0 ? projects : (await getProjectsAsync(currentUser.uid));
           const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
           let devProfile: UserProfile | null = null;
           
           if (activeProjWithDev) {
             const devId = activeProjWithDev.assignedTo || activeProjWithDev.developerId;
             if (devId) {
-              const profile = await getUserProfile(devId);
-              if (profile) {
-                devProfile = profile as UserProfile;
+              const p = await getUserProfile(devId);
+              if (p) {
+                devProfile = p as UserProfile;
                 setAssignedDeveloper(devProfile);
               }
             }
@@ -266,13 +283,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           const admins = await getAdmins();
           const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
           
-          // Target for "Webby Launch" Support: Assigned Dev if exists, else Admin
           const supportTarget = devProfile || mainAdmin;
 
           if (supportTarget) {
-            const adminConvExists = enrichedConvs.some(c => c.participants.includes(supportTarget.uid));
+            const adminConvExists = allEnriched.some(c => c.participants.includes(supportTarget.uid));
             if (!adminConvExists) {
-              enrichedConvs.push({
+              allEnriched.push({
                 id: 'new_admin',
                 lastMessage: 'Contact Webby Launch Support',
                 lastMessageAt: null,
@@ -284,8 +300,13 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           }
         }
         
+        // Dedup: if a conversation exists for the same project, prefer the project one if it has more info, or just keep both?
+        // Usually, the direct conversation between client and admin might be separate from the project chat.
+        // But if they are the same participants, maybe we should group?
+        // For now, keep them separate as 'Direct' vs 'Project'.
+
         // Sort by date
-        const allConvs = enrichedConvs.sort((a, b) => {
+        const sortedConvs = allEnriched.sort((a, b) => {
           const dateA = a.lastMessageAt?.toMillis?.() || a.lastMessageAt || 0;
           const dateB = b.lastMessageAt?.toMillis?.() || b.lastMessageAt || 0;
           return dateB - dateA;
@@ -294,7 +315,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         // Check for new messages to play sound
         setConversations(prev => {
           if (prev.length > 0) {
-            const hasNewMessage = allConvs.some(newConv => {
+            const hasNewMessage = sortedConvs.some(newConv => {
               const oldConv = prev.find(c => c.id === newConv.id);
               if (!oldConv) return false;
               
@@ -308,7 +329,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               notificationSound.current?.play().catch(() => {});
             }
           }
-          return allConvs as Conversation[];
+          return sortedConvs as Conversation[];
         });
         
         setIsLoading(false);
@@ -326,39 +347,69 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
     // Mark as seen when opening
     if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin') {
-      markConversationAsSeen(activeConversation.id, currentUser.uid);
+      if (activeConversation.isProject) {
+        markProjectAsSeen(activeConversation.id, currentUser.uid);
+      } else {
+        markConversationAsSeen(activeConversation.id, currentUser.uid);
+      }
     }
 
-    const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-    if (!recipientId) return;
+    let unsub: () => void;
+    let unsubTyping: () => void;
 
-    const unsubMessages = getDirectMessages(currentUser.uid, recipientId, (messagesData) => {
-      const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
-      setMessages(newMessages);
+    if (activeConversation.isProject) {
+      unsub = getMessages(activeConversation.id, (messagesData) => {
+        const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
+        setMessages(newMessages);
 
-      // Mark as delivered or seen if recipient receives it
-      newMessages.forEach(async (m) => {
-        if (m.senderId !== currentUser.uid) {
-          if (m.status === 'sent') {
-            await markMessageAsDelivered(m.id, activeConversation.id);
+        // Mark individual messages as delivered/seen
+        newMessages.forEach(async (m) => {
+          if (m.senderId !== currentUser.uid) {
+            if (m.status === 'sent') {
+              await markMessageAsDelivered(m.id, undefined, activeConversation.id);
+            }
+            if (m.status !== 'seen') {
+              await markMessageAsSeen(m.id, undefined, activeConversation.id);
+            }
           }
-          if (m.status !== 'seen') {
-            await markMessageAsSeen(m.id, activeConversation.id);
-          }
-        }
+        });
       });
-    });
 
-    // Typing status listener
-    const unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
-      setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
-    });
+      unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
+        setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
+      });
+    } else {
+      const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+      if (recipientId) {
+        unsub = getDirectMessages(currentUser.uid, recipientId, (messagesData) => {
+          const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
+          setMessages(newMessages);
+
+          // Mark as delivered or seen
+          newMessages.forEach(async (m) => {
+            if (m.senderId !== currentUser.uid) {
+              if (m.status === 'sent') {
+                await markMessageAsDelivered(m.id, activeConversation.id);
+              }
+              if (m.status !== 'seen') {
+                await markMessageAsSeen(m.id, activeConversation.id);
+              }
+            }
+          });
+        });
+
+        // Typing status listener
+        unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
+          setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
+        });
+      }
+    }
 
     return () => {
-      unsubMessages?.();
+      unsub?.();
       unsubTyping?.();
     };
-  }, [activeConversation, currentUser.uid]);
+  }, [activeConversation?.id, currentUser.uid]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -908,6 +959,16 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     setShowUserList(false);
   };
 
+  const toggleFavorite = async (e: React.MouseEvent, conversationId: string) => {
+    e.stopPropagation();
+    const isNowFavorite = await toggleFavoriteConversation(currentUser.uid, conversationId);
+    if (isNowFavorite) {
+      toast.success('Added to favorites');
+    } else {
+      toast.success('Removed from favorites');
+    }
+  };
+
   const filteredConversations = conversations.filter(c => {
     // Search
     const searchLow = searchQuery.toLowerCase();
@@ -921,7 +982,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (activeFilter === 'unread') {
       return (c.unreadCount?.[currentUser.uid] || 0) > 0;
     }
-    // Favorites could be implemented later with a field, for now just show all if favorites selected
+    
+    if (activeFilter === 'favorites') {
+      return profile?.favoriteConversations?.includes(c.id);
+    }
+
     return true;
   });
 
@@ -1129,16 +1194,29 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       <div className={`w-full md:w-[380px] border-r border-white/5 flex flex-col bg-black h-full ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-6 space-y-6 shrink-0">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black italic uppercase tracking-tighter text-white">Direct</h1>
-            <div className="flex items-center gap-1">
-              <button 
-                onClick={() => setShowUserList(true)}
-                className="p-2 hover:bg-white/5 text-white/40 hover:text-white rounded-xl transition-all"
-              >
-                <Plus size={24} />
-              </button>
-            </div>
-          </div>
+                        <h1 className="text-2xl font-black italic uppercase tracking-tighter text-white">Direct</h1>
+                        <div className="flex items-center gap-1">
+                          <div className="flex bg-white/5 rounded-xl p-1">
+                            {['all', 'unread', 'favorites'].map((f) => (
+                              <button
+                                key={f}
+                                onClick={() => setActiveFilter(f as any)}
+                                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                                  activeFilter === f ? 'bg-[#3b82f6] text-white shadow-lg' : 'text-white/40 hover:text-white'
+                                }`}
+                              >
+                                {f}
+                              </button>
+                            ))}
+                          </div>
+                          <button 
+                            onClick={() => setShowUserList(true)}
+                            className="p-2 hover:bg-white/5 text-white/40 hover:text-white rounded-xl transition-all"
+                          >
+                            <Plus size={24} />
+                          </button>
+                        </div>
+                      </div>
 
           <div className="relative">
             <div className="relative bg-white/5 rounded-2xl flex items-center px-4 py-3 border border-white/5 transition-all focus-within:border-[#3b82f6]/50">
@@ -1187,9 +1265,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
                     <div className="flex-1 text-left min-w-0">
                       <div className="flex justify-between items-center mb-0.5">
-                        <span className="font-black text-white italic uppercase tracking-tighter truncate text-sm">
-                          {conv.isProject ? conv.project?.businessName : (isWL ? 'Webby Launch Support' : conv.recipientProfile?.displayName)}
-                        </span>
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="font-black text-white italic uppercase tracking-tighter truncate text-sm">
+                            {conv.isProject ? conv.project?.businessName : (isWL ? 'Webby Launch Support' : conv.recipientProfile?.displayName)}
+                          </span>
+                          {profile?.favoriteConversations?.includes(conv.id) && (
+                            <Star size={10} className="text-yellow-400 fill-yellow-400 shrink-0" />
+                          )}
+                        </div>
                         <span className="text-[10px] font-bold text-white/20 uppercase">
                           {conv.lastMessageAt ? formatDate(conv.lastMessageAt, 'h:mm a') : ''}
                         </span>
@@ -1201,11 +1284,19 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           )}
                           {conv.lastMessage || 'Channel active...'}
                         </p>
-                        {unread > 0 && (
-                          <div className="bg-[#3b82f6] text-white text-[10px] font-black min-w-[20px] h-5 rounded-full flex items-center justify-center px-1.5 shadow-xl shadow-[#3b82f6]/20">
-                            {unread}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                           <button 
+                            onClick={(e) => toggleFavorite(e, conv.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-lg text-white/20 hover:text-yellow-400 transition-all"
+                           >
+                             <Star size={14} className={profile?.favoriteConversations?.includes(conv.id) ? 'fill-yellow-400 text-yellow-400' : ''} />
+                           </button>
+                           {unread > 0 && (
+                            <div className="bg-[#3b82f6] text-white text-[10px] font-black min-w-[20px] h-5 rounded-full flex items-center justify-center px-1.5 shadow-xl shadow-[#3b82f6]/20">
+                              {unread}
+                            </div>
+                           )}
+                        </div>
                       </div>
                     </div>
                   </button>

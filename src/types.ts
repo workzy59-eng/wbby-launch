@@ -75,6 +75,7 @@ export interface UserProfile {
   };
   plan?: 'Basic' | 'Standard' | 'Premium';
   lastLogin?: string | Timestamp;
+  favoriteConversations?: string[];
 
   // Business details for clients (Legacy/Duplicate - keeping for compatibility but preferring structured fields above)
   businessName?: string;

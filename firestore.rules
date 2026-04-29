@@ -10,8 +10,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuth() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      return isAuth() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
+        request.auth.token.email == "workzy59@gmail.com" ||
+        request.auth.token.email == "sain17296174@gmail.com"
+      );
     }
 
     function isDeveloper() {
@@ -31,10 +34,13 @@ service cloud.firestore {
       // Create own profile
       allow create: if isAuth() && request.auth.uid == userId;
 
-      // Read own + admin
+      // Read own OR admin
       allow read: if isAuth() && (
         request.auth.uid == userId || isAdmin()
       );
+
+      // Allow listing users for authenticated users (needed for search/assignment)
+      allow list: if isAuth();
 
       // Update own + admin
       allow update: if isAuth() && (
@@ -76,6 +82,7 @@ service cloud.firestore {
       match /messages/{messageId} {
 
         allow read: if isAuth() && (
+          isAdmin() ||
           request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.userId ||
           request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.developerId
         );
@@ -83,11 +90,13 @@ service cloud.firestore {
         allow create: if isAuth() &&
           request.resource.data.senderId == request.auth.uid &&
           (
+            isAdmin() ||
             request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.userId ||
             request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.developerId
           );
 
-        allow update, delete: if false;
+        allow update: if isAuth(); 
+        allow delete: if isAdmin() || (isAuth() && resource.data.senderId == request.auth.uid);
       }
     }
 
@@ -104,14 +113,20 @@ service cloud.firestore {
 
       match /messages/{messageId} {
 
-        allow read: if isAuth() &&
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow read: if isAuth() && (
+          isAdmin() ||
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+        );
 
         allow create: if isAuth() &&
           request.resource.data.senderId == request.auth.uid &&
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+          (
+            isAdmin() ||
+            request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+          );
 
-        allow update, delete: if false;
+        allow update: if isAuth();
+        allow delete: if isAdmin() || (isAuth() && resource.data.senderId == request.auth.uid);
       }
     }
 
