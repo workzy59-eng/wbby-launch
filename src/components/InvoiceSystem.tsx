@@ -199,7 +199,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
                 </div>
               </div>
               <div className="text-center md:text-right">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Monthly Subscription</p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Service Fee</p>
                 <p className="text-4xl font-black tracking-tighter italic">₹{selectedPlan.price.toLocaleString()}/-</p>
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
             <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Pricing Breakdown</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-4 border-b border-white/5">
-                <span className="text-sm font-bold text-white/60 uppercase tracking-widest">First Month Subscription</span>
+                <span className="text-sm font-bold text-white/60 uppercase tracking-widest">Premium Development Fee</span>
                 <span className="text-lg font-black text-white italic">₹{selectedPlan.price.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-white/5">
@@ -268,7 +268,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
               {[
                 'Advance payment required to start',
                 'Setup fee is non-refundable',
-                'Subscription billed monthly',
+                'Maintenance billed annually',
                 'Delay in payment may pause website',
                 'Extra features cost additional',
                 'Support available 24/7'

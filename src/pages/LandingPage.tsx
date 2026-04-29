@@ -150,8 +150,8 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       answer: "Yes. We require an advance payment to start the project. This ensures commitment and allows us to begin work immediately."
     },
     {
-      question: "What is included in the monthly subscription?",
-      answer: "Our plans include website maintenance, hosting support, updates, and technical assistance so you don’t have to worry about anything."
+      question: "What support do you provide after delivery?",
+      answer: "We offer technical assistance and minor updates to ensure your website continues to run smoothly after launch."
     },
     {
       question: "Can I upgrade or change my plan later?",
@@ -167,10 +167,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
     },
     {
       question: "What if I need changes after the website is completed?",
-      answer: "We offer revisions and ongoing updates as part of your subscription. Extra custom features may have additional charges."
+      answer: "We offer ongoing support and updates. Extra custom features may have additional charges."
     },
     {
-      question: "What happens if I miss a monthly payment?",
+      question: "What happens if I miss a payment?",
       answer: "If payment is delayed, your website services may be temporarily paused until the payment is completed."
     },
     {
@@ -180,7 +180,6 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
   ];
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
 
   const locations = [
     { name: 'Hyderabad', slug: 'hyderabad' },
@@ -594,7 +593,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <div className="space-y-4 text-black">
                 {[
                   "Your site live in just 24-48 hours",
-                  "Transparent monthly plans with no risk",
+                  "Transparent pricing with no risk",
                   "Zero tech knowledge required from you",
                   "Lifetime maintenance and expert support"
                 ].map((text, i) => (

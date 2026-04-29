@@ -47,7 +47,7 @@ const DOCS_CONTENT = {
     sections: [
       {
         subtitle: 'Purchasing Plans',
-        content: 'Browse our pricing page to select a plan that fits your business needs. We offer both one-time and subscription-based models.'
+        content: 'Browse our pricing page to select a plan that fits your business needs. We offer transparent, one-time payment models for high-end digital solutions.'
       },
       {
         subtitle: 'After Payment',
@@ -93,7 +93,7 @@ const DOCS_CONTENT = {
     sections: [
       {
         subtitle: 'Pricing Models',
-        content: 'We offer transparent pricing with no hidden costs. Choose between one-time development fees or monthly subscription plans for ongoing support.'
+        content: 'We offer transparent pricing with no hidden costs. Choose the plan that best fits your business goals and get your premium website delivered in record time.'
       },
       {
         subtitle: 'Refund Policy',

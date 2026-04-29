@@ -200,19 +200,7 @@ interface OnboardingFlowProps {
   profile: UserProfile | null;
 }
 
-const INDIAN_STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 
-  'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 
-  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 
-  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
-  'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 
-  'Lakshadweep', 'Puducherry'
-];
-
 export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { signInWithGoogle } = useAuth();
 
   useEffect(() => {
     if (!user) {
@@ -286,7 +274,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showStateDropdown, setShowStateDropdown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
@@ -860,57 +847,15 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2 relative">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">State <span className="text-error">*</span></label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      className={getInputClass('state', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                      value={formData.state}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        handleInputChange('state', val);
-                        handleInputChange('city', '');
-                      }}
-                      placeholder="SEARCH STATE"
-                      onFocus={() => setShowStateDropdown(true)}
-                    />
-                    <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
-                  </div>
-                  
-                  {showStateDropdown && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto no-scrollbar">
-                      {INDIAN_STATES.filter(s => s.toLowerCase().includes(formData.state.toLowerCase())).map(s => (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => {
-                            handleInputChange('state', s);
-                            handleInputChange('city', '');
-                            setShowStateDropdown(false);
-                          }}
-                          className="w-full text-left px-6 py-4 text-xs font-black uppercase tracking-widest text-white/40 hover:text-primary hover:bg-white/5 transition-all italic"
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {showStateDropdown && <div className="fixed inset-0 z-40" onClick={() => setShowStateDropdown(false)} />}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">City <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('city', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase disabled:opacity-20")}
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    placeholder={formData.state ? "ENTER CITY" : "SELECT STATE FIRST"}
-                    disabled={!formData.state}
-                  />
-                </div>
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Location Selection <span className="text-error">*</span></label>
+                <StateCityDropdown 
+                  onSelect={(state, city) => {
+                    handleInputChange('state', state);
+                    handleInputChange('city', city);
+                  }}
+                  error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
+                />
               </div>
 
               <div className="space-y-4">

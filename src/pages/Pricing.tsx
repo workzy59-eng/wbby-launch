@@ -5,8 +5,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PROFESSIONAL_EMAIL } from '../constants';
 
 export default function Pricing() {
-  const [billingType, setBillingType] = useState<'one-time' | 'subscription'>('one-time');
-
   const oneTimePlans = [
     {
       name: 'Basic',
@@ -101,7 +99,7 @@ export default function Pricing() {
     }
   ];
 
-  const plans = billingType === 'one-time' ? oneTimePlans : subscriptionPlans;
+  const plans = oneTimePlans;
 
   const navigate = useNavigate();
 
@@ -144,23 +142,6 @@ export default function Pricing() {
             transition={{ delay: 0.3 }}
             className="flex flex-col items-center gap-12 pt-10"
           >
-            <div className="flex items-center gap-8 border-b border-white/10 pb-8">
-              <button 
-                onClick={() => setBillingType('one-time')}
-                className={`text-xs font-black uppercase tracking-widest transition-all px-8 py-2 relative ${billingType === 'one-time' ? 'text-[#c7c42a]' : 'text-white/20 hover:text-white'}`}
-              >
-                One-Time
-                {billingType === 'one-time' && <motion.div layoutId="billing-active" className="absolute -bottom-px left-0 w-full h-px bg-[#c7c42a]" />}
-              </button>
-              <button 
-                onClick={() => setBillingType('subscription')}
-                className={`text-xs font-black uppercase tracking-widest transition-all px-8 py-2 relative ${billingType === 'subscription' ? 'text-[#c7c42a]' : 'text-white/20 hover:text-white'}`}
-              >
-                Subscription
-                {billingType === 'subscription' && <motion.div layoutId="billing-active" className="absolute -bottom-px left-0 w-full h-px bg-[#c7c42a]" />}
-              </button>
-            </div>
-
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Limited Throughput: 3 Slots Remaining</span>
@@ -237,10 +218,7 @@ export default function Pricing() {
               <span className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Transparency</span>
               <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.8]">Execution <br /><span className="text-white/10">Protocols.</span></h2>
               <p className="text-xl text-white/30 font-medium italic leading-tight">
-                {billingType === 'one-time' 
-                  ? "Architected for speed. Full documentation and ownership transfer upon final balance clearance. 7-day post-launch optimization window included."
-                  : "Continuous integration models include primary maintenance, monthly architectural reviews, and high-priority optimization cycles."
-                }
+                Architected for speed. Full documentation and ownership transfer upon final balance clearance. 7-day post-launch optimization window included.
               </p>
             </div>
             

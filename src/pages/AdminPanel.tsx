@@ -39,9 +39,24 @@ import {
   MoreVertical,
   Video,
   Download,
-  Shield
+  Shield,
+  Database
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar
+} from 'recharts';
 import ChatSystem from '../components/ChatSystem';
 import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
@@ -542,10 +557,20 @@ Generated on: ${new Date().toLocaleString()}
 
   const stats = {
     totalUsers: users.length,
-    activeProjects: projects.filter(p => !p.isDeleted && ['Accepted', 'Development Started'].includes(p.status)).length,
+    clients: users.filter(u => u.role === 'client').length,
+    developers: users.filter(u => u.role === 'developer').length,
+    activeProjects: projects.filter(p => !p.isDeleted && ['Accepted', 'Development Started', 'assigned', 'pending'].includes(p.status)).length,
     pendingRequests: projects.filter(p => p.status === 'Waiting for Review' && !p.isDeleted).length,
     completedProjects: projects.filter(p => p.status === 'Completed' && !p.isDeleted).length,
+    totalRevenue: projects.reduce((acc, p) => acc + (p.plan === 'Basic' ? 1499 : p.plan === 'Standard' ? 3499 : 9999), 0),
   };
+
+  const projectStatusData = [
+    { name: 'Pending', value: stats.pendingRequests, color: '#c7c42a' },
+    { name: 'Active', value: stats.activeProjects, color: '#00F2FF' },
+    { name: 'Completed', value: stats.completedProjects, color: '#22c55e' },
+    { name: 'Rejected', value: projects.filter(p => p.status === 'Rejected').length, color: '#ef4444' },
+  ].filter(d => d.value > 0);
 
   const renderDashboard = () => (
     <div className="space-y-12">
@@ -558,42 +583,125 @@ Generated on: ${new Date().toLocaleString()}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-[#c7c42a]' },
-          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#c7c42a]' },
+          { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },
+          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#00F2FF]' },
           { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]' },
-          { label: 'Completed Projects', value: stats.completedProjects, icon: CheckCircle2, color: 'text-[#c7c42a]' },
+          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-white' },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative">
+          <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <stat.icon size={120} />
+            </div>
             <div className="flex justify-between items-start mb-6">
               <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform`}>
                 <stat.icon size={24} className={stat.color} />
               </div>
             </div>
-            <div className="text-4xl font-bold mb-1 text-white tabular-nums">{stat.value}</div>
+            <div className="text-4xl font-bold mb-1 text-white tabular-nums tracking-tighter">{stat.value}</div>
             <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
           </div>
         ))}
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">Project Distribution</h3>
+            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Real-time Analytics</span>
+          </div>
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={projectStatusData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 'bold' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 'bold' }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                  itemStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold' }}
+                />
+                <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                  {projectStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">User Base</h3>
+          </div>
+          <div className="h-80 w-full relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Clients', value: stats.clients, color: '#c7c42a' },
+                    { name: 'Developers', value: stats.developers, color: '#00F2FF' },
+                    { name: 'Admins', value: users.filter(u => u.role === 'admin').length, color: '#ffffff' },
+                  ].filter(d => d.value > 0)}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {[
+                    { color: '#c7c42a' },
+                    { color: '#00F2FF' },
+                    { color: '#ffffff' },
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex items-center justify-center flex-col pt-8 pointer-events-none">
+              <span className="text-4xl font-bold text-white">{stats.totalUsers}</span>
+              <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Total Users</span>
+            </div>
+          </div>
+          <div className="mt-4 space-y-2">
+             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                <span className="text-[#c7c42a]">Clients</span>
+                <span className="text-white">{stats.clients}</span>
+             </div>
+             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                <span className="text-[#00F2FF]">Developers</span>
+                <span className="text-white">{stats.developers}</span>
+             </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-white">Recent Activity</h3>
+            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">Recent Activity</h3>
             <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Live Feed</span>
           </div>
           <div className="space-y-4">
             {projects.slice(0, 5).map((p, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
+              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 group hover:border-[#c7c42a]/30 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#c7c42a]/10 flex items-center justify-center">
                     <FileText size={16} className="text-[#c7c42a]" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-white">{p.businessName}</div>
-                    <div className="text-[10px] text-white/40 uppercase tracking-wider">{p.status}</div>
+                    <div className="text-sm font-bold text-white tracking-tight">{p.businessName}</div>
+                    <div className="text-[10px] text-white/40 uppercase tracking-widest">{p.status}</div>
                   </div>
                 </div>
-                <div className="text-[10px] font-bold text-white/20">JUST NOW</div>
+                <button 
+                  onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
+                  className="p-2 hover:bg-white/5 rounded-lg text-white/20 hover:text-white transition-all"
+                >
+                  <ArrowRight size={14} />
+                </button>
               </div>
             ))}
           </div>
@@ -601,18 +709,23 @@ Generated on: ${new Date().toLocaleString()}
 
         <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-white">System Health</h3>
+            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">System Health</h3>
             <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Stable</span>
           </div>
           <div className="space-y-6">
             {[
-              { label: 'Server Load', value: 24 },
-              { label: 'Database Sync', value: 98 },
-              { label: 'API Latency', value: 12 },
-            ].map((item, i) => (
+              { label: 'Server Load', value: 24, icon: Zap },
+              { label: 'DB Latency', value: 12, icon: Database },
+              { label: 'Uptime', value: 99, icon: CheckCheck },
+            ].map((item, i) => {
+              const Icon = (item as any).icon || Zap;
+              return (
               <div key={i}>
                 <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">
-                  <span>{item.label}</span>
+                  <span className="flex items-center gap-2">
+                    <Icon size={12} />
+                    {item.label}
+                  </span>
                   <span>{item.value}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -623,7 +736,7 @@ Generated on: ${new Date().toLocaleString()}
                   />
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>

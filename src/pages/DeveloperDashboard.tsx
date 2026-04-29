@@ -200,40 +200,52 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   };
 
   const handleAcceptProject = async (projectId: string) => {
-    if (!websiteUrl) {
-      toast.error('Website URL is required');
-      return;
-    }
     setIsSubmitting(true);
     try {
       await updateProject(projectId, {
-        status: 'in-progress',
-        websiteUrl,
-        paymentLinkBasic,
-        paymentLinkPremium,
-        startedAt: new Date().toISOString(),
-        progress: 10
+        status: 'accepted',
+        acceptedAt: new Date().toISOString(),
+        progress: 15
       });
 
-      // Send auto-message
-      await sendMessage(projectId, {
-        text: "Hi, I'm your developer. I'll take care of your project.",
-        senderId: user?.uid,
-        senderName: profile?.displayName || 'Developer',
-        type: 'text'
-      });
+      // Send auto-message to client
+      const project = projects.find(p => p.id === projectId) || unassignedProjects.find(p => p.id === projectId);
+      if (project && project.userId) {
+         await sendMessage(projectId, {
+          text: "👋 Hi, I’m your developer. I’ll take care of your project and keep you updated.",
+          senderId: user?.uid,
+          senderName: profile?.displayName || 'Developer',
+          type: 'text'
+        });
+      }
 
       toast.success('Project accepted!');
-      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: 'in-progress', websiteUrl, paymentLinkBasic, paymentLinkPremium, progress: 10 } : p));
       setShowAcceptPopup(null);
-      setWebsiteUrl('');
-      setPaymentLinkBasic('');
-      setPaymentLinkPremium('');
     } catch (error) {
       toast.error('Failed to accept project');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDownloadClientDetails = (project: Project) => {
+    const details = `
+Project: ${project.businessName}
+Client: ${project.userName}
+Email: ${project.userEmail}
+Status: ${project.status}
+Business Type: ${project.businessType}
+Description: ${project.description}
+Created At: ${formatDate(project.createdAt)}
+    `.trim();
+
+    const element = document.createElement("a");
+    const file = new Blob([details], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${project.businessName}_client_details.txt`;
+    document.body.appendChild(element);
+    element.click();
+    toast.success('Client details downloaded');
   };
 
   const handleRejectProject = async (projectId: string) => {
@@ -511,12 +523,27 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                           </div>
                         )}
 
+                        <div className="grid grid-cols-2 gap-3">
+                           <button 
+                             onClick={() => handleDownloadPrompt(p)}
+                             className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all"
+                           >
+                             AI Prompt <Download size={14} />
+                           </button>
+                           <button 
+                             onClick={() => handleDownloadClientDetails(p)}
+                             className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+                           >
+                             Details <UserIcon size={14} />
+                           </button>
+                        </div>
+
                         {/* Actions */}
                         <div className="pt-2 flex gap-3">
                           {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' ? (
                             <>
                               <button 
-                                onClick={() => setShowAcceptPopup(p.id)}
+                                onClick={() => handleAcceptProject(p.id)}
                                 className="flex-1 py-4 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/10"
                               >
                                 Accept Project
@@ -529,22 +556,18 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                               </button>
                             </>
                           ) : (
-                            <div className="flex gap-2">
-                              {p.websiteUrl && (
-                                <a 
-                                  href={p.websiteUrl} 
-                                  target="_blank" 
-                                  rel="noreferrer"
-                                  className="flex-1 py-4 bg-white/5 border border-white/10 text-white font-black uppercase italic text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
-                                >
-                                  View Site <Globe size={14} />
-                                </a>
-                              )}
+                            <div className="flex gap-2 w-full">
                               <button 
                                 onClick={() => setEditingProject(p)}
-                                className="flex-1 py-4 bg-white/5 border border-white/10 text-white font-black uppercase italic text-[10px] tracking-widest rounded-2xl hover:bg-white/10 transition-all"
+                                className="flex-1 py-4 bg-white text-black font-black uppercase italic text-[10px] tracking-widest rounded-2xl transition-all"
                               >
-                                Manage
+                                Manage Project
+                              </button>
+                              <button 
+                                onClick={() => setActiveTab('chat')}
+                                className="flex-1 py-4 bg-blue-600 text-white font-black uppercase italic text-[10px] tracking-widest rounded-2xl hover:bg-blue-500 transition-all"
+                              >
+                                Messages
                               </button>
                             </div>
                           )}

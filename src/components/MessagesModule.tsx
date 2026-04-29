@@ -219,11 +219,12 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       // Messaging Restriction: 
       // Admin: Can message everyone
       // Developer: Can message Admin and Clients
-      // Client: Can message Admin (or their assigned Developer)
+      // Client: Can ONLY message their assigned Developer (enforced below in conversations)
       if (profile?.role === 'developer') {
         filteredProfiles = filteredProfiles.filter(p => p.role === 'admin' || p.role === 'client');
       } else if (profile?.role === 'client') {
-        filteredProfiles = filteredProfiles.filter(p => p.role === 'admin');
+        // Clients don't see anyone in the search list, they only use the pre-created dev convo
+        filteredProfiles = [];
       } else if (profile?.role !== 'admin') {
         filteredProfiles = filteredProfiles.filter(p => p.role === 'admin');
       }
@@ -283,8 +284,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           const admins = await getAdmins();
           const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
           
-          // 1. Always ensure Admin Support is visible
-          if (mainAdmin) {
+          // 1. Developers/Admins see Support, Clients DO NOT as per request
+          if (profile?.role !== 'client' && mainAdmin) {
             const adminConvExists = allEnriched.some(c => c.participants.includes(mainAdmin.uid));
             if (!adminConvExists) {
               allEnriched.push({
