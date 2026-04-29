@@ -264,7 +264,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         // Merge both
         let allEnriched = [...enrichedConvs, ...projectConvs];
 
-        // If client, ensure they can see the Admin/Dev even if no conversation existsyet
+        // If client, ensure they can see the Admin and Dev as separate support options if needed
         if (profile?.role === 'client') {
           const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
           let devProfile: UserProfile | null = null;
@@ -283,18 +283,32 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           const admins = await getAdmins();
           const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
           
-          const supportTarget = devProfile || mainAdmin;
-
-          if (supportTarget) {
-            const adminConvExists = allEnriched.some(c => c.participants.includes(supportTarget.uid));
+          // 1. Always ensure Admin Support is visible
+          if (mainAdmin) {
+            const adminConvExists = allEnriched.some(c => c.participants.includes(mainAdmin.uid));
             if (!adminConvExists) {
               allEnriched.push({
                 id: 'new_admin',
                 lastMessage: 'Contact Webby Launch Support',
                 lastMessageAt: null,
                 lastSenderId: '',
-                participants: [currentUser.uid, supportTarget.uid],
-                recipientProfile: supportTarget
+                participants: [currentUser.uid, mainAdmin.uid],
+                recipientProfile: mainAdmin
+              } as any);
+            }
+          }
+
+          // 2. Ensure Developer is visible if assigned and no direct/project conversation already exists
+          if (devProfile) {
+            const devConvExists = allEnriched.some(c => c.participants.includes(devProfile!.uid) || c.id === activeProjWithDev!.id);
+            if (!devConvExists) {
+               allEnriched.push({
+                id: 'new_dev',
+                lastMessage: 'Message your Assigned Developer',
+                lastMessageAt: null,
+                lastSenderId: '',
+                participants: [currentUser.uid, devProfile.uid],
+                recipientProfile: devProfile
               } as any);
             }
           }
@@ -346,7 +360,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (!activeConversation) return;
 
     // Mark as seen when opening
-    if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin') {
+    if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin' && activeConversation.id !== 'new_dev') {
       if (activeConversation.isProject) {
         markProjectAsSeen(activeConversation.id, currentUser.uid);
       } else {
@@ -466,7 +480,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           } : null
         };
 
-        if (activeConversation.id === 'new' && !activeConversation.isProject && recipientId) {
+        if ((activeConversation.id === 'new' || activeConversation.id === 'new_admin' || activeConversation.id === 'new_dev') && !activeConversation.isProject && recipientId) {
           await sendDirectMessage(recipientId, msgData);
         } else if (activeConversation.isProject) {
           await sendMessage(activeConversation.id, msgData);
@@ -1242,7 +1256,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <div className="px-2 space-y-1">
               {filteredConversations.map((conv) => {
                 const unread = conv.unreadCount?.[currentUser.uid] || 0;
-                const isWL = conv.recipientProfile?.email === 'workzy59@gmail.com' || (profile?.role === 'client' && conv.recipientProfile?.uid === assignedDeveloper?.uid);
+                const isAdminConv = conv.id === 'new_admin' || conv.recipientProfile?.role === 'admin' || conv.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                const isDevConv = conv.id === 'new_dev' || (profile?.role === 'client' && conv.recipientProfile?.uid === assignedDeveloper?.uid);
+                const isSupport = isAdminConv || isDevConv;
                 
                 return (
                   <button
@@ -1254,9 +1270,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   >
                     <div className="relative shrink-0">
                       <div className={`w-14 h-14 rounded-full flex items-center justify-center font-black text-xl italic shadow-2xl ${
-                        isWL ? 'bg-[#3b82f6] text-white' : 'bg-white/5 text-white/60 border border-white/10'
+                        isSupport ? 'bg-[#3b82f6] text-white' : 'bg-white/5 text-white/60 border border-white/10'
                       }`}>
-                        {conv.isProject ? <Briefcase size={28} /> : (isWL ? 'WL' : (conv.recipientProfile?.displayName?.[0] || 'U'))}
+                        {conv.isProject ? <Briefcase size={28} /> : (isAdminConv ? 'WL' : (isDevConv ? 'DEV' : (conv.recipientProfile?.displayName?.[0] || 'U')))}
                       </div>
                       {!conv.isProject && conv.recipientProfile?.status === 'online' && (
                         <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-4 border-black rounded-full" />
@@ -1267,7 +1283,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       <div className="flex justify-between items-center mb-0.5">
                         <div className="flex items-center gap-2 truncate">
                           <span className="font-black text-white italic uppercase tracking-tighter truncate text-sm">
-                            {conv.isProject ? conv.project?.businessName : (isWL ? 'Webby Launch Support' : conv.recipientProfile?.displayName)}
+                            {conv.isProject ? conv.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Developer' : conv.recipientProfile?.displayName))}
                           </span>
                           {profile?.favoriteConversations?.includes(conv.id) && (
                             <Star size={10} className="text-yellow-400 fill-yellow-400 shrink-0" />
@@ -1321,16 +1337,28 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <ArrowLeft size={24} />
                 </button>
                 <div className="relative">
-                   <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black text-lg italic shadow-2xl ${
-                    activeConversation.isProject ? 'bg-[#3b82f6] text-white' : 
-                    (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid)) ? 'bg-[#3b82f6] text-white' : 'bg-white/5 border border-white/10 text-white'
-                  }`}>
-                    {activeConversation.isProject ? <Briefcase size={22} /> : ((activeConversation.recipientProfile?.email === 'workzy59@gmail.com' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid)) ? 'WL' : (activeConversation.recipientProfile?.displayName?.[0] || 'U'))}
-                  </div>
+                   {(() => {
+                     const isAdminConv = activeConversation.id === 'new_admin' || activeConversation.recipientProfile?.role === 'admin' || activeConversation.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                     const isDevConv = activeConversation.id === 'new_dev' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid);
+                     const isSupport = isAdminConv || isDevConv;
+
+                     return (
+                       <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black text-lg italic shadow-2xl ${
+                         activeConversation.isProject || isSupport ? 'bg-[#3b82f6] text-white' : 'bg-white/5 border border-white/10 text-white'
+                       }`}>
+                         {activeConversation.isProject ? <Briefcase size={22} /> : (isAdminConv ? 'WL' : (isDevConv ? 'DEV' : (activeConversation.recipientProfile?.displayName?.[0] || 'U')))}
+                       </div>
+                     );
+                   })()}
                 </div>
                 <div>
                   <h3 className="font-black text-white text-lg italic uppercase tracking-tighter leading-tight">
-                    {activeConversation.isProject ? activeConversation.project?.businessName : (activeConversation.recipientProfile?.email === 'workzy59@gmail.com' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid) ? 'Webby Launch Support' : activeConversation.recipientProfile?.displayName)}
+                    {(() => {
+                      const isAdminConv = activeConversation.id === 'new_admin' || activeConversation.recipientProfile?.role === 'admin' || activeConversation.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                      const isDevConv = activeConversation.id === 'new_dev' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid);
+                      
+                      return activeConversation.isProject ? activeConversation.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Developer' : activeConversation.recipientProfile?.displayName));
+                    })()}
                   </h3>
                   <div className="flex items-center gap-2">
                     {typingUsers.length > 0 ? (
