@@ -14,12 +14,12 @@ export const PaymentSettings: React.FC<PaymentSettingsProps> = ({ profile }) => 
   const [isSaving, setIsSaving] = useState(false);
 
   // Admin State
-  const [adminData, setAdminData] = useState(profile?.paymentDetails || {
-    upiId: '',
+  const [adminData, setAdminData] = useState({
+    upiId: profile?.paymentDetails?.upiId || '',
     bankDetails: {
-      accountName: '',
-      accountNumber: '',
-      ifscCode: ''
+      accountName: profile?.paymentDetails?.bankDetails?.accountName || '',
+      accountNumber: profile?.paymentDetails?.bankDetails?.accountNumber || '',
+      ifscCode: profile?.paymentDetails?.bankDetails?.ifscCode || ''
     }
   });
 

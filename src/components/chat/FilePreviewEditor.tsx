@@ -202,7 +202,7 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
         <div id="bottombar" className="flex items-center bg-[#1f1f1f] rounded-[2rem] overflow-hidden px-6 py-1 border border-white/5 shadow-2xl">
           <input 
             type="text"
-            value={captions[currentIndex]}
+            value={captions[currentIndex] || ''}
             onChange={(e) => handleCaptionChange(e.target.value)}
             placeholder="Type a message"
             className="flex-1 bg-transparent border-none outline-none text-white py-4 text-sm font-medium placeholder:text-white/20"

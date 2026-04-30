@@ -10,12 +10,12 @@ interface BusinessSettingsProps {
 }
 
 export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) => {
-  const [formData, setFormData] = useState(profile.businessInfo || {
-    name: '',
-    email: '',
-    phone: '',
-    website: '',
-    logo: ''
+  const [formData, setFormData] = useState({
+    name: profile.businessInfo?.name || '',
+    email: profile.businessInfo?.email || '',
+    phone: profile.businessInfo?.phone || '',
+    website: profile.businessInfo?.website || '',
+    logo: profile.businessInfo?.logo || ''
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
