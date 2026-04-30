@@ -1148,14 +1148,20 @@ export const markInviteUsed = async (inviteId: string) => {
 
 // Activity Tracking
 export const createVisitSession = async (userId: string) => {
+  const sessionId = `${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const docRef = doc(db, 'visit_sessions', sessionId);
   try {
-    const docRef = await addDoc(collection(db, 'visit_sessions'), {
+    await setDoc(docRef, {
       userId,
       startTime: serverTimestamp(),
       durationMinutes: 0
-    });
-    return docRef.id;
+    }, { merge: true });
+    return sessionId;
   } catch (error) {
+    // If it's a 'Document already exists' error, we just return the ID as it's already there
+    if (error instanceof Error && error.message.includes('already exists')) {
+      return sessionId;
+    }
     return handleFirestoreError(error, OperationType.CREATE, 'visit_sessions');
   }
 };

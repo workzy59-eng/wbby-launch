@@ -924,7 +924,7 @@ Created At: ${formatDate(project.createdAt)}
                                 <input 
                                   type="text" 
                                   placeholder="yourname@okaxis" 
-                                  value={settingsData.upiId}
+                                  value={settingsData.upiId || ''}
                                   onChange={(e) => setSettingsData({ ...settingsData, upiId: e.target.value })}
                                   className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-xs font-bold text-white outline-none focus:border-[#c7c42a] transition-all font-mono" 
                                 />
@@ -939,7 +939,7 @@ Created At: ${formatDate(project.createdAt)}
                                 <p className="text-[8px] font-black uppercase text-white/40 mb-1 ml-2">Primary Domain</p>
                                 <input 
                                   type="text" 
-                                  value={settingsData.skills}
+                                  value={settingsData.skills || ''}
                                   onChange={(e) => setSettingsData({ ...settingsData, skills: e.target.value })}
                                   placeholder="React, Node.js, Firebase..."
                                   className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-xs font-bold text-white outline-none focus:border-[#c7c42a] transition-all" 
@@ -1236,7 +1236,7 @@ Created At: ${formatDate(project.createdAt)}
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Project Status</label>
                   <select 
-                    value={editingProject.status}
+                    value={editingProject.status || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value as any })}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                   >
