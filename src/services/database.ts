@@ -125,8 +125,14 @@ export const uploadFile = async (file: File, folder: string = 'uploads'): Promis
 
 // User Profile Operations
 export const createUserProfile = async (user: FirebaseUser, additionalData: any = {}) => {
-  if (!user?.uid) return;
+  if (!user?.uid) {
+    console.error("CREATE USER PROFILE ERROR: No UID provided");
+    return;
+  }
+  
+  console.log("AUTH UID:", user.uid);
   const path = `users/${user.uid}`;
+  
   try {
     let role = 'client';
     const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com'];
@@ -138,19 +144,23 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
       role = 'developer';
     }
 
-    // PART 1: Strict merge using setDoc
+    // PART 2 — FIX USER WRITE METHOD: setDoc with user.uid and merge: true
     await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
+      displayName: user.displayName || "",
+      name: user.displayName || "",
+      photoURL: user.photoURL || "",
       role: role,
       status: 'online',
       lastSeen: serverTimestamp(),
       updatedAt: serverTimestamp(),
       ...additionalData
     }, { merge: true });
+    
+    console.log("User profile synced successfully for:", user.uid);
   } catch (error) {
+    console.error("Permission error or write failed for users/" + user.uid, error);
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 };
