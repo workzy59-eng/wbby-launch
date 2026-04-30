@@ -292,14 +292,11 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       console.error("Admin Projects Snapshot Error:", error);
     });
 
-    // Forbidden query: collection('users') access is restricted
-    // const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-    //   setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
-    // }, (error) => {
-    //   console.error("Admin Users Snapshot Error:", error);
-    // });
-    const unsubscribeUsers = () => {};
-    setUsers([]);
+    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
+      setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
+    }, (error) => {
+      console.error("Admin Users Snapshot Error:", error);
+    });
 
     const unsubscribeConversations = getConversations(user.uid, (convs) => {
       setConversations(convs);

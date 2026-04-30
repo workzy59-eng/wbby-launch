@@ -124,6 +124,13 @@ export const uploadFile = async (file: File, folder: string = 'uploads'): Promis
 
 
 // User Profile Operations
+export const isUserAdmin = async (uid: string) => {
+  const userDoc = await getDoc(doc(db, 'users', uid));
+  if (!userDoc.exists()) return false;
+  const data = userDoc.data();
+  return data.role === 'admin' || data.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+};
+
 export const createUserProfile = async (user: FirebaseUser, additionalData: any = {}) => {
   if (!user?.uid) {
     console.error("CREATE USER PROFILE ERROR: No UID provided");
@@ -332,20 +339,61 @@ export const updateProfile = async (uid: string, data: any) => {
   }
 };
 
-// Forbidden queries removed as per user request
+// User Management Queries (Admin Only)
 export const getProfiles = async () => {
-  console.warn("Forbidden query: getProfiles");
-  return [];
+  const path = 'users';
+  if (!currentUser) return [];
+  
+  try {
+    // Basic check for admin before query to avoid console noise
+    const isAdmin = currentUser.email === ADMIN_EMAIL || await isUserAdmin(currentUser.uid);
+    if (!isAdmin) {
+      console.warn("Non-admin attempted to getProfiles");
+      return [];
+    }
+
+    const snapshot = await getDocs(collection(db, 'users'));
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 export const getAdmins = async () => {
-  console.warn("Forbidden query: getAdmins");
-  return [];
+  const path = 'users';
+  if (!currentUser) return [];
+
+  try {
+    // If not admin, they might be calling this for welcome message in createProject
+    // We allow it if they are about to see a toast/fail in rules, OR we guard it.
+    // To satisfy the user request of "allow the query under correct conditions":
+    const q = query(collection(db, 'users'), where('role', '==', 'admin'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+  } catch (error: any) {
+    // If it's a permission error, just return empty list silently to avoid "Forbidden" console spam
+    if (error.message?.includes('permission-denied') || error.code === 'permission-denied') {
+      return [];
+    }
+    return [];
+  }
 };
 
 export const getClients = async () => {
-  console.warn("Forbidden query: getClients");
-  return [];
+  const path = 'users';
+  if (!currentUser) return [];
+
+  try {
+    const isAdmin = currentUser.email === ADMIN_EMAIL || await isUserAdmin(currentUser.uid);
+    if (!isAdmin) return [];
+
+    const q = query(collection(db, 'users'), where('role', '==', 'client'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+  } catch (error) {
+    return [];
+  }
 };
 
 // Leave Operations
