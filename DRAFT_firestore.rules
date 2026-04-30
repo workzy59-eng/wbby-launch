@@ -19,13 +19,21 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == 'workzy59@gmail.com' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        request.auth.token.email.lower() == 'workzy59@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
     }
     
     function isDeveloper() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer';
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
+        request.auth.token.email.lower() == 'sin17296174@gmail.com' ||
+        request.auth.token.email.lower() == 'aither2029@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'))
+      );
     }
 
     function incoming() {
@@ -40,12 +48,20 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function isValidRoleForEmail(email, role) {
+      let lowerEmail = email.lower();
+      return (role == 'admin' && lowerEmail == 'workzy59@gmail.com') ||
+             (role == 'developer' && (lowerEmail == 'sain17296174@gmail.com' || lowerEmail == 'sin17296174@gmail.com' || lowerEmail == 'aither2029@gmail.com')) ||
+             (role == 'client') ||
+             (role == 'sales');
+    }
+
     // --- User Validation ---
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'email']) &&
              data.uid is string && data.uid.size() <= 128 &&
              data.email is string && data.email.size() <= 128 &&
-             (!('role' in data) || data.role in ['admin', 'client', 'developer', 'sales']) &&
+             (!('role' in data) || isValidRoleForEmail(data.email, data.role)) &&
              (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
              (!('onboardingCompleted' in data) || data.onboardingCompleted is bool) &&
              (!('updatedAt' in data) || data.updatedAt == request.time);
@@ -73,9 +89,9 @@ service cloud.firestore {
 
     // --- User Profiles ---
     match /users/{userId} {
-      allow get: if isSignedIn() && isValidId(userId) && (isOwner(userId) || isAdmin() || isDeveloper());
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow list: if isAdmin();
-      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().role == 'client';
+      allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isSignedIn() && isValidId(userId) && (
         isAdmin() ||
         (isOwner(userId) && isValidUser(incoming()) && 
@@ -86,16 +102,7 @@ service cloud.firestore {
 
     // --- Projects ---
     match /projects/{projectId} {
-      allow get: if isSignedIn() && isValidId(projectId) && (
-        isOwner(existing().userId) || 
-        isAdmin() || 
-        (isDeveloper() && existing().developerId == request.auth.uid)
-      );
-      allow list: if isSignedIn() && (
-        resource.data.userId == request.auth.uid || 
-        isAdmin() || 
-        (isDeveloper() && resource.data.developerId == request.auth.uid)
-      );
+      allow read: if isSignedIn(); // Allow all logged-in users to read as requested
       allow create: if isSignedIn() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
       allow update: if isSignedIn() && isValidId(projectId) && isValidProject(incoming()) && (
         isAdmin() ||

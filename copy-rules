@@ -102,7 +102,7 @@ service cloud.firestore {
 
     // --- Projects ---
     match /projects/{projectId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn(); // Allow all logged-in users to read as requested
       allow create: if isSignedIn() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
       allow update: if isSignedIn() && isValidId(projectId) && isValidProject(incoming()) && (
         isAdmin() ||
@@ -165,7 +165,7 @@ service cloud.firestore {
     // --- Payments ---
     match /payments/{paymentId} {
       allow read: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
-      allow create: if isAdmin(); // Usually server-side or via webhook proxy
+      allow create: if isAdmin();
     }
 
     // --- Commissions ---
