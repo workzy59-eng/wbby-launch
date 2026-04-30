@@ -119,12 +119,12 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   const path = `users/${user.uid}`;
   try {
     let role = 'client';
-    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'aither2029@gmail.com', 'sain17296174@gmail.com'];
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
+    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com'];
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'sin17296174@gmail.com'];
     
-    if (user.email?.toLowerCase() === 'workzy59@gmail.com') {
+    if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
-    } else if (['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) {
+    } else if (devEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'developer';
     }
 

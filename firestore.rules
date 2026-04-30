@@ -12,14 +12,16 @@ service cloud.firestore {
     function isAdmin() {
       return isAuth() && (
         request.auth.token.email == "workzy59@gmail.com" ||
-        request.auth.token.email == "sain17296174@gmail.com" ||
-        request.auth.token.email == "aither2029@gmail.com" ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
       );
     }
 
     function isDeveloper() {
+      const email = request.auth.token.email;
       return isAuth() && (
+        email == "sain17296174@gmail.com" ||
+        email == "sin17296174@gmail.com" ||
+        email == "aither2029@gmail.com" ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "developer" ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
       );

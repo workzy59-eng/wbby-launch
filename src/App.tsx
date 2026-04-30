@@ -117,10 +117,10 @@ export default function App() {
                     user ? (
                       (profile?.role === 'admin' || 
                        user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
-                       user.email?.toLowerCase() === 'workzy59@gmail.com' ||
-                       user.email?.toLowerCase() === 'sain17296174@gmail.com' ||
-                       user.email?.toLowerCase() === 'aither2029@gmail.com') ? (
+                       user.email?.toLowerCase() === 'workzy59@gmail.com') ? (
                         <Navigate to="/admin" />
+                      ) : (['aither2029@gmail.com', 'sain17296174@gmail.com', 'sin17296174@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                        <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
                       )
@@ -163,17 +163,15 @@ export default function App() {
                   element={user ? <Settings user={user} profile={profile} /> : <Navigate to="/auth" />} 
                 />
                 <Route 
-                  path="/dashboard" 
-                  element={
+                  path="/dashboard"                   element={
                     user ? (
                       profile ? (
                         (profile.role === 'admin' || 
                          user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
-                         user.email?.toLowerCase() === 'workzy59@gmail.com' ||
-                         user.email?.toLowerCase() === 'aither2029@gmail.com' ||
-                         user.email?.toLowerCase() === 'sain17296174@gmail.com') ? (
+                         user.email?.toLowerCase() === 'workzy59@gmail.com') ? (
                           <AdminPanel user={user} profile={profile} />
-                        ) : profile.role === 'developer' ? (
+                        ) : (profile.role === 'developer' || 
+                             ['aither2029@gmail.com', 'sain17296174@gmail.com', 'sin17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
