@@ -330,12 +330,14 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     if (m.type === 'image') {
       return (
         <div 
-          className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/5 cursor-pointer bg-black/20" 
+          className="relative group/media mb-2 rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-black/40 shadow-2xl transition-all hover:scale-[1.01]" 
           onClick={(e) => { e.stopPropagation(); setSelectedImage(mediaUrl); }}
         >
-          <img src={mediaUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center">
-            <Maximize2 size={24} className="text-white drop-shadow-lg" />
+          <img src={mediaUrl} alt="Shared" className="max-w-full h-auto max-h-[400px] object-cover" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center backdrop-blur-[2px]">
+            <div className="p-3 bg-white/10 rounded-full backdrop-blur-md border border-white/20">
+              <Maximize2 size={24} className="text-white drop-shadow-lg" />
+            </div>
           </div>
         </div>
       );

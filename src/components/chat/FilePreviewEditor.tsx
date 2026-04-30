@@ -56,6 +56,20 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
     setActiveFilters(files.map(() => 'none'));
   }, [files.length]);
 
+  const handleSend = () => {
+    const data = files.map((file, i) => ({
+      file,
+      caption: captions[i]
+    }));
+    onSend(data);
+  };
+
+  const handleCaptionChange = (val: string) => {
+    const newCaptions = [...captions];
+    newCaptions[currentIndex] = val;
+    setCaptions(newCaptions);
+  };
+
   const handleRotate = () => {
     const newRotations = [...rotations];
     newRotations[currentIndex] = (newRotations[currentIndex] + 90) % 360;
@@ -102,12 +116,12 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[150] bg-[#0b141a] flex flex-col font-sans"
+      className="fixed inset-0 z-[150] bg-[#0a0a0a] flex flex-col font-sans"
     >
       <Toaster position="top-center" reverseOrder={false} />
       {/* Top Bar */}
-      <div className="flex items-center justify-between p-4 bg-[#0b141a]">
-        <button onClick={onCancel} className="p-2 text-white/70 hover:text-white transition-all">
+      <div id="topbar" className="flex items-center justify-between p-6 bg-transparent">
+        <button onClick={onCancel} className="p-3 text-white/70 hover:text-white transition-all bg-white/5 rounded-full">
           <X size={24} />
         </button>
         
@@ -127,7 +141,7 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
             <button 
               key={i} 
               onClick={tool.action}
-              className="p-2 text-white/70 hover:text-white transition-all rounded-full hover:bg-white/5"
+              className="p-2 text-white/70 hover:text-white transition-all rounded-full hover:bg-white/10"
               title={tool.label}
             >
               <tool.icon size={20} />
@@ -137,7 +151,7 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
       </div>
 
       {/* Main Preview Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      <div id="previewimg" className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
@@ -149,43 +163,28 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
             }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: 'spring', damping: 20 }}
-            className="w-full max-w-2xl h-full flex items-center justify-center"
+            className="w-full h-full flex items-center justify-center"
           >
             <img 
               src={previewUrls[currentIndex]} 
               alt="Preview" 
-              className="max-w-full max-h-full object-contain shadow-2xl rounded-sm transition-all duration-300"
+              className="max-w-[90%] max-h-[70%] object-contain shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl transition-all duration-300"
               style={{ filter: activeFilters[currentIndex] }}
             />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Caption Input */}
-      <div className="w-full max-w-3xl mx-auto px-4 mb-4">
-        <div className="relative flex items-center bg-[#202c33] rounded-xl overflow-hidden px-4 border border-white/5">
-          <input 
-            type="text"
-            value={captions[currentIndex]}
-            onChange={(e) => handleCaptionChange(e.target.value)}
-            placeholder="Type a message"
-            className="flex-1 bg-transparent border-none outline-none text-white py-4 text-sm font-medium"
-          />
-          <button className="p-2 text-white/40 hover:text-white transition-all">
-            <Smile size={24} />
-          </button>
-        </div>
-      </div>
-
-      {/* Thumbnails & Send */}
-      <div className="bg-[#0b141a] p-4 flex items-center justify-center gap-4">
+      {/* Bottom Interface */}
+      <div className="relative w-full max-w-4xl mx-auto p-4 flex flex-col gap-4">
+        {/* Thumbnails */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 max-w-full">
           {previewUrls.map((url, i) => (
             <button
               key={url}
               onClick={() => setCurrentIndex(i)}
-              className={`relative w-14 h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                i === currentIndex ? 'border-[#00a884] scale-105' : 'border-transparent opacity-50 hover:opacity-100'
+              className={`relative w-14 h-14 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
+                i === currentIndex ? 'border-[#22c55e] scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100'
               }`}
             >
               <img src={url} alt="Thumb" className="w-full h-full object-cover" />
@@ -193,15 +192,31 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
           ))}
           <button 
             onClick={onAddMore}
-            className="w-14 h-14 shrink-0 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all"
+            className="w-14 h-14 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all hover:bg-white/10"
           >
             <Plus size={24} />
           </button>
         </div>
 
+        {/* Caption Bar */}
+        <div id="bottombar" className="flex items-center bg-[#1f1f1f] rounded-[2rem] overflow-hidden px-6 py-1 border border-white/5 shadow-2xl">
+          <input 
+            type="text"
+            value={captions[currentIndex]}
+            onChange={(e) => handleCaptionChange(e.target.value)}
+            placeholder="Type a message"
+            className="flex-1 bg-transparent border-none outline-none text-white py-4 text-sm font-medium placeholder:text-white/20"
+          />
+          <button className="p-2 text-white/40 hover:text-white transition-all">
+            <Smile size={24} />
+          </button>
+        </div>
+
+        {/* Floating Send Button */}
         <button 
+          id="sendbtn"
           onClick={handleSend}
-          className="w-14 h-14 bg-[#00a884] rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 active:scale-95 transition-all shrink-0 ml-4"
+          className="absolute -right-2 bottom-4 w-[60px] h-[60px] bg-[#22c55e] rounded-full flex items-center justify-center text-white shadow-[0_10px_20px_rgba(34,197,94,0.3)] hover:scale-110 active:scale-95 transition-all shrink-0 z-20 text-2xl"
         >
           <Send size={24} className="ml-1" />
         </button>

@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects, sendMessage } from '../services/database';
+import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects, sendMessage, acceptProject } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
@@ -202,29 +202,15 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     try {
       if (!user?.uid) return;
       
-      await updateProject(projectId, {
-        status: 'accepted',
-        acceptedAt: new Date().toISOString(),
-        progress: 15,
-        developerId: user.uid,
-        assignedTo: user.uid
-      });
+      const p = unassignedProjects.find(item => item.id === projectId) || projects.find(item => item.id === projectId);
+      if (!p) throw new Error("Project not found");
 
-      // Send auto-message to client
-      const project = projects.find(p => p.id === projectId) || unassignedProjects.find(p => p.id === projectId);
-      if (project && project.userId) {
-         await sendMessage(projectId, {
-          text: "👋 Hi, I’m your developer. I’ll take care of your project and keep you updated.",
-          senderId: user?.uid,
-          senderName: profile?.displayName || 'Developer',
-          type: 'text'
-        });
-      }
+      await acceptProject(projectId, user.uid, profile?.displayName || 'Developer');
 
-      toast.success('Project accepted!');
+      setActiveTab('projects');
       setShowAcceptPopup(null);
-    } catch (error) {
-      toast.error('Failed to accept project');
+    } catch (error: any) {
+      console.error('Acceptance failed:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -619,30 +605,9 @@ Created At: ${formatDate(project.createdAt)}
                       </p>
                       
                       <button 
-                        onClick={async () => {
+                        onClick={() => {
                           if (confirm('Claim this project? You will be responsible for its delivery.')) {
-                            try {
-                              await updateProject(p.id, { 
-                                developerId: user?.uid,
-                                assignedTo: user?.uid,
-                                assignedAt: new Date().toISOString(),
-                                status: 'in-progress',
-                                progress: 10
-                              });
-
-                              // Send auto-message
-                              await sendMessage(p.id, {
-                                text: "Hi, I'm your developer. I'll take care of your project.",
-                                senderId: user?.uid,
-                                senderName: profile?.displayName || 'Developer',
-                                type: 'text'
-                              });
-
-                              toast.success('Project claimed successfully!');
-                              setActiveTab('projects');
-                            } catch (e) {
-                              toast.error('Failed to claim project');
-                            }
+                            handleAcceptProject(p.id);
                           }
                         }}
                         className="w-full py-4 bg-white text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-[#c7c42a] transition-all"

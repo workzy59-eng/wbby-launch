@@ -89,6 +89,7 @@ import {
 } from '../services/database';
 import { formatDate, isSameDay } from '../lib/utils';
 import ChatSystem from './ChatSystem';
+import FilePreviewEditor from './chat/FilePreviewEditor';
 import imageCompression from 'browser-image-compression';
 import { ADMIN_EMAIL } from '../constants';
 
@@ -168,6 +169,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [previewImage, setPreviewImage] = useState<File | null>(null);
   const [reactionAnchor, setReactionAnchor] = useState<{ x: number, y: number, messageId: string } | null>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -834,78 +836,47 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0 || !activeConversation || isSending) return;
     
-    // For single image, show preview first
-    if (files.length === 1 && files[0].type.startsWith('image/')) {
-      setPreviewImage(files[0]);
-      return;
+    const fileList = Array.from(files);
+    const images = fileList.filter(f => f.type.startsWith('image/'));
+    const others = fileList.filter(f => !f.type.startsWith('image/'));
+
+    if (images.length > 0) {
+      setPendingFiles(prev => [...prev, ...images]);
     }
 
+    if (others.length > 0) {
+      uploadNonImages(others);
+    }
+  };
+
+  const uploadNonImages = async (files: File[]) => {
+    if (!activeConversation) return;
+
     let recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
-    if (!recipientId) return;
+    if (!recipientId && !activeConversation.isProject) return;
 
     setIsSending(true);
     
     try {
-      for (let i = 0; i < files.length; i++) {
-        let file = files[i];
-        const isImage = file.type.startsWith('image/');
-        const isVideo = file.type.startsWith('video/');
-        
-        // Validate size (10MB max)
+      for (let file of files) {
         if (file.size > 10 * 1024 * 1024) {
           toast.error(`File ${file.name} is too large. Max 10MB.`);
           continue;
         }
 
-        let uploadFileSource = file;
-        let previewUrl = '';
-
-        // Compress images & Instant Preview
-        if (isImage) {
-          try {
-            const compressed = await imageCompression(file as any, { 
-              maxSizeMB: 0.2, 
-              maxWidthOrHeight: 800,
-              useWebWorker: true 
-            });
-            uploadFileSource = compressed as any;
-            previewUrl = URL.createObjectURL(compressed);
-            
-            // Add temp message for instant preview
-            const tempId = 'temp-' + Date.now() + '-' + i;
-            const tempMessage: Message = {
-              id: tempId,
-              senderId: currentUser.uid,
-              senderName: profile?.displayName || 'User',
-              text: '📷 Photo',
-              type: 'image',
-              mediaUrl: previewUrl,
-              status: 'sending',
-              createdAt: new Date(),
-              seen: false,
-              temp: true
-            };
-            setMessages(prev => [...prev, tempMessage]);
-          } catch (e) { 
-            console.error('Compression error:', e); 
-          }
-        }
-
         setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const url = await uploadFile(uploadFileSource);
+          const url = await uploadFile(file);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
-          // Final message send
-          const recipientProfile = activeConversation.recipientProfile;
-          let senderName = getEffectiveSenderName();
+          const senderName = getEffectiveSenderName();
 
           const messageData = {
             senderId: currentUser.uid,
             senderName: senderName,
-            text: isImage ? 'Sent an image' : (isVideo ? 'Sent a video' : `Shared ${file.name}`),
-            type: isImage ? 'image' : (isVideo ? 'video' : 'file'),
+            text: `Shared ${file.name}`,
+            type: 'file',
             mediaUrl: url,
             fileName: file.name,
             status: 'sent'
@@ -916,15 +887,56 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           } else if (recipientId) {
             await sendDirectMessage(recipientId, messageData);
           }
-
-          // Clean up temp message if it was an image
-          if (isImage) {
-             setMessages(prev => prev.filter(m => !m.temp));
-          }
-          
         } catch (e) {
           console.error('Upload error:', e);
           toast.error(`Failed to upload ${file.name}`);
+        }
+      }
+    } finally {
+      setIsSending(false);
+      setTimeout(() => setUploadProgress({}), 1000);
+    }
+  };
+
+  const handleSendFromEditor = async (data: { file: File; caption: string }[]) => {
+    if (!activeConversation) return;
+    setPendingFiles([]);
+    setIsSending(true);
+    
+    let recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
+
+    try {
+      for (let item of data) {
+        let file = item.file;
+        
+        // Compress images
+        try {
+          file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
+        } catch (e) { console.error(e); }
+
+        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
+        
+        try {
+          const url = await uploadFile(file);
+          setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+
+          const messageData = {
+            senderId: currentUser.uid,
+            senderName: getEffectiveSenderName(),
+            text: item.caption || 'Sent a photo',
+            type: 'image',
+            mediaUrl: url,
+            fileName: file.name,
+            status: 'sent'
+          };
+
+          if (activeConversation.isProject) {
+            await sendMessage(activeConversation.id, messageData);
+          } else if (recipientId) {
+            await sendDirectMessage(recipientId, messageData);
+          }
+        } catch (e) {
+          console.error(e);
         }
       }
     } finally {
@@ -1266,7 +1278,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               {filteredConversations.map((conv) => {
                 const unread = conv.unreadCount?.[currentUser.uid] || 0;
                 const isAdminConv = conv.id === 'new_admin' || conv.recipientProfile?.role === 'admin' || conv.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                const isDevConv = conv.id === 'new_dev' || (profile?.role === 'client' && conv.recipientProfile?.uid === assignedDeveloper?.uid);
+                const isDevConv = conv.id === 'new_dev' || (profile?.role === 'client' && (conv.recipientProfile?.uid === assignedDeveloper?.uid || conv.recipientProfile?.role === 'developer'));
                 const isSupport = isAdminConv || isDevConv;
                 
                 return (
@@ -1292,7 +1304,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       <div className="flex justify-between items-center mb-0.5">
                         <div className="flex items-center gap-2 truncate">
                           <span className="font-black text-white italic uppercase tracking-tighter truncate text-sm">
-                            {conv.isProject ? conv.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Developer' : conv.recipientProfile?.displayName))}
+                            {conv.isProject ? conv.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Your Developer' : conv.recipientProfile?.displayName))}
                           </span>
                           {profile?.favoriteConversations?.includes(conv.id) && (
                             <Star size={10} className="text-yellow-400 fill-yellow-400 shrink-0" />
@@ -1364,9 +1376,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                   <h3 className="font-black text-white text-lg italic uppercase tracking-tighter leading-tight">
                     {(() => {
                       const isAdminConv = activeConversation.id === 'new_admin' || activeConversation.recipientProfile?.role === 'admin' || activeConversation.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                      const isDevConv = activeConversation.id === 'new_dev' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid);
+                      const isDevConv = activeConversation.id === 'new_dev' || (profile?.role === 'client' && (activeConversation.recipientProfile?.uid === assignedDeveloper?.uid || activeConversation.recipientProfile?.role === 'developer'));
                       
-                      return activeConversation.isProject ? activeConversation.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Developer' : activeConversation.recipientProfile?.displayName));
+                      return activeConversation.isProject ? activeConversation.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Your Developer' : activeConversation.recipientProfile?.displayName));
                     })()}
                   </h3>
                   <div className="flex items-center gap-2">
@@ -1497,6 +1509,20 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         )}
       </div>
 
+
+      <AnimatePresence>
+        {pendingFiles.length > 0 && (
+          <FilePreviewEditor 
+            files={pendingFiles}
+            onCancel={() => setPendingFiles([])}
+            onSend={handleSendFromEditor}
+            onAddMore={() => {
+              const input = document.getElementById('file-upload') as HTMLInputElement;
+              input?.click();
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Lightbox */}
       <AnimatePresence>

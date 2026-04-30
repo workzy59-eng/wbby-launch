@@ -1639,8 +1639,8 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a] font-black">$</span>
                     <input 
                       type="number"
-                      value={systemSettings.pricing?.starter || 1499}
-                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, starter: parseInt(e.target.value) } })}
+                      value={systemSettings.pricing?.starter ?? 1499}
+                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, starter: parseInt(e.target.value) || 0 } })}
                       className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-black text-xl"
                     />
                   </div>
@@ -1651,8 +1651,8 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a] font-black">$</span>
                     <input 
                       type="number"
-                      value={systemSettings.pricing?.pro || 2999}
-                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, pro: parseInt(e.target.value) } })}
+                      value={systemSettings.pricing?.pro ?? 2999}
+                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, pro: parseInt(e.target.value) || 0 } })}
                       className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-black text-xl"
                     />
                   </div>
@@ -1663,8 +1663,8 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#c7c42a] font-black">$</span>
                     <input 
                       type="number"
-                      value={systemSettings.pricing?.enterprise || 9999}
-                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, enterprise: parseInt(e.target.value) } })}
+                      value={systemSettings.pricing?.enterprise ?? 9999}
+                      onChange={(e) => handleUpdateSettings({ pricing: { ...systemSettings.pricing!, enterprise: parseInt(e.target.value) || 0 } })}
                       className="w-full p-6 pl-12 rounded-2xl bg-black/20 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a]/50 font-black text-xl"
                     />
                   </div>

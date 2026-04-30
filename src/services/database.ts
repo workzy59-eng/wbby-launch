@@ -1,6 +1,6 @@
 import { 
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit,
-  ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove
+  ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove, runTransaction
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting } from '../types';
@@ -122,9 +122,9 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
     const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'aither2029@gmail.com', 'sain17296174@gmail.com'];
     const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
     
-    if (adminEmails.includes(user.email?.toLowerCase() || '')) {
+    if (user.email?.toLowerCase() === 'workzy59@gmail.com') {
       role = 'admin';
-    } else if (devEmails.includes(user.email?.toLowerCase() || '')) {
+    } else if (['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) {
       role = 'developer';
     }
 
@@ -142,6 +142,64 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
     }, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
+  }
+};
+
+// Implement Swiggy Style project acceptance
+export const acceptProject = async (projectId: string, developerUid: string, developerName: string) => {
+  const projectRef = doc(db, 'projects', projectId);
+  
+  try {
+    await runTransaction(db, async (transaction) => {
+      const projectDoc = await transaction.get(projectRef);
+      if (!projectDoc.exists()) throw new Error("Project does not exist");
+      
+      const projectData = projectDoc.data();
+      if (projectData.developerId) {
+        throw new Error("This project has already been accepted by another developer.");
+      }
+
+      // Update project
+      transaction.update(projectRef, {
+        developerId: developerUid,
+        status: 'in_progress',
+        acceptedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      // PART 5: Auto Chat Creation
+      const clientUid = projectData.userId;
+      const conversationId = getConversationId(clientUid, developerUid);
+      const conversationRef = doc(db, 'conversations', conversationId);
+      
+      transaction.set(conversationRef, {
+        participants: [clientUid, developerUid],
+        updatedAt: serverTimestamp(),
+        lastMessage: "Hi, I’m your developer. I’ll take care of your project.",
+        lastMessageAt: serverTimestamp(),
+        projectId: projectId,
+        unreadCount: {
+          [clientUid]: 1,
+          [developerUid]: 0
+        }
+      }, { merge: true });
+
+      const messagesRef = doc(collection(db, 'conversations', conversationId, 'messages'));
+      transaction.set(messagesRef, {
+        text: "Hi, I’m your developer. I’ll take care of your project.",
+        senderId: developerUid,
+        senderName: developerName,
+        createdAt: serverTimestamp(),
+        status: 'sent',
+        seen: false
+      });
+    });
+
+    toast.success("Project accepted! Chat initiated with client.");
+  } catch (error: any) {
+    console.error("Acceptance failed:", error);
+    toast.error(error.message || "Failed to accept project.");
+    throw error;
   }
 };
 
@@ -947,6 +1005,11 @@ export const getSystemSettings = async () => {
     notifications: {
       newMessages: true,
       newProjects: true,
+    },
+    pricing: {
+      starter: 1499,
+      pro: 3499,
+      enterprise: 9999
     },
     maintenanceMode: false,
     allowNewRegistrations: true,

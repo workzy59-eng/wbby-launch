@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { initializeFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer, or, memoryLocalCache, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { initializeFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer, or, memoryLocalCache, arrayUnion, arrayRemove, runTransaction } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -42,6 +42,6 @@ export const signUpWithEmail = (email: string, pass: string) => createUserWithEm
 
 export { 
   collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, onAuthStateChanged, limit,
-  ref, uploadBytes, getDownloadURL, uploadBytesResumable, getDocFromServer, or, arrayUnion, arrayRemove
+  ref, uploadBytes, getDownloadURL, uploadBytesResumable, getDocFromServer, or, arrayUnion, arrayRemove, runTransaction
 };
 export type { FirebaseUser };
