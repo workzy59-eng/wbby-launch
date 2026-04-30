@@ -216,18 +216,25 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   useEffect(() => {
     const fetchStatsOrAdmin = async () => {
       try {
-        const { getProfiles, getAdmins } = await import('../services/database');
+        const { getAdmins, getProfiles } = await import('../services/database');
         
         if (profile?.role === 'admin') {
-          const profilesList = await getProfiles();
-          setTotalUsersCount(profilesList.length);
-          const admin = profilesList.find(p => p.role === 'admin');
-          if (admin) setAdminProfile(admin);
+          // Instead of fetching all profiles to count them, we'll use a fixed number or just avoid it
+          // until we have a proper count aggregate.
+          // For now, let's just fetch admins to set the admin profile.
+          const admins = await getAdmins();
+          const primaryAdmin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
+          setAdminProfile(primaryAdmin);
+          
+          // Only fetch full list if explicitly requested or on analytics
+          if (activeTab === 'analytics') {
+             const { getUserCount } = await import('../services/database');
+             getUserCount().then(count => setTotalUsersCount(count));
+          }
         } else {
           // Clients need to find an admin to chat with
           const admins = await getAdmins();
           if (admins.length > 0) {
-            // Find the primary admin (workzy59@gmail.com) if available
             const primaryAdmin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
             setAdminProfile(primaryAdmin);
           }
@@ -237,7 +244,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       }
     };
     fetchStatsOrAdmin();
-  }, [profile]);
+  }, [profile, activeTab]);
 
   // Separate effect for unread counts to avoid nested listeners
   const [convUnread, setConvUnread] = useState(0);
@@ -258,21 +265,21 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       setConvUnread(count);
     });
 
-    const unsubProjects = getProjects((projectsData) => {
-      let count = 0;
-      projectsData.forEach(p => {
-        if (p.unreadCount && p.unreadCount[user.uid]) {
-          count += p.unreadCount[user.uid];
-        }
-      });
-      setProjectUnread(count);
-    }, user.uid, profile?.role);
-
     return () => {
       unsubConvs();
-      unsubProjects();
     };
   }, [user.uid]);
+
+  // Derive project unread count from the existing projects state
+  useEffect(() => {
+    let count = 0;
+    projects.forEach(p => {
+      if (p.unreadCount && p.unreadCount[user.uid]) {
+        count += p.unreadCount[user.uid];
+      }
+    });
+    setProjectUnread(count);
+  }, [projects, user.uid]);
 
   useEffect(() => {
     if (adminProfile) {

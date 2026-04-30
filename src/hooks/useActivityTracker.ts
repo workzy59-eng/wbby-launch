@@ -11,8 +11,12 @@ export function useActivityTracker(userId: string | undefined) {
       try {
         const id = await createVisitSession(userId);
         sessionIdRef.current = id;
-      } catch (err) {
-        console.error("Failed to start visit session:", err);
+      } catch (err: any) {
+        if (err.message?.includes('Quota') || err.message?.includes('resource-exhausted')) {
+           console.warn("Activity tracking paused due to quota limits.");
+        } else {
+           console.error("Failed to start visit session:", err);
+        }
       }
     };
 

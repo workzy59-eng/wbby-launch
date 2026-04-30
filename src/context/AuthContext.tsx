@@ -40,12 +40,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         profileUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
           if (docSnap.exists()) {
-            setProfile(docSnap.data() as UserProfile);
+            setProfile({ uid: docSnap.id, ...docSnap.data() } as UserProfile);
           }
           setLoading(false);
         }, (error) => {
-          console.error("Auth Profile Snapshot Error:", error);
-          setLoading(false);
+          if (error.message?.includes('Quota') || error.message?.includes('resource-exhausted')) {
+            console.warn("Auth Profile listener failed due to quota. Attempting fallback...");
+            // Try a one-time fetch as fallback if snapshot fails
+            getUserProfile(firebaseUser.uid).then(p => {
+              if (p) setProfile(p);
+              setLoading(false);
+            }).catch(() => setLoading(false));
+          } else {
+            console.error("Auth Profile Snapshot Error:", error);
+            setLoading(false);
+          }
         });
       } else {
         setProfile(null);

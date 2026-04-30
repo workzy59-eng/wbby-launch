@@ -143,7 +143,8 @@ service cloud.firestore {
 
     match /visit_sessions/{id} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow read: if isAdmin();
+      allow update: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
+      allow read: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
     }
 
     // --- Meetings ---

@@ -103,28 +103,18 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       setLoading(false);
     }, user.uid, 'developer');
 
-    const unsubUnassigned = getUnassignedProjects((projs) => {
-      setUnassignedProjects(projs);
-    });
-
-    const fetchPayments = async () => {
-      try {
-        // Payments and Users/Clients collection global access is forbidden for developers
-        // We only use the projects and conversations which are already handled by subscriptions
-        setPayments([]);
-        setClients([]);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      }
-    };
-
-    fetchPayments();
+    let unsubUnassigned = () => {};
+    if (activeTab === 'pool' || activeTab === 'dashboard') {
+      unsubUnassigned = getUnassignedProjects((projs) => {
+        setUnassignedProjects(projs);
+      });
+    }
 
     return () => {
       unsubProjects();
       unsubUnassigned();
     };
-  }, [user?.uid]);
+  }, [user?.uid, activeTab]);
 
   // Sync settings when profile updates
   useEffect(() => {

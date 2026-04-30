@@ -8,11 +8,58 @@
   --font-mono: "JetBrains Mono", monospace;
   --color-primary: #c7c42a;
   --color-primary-foreground: #000000;
+  --color-gold: #D4AF37;
+  --color-beige: #F5F5DC;
+  --color-ocean: #002147;
+  --color-neon-red: #ff3e3e;
+  --color-neon-blue: #00f2ff;
+  --color-carbon: #1a1a1a;
+  --color-silver: #e5e5e5;
+  --color-charcoal: #121212;
+  --color-luxury-black: #050505;
   --color-background: #050505;
   --color-card: #0a0a0a;
   --color-border: rgba(255, 255, 255, 0.08);
   --color-text: #ffffff;
   --color-subtext: rgba(255, 255, 255, 0.5);
+}
+
+.luxury-text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #a1a1a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-text-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F5F5DC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-morphism-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.perspective-2000 {
+  perspective: 2000px;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 
 @keyframes slam-in {

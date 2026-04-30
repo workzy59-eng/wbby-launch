@@ -19,6 +19,7 @@ const SalesDashboard = React.lazy(() => import('./pages/SalesDashboard'));
 const Gym = React.lazy(() => import('./pages/Gym'));
 const Resort = React.lazy(() => import('./pages/Resort'));
 const Autos = React.lazy(() => import('./pages/Autos'));
+const Cars = React.lazy(() => import('./pages/Cars'));
 const Clothing = React.lazy(() => import('./pages/Clothing'));
 const About = React.lazy(() => import('./pages/About'));
 const Contact = React.lazy(() => import('./pages/Contact'));
@@ -227,6 +228,10 @@ export default function App() {
                 <Route 
                   path="/portfolio/autos" 
                   element={<Autos />} 
+                />
+                <Route 
+                  path="/portfolio/cars" 
+                  element={<Cars />} 
                 />
                 <Route 
                   path="/portfolio/clothing" 

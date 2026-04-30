@@ -1,6 +1,6 @@
 import { 
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit,
-  ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove, runTransaction, onAuthStateChanged
+  ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove, runTransaction, onAuthStateChanged, getCountFromServer
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting } from '../types';
@@ -324,9 +324,10 @@ export const getUserProfile = async (uid: string) => {
   const path = `users/${uid}`;
   try {
     const userDoc = await getDoc(doc(db, 'users', uid));
-    return userDoc.exists() ? userDoc.data() : null;
+    return userDoc.exists() ? { uid: userDoc.id, ...userDoc.data() } as UserProfile : null;
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
+    return null;
   }
 };
 
@@ -340,6 +341,19 @@ export const updateProfile = async (uid: string, data: any) => {
 };
 
 // User Management Queries (Admin Only)
+export const getUserCount = async () => {
+  if (!currentUser) return 0;
+  try {
+    const q = query(collection(db, 'users'));
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
+  } catch (error: any) {
+    if (error.message?.includes('Quota')) return 0;
+    console.error("Error getting user count:", error);
+    return 0;
+  }
+};
+
 export const getProfiles = async () => {
   const path = 'users';
   if (!currentUser) return [];
@@ -352,28 +366,43 @@ export const getProfiles = async () => {
       return [];
     }
 
-    const snapshot = await getDocs(collection(db, 'users'));
+    // Limit large fetches
+    const snapshot = await getDocs(query(collection(db, 'users'), limit(200)));
     return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes('Quota')) return [];
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
   }
 };
 
+// Cache for admin profiles to avoid repeated reads
+let cachedAdmins: UserProfile[] | null = null;
+let lastAdminFetch = 0;
+const CACHE_STALE_TIME = 1000 * 60 * 5; // 5 minutes
+
 export const getAdmins = async () => {
   const path = 'users';
   if (!currentUser) return [];
 
+  // Return cached version if still fresh
+  if (cachedAdmins && (Date.now() - lastAdminFetch < CACHE_STALE_TIME)) {
+    return cachedAdmins;
+  }
+
   try {
-    // If not admin, they might be calling this for welcome message in createProject
-    // We allow it if they are about to see a toast/fail in rules, OR we guard it.
-    // To satisfy the user request of "allow the query under correct conditions":
-    const q = query(collection(db, 'users'), where('role', '==', 'admin'));
+    // We filter by role=admin and limit to avoid massive reads
+    const q = query(collection(db, 'users'), where('role', '==', 'admin'), limit(5));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+    const admins = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+    
+    cachedAdmins = admins;
+    lastAdminFetch = Date.now();
+    return admins;
   } catch (error: any) {
-    // If it's a permission error, just return empty list silently to avoid "Forbidden" console spam
-    if (error.message?.includes('permission-denied') || error.code === 'permission-denied') {
+    // If it's a permission error or quota error, return empty silenty to prevent app crash
+    if (error.message?.includes('permission-denied') || error.code === 'permission-denied' || error.message?.includes('Quota')) {
+      if (cachedAdmins) return cachedAdmins; // Use stale cache if quota hit
       return [];
     }
     return [];
@@ -588,17 +617,21 @@ export const getProjects = (callback: (projects: any[]) => void, userId?: string
   if (!currentUser) return;
   const path = 'projects';
   
-  let q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
+  let q;
   
   if (role === 'client' && userId) {
-    q = query(collection(db, 'projects'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    q = query(collection(db, 'projects'), where('userId', '==', userId), orderBy('createdAt', 'desc'), limit(50));
   } else if (role === 'developer' && userId) {
     // My projects
     q = query(
       collection(db, "projects"),
       where("developerId", "==", currentUser.uid),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
+      limit(50)
     );
+  } else {
+    // Admin or fallback - added limit
+    q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(100));
   }
 
   return onSnapshot(q, (snapshot) => {
@@ -607,6 +640,11 @@ export const getProjects = (callback: (projects: any[]) => void, userId?: string
       .filter(p => p.isDeleted !== true);
     callback(projects);
   }, (error) => {
+    // Don't throw for quota errors in background listeners
+    if (error.message?.includes('Quota') || error.message?.includes('resource-exhausted')) {
+       console.warn("Project listener paused due to quota");
+       return;
+    }
     handleFirestoreError(error, OperationType.LIST, path);
   });
 };
@@ -1009,19 +1047,47 @@ export const getDirectMessages = (currentUserUid: string, recipientId: string, c
   });
 };
 
+export const getProjectUnreadNotifications = (callback: (projects: any[]) => void) => {
+  if (!currentUser) return;
+  const path = 'projects';
+  
+  // Only listen to projects that have unread messages for admin
+  // Note: Firestore doesn't support 'unreadCount.admin > 0' efficiently across all docs without an index 
+  // but we can try to at least filter by status or a smaller window.
+  // Actually, a better way is to listen to recent projects.
+  const q = query(
+    collection(db, 'projects'), 
+    orderBy('updatedAt', 'desc'), 
+    limit(30)
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const projects = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as Project))
+      .filter(p => !p.isDeleted);
+    callback(projects);
+  }, (error) => {
+    if (error.message?.includes('Quota')) return;
+    console.debug("Unread notification listener error:", error);
+  });
+};
+
 export const getConversations = (userId: string, callback: (conversations: any[]) => void) => {
   if (!currentUser) return;
   const path = 'conversations';
   // Conversations
   const q = query(
     collection(db, "conversations"),
-    where("participants", "array-contains", currentUser.uid)
+    where("participants", "array-contains", currentUser.uid),
+    orderBy("updatedAt", "desc"),
+    limit(50)
   );
 
   return onSnapshot(q, (snapshot) => {
     const conversations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     callback(conversations);
   }, (error) => {
+    if (error.message?.includes('Quota')) return;
     handleFirestoreError(error, OperationType.LIST, path);
   });
 };
@@ -1235,20 +1301,24 @@ export const getVisitSessions = async (userId?: string, role?: string) => {
   let q;
   if (isTrulyAdmin) {
     if (userId) {
-      q = query(collection(db, 'visit_sessions'), where('userId', '==', userId), orderBy('startTime', 'desc'));
+      q = query(collection(db, 'visit_sessions'), where('userId', '==', userId), orderBy('startTime', 'desc'), limit(100));
     } else {
-      q = query(collection(db, 'visit_sessions'), orderBy('startTime', 'desc'));
+      q = query(collection(db, 'visit_sessions'), orderBy('startTime', 'desc'), limit(100));
     }
   } else {
     // Force filter by current user if not truly admin
-    q = query(collection(db, 'visit_sessions'), where('userId', '==', currentUser?.uid), orderBy('startTime', 'desc'));
+    q = query(collection(db, 'visit_sessions'), where('userId', '==', currentUser?.uid), orderBy('startTime', 'desc'), limit(50));
   }
   
   try {
     if (!currentUser) return [];
     const snap = await getDocs(q);
     return snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes('Quota')) {
+       console.warn("Quota exceeded fetching sessions");
+       return [];
+    }
     console.error("Error fetching visit sessions:", error);
     return [];
   }

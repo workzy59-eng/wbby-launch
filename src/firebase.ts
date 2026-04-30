@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { initializeFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer, or, memoryLocalCache, arrayUnion, arrayRemove, runTransaction } from 'firebase/firestore';
+import { initializeFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer, or, memoryLocalCache, arrayUnion, arrayRemove, runTransaction, getCountFromServer } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -25,7 +25,7 @@ async function testFirestoreConnection() {
     await getDocFromServer(doc(db, '_system_', 'connectivity_test'));
     console.log("✅ Firestore connection verified");
   } catch (error: any) {
-    if (error?.message?.includes('the client is offline')) {
+    if (error?.message?.includes('the client offline')) {
       console.error("❌ Firestore Error: The client is offline. Check your Firebase configuration and authorized domains.");
     } else {
       console.warn("ℹ️ Firestore connectivity test note:", error?.message || error);
@@ -42,6 +42,6 @@ export const signUpWithEmail = (email: string, pass: string) => createUserWithEm
 
 export { 
   collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, onAuthStateChanged, limit,
-  ref, uploadBytes, getDownloadURL, uploadBytesResumable, getDocFromServer, or, arrayUnion, arrayRemove, runTransaction
+  ref, uploadBytes, getDownloadURL, uploadBytesResumable, getDocFromServer, or, arrayUnion, arrayRemove, runTransaction, getCountFromServer
 };
 export type { FirebaseUser };

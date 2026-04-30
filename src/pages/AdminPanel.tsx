@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc, serverTimestamp } from '../firebase';
+import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc, serverTimestamp, orderBy, limit } from '../firebase';
 import { UserProfile, Project, ProjectStatus } from '../types';
 import { Link } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
@@ -59,7 +59,7 @@ import {
   Bar
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -272,11 +272,10 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   }
 
   useEffect(() => {
-    // Only set up admin snapshots if user is admin
     if (!isUserAdmin) return;
-
-    // Listen to all projects for unread counts
-    const unsubUnread = getProjects((projectsData) => {
+    
+    // Global notification listeners - only once on mount/auth change
+    const unsubUnread = getProjectUnreadNotifications((projectsData) => {
       const counts: Record<string, number> = {};
       projectsData.forEach(p => {
         if (p.unreadCount && p.unreadCount['admin']) {
@@ -286,26 +285,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       setProjectUnreadCounts(counts);
     });
 
-    const unsubscribeProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
-      setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
-    }, (error) => {
-      console.error("Admin Projects Snapshot Error:", error);
-    });
-
-    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
-    }, (error) => {
-      console.error("Admin Users Snapshot Error:", error);
-    });
-
     const unsubscribeConversations = getConversations(user.uid, (convs) => {
       setConversations(convs);
-    });
-
-    const unsubscribeDevInvites = onSnapshot(collection(db, 'developer_invites'), (snapshot) => {
-      setDeveloperInvites(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (error) => {
-      console.error("Admin DevInvites Snapshot Error:", error);
     });
 
     getSystemSettings().then(settings => {
@@ -313,13 +294,68 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     });
 
     return () => {
-      unsubUnread();
+      unsubUnread?.();
+      unsubscribeConversations?.();
+    };
+  }, [user.uid, isUserAdmin]); // NOT dependent on activeTab
+
+  useEffect(() => {
+    // Tab-specific data loading
+    if (!isUserAdmin) return;
+    
+    let unsubscribeProjects = () => {};
+    let unsubscribeUsers = () => {};
+    let unsubscribeDevInvites = () => {};
+
+    if (activeTab === 'dashboard' || activeTab === 'projects' || activeTab === 'recycle') {
+      const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(100));
+      unsubscribeProjects = onSnapshot(q, (snapshot) => {
+        setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+      }, (error) => {
+        if (!error.message.includes('Quota')) console.error("Admin Projects Snapshot Error:", error);
+      });
+    } else if (activeTab === 'requests') {
+      const q = query(collection(db, 'projects'), where('developerId', '==', null), where('isDeleted', '==', false), limit(50));
+      unsubscribeProjects = onSnapshot(q, (snapshot) => {
+        setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+      }, (error) => {
+        if (!error.message.includes('Quota')) console.error("Admin Requests Snapshot Error:", error);
+      });
+    } else if (activeTab === 'active' || activeTab === 'my-tasks') {
+      const q = query(collection(db, 'projects'), where('developerId', '!=', null), where('isDeleted', '==', false), limit(50));
+      unsubscribeProjects = onSnapshot(q, (snapshot) => {
+        setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+      }, (error) => {
+        if (!error.message.includes('Quota')) console.error("Admin Active Snapshot Error:", error);
+      });
+    }
+
+    if (activeTab === 'dashboard' || activeTab === 'clients') {
+      const q = query(collection(db, 'users'), where('role', '==', 'client'));
+      unsubscribeUsers = onSnapshot(q, (snapshot) => {
+        setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
+      });
+    } else if (activeTab === 'developers') {
+      const q = query(collection(db, 'users'), where('role', '==', 'developer'));
+      unsubscribeUsers = onSnapshot(q, (snapshot) => {
+        setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
+      });
+    }
+
+    if (activeTab === 'system' && appTab === 'invites') {
+      unsubscribeDevInvites = onSnapshot(collection(db, 'developer_invites'), (snapshot) => {
+        setDeveloperInvites(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }, (error) => {
+        if (!error.message.includes('Quota')) console.error("Admin DevInvites Snapshot Error:", error);
+      });
+    }
+
+    return () => {
       unsubscribeProjects();
       unsubscribeUsers();
-      unsubscribeConversations();
       unsubscribeDevInvites();
     };
-  }, [user.uid, isUserAdmin]);
+  }, [user.uid, isUserAdmin, activeTab, appTab]);
 
   const handleAccept = async (projectId: string) => {
     try {
