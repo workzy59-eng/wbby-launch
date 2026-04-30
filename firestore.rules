@@ -38,6 +38,13 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function isWhitelistedDeveloper() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
+        request.auth.token.email.lower() == 'aither2029@gmail.com'
+      );
+    }
+
     // =========================
     // USERS
     // =========================
@@ -66,10 +73,12 @@ service cloud.firestore {
       );
 
       // Only the owner, assigned developer, or admin can update
+      // Whitelisted developers can accept unassigned projects
       allow update: if isAuth() && (
         existing().userId == request.auth.uid ||
         (existing().developerId != null && existing().developerId == request.auth.uid) ||
-        isAdmin()
+        isAdmin() ||
+        (existing().developerId == null && incoming().developerId == request.auth.uid && isWhitelistedDeveloper())
       );
 
       allow delete: if isAdmin();
