@@ -89,8 +89,7 @@ service cloud.firestore {
 
     // --- User Profiles ---
     match /users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow list: if isAdmin();
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isSignedIn() && isValidId(userId) && (
         isAdmin() ||

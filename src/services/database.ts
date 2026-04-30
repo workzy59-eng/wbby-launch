@@ -1,11 +1,21 @@
 import { 
   db, auth, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit,
-  ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove, runTransaction
+  ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove, runTransaction, onAuthStateChanged
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting } from '../types';
 import { ADMIN_EMAIL } from '../constants';
 import { toast } from 'react-hot-toast';
+
+export let currentUser: FirebaseUser | null = null;
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    currentUser = null;
+    return;
+  }
+  currentUser = user;
+});
 
 export enum OperationType {
   CREATE = 'create',
@@ -47,12 +57,12 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   const errInfo: FirestoreErrorInfo = {
     error: errorMessage,
     authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+      userId: currentUser?.uid,
+      email: currentUser?.email,
+      emailVerified: currentUser?.emailVerified,
+      isAnonymous: currentUser?.isAnonymous,
+      tenantId: currentUser?.tenantId,
+      providerInfo: currentUser?.providerData?.map(provider => ({
         providerId: provider.providerId,
         email: provider.email,
         displayName: provider.displayName,
@@ -146,33 +156,33 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
 };
 
 // Implement Swiggy Style project acceptance
-export const acceptProject = async (projectId: string, developerUid: string, developerName: string) => {
-  const projectRef = doc(db, 'projects', projectId);
+export const acceptProject = async (projectId: string) => {
+  if (!currentUser) throw new Error("Auth required");
   
   try {
-    await runTransaction(db, async (transaction) => {
-      const projectDoc = await transaction.get(projectRef);
-      if (!projectDoc.exists()) throw new Error("Project does not exist");
-      
-      const projectData = projectDoc.data();
-      if (projectData.developerId) {
-        throw new Error("This project has already been accepted by another developer.");
-      }
+    await runTransaction(db, async (tx) => {
+      const ref = doc(db, "projects", projectId);
+      const snap = await tx.get(ref);
 
-      // Update project
-      transaction.update(projectRef, {
-        developerId: developerUid,
-        status: 'in_progress',
+      if (!snap.exists()) throw "Not found";
+
+      if (snap.data().developerId) throw "Already taken";
+
+      tx.update(ref, {
+        developerId: currentUser!.uid,
+        status: "in_progress",
         acceptedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
 
       // PART 5: Auto Chat Creation
+      const projectData = snap.data();
       const clientUid = projectData.userId;
+      const developerUid = currentUser!.uid;
       const conversationId = getConversationId(clientUid, developerUid);
       const conversationRef = doc(db, 'conversations', conversationId);
       
-      transaction.set(conversationRef, {
+      tx.set(conversationRef, {
         participants: [clientUid, developerUid],
         updatedAt: serverTimestamp(),
         lastMessage: "Hi, I’m your developer. I’ll take care of your project.",
@@ -185,10 +195,9 @@ export const acceptProject = async (projectId: string, developerUid: string, dev
       }, { merge: true });
 
       const messagesRef = doc(collection(db, 'conversations', conversationId, 'messages'));
-      transaction.set(messagesRef, {
+      tx.set(messagesRef, {
         text: "Hi, I’m your developer. I’ll take care of your project.",
         senderId: developerUid,
-        senderName: developerName,
         createdAt: serverTimestamp(),
         status: 'sent',
         seen: false
@@ -198,7 +207,7 @@ export const acceptProject = async (projectId: string, developerUid: string, dev
     toast.success("Project accepted! Chat initiated with client.");
   } catch (error: any) {
     console.error("Acceptance failed:", error);
-    toast.error(error.message || "Failed to accept project.");
+    toast.error(typeof error === 'string' ? error : (error.message || "Failed to accept project."));
     throw error;
   }
 };
@@ -313,39 +322,20 @@ export const updateProfile = async (uid: string, data: any) => {
   }
 };
 
+// Forbidden queries removed as per user request
 export const getProfiles = async () => {
-  const path = 'users';
-  try {
-    const snapshot = await getDocs(collection(db, 'users'));
-    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-  } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
-    return [];
-  }
+  console.warn("Forbidden query: getProfiles");
+  return [];
 };
 
 export const getAdmins = async () => {
-  const path = 'users';
-  try {
-    const q = query(collection(db, 'users'), where('role', '==', 'admin'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-  } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
-    return [];
-  }
+  console.warn("Forbidden query: getAdmins");
+  return [];
 };
 
 export const getClients = async () => {
-  const path = 'users';
-  try {
-    const q = query(collection(db, 'users'), where('role', '==', 'client'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-  } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
-    return [];
-  }
+  console.warn("Forbidden query: getClients");
+  return [];
 };
 
 // Leave Operations
@@ -431,18 +421,22 @@ export const getProject = async (projectId: string) => {
 };
 
 // Project Operations
-export const createProject = async (projectData: any) => {
+export const createProject = async (form: any) => {
+  if (!currentUser) throw new Error("Auth required");
   const path = 'projects';
   try {
-    const docRef = await addDoc(collection(db, 'projects'), {
-      ...projectData,
+    const docRef = await addDoc(collection(db, "projects"), {
+      userId: currentUser.uid,
+      businessName: form.businessName,
+      status: "pending",
+      developerId: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      status: 'Waiting for Review',
-      paymentStatus: projectData.paymentStatus || 'paid', // Default to paid to allow usage without paying
+      paymentStatus: form.paymentStatus || 'paid',
       progress: 0,
       isDeleted: false,
-      isLocked: false, // Unlock by default if allowed without paying
+      isLocked: false,
+      onboardingData: form.onboardingData || null
     });
 
     const projectId = docRef.id;
@@ -452,11 +446,11 @@ export const createProject = async (projectData: any) => {
       if (admins.length > 0) {
         const admin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
         const adminUid = admin.uid;
-        const clientUid = projectData.userId;
-        const clientName = projectData.userName || 'Client';
+        const clientUid = currentUser.uid;
+        const clientName = currentUser.displayName || 'Client';
         
         const conversationId = getConversationId(adminUid, clientUid);
-        const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${projectData.businessName}" has been successfully received. A developer will claim your project and contact you shortly. 👋\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
+        const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${form.businessName}" has been successfully received. A developer will claim your project and contact you shortly. 👋\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
 
         await setDoc(doc(db, 'conversations', conversationId), {
           participants: [adminUid, clientUid],
@@ -510,13 +504,13 @@ export const getProjectsAsync = async (userId?: string, developerId?: string) =>
     
     // If not admin and no specific filter, force filter by current user
     if (!userId && !developerId) {
-      const userDoc = auth.currentUser ? await getDoc(doc(db, 'users', auth.currentUser.uid)) : null;
+      const userDoc = currentUser ? await getDoc(doc(db, 'users', currentUser.uid)) : null;
       const role = userDoc?.exists() ? userDoc.data().role : 'client';
-      const isAdmin = role === 'admin' || auth.currentUser?.email === ADMIN_EMAIL;
+      const isAdmin = role === 'admin' || currentUser?.email === ADMIN_EMAIL;
       
-      if (!isAdmin && auth.currentUser) {
+      if (!isAdmin && currentUser) {
         // Default to client filter if not admin
-        q = query(collection(db, 'projects'), where('userId', '==', auth.currentUser.uid), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
+        q = query(collection(db, 'projects'), where('userId', '==', currentUser.uid), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
       }
     } else if (userId) {
       q = query(collection(db, 'projects'), where('userId', '==', userId), where('isDeleted', '==', false), orderBy('createdAt', 'desc'));
@@ -533,18 +527,23 @@ export const getProjectsAsync = async (userId?: string, developerId?: string) =>
 };
 
 export const getProjects = (callback: (projects: any[]) => void, userId?: string, role?: string) => {
+  if (!currentUser) return;
   const path = 'projects';
-  // Use a more lenient query that doesn't strictly require isDeleted field for existing docs
+  
   let q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
   
   if (role === 'client' && userId) {
     q = query(collection(db, 'projects'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
   } else if (role === 'developer' && userId) {
-    q = query(collection(db, 'projects'), where('developerId', '==', userId), orderBy('createdAt', 'desc'));
+    // My projects
+    q = query(
+      collection(db, "projects"),
+      where("developerId", "==", currentUser.uid),
+      orderBy('createdAt', 'desc')
+    );
   }
 
   return onSnapshot(q, (snapshot) => {
-    // Filter in-memory for isDeleted for better robustness with existing docs
     const projects = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() } as Project))
       .filter(p => p.isDeleted !== true);
@@ -556,10 +555,10 @@ export const getProjects = (callback: (projects: any[]) => void, userId?: string
 
 export const getUnassignedProjects = (callback: (projects: Project[]) => void) => {
   const path = 'projects';
+  // Pending projects
   const q = query(
-    collection(db, 'projects'), 
-    where('developerId', '==', null),
-    where('isDeleted', '==', false), 
+    collection(db, "projects"),
+    where("status", "==", "pending"),
     orderBy('createdAt', 'desc')
   );
 
@@ -601,31 +600,24 @@ export const getConversationId = (uid1: string, uid2: string) => {
 };
 
 export const sendMessage = async (projectId: string, messageData: any) => {
-  if (!auth.currentUser) return;
+  if (!currentUser) return;
   const path = `projects/${projectId}/messages`;
   try {
-    const text = messageData.text || null;
-    const type = messageData.type || (messageData.imageUrl || messageData.mediaUrl ? 'image' : 'text');
-    const imageUrl = messageData.imageUrl || messageData.mediaUrl || null;
+    const message = messageData.text || '';
+    const imageUrl = messageData.imageUrl || null;
 
-    const docRef = await addDoc(collection(db, 'projects', projectId, 'messages'), {
-      text,
-      imageUrl,
-      senderId: auth.currentUser.uid,
-      senderName: messageData.senderName || auth.currentUser.displayName || 'User',
-      type,
-      createdAt: serverTimestamp(),
-      seen: false,
-      status: 'sent',
-      reactions: {},
-      replyTo: messageData.replyTo || null,
+    const docRef = await addDoc(collection(db, 'conversations', projectId, 'messages'), {
+      text: message || null,
+      imageUrl: imageUrl || null,
+      senderId: currentUser.uid,
+      createdAt: serverTimestamp()
     });
 
     // Update project metadata
     await updateDoc(doc(db, 'projects', projectId), {
-      lastMessage: text || (imageUrl ? '📷 Photo' : 'New message'),
+      lastMessage: message || (imageUrl ? '📷 Photo' : 'New message'),
       lastMessageAt: serverTimestamp(),
-      lastSenderId: auth.currentUser.uid,
+      lastSenderId: currentUser.uid,
       updatedAt: serverTimestamp(),
     });
 
@@ -636,13 +628,12 @@ export const sendMessage = async (projectId: string, messageData: any) => {
 };
 
 export const sendDirectMessage = async (recipientId: string, messageData: any) => {
-  if (!auth.currentUser) return;
-  const conversationId = getConversationId(auth.currentUser.uid, recipientId);
+  if (!currentUser) return;
+  const conversationId = getConversationId(currentUser.uid, recipientId);
   const path = `conversations/${conversationId}`;
   try {
-    const text = messageData.text || '';
-    const type = messageData.type || (messageData.fileUrl || messageData.mediaUrl || messageData.fileData ? 'image' : 'text');
-    const mediaUrl = messageData.mediaUrl || messageData.fileUrl || messageData.imageUrl || messageData.fileData || null;
+    const message = messageData.text || '';
+    const imageUrl = messageData.imageUrl || null;
 
     const convRef = doc(db, 'conversations', conversationId);
     const convDoc = await getDoc(convRef);
@@ -653,33 +644,24 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
     
     unreadCount[recipientId] = (unreadCount[recipientId] || 0) + 1;
 
-    let lastMessagePreview = text;
-    if (type === 'image') lastMessagePreview = '📷 Image';
-    else if (type === 'video') lastMessagePreview = '🎥 Video';
-    else if (type === 'file') lastMessagePreview = '📁 File';
-
     await setDoc(convRef, {
-      lastMessage: lastMessagePreview,
+      lastMessage: message || (imageUrl ? '📷 Photo' : 'New message'),
       lastMessageAt: serverTimestamp(),
-      lastSenderId: auth.currentUser.uid,
-      participants: [auth.currentUser.uid, recipientId],
+      lastSenderId: currentUser.uid,
+      participants: [currentUser.uid, recipientId],
       unreadCount,
       updatedAt: serverTimestamp(),
     }, { merge: true });
 
-    const docRef = await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
-      ...messageData,
-      text,
-      type,
-      mediaUrl,
-      conversationId,
-      createdAt: serverTimestamp(),
-      status: 'sent',
-      seen: false,
-      attachments: messageData.attachments || [],
-      replyTo: messageData.replyTo || null,
-      reactions: {},
-    });
+    const docRef = await addDoc(
+      collection(db, "conversations", conversationId, "messages"),
+      {
+        text: message || null,
+        imageUrl: imageUrl || null,
+        senderId: currentUser.uid,
+        createdAt: serverTimestamp()
+      }
+    );
     
     return docRef.id;
   } catch (error) {
@@ -887,8 +869,8 @@ export const getTodayMeetings = async (userId: string, role: string) => {
 };
 
 export const updateDirectMessage = async (recipientId: string, messageId: string, updateData: any) => {
-  if (!auth.currentUser) return;
-  const conversationId = getConversationId(auth.currentUser.uid, recipientId);
+  if (!currentUser) return;
+  const conversationId = getConversationId(currentUser.uid, recipientId);
   const path = `conversations/${conversationId}/messages/${messageId}`;
   try {
     await updateDoc(doc(db, 'conversations', conversationId, 'messages', messageId), updateData);
@@ -970,10 +952,12 @@ export const getDirectMessages = (currentUserUid: string, recipientId: string, c
 };
 
 export const getConversations = (userId: string, callback: (conversations: any[]) => void) => {
+  if (!currentUser) return;
   const path = 'conversations';
+  // Conversations
   const q = query(
-    collection(db, 'conversations'), 
-    where('participants', 'array-contains', userId)
+    collection(db, "conversations"),
+    where("participants", "array-contains", currentUser.uid)
   );
 
   return onSnapshot(q, (snapshot) => {
@@ -1025,8 +1009,8 @@ export const getSystemSettings = async () => {
     }
     
     // If not exists, try to create ONLY if admin and logged in
-    if (auth.currentUser) {
-      const isAdmin = auth.currentUser.email === ADMIN_EMAIL;
+    if (currentUser) {
+      const isAdmin = currentUser.email === ADMIN_EMAIL;
       if (isAdmin) {
         try {
           await setDoc(docRef, defaultSettings);
@@ -1053,7 +1037,7 @@ export const updateSystemSettings = async (data: Partial<SystemSettings>) => {
 };
 
 export const deleteAllProjects = async () => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
     throw new Error("Unauthorized: Only the main admin can reset the database.");
   }
   
@@ -1080,7 +1064,7 @@ export const deleteAllProjects = async () => {
 };
 
 export const deleteAllUsers = async () => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
     throw new Error("Unauthorized: Only the main admin can reset users.");
   }
   
@@ -1188,7 +1172,7 @@ export const endVisitSession = async (sessionId: string) => {
 };
 
 export const getVisitSessions = async (userId?: string, role?: string) => {
-  const isTrulyAdmin = role === 'admin' || auth.currentUser?.email === ADMIN_EMAIL;
+  const isTrulyAdmin = role === 'admin' || currentUser?.email === ADMIN_EMAIL;
   
   let q;
   if (isTrulyAdmin) {
@@ -1199,10 +1183,11 @@ export const getVisitSessions = async (userId?: string, role?: string) => {
     }
   } else {
     // Force filter by current user if not truly admin
-    q = query(collection(db, 'visit_sessions'), where('userId', '==', auth.currentUser?.uid), orderBy('startTime', 'desc'));
+    q = query(collection(db, 'visit_sessions'), where('userId', '==', currentUser?.uid), orderBy('startTime', 'desc'));
   }
   
   try {
+    if (!currentUser) return [];
     const snap = await getDocs(q);
     return snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
   } catch (error) {
@@ -1212,15 +1197,8 @@ export const getVisitSessions = async (userId?: string, role?: string) => {
 };
 
 export const getPayments = async (developerId: string) => {
-  const path = 'payments';
-  try {
-    const q = query(collection(db, 'payments'), where('developerId', '==', developerId), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
-    return [];
-  }
+  console.warn("Forbidden query: getPayments");
+  return [];
 };
 
 export const verifyDeveloperInvite = getInviteByCode;

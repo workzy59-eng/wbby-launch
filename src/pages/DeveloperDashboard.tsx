@@ -109,12 +109,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
     const fetchPayments = async () => {
       try {
-        const [pays, profiles] = await Promise.all([
-          getPayments(user.uid),
-          getClients()
-        ]);
-        setPayments(pays);
-        setClients(profiles);
+        // Payments and Users/Clients collection global access is forbidden for developers
+        // We only use the projects and conversations which are already handled by subscriptions
+        setPayments([]);
+        setClients([]);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
@@ -205,7 +203,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       const p = unassignedProjects.find(item => item.id === projectId) || projects.find(item => item.id === projectId);
       if (!p) throw new Error("Project not found");
 
-      await acceptProject(projectId, user.uid, profile?.displayName || 'Developer');
+      await acceptProject(projectId);
 
       setActiveTab('projects');
       setShowAcceptPopup(null);
