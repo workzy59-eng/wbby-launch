@@ -62,7 +62,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         description: 'High-energy, aggressive aesthetic for elite fitness centers.'
       },
       { 
-        title: 'Designer Clothing', 
+        title: 'BUSINESS', 
         category: 'Urban Thread UI', 
         image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop', 
         link: '/portfolio/clothing',
@@ -226,7 +226,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ type: "spring", stiffness: 100 }}
             className="inline-block px-6 py-2 bg-[#c7c42a] text-black text-[10px] font-black uppercase tracking-[0.6em] transform -skew-x-12 mb-12 italic shadow-[0_0_40px_rgba(199,196,42,0.4)]"
           >
-            Elite Clothing Co.
+            Elite BUSINESS
           </motion.div>
 
           <div className="relative mb-12">
@@ -273,7 +273,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ delay: 0.8, duration: 1 }}
             className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/40 leading-tight italic"
           >
-            Scale your <span className="text-white">Clothing Business</span> with high-performance digital infrastructure. Project-ready in under 48 hours.
+            Scale your <span className="text-white">BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 48 hours.
           </motion.p>
 
           <motion.div 
@@ -526,7 +526,15 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   
                   <div className="absolute inset-0 p-12 flex flex-col justify-end transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500">
                     <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] mb-4">{item.category}</span>
-                    <h4 className="text-4xl font-black uppercase italic tracking-tighter text-white mb-4">{item.title}</h4>
+                    <span 
+                      className="font-black uppercase italic tracking-tighter text-white mb-4 block leading-none"
+                      style={{ 
+                        fontSize: idx === 0 ? '95px' : idx === 1 ? '87px' : '76px',
+                        width: idx === 0 ? '358.896px' : undefined
+                      }}
+                    >
+                      {item.title}
+                    </span>
                     <p className="text-white/40 text-sm font-medium italic opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{item.description}</p>
                     
                     <Link 

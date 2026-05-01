@@ -15,7 +15,6 @@ import {
   ChevronLeft,
   Users,
   Video,
-  Mic,
   Plus,
   StickyNote,
   CornerUpLeft,
@@ -42,7 +41,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import EmojiPicker, { Theme as EmojiTheme } from 'emoji-picker-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { StopCircle, Play, Pause, Trash2 as TrashIcon, Headphones } from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -155,6 +153,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -574,6 +573,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
   const onEmojiClick = (emojiData: any) => {
     setInputText(prev => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
   };
 
   const startRecording = async () => {

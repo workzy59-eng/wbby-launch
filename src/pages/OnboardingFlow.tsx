@@ -803,7 +803,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Email <span className="text-error">*</span></label>
                   <input
@@ -812,16 +812,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     value={formData.businessEmail}
                     onChange={(e) => handleInputChange('businessEmail', e.target.value)}
                     placeholder="HELLO@BRAND.COM"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Registration No. (Optional)</label>
-                  <input
-                    type="text"
-                    className={getInputClass('businessNumber', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.businessNumber}
-                    onChange={(e) => handleInputChange('businessNumber', e.target.value)}
-                    placeholder="E.G. REG-9901"
                   />
                 </div>
               </div>
@@ -1299,7 +1289,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
 
             <div className="bg-primary/10 border border-primary/20 p-6 rounded-2xl">
-               <p className="text-xs font-bold text-primary uppercase tracking-widest text-center italic">
+               <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] text-center italic">
+                 Note: Selected colors apply to buttons (secondary) and background (primary) in your preview.
+               </p>
+               <p className="text-xs font-bold text-primary uppercase tracking-widest text-center italic mt-2">
                  ⚠️ This is only a sample preview. Final website will be 100% more professional and better.
                </p>
             </div>

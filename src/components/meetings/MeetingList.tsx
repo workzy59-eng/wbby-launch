@@ -98,7 +98,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
 
   const handleRequestAction = async (request: any, action: 'accept' | 'reject' | 'suggest', response?: string, date?: string, time?: string) => {
     // Legacy support or internal handling
-    toast.info('Meeting processing...');
+    toast('Meeting processing...');
   };
 
   const handleDelete = async (id: string) => {

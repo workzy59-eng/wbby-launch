@@ -21,9 +21,14 @@ export default function FoodCourt() {
           ))}
         </div>
 
-        <button className="px-8 py-3 rounded-full bg-[#c7c42a] text-black text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(199, 196, 42,0.2)]">
-          Order Now
-        </button>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-[#c7c42a] border-b border-[#c7c42a] pb-1 hover:text-white hover:border-white transition-all">
+            BACK_TO_WEBBY
+          </Link>
+          <button className="px-8 py-3 rounded-full bg-[#c7c42a] text-black text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(199, 196, 42,0.2)]">
+            Order Now
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}

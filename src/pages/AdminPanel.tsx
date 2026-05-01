@@ -465,7 +465,6 @@ EST 2026
 1. PROJECT OVERVIEW (BUSINESS)
 Project Number: ${project.id}
 Project Name: ${project.websiteName || 'Not Provided'}
-Project Phone: ${project.businessNumber || 'Not Provided'}
 Project Email: ${project.userEmail || 'Not Provided'}
 Project Address: ${project.businessLocation || 'Not Provided'}
 
@@ -1940,7 +1939,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Scheduling</span>
                   <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Meeting Manager</h2>
                 </div>
-                <MeetingList user={user} profile={profile!} allClients={users.filter(u => u.role === 'client')} />
+                <MeetingList user={user} profile={profile!} allClients={users.filter(u => u.role === 'developer')} />
               </div>
             )}
           </motion.div>

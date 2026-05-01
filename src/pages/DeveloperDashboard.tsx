@@ -289,6 +289,8 @@ Created At: ${formatDate(project.createdAt)}
     );
   }
 
+  const unreadCount = projects.reduce((acc, p) => acc + (p.unreadCount?.[user?.uid || ''] || 0), 0);
+
   const NavItem = ({ tab, icon: Icon, label }: { tab: Tab, icon: any, label: string }) => (
     <button
       onClick={() => {
@@ -302,7 +304,11 @@ Created At: ${formatDate(project.createdAt)}
       }`}
     >
       <Icon size={18} />
-      <span>{label}</span>
+      <span>{label.includes('MESSAGES') && label.includes('(') ? (
+        <>
+          MESSAGES <span className="text-red-500">{label.split('MESSAGES ')[1]}</span>
+        </>
+      ) : label}</span>
     </button>
   );
 
@@ -371,7 +377,7 @@ Created At: ${formatDate(project.createdAt)}
           <NavItem tab="dashboard" icon={LayoutDashboard} label="Dashboard" />
           <NavItem tab="pool" icon={Plus} label="New Jobs" />
           <NavItem tab="projects" icon={Briefcase} label="Projects" />
-          <NavItem tab="chat" icon={MessageSquare} label="Chat" />
+          <NavItem tab="chat" icon={MessageSquare} label={`MESSAGES ${unreadCount > 0 ? `(${unreadCount})` : ''}`} />
           <NavItem tab="meetings" icon={Video} label="Meetings" />
           <NavItem tab="earnings" icon={DollarSign} label="Earnings" />
           <NavItem tab="settings" icon={SettingsIcon} label="Settings" />
@@ -1298,16 +1304,44 @@ Created At: ${formatDate(project.createdAt)}
                   </select>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Deployment URL</label>
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic ml-4">Direct Payment link (Specific for this project)</label>
                   <input 
-                    type="url"
-                    value={editingProject.websiteUrl || ''}
-                    onChange={(e) => setEditingProject({ ...editingProject, websiteUrl: e.target.value })}
-                    placeholder="https://your-site-url.com"
+                    type="text"
+                    value={editingProject.paymentLink || ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, paymentLink: e.target.value })}
+                    placeholder="Razorpay/Stripe/Custom Link"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                   />
                 </div>
+
+                {editingProject.paymentStatus === 'verifying' && (
+                  <div className="p-6 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic text-center">Client claims payment is completed. confirm?</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={async () => {
+                          await updateProject(editingProject.id, { paymentStatus: 'paid' });
+                          setEditingProject({ ...editingProject, paymentStatus: 'paid' });
+                          toast.success('Payment confirmed');
+                        }}
+                        className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl text-[10px] font-black uppercase italic tracking-widest hover:scale-105 transition-all"
+                      >
+                        Yes, Accepted
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          await updateProject(editingProject.id, { paymentStatus: 'unpaid' });
+                          setEditingProject({ ...editingProject, paymentStatus: 'unpaid' });
+                          toast.error('Payment rejected');
+                        }}
+                        className="flex-1 py-3 border border-white/10 text-white rounded-xl text-[10px] font-black uppercase italic tracking-widest"
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <div className="flex justify-between px-4">

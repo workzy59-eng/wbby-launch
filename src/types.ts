@@ -234,7 +234,8 @@ export interface Project {
   domainPreferences?: string[];
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Standard' | 'Premium' | 'Pro';
-  paymentStatus?: 'pending' | 'paid';
+  paymentStatus?: 'pending' | 'paid' | 'verifying' | 'unpaid';
+  paymentLink?: string;
   nextBillingDate?: string | Timestamp;
   status: ProjectStatus;
   progress: number;

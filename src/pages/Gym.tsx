@@ -122,6 +122,34 @@ export default function Gym() {
         <section className="relative h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
           <GymHero3D />
           
+          {/* Rotating Design Elements */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-[#ff3e3e]/30 rounded-full"
+            />
+            <motion.div 
+              animate={{ rotate: -360 }}
+              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/10 rounded-[100px]"
+            />
+            {/* Diamonds */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px]"
+            >
+              {[0, 90, 180, 270].map((angle) => (
+                <div 
+                  key={angle}
+                  style={{ transform: `rotate(${angle}deg) translateY(-450px)` }}
+                  className="absolute top-1/2 left-1/2 w-4 h-4 rotate-45 bg-[#ff3e3e] shadow-[0_0_20px_#ff3e3e]"
+                />
+              ))}
+            </motion.div>
+          </div>
+          
           <div className="relative z-10 space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -307,6 +335,16 @@ export default function Gym() {
               </div>
            </div>
         </footer>
+
+        <div className="max-w-7xl mx-auto pb-20 px-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 opacity-20 relative z-10">
+          <p className="text-[8px] font-black uppercase tracking-[0.4em] italic text-white">
+            © 2024 IRON NEON ATHLETICS. POWERED BY WEBBYLAUNCH.
+          </p>
+          <div className="flex gap-10">
+            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white">Privacy</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white">Terms</span>
+          </div>
+        </div>
 
         {/* Floating CTA (Mobile) */}
         <div className="md:hidden fixed bottom-8 left-6 right-6 z-50">
