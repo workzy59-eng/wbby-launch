@@ -1292,7 +1292,7 @@ Requirements:
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Meetings Control</h2>
             </div>
-            <MeetingList user={user!} profile={profile!} />
+            <MeetingList user={user!} profile={profile!} allClients={profiles.filter(p => p.role === 'client')} />
           </div>
         );
       default:

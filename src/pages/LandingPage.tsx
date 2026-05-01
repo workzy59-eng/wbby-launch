@@ -62,7 +62,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
         description: 'High-energy, aggressive aesthetic for elite fitness centers.'
       },
       { 
-        title: 'BUSINESS', 
+        title: 'CLOTHING BUSINESS', 
         category: 'Urban Thread UI', 
         image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop', 
         link: '/portfolio/clothing',
@@ -226,7 +226,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ type: "spring", stiffness: 100 }}
             className="inline-block px-6 py-2 bg-[#c7c42a] text-black text-[10px] font-black uppercase tracking-[0.6em] transform -skew-x-12 mb-12 italic shadow-[0_0_40px_rgba(199,196,42,0.4)]"
           >
-            Elite BUSINESS
+            Elite CLOTHING BUSINESS
           </motion.div>
 
           <div className="relative mb-12">
@@ -273,7 +273,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ delay: 0.8, duration: 1 }}
             className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/40 leading-tight italic"
           >
-            Scale your <span className="text-white">BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 48 hours.
+            Scale your <span className="text-white">CLOTHING BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 48 hours.
           </motion.p>
 
           <motion.div 
@@ -529,7 +529,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     <span 
                       className="font-black uppercase italic tracking-tighter text-white mb-4 block leading-none"
                       style={{ 
-                        fontSize: idx === 0 ? '95px' : idx === 1 ? '87px' : '76px',
+                        fontSize: idx === 0 ? '75px' : idx === 1 ? '87px' : '71px',
                         width: idx === 0 ? '358.896px' : undefined
                       }}
                     >

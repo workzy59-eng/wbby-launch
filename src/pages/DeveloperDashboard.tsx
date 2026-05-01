@@ -117,6 +117,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       });
     }
 
+    if (activeTab === 'meetings') {
+      getClients().then(setClients);
+    }
+
     return () => {
       unsubProjects();
       unsubNotifications();
@@ -837,11 +841,10 @@ Created At: ${formatDate(project.createdAt)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="space-y-10"
+                className="space-y-8"
               >
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Scheduling</span>
-                  <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Developer Meetings</h2>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Meetings Control</h2>
                 </div>
                 <MeetingList user={user!} profile={profile!} allClients={clients} />
               </motion.div>

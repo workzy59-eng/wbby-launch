@@ -33,7 +33,9 @@ import {
   ExternalLink,
   Reply,
   Download,
-  Star
+  Star,
+  Mic,
+  Play
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';

@@ -383,10 +383,12 @@ export const getProfiles = async () => {
   if (!currentUser) return [];
   
   try {
-    // Basic check for admin before query to avoid console noise
-    const isAdmin = currentUser.email === ADMIN_EMAIL || await isUserAdmin(currentUser.uid);
-    if (!isAdmin) {
-      console.warn("Non-admin attempted to getProfiles");
+    // Basic check for admin or developer before query to avoid console noise
+    const isAdmin = currentUser.email === ADMIN_EMAIL || (await isUserAdmin(currentUser.uid));
+    const isDeveloper = currentUser.email === ADMIN_EMAIL || (await getUserProfile(currentUser.uid))?.role === 'developer';
+    
+    if (!isAdmin && !isDeveloper) {
+      console.warn("Non-authorized user attempted to getProfiles");
       return [];
     }
 
@@ -438,8 +440,10 @@ export const getClients = async () => {
   if (!currentUser) return [];
 
   try {
-    const isAdmin = currentUser.email === ADMIN_EMAIL || await isUserAdmin(currentUser.uid);
-    if (!isAdmin) return [];
+    const isAdmin = currentUser.email === ADMIN_EMAIL || (await isUserAdmin(currentUser.uid));
+    const isDeveloper = currentUser.email === ADMIN_EMAIL || (await getUserProfile(currentUser.uid))?.role === 'developer';
+    
+    if (!isAdmin && !isDeveloper) return [];
 
     const q = query(collection(db, 'users'), where('role', '==', 'client'));
     const snapshot = await getDocs(q);
