@@ -38,7 +38,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     time: initialData?.time || '',
     meetingLink: initialData?.meetingLink || '',
     notes: initialData?.notes || '',
-    status: initialData?.status || 'Pending'
+    status: initialData?.status || 'pending',
+    requestedBy: initialData?.requestedBy || currentUserId
   });
 
   const [validation, setValidation] = useState<{ isValid: boolean; error: string }>({ isValid: true, error: '' });

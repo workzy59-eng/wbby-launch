@@ -1171,7 +1171,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   {meetings.filter(m => {
                     const today = new Date().toDateString();
                     const mDate = new Date(m.date).toDateString();
-                    return today === mDate && m.status === 'Accepted';
+                    return today === mDate && m.status === 'accepted';
                   }).length > 0 && (
                     <div className="bg-[#c7c42a] p-10 rounded-[3rem] text-black relative overflow-hidden group">
                       <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:scale-110 transition-transform">
@@ -1186,7 +1186,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           {meetings.filter(m => {
                             const today = new Date().toDateString();
                             const mDate = new Date(m.date).toDateString();
-                            return today === mDate && m.status === 'Accepted';
+                            return today === mDate && m.status === 'accepted';
                           }).map((meeting, idx) => (
                             <div key={idx} className="bg-black/10 border border-black/10 rounded-2xl p-6 backdrop-blur-md">
                               <div className="flex justify-between items-start mb-4">

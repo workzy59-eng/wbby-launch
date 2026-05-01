@@ -16,7 +16,7 @@ export const MeetingReminder: React.FC<MeetingReminderProps> = ({ meetings }) =>
       const now = new Date();
       
       meetings.forEach(meeting => {
-        if (meeting.status !== 'Accepted' && meeting.status !== 'Pending') return;
+        if (meeting.status !== 'accepted' && meeting.status !== 'pending') return;
         
         if (!meeting.date || !meeting.time) return;
         

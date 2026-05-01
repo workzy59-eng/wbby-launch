@@ -355,7 +355,7 @@ export interface BlogPost {
   category: string;
 }
 
-export type MeetingStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Reschedule Requested' | 'Completed' | 'Missed';
+export type MeetingStatus = 'pending' | 'accepted' | 'declined' | 'completed' | 'missed';
 
 export interface Meeting {
   id: string;
@@ -370,6 +370,8 @@ export interface Meeting {
   platform: 'Google Meet' | 'Zoom';
   notes?: string;
   status: MeetingStatus;
+  requestedBy: string; // UID of requester
+  acceptedBy?: string; // UID of accepter
   rescheduleMessage?: string;
   preferredDate?: string;
   preferredTime?: string;

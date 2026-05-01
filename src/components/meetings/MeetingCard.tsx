@@ -73,12 +73,11 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
 
   const getStatusColor = (status: MeetingStatus) => {
     switch (status) {
-      case 'Pending': return 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30';
-      case 'Accepted': return 'bg-green-500/20 text-green-500 border-green-500/30';
-      case 'Rejected': return 'bg-red-500/20 text-red-500 border-red-500/30';
-      case 'Reschedule Requested': return 'bg-purple-500/20 text-purple-500 border-purple-500/30';
-      case 'Completed': return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
-      case 'Missed': return 'bg-gray-500/20 text-gray-500 border-gray-500/30';
+      case 'pending': return 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30';
+      case 'accepted': return 'bg-green-500/20 text-green-500 border-green-500/30';
+      case 'declined': return 'bg-red-500/20 text-red-500 border-red-500/30';
+      case 'completed': return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
+      case 'missed': return 'bg-gray-500/20 text-gray-500 border-gray-500/30';
       default: return 'bg-white/10 text-white border-white/20';
     }
   };
@@ -136,7 +135,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
           {meeting.platform}
         </div>
         
-        {meeting.status === 'Pending' || meeting.status === 'Accepted' ? (
+        {meeting.status === 'pending' || meeting.status === 'accepted' ? (
           <div className="flex items-center gap-2 px-4 py-2 bg-[#c7c42a]/10 text-[#c7c42a] rounded-2xl text-[10px] font-black uppercase tracking-widest">
             <AlertCircle size={14} />
             {timeLeft}
@@ -167,102 +166,34 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
       <div className="flex flex-wrap items-center gap-3 pt-2">
         {isAdmin ? (
           <>
-            {meeting.status === 'Pending' && (
-              <p className="text-xs text-white/40 italic">Waiting for client response...</p>
-            )}
-            {meeting.status === 'Reschedule Requested' && (
-              <button 
-                onClick={() => onEdit?.(meeting)}
-                className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
-              >
-                Update Schedule
-              </button>
+            {meeting.status === 'pending' && (
+              <p className="text-xs text-white/40 italic">Waiting for response...</p>
             )}
           </>
         ) : (
           <>
-            {meeting.status === 'Pending' && !showRescheduleInput && (
+            {meeting.status === 'pending' && !showRescheduleInput && (
               <>
                 <button 
-                  onClick={() => onStatusUpdate?.(meeting.id, 'Accepted')}
+                  onClick={() => onStatusUpdate?.(meeting.id, 'accepted')}
                   className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
                 >
                   <CheckCircle2 size={14} />
                   Accept
                 </button>
                 <button 
-                  onClick={() => onStatusUpdate?.(meeting.id, 'Rejected')}
+                  onClick={() => onStatusUpdate?.(meeting.id, 'declined')}
                   className="flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
                 >
                   <XCircle size={14} />
                   Reject
                 </button>
-                <button 
-                  onClick={() => setShowRescheduleInput(true)}
-                  className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
-                >
-                  <RefreshCw size={14} />
-                  Reschedule
-                </button>
               </>
-            )}
-
-            {showRescheduleInput && (
-              <div className="w-full space-y-4 bg-black/40 border border-white/10 rounded-3xl p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Preferred Date</label>
-                    <input 
-                      type="date"
-                      value={rescheduleDate}
-                      onChange={(e) => setRescheduleDate(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#c7c42a]/50 transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Preferred Time</label>
-                    <input 
-                      type="time"
-                      value={rescheduleTime}
-                      onChange={(e) => setRescheduleTime(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-[#c7c42a]/50 transition-all"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Message</label>
-                  <textarea 
-                    value={rescheduleMsg}
-                    onChange={(e) => setRescheduleMsg(e.target.value)}
-                    placeholder="Why do you want to reschedule?"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#c7c42a]/50 transition-all resize-none"
-                    rows={3}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => {
-                      onStatusUpdate?.(meeting.id, 'Reschedule Requested', rescheduleMsg, rescheduleDate, rescheduleTime);
-                      setShowRescheduleInput(false);
-                    }}
-                    disabled={!rescheduleMsg.trim() || !rescheduleDate || !rescheduleTime}
-                    className="flex-1 py-3 bg-purple-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
-                  >
-                    Send Request
-                  </button>
-                  <button 
-                    onClick={() => setShowRescheduleInput(false)}
-                    className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
             )}
           </>
         )}
 
-        {(meeting.status === 'Accepted' || (isAdmin && meeting.status === 'Pending')) && (
+        {(meeting.status === 'accepted' || (isAdmin && meeting.status === 'pending')) && (
           <div className="flex gap-2 w-full sm:w-auto">
             <button 
               onClick={() => window.open(meeting.meetingLink, '_blank')}

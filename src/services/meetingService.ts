@@ -21,7 +21,25 @@ const REQUESTS_COLLECTION = 'meeting_requests';
 export const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'createdAt' | 'updatedAt'>) => {
   return await addDoc(collection(db, COLLECTION_NAME), {
     ...meetingData,
+    status: meetingData.status || 'pending',
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const acceptMeeting = async (meetingId: string, userId: string) => {
+  const meetingRef = doc(db, COLLECTION_NAME, meetingId);
+  return await updateDoc(meetingRef, {
+    status: 'accepted',
+    acceptedBy: userId,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const declineMeeting = async (meetingId: string) => {
+  const meetingRef = doc(db, COLLECTION_NAME, meetingId);
+  return await updateDoc(meetingRef, {
+    status: 'declined',
     updatedAt: serverTimestamp()
   });
 };
