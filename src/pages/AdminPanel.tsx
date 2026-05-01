@@ -879,10 +879,10 @@ Generated on: ${new Date().toLocaleString()}
             </div>
             <div className="flex gap-3">
               <button 
-                onClick={() => handleAccept(p.id)}
+                onClick={() => { setEditingProjectDetails(p); setShowProjectModal(true); }}
                 className="flex-1 bg-[#c7c42a] text-black py-4 rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest"
               >
-                Accept Project
+                Assign Developer
               </button>
               <button 
                 onClick={() => { setSelectedProject(p); setShowRejectModal(true); }}

@@ -528,44 +528,9 @@ export const createProject = async (form: any) => {
 
     const projectId = docRef.id;
 
-    try {
-      const admins = await getAdmins();
-      if (admins.length > 0) {
-        const admin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
-        const adminUid = admin.uid;
-        const clientUid = currentUser.uid;
-        const clientName = currentUser.displayName || 'Client';
-        
-        const conversationId = getConversationId(adminUid, clientUid);
-        const welcomeMessage = `Hi ${clientName},\n\nWelcome to WebbyLaunch! 🚀\n\nYour project "${form.businessName}" has been successfully received. A developer will claim your project and contact you shortly. 👋\n\nYou can use this chat to talk directly with us. We'll update your project status in the dashboard as we progress.\n\nBest,\nTeam Webbylaunch`;
-
-        await setDoc(doc(db, 'conversations', conversationId), {
-          participants: [adminUid, clientUid],
-          lastMessage: welcomeMessage,
-          lastMessageAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          unreadCount: {
-            [clientUid]: 1,
-            [adminUid]: 0
-          },
-          lastSenderId: adminUid,
-          projectId: projectId 
-        }, { merge: true });
-
-        await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
-          text: welcomeMessage,
-          senderId: adminUid,
-          senderName: 'Team Webbylaunch',
-          conversationId,
-          createdAt: serverTimestamp(),
-          status: 'sent',
-          seen: false
-        });
-      }
-    } catch (msgError) {
-      console.error("Error creating conversation or welcome message:", msgError);
-    }
-
+    // Remove automatic admin conversation creation. 
+    // Projects now stay in the unassigned pool for developers to claim.
+    
     return projectId;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);

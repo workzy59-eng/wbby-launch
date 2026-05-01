@@ -775,6 +775,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         {/* Status Steps */}
                         <div className="bg-[#0a0a0a] rounded-[3rem] p-12 border border-white/5 relative overflow-hidden">
                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>
+                           
+                           {!selectedProject.developerId && (
+                             <div className="mb-12 p-8 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 relative z-10">
+                               <div className="w-20 h-20 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black shadow-lg">
+                                 <Loader2 size={40} className="animate-spin" />
+                               </div>
+                               <div className="text-center md:text-left flex-1">
+                                 <h4 className="text-2xl font-black uppercase italic tracking-tighter text-[#c7c42a] leading-none mb-2">Awaiting Developer Assignment</h4>
+                                 <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-md">Our matching system is selecting the best specialist for your project type. You will be notified as soon as your developer starts work.</p>
+                               </div>
+                               <div className="flex items-center gap-2 px-4 py-2 bg-black/40 rounded-full border border-white/5">
+                                 <div className="w-1.5 h-1.5 bg-[#c7c42a] rounded-full animate-pulse" />
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Priority Queue</span>
+                               </div>
+                             </div>
+                           )}
+
                            <div className="flex justify-between items-center overflow-x-auto pb-6 gap-6 no-scrollbar relative z-10">
                             {statusSteps.map((step, i) => (
                               <div key={step} className="flex flex-col items-center min-w-[120px] text-center gap-4">

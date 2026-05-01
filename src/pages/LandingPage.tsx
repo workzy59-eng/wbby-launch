@@ -558,7 +558,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <span className="text-xs font-black uppercase tracking-[0.4em] text-red-500">Industry Friction</span>
                 <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-tight italic">
                   Traditional <br />
-                  <span className="text-white/10">Methodology.</span>
+                  <span className="text-white/10 h-auto -ml-[50px]">Methodology.</span>
                 </h3>
               </div>
               <div className="space-y-4">
