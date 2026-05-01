@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2 } from 'lucide-react';
+import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2, Instagram } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import NavHeader from './ui/nav-header';
@@ -126,14 +126,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
               Professional website development for small businesses in India. Get your business online in 24-48 hours with zero hassle.
             </p>
             <div className="flex gap-4">
-              <a href="https://twitter.com/webbylaunch" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
-                <span className="text-[10px] font-black uppercase tracking-tighter">T</span>
-              </a>
               <a href="https://www.instagram.com/webbylaunch/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
-                <span className="text-[10px] font-black uppercase tracking-tighter">I</span>
-              </a>
-              <a href="https://linkedin.com/company/webbylaunch" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
-                <span className="text-[10px] font-black uppercase tracking-tighter">L</span>
+                <Instagram size={20} />
               </a>
             </div>
           </div>
@@ -175,7 +169,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
         <div className="max-w-7xl mx-auto mt-32 pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
-            © 2026 {APP_NAME}. Premium Mobile-First Web Solutions.
+            © 2024 {APP_NAME}. Premium Mobile-First Web Solutions.
           </p>
           <div className="flex items-center gap-8">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Made in India</span>

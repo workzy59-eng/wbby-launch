@@ -104,11 +104,9 @@ export default function Gym() {
             </Link>
             
             <div className="hidden md:flex items-center gap-10">
-              {['Programs', 'Memberships', 'Trainers', 'Gallery'].map((item) => (
-                <button key={item} className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50 hover:text-white transition-all">
-                  {item}
-                </button>
-              ))}
+              <Link to="/" className="text-[10px] font-black uppercase tracking-widest text-[#ff3e3e] border-b border-[#ff3e3e] pb-1 hover:text-white hover:border-white transition-all">
+                BACK_TO_WEBBY
+              </Link>
               <button className="px-8 py-3 bg-neon-red text-white font-black italic text-[11px] uppercase tracking-widest rounded-full hover:scale-110 transition-all shadow-[0_0_20px_rgba(255,62,62,0.4)]">
                 JOIN NOW
               </button>
@@ -141,7 +139,7 @@ export default function Gym() {
               className="text-7xl md:text-[12vw] font-black italic leading-[0.8] tracking-tighter uppercase"
             >
               BUILD YOUR <br /> 
-              <span className="text-transparent font-outline-2 text-white/10">STROSGEST</span> SELF
+              <span className="text-transparent font-outline-2 text-white/10">STRONGEST</span> SELF
             </motion.h1>
 
             <motion.div 
@@ -224,7 +222,7 @@ export default function Gym() {
                   key={i}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  className={`relative p-12 md:p-16 rounded-[4rem] border transition-all duration-500 overflow-hidden ${plan.popular ? 'bg-neon-red border-neon-red text-white scale-105 z-10' : 'bg-black border-white/5 hover:border-neon-blue'}`}
+                  className={`relative p-12 md:p-16 rounded-[4rem] border transition-all duration-500 overflow-hidden ${plan.popular ? 'bg-neon-red border-neon-red text-white scale-105 z-10 shadow-[0_0_80px_rgba(255,62,62,0.3)]' : 'bg-black border-white/10 hover:border-neon-blue'}`}
                 >
                   {plan.popular && (
                     <div className="absolute top-10 right-10 bg-white text-neon-red px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">

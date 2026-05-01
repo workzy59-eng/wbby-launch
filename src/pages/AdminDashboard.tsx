@@ -38,10 +38,13 @@ import {
   getAllAttendance,
   createDeveloperInvite,
   getDeveloperInvites,
-  getVisitSessions
+  getVisitSessions,
+  getNotifications,
+  markNotificationAsRead
 } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
 import { MeetingList } from '../components/meetings/MeetingList';
+import { Bell } from 'lucide-react';
 
 interface AdminDashboardProps {
   user: FirebaseUser | null;
@@ -97,6 +100,8 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [invites, setInvites] = useState<DeveloperInvite[]>([]);
@@ -161,6 +166,14 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = getNotifications(user.uid, (notifs) => {
+      setNotifications(notifs);
+    }, 'admin');
+    return () => unsub();
+  }, [user?.uid]);
 
   const handleCreateInvite = async () => {
     if (!inviteForm.name || !inviteForm.email) {
@@ -1427,6 +1440,60 @@ Requirements:
           </div>
 
           <div className="flex items-center gap-6">
+            <div className="relative mr-4">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all"
+              >
+                <Bell size={20} className={notifications.some(n => !n.isRead) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                {notifications.some(n => !n.isRead) && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className="absolute right-0 mt-4 w-96 bg-slate-900 border border-white/10 rounded-3xl shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
+                      <h3 className="text-sm font-black italic uppercase tracking-widest text-[#c7c42a]">System Intelligence</h3>
+                      <button 
+                        onClick={() => notifications.forEach(n => !n.isRead && markNotificationAsRead(n.id))}
+                        className="text-[10px] font-black uppercase text-white/40 hover:text-white transition-colors"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="max-h-[30rem] overflow-y-auto custom-scrollbar">
+                      {notifications.length > 0 ? (
+                        notifications.map((n) => (
+                          <div 
+                            key={n.id} 
+                            onClick={() => !n.isRead && markNotificationAsRead(n.id)}
+                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/10 transition-colors ${!n.isRead ? 'bg-[#c7c42a]/5' : ''}`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <p className="text-[10px] font-black uppercase text-[#c7c42a] tracking-widest">{n.title}</p>
+                              <p className="text-[8px] text-white/20 font-black uppercase">{formatDate(n.createdAt)}</p>
+                            </div>
+                            <p className="text-xs text-white/60 leading-relaxed font-bold italic">{n.message}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-12 text-center text-white/10">
+                          <p className="text-xs font-black uppercase tracking-widest italic">No operational updates</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <div className="text-right">
               <div className="text-sm font-black text-white uppercase italic">System Admin</div>
               <div className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">Online</div>

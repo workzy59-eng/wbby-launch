@@ -14,46 +14,53 @@ const GymWeights = () => {
   
   useFrame((state) => {
     if (group.current) {
-      group.current.rotation.y = state.clock.getElapsedTime() * 0.15;
-      group.current.position.y = Math.sin(state.clock.getElapsedTime() * 0.5) * 0.2;
+      group.current.rotation.y = state.clock.getElapsedTime() * 0.1;
     }
   });
 
   return (
     <group ref={group}>
-      {/* Kettlebell / Industrial Shape 1 */}
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-        <mesh position={[-4, 1, -5]}>
-          <torusGeometry args={[1.5, 0.4, 32, 64]} />
-          <meshStandardMaterial 
-            color="#ff3e3e" 
-            metalness={0.9} 
-            roughness={0.1} 
-            emissive="#ff3e3e"
-            emissiveIntensity={0.2}
-          />
+      {/* Diamonds and Circles rotating around center */}
+      {[...Array(6)].map((_, i) => {
+        const radius = 8;
+        const angle = (i / 6) * Math.PI * 2;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const isOctahedron = i % 2 === 0;
+
+        return (
+          <Float 
+            key={i} 
+            speed={1.5 + i * 0.2} 
+            rotationIntensity={1} 
+            floatIntensity={2}
+            position={[x, Math.sin(i * 1.5) * 2, z]}
+          >
+            <mesh>
+              {isOctahedron ? (
+                <octahedronGeometry args={[1, 0]} />
+              ) : (
+                <torusGeometry args={[0.8, 0.2, 16, 32]} />
+              )}
+              <meshStandardMaterial 
+                color={isOctahedron ? "#ff3e3e" : "#00f2ff"} 
+                metalness={0.9} 
+                roughness={0.1} 
+                emissive={isOctahedron ? "#ff3e3e" : "#00f2ff"}
+                emissiveIntensity={0.3}
+              />
+            </mesh>
+          </Float>
+        );
+      })}
+
+      {/* Central Floating Elements */}
+      <Float speed={3} rotationIntensity={0.5} floatIntensity={1}>
+        <mesh position={[0, -2, -5]}>
+          <cylinderGeometry args={[4, 4, 0.5, 32]} />
+          <meshStandardMaterial color="#111" metalness={0.9} roughness={0.1} />
         </mesh>
       </Float>
-
-      {/* Industrial Shape 2 */}
-      <Float speed={2.5} rotationIntensity={1} floatIntensity={1.5}>
-        <mesh position={[5, 2, -8]}>
-          <octahedronGeometry args={[2, 0]} />
-          <meshStandardMaterial 
-            color="#00f2ff" 
-            metalness={1} 
-            roughness={0} 
-            emissive="#00f2ff"
-            emissiveIntensity={0.1}
-          />
-        </mesh>
-      </Float>
-
-      {/* Central Floating Plate */}
-      <mesh position={[0, -1, -2]}>
-        <cylinderGeometry args={[2.5, 2.5, 0.5, 32]} />
-        <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
-      </mesh>
     </group>
   );
 };

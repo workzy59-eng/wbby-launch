@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Maximize2 } from 'lucide-react';
 
 const GALLERY_IMAGES = [
   "https://images.unsplash.com/photo-1544148103-0773bf10d330?q=80&w=800",
@@ -34,8 +35,10 @@ export const Gallery = () => {
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-               <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-gold border border-gold/30 px-6 py-2 rounded-full backdrop-blur-md">View Capture</span>
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6">
+               <div className="w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center backdrop-blur-md">
+                 <Maximize2 size={20} className="text-gold" />
+               </div>
             </div>
           </motion.div>
         ))}

@@ -115,11 +115,9 @@ export default function Resort() {
             </Link>
             
             <div className="hidden md:flex items-center gap-10">
-              {['Villas', 'Experiences', 'Dining', 'Wellness'].map((item) => (
-                <button key={item} className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60 hover:text-gold transition-all">
-                  {item}
-                </button>
-              ))}
+              <Link to="/" className="text-[10px] font-bold uppercase tracking-[1em] text-gold border-b border-gold/30 pb-0.5 hover:text-white hover:border-white transition-all">
+                BACK_TO_WEBBY
+              </Link>
               <button className="px-8 py-3 bg-gold text-black font-bold text-[10px] uppercase tracking-widest rounded-full hover:scale-105 transition-all">
                 Reserve Stay
               </button>
@@ -420,7 +418,7 @@ export default function Resort() {
 
            <div className="max-w-7xl mx-auto mt-40 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
               <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-white/10 italic">
-                 © 2026 Lumiére Private Residencies. Produced by WebbyLaunch Protocol.
+                 © 2024 Lumiére Private Residencies. Produced by WebbyLaunch Protocol.
               </p>
               <div className="flex gap-10">
                  <Link to="/" className="text-[8px] font-bold uppercase tracking-[0.4em] text-white/10 hover:text-white transition-all">Privacy</Link>

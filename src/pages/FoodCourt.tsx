@@ -149,9 +149,12 @@ export default function FoodCourt() {
           to="/" 
           className="bg-white/5 backdrop-blur-xl border border-white/10 text-white/50 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:text-[#c7c42a] hover:border-[#c7c42a]/30 transition-all flex items-center gap-2"
         >
-          <ArrowLeft size={14} /> Back to Portfolio
+          <ArrowLeft size={14} /> BACK_TO_WEBBY
         </Link>
       </div>
+      <footer className="py-10 text-center border-t border-white/5 opacity-20">
+         <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed italic">© 2024 WebbyLaunch. Premium Mobile-First Web Solutions.</p>
+      </footer>
     </div>
   );
 }

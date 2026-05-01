@@ -192,6 +192,30 @@ export const acceptProject = async (projectId: string) => {
         updatedAt: serverTimestamp()
       });
 
+      // Add notification for developer
+      const notificationRef = doc(collection(db, 'notifications'));
+      tx.set(notificationRef, {
+        userId: currentUser!.uid,
+        type: 'project_assigned',
+        title: 'New Project Claimed',
+        message: `You have successfully claimed the project: ${snap.data().businessName}`,
+        projectId: projectId,
+        isRead: false,
+        createdAt: serverTimestamp()
+      });
+
+      // Add notification for admin
+      const adminNotificationRef = doc(collection(db, 'notifications'));
+      tx.set(adminNotificationRef, {
+        role: 'admin',
+        type: 'project_accepted',
+        title: 'Project Claimed',
+        message: `Developer ${currentUser!.displayName || 'User'} has claimed project: ${snap.data().businessName}`,
+        projectId: projectId,
+        isRead: false,
+        createdAt: serverTimestamp()
+      });
+
       // PART 5: Auto Chat Creation
       const projectData = snap.data();
       const clientUid = projectData.userId;
@@ -784,6 +808,24 @@ export const markProjectAsSeen = async (projectId: string, userId: string) => {
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
+};
+
+export const getNotifications = (userId: string, callback: (notifications: any[]) => void, role?: string) => {
+  const q = role === 'admin' 
+    ? query(collection(db, 'notifications'), where('role', '==', 'admin'), orderBy('createdAt', 'desc'), limit(20))
+    : query(collection(db, 'notifications'), where('userId', '==', userId), orderBy('createdAt', 'desc'), limit(20));
+    
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  });
+};
+
+export const markNotificationAsRead = async (notificationId: string) => {
+  await updateDoc(doc(db, 'notifications', notificationId), { isRead: true });
+};
+
+export const deleteNotification = async (notificationId: string) => {
+  await deleteDoc(doc(db, 'notifications', notificationId));
 };
 
 export const markMessageAsSeen = async (messageId: string, conversationId?: string, projectId?: string) => {

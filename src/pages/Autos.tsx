@@ -105,7 +105,7 @@ export default function Autos() {
         </div>
 
         <Link to="/" className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] border-b border-[#c7c42a] pb-1 hover:text-white hover:border-white transition-all">
-          BACK_TO_HQ
+          BACK_TO_WEBBY
         </Link>
       </nav>
 
@@ -341,7 +341,7 @@ export default function Autos() {
         </div>
         
         <div className="mt-40 pt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-end gap-10 opacity-20">
-           <p className="text-[8px] font-bold uppercase tracking-[0.8em] italic">© 2026 VECTOR_X PROTOCOLS. NO DATA RETAINED.</p>
+           <p className="text-[8px] font-bold uppercase tracking-[0.8em] italic">© 2024 VECTOR_X PROTOCOLS. NO DATA RETAINED.</p>
            <div className="text-[14vw] font-black italic tracking-[-0.1em] uppercase leading-none select-none select-none translate-y-20">AFFALTERBACH</div>
         </div>
       </footer>

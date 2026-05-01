@@ -30,11 +30,12 @@ import {
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects, sendMessage, acceptProject } from '../services/database';
+import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects, sendMessage, acceptProject, getNotifications, markNotificationAsRead } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
+import { Bell, Info } from 'lucide-react';
 
 interface DeveloperDashboardProps {
   user: FirebaseUser | null;
@@ -51,6 +52,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [unassignedProjects, setUnassignedProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAcceptPopup, setShowAcceptPopup] = useState<string | null>(null);
   const [showRejectPopup, setShowRejectPopup] = useState<string | null>(null);
@@ -103,6 +106,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       setLoading(false);
     }, user.uid, 'developer');
 
+    const unsubNotifications = getNotifications(user.uid, (notifs) => {
+      setNotifications(notifs);
+    });
+
     let unsubUnassigned = () => {};
     if (activeTab === 'pool' || activeTab === 'dashboard') {
       unsubUnassigned = getUnassignedProjects((projs) => {
@@ -112,6 +119,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
     return () => {
       unsubProjects();
+      unsubNotifications();
       unsubUnassigned();
     };
   }, [user?.uid, activeTab]);
@@ -399,6 +407,58 @@ Created At: ${formatDate(project.createdAt)}
           </div>
 
           <div className="flex items-center gap-4">
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all"
+              >
+                <Bell size={18} className={notifications.some(n => !n.isRead) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                {notifications.some(n => !n.isRead) && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className="absolute right-0 mt-4 w-80 bg-[#111] border border-white/10 rounded-3xl shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-6 border-b border-white/5 flex justify-between items-center">
+                      <h3 className="text-sm font-black italic uppercase tracking-widest">Notifications</h3>
+                      <button 
+                        onClick={() => notifications.forEach(n => !n.isRead && markNotificationAsRead(n.id))}
+                        className="text-[10px] font-bold uppercase text-[#c7c42a] hover:underline"
+                      >
+                        Mark all as read
+                      </button>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                      {notifications.length > 0 ? (
+                        notifications.map((n) => (
+                          <div 
+                            key={n.id} 
+                            onClick={() => !n.isRead && markNotificationAsRead(n.id)}
+                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${!n.isRead ? 'bg-[#c7c42a]/5' : ''}`}
+                          >
+                            <p className="text-[10px] font-black uppercase text-[#c7c42a] tracking-widest mb-1">{n.title}</p>
+                            <p className="text-xs text-white/60 leading-relaxed">{n.message}</p>
+                            <p className="text-[8px] text-white/20 uppercase mt-2">{formatDate(n.createdAt)}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-10 text-center text-white/20">
+                          <p className="text-xs font-bold uppercase italic italic">No new signals</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
              <button 
               onClick={handleLogout}
               className="md:hidden p-3 bg-red-500/10 text-red-500 rounded-xl"

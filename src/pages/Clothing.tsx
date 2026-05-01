@@ -265,7 +265,7 @@ export default function Clothing() {
               />
               <button className="absolute right-0 bottom-8 text-white font-black uppercase italic tracking-widest text-xs hover:tracking-[0.4em] transition-all">Subscribe</button>
             </div>
-            <p className="text-[8px] font-black uppercase tracking-[0.8em] text-white/10 uppercase">© 2026 Urban Thread Protocol. Part of Webby Launch.</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.8em] text-white/10 uppercase">© 2024 Urban Thread Protocol. Part of Webby Launch.</p>
           </div>
         </div>
       </footer>
@@ -276,7 +276,7 @@ export default function Clothing() {
           to="/" 
           className="bg-white text-black px-8 py-5 rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-110 transition-all flex items-center gap-4 shadow-3xl"
         >
-          <ArrowLeft size={16} /> <span className="hidden md:inline">Return to Headquarters</span>
+          <ArrowLeft size={16} /> <span className="hidden md:inline">BACK_TO_WEBBY</span>
         </Link>
       </div>
     </div>

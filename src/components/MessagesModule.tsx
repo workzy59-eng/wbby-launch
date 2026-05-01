@@ -1467,28 +1467,38 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     />
 
                     <div className="flex items-center gap-1">
-                      <button className="p-3 text-white/20 hover:text-[#3b82f6] transition-all">
+                      <button 
+                        type="button"
+                        onClick={() => setShowReactionPicker(prev => prev === 'input' ? null : 'input')}
+                        className={`p-3 transition-all ${showReactionPicker === 'input' ? 'text-[#3b82f6]' : 'text-white/20 hover:text-[#3b82f6]'}`}
+                      >
                         <Smile size={24} />
                       </button>
                       
-                      {inputText.trim() ? (
-                        <button 
-                          onClick={handleSendMessage}
-                          disabled={isSending}
-                          className="bg-[#3b82f6] text-white p-4 rounded-full shadow-xl shadow-[#3b82f6]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
-                        >
-                          <Send size={20} />
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={startRecording}
-                          disabled={isSending}
-                          className="p-4 text-white/20 hover:text-[#3b82f6] transition-all"
-                        >
-                          <Mic size={24} />
-                        </button>
-                      )}
+                      <button 
+                        onClick={handleSendMessage}
+                        disabled={isSending || (!inputText.trim() && !previewImage)}
+                        className={`p-4 rounded-full transition-all flex items-center justify-center ${
+                          inputText.trim() || previewImage 
+                          ? 'bg-[#3b82f6] text-white shadow-xl shadow-[#3b82f6]/20 hover:scale-105 active:scale-95' 
+                          : 'bg-white/5 text-white/20 cursor-not-allowed'
+                        }`}
+                      >
+                        {isSending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                      </button>
                     </div>
+
+                    <AnimatePresence>
+                      {showReactionPicker === 'input' && (
+                        <div className="absolute bottom-full right-0 mb-4 z-50">
+                          <EmojiPicker 
+                            onEmojiClick={onEmojiClick}
+                            theme={EmojiTheme.DARK}
+                            lazyLoadEmojis
+                          />
+                        </div>
+                      )}
+                    </AnimatePresence>
                  </div>
                </div>
             </footer>

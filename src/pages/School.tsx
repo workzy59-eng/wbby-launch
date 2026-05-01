@@ -34,7 +34,7 @@ export default function School() {
 
         <div className="flex items-center gap-4">
           <Link to="/" className="px-6 py-2.5 bg-gray-100 border border-gray-200 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-gray-200 transition-all">
-            Back to Hub
+            BACK_TO_WEBBY
           </Link>
           <button className="p-2 text-gray-400 hover:text-[#0047AB] transition-colors">
             <Search size={20} />
@@ -214,6 +214,11 @@ export default function School() {
               <button className="bg-[#0047AB] text-white px-4 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest">Join</button>
             </div>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto mt-20 pt-10 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6">
+           <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">
+             © 2024 WebbyLaunch. Premium Mobile-First Web Solutions.
+           </p>
         </div>
       </footer>
     </div>
