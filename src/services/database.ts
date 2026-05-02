@@ -584,6 +584,8 @@ export const getDeveloperAttendanceStatus = (uid: string, callback: (isPunchedIn
     } else {
       callback(false);
     }
+  }, (error) => {
+    console.error("Attendance listener error:", error);
   });
 };
 
@@ -1011,6 +1013,8 @@ export const getNotifications = (userId: string, callback: (notifications: any[]
     
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    console.error("Notifications listener error:", error);
   });
 };
 

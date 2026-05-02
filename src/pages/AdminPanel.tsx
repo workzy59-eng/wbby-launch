@@ -346,11 +346,15 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       const q = query(collection(db, 'users'), where('role', '==', 'client'));
       unsubscribeUsers = onSnapshot(q, (snapshot) => {
         setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
+      }, (error) => {
+        if (!error.message.includes('Quota')) console.error("Admin Clients Snapshot Error:", error);
       });
     } else if (activeTab === 'developers') {
       const q = query(collection(db, 'users'), where('role', '==', 'developer'));
       unsubscribeUsers = onSnapshot(q, (snapshot) => {
         setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
+      }, (error) => {
+        if (!error.message.includes('Quota')) console.error("Admin Developers Snapshot Error:", error);
       });
     }
 

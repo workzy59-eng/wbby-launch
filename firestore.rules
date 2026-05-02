@@ -30,6 +30,7 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.email.lower() == 'workzy59@gmail.com' ||
         request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
+        request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
@@ -167,6 +168,12 @@ service cloud.firestore {
 
     match /meeting_requests/{requestId} {
       allow read, write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || incoming().clientId == request.auth.uid || incoming().developerId == request.auth.uid));
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if isAuth(); 
+      allow update, delete: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && resource.data.userId == request.auth.uid);
     }
     
     // --- Leave Requests & Attendance ---
