@@ -203,9 +203,14 @@ export const acceptProject = async (projectId: string) => {
 
       if (snap.data().developerId) throw "Already taken";
 
+      const projectData = snap.data();
+      const plan = projectData.plan?.toLowerCase() || 'basic';
+      const payout = plan === 'premium' ? 7500 : plan === 'standard' ? 4000 : 1500;
+
       tx.update(ref, {
         developerId: currentUser!.uid,
         status: "in_progress",
+        payout: payout,
         acceptedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -235,7 +240,6 @@ export const acceptProject = async (projectId: string) => {
       });
 
       // PART 5: Auto Chat Creation
-      const projectData = snap.data();
       const clientUid = projectData.userId;
       const developerUid = currentUser!.uid;
       const conversationId = getConversationId(clientUid, developerUid);
@@ -518,6 +522,66 @@ export const updateLeaveRequest = async (requestId: string, status: string) => {
 };
 
 // Attendance Operations
+// Developer Performance Tracking
+export const getDeveloperStats = async (uid: string) => {
+  try {
+    const projectsRef = collection(db, 'projects');
+    const qCompleted = query(projectsRef, where('developerId', '==', uid), where('status', '==', 'Completed'));
+    const qActive = query(projectsRef, where('developerId', '==', uid), where('status', 'in', ['Development Started', 'Accepted', 'assigned', 'in_progress', 'active']));
+    
+    const [completedSnap, activeSnap] = await Promise.all([
+      getDocs(qCompleted),
+      getDocs(qActive)
+    ]);
+
+    const completed = completedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+    const active = activeSnap.docs.length;
+    
+    // Calculate total payout
+    const totalPayout = completed.reduce((acc, p) => acc + (p.payout || 0), 0);
+    
+    // Calculate total hours from attendance
+    const attendanceRef = collection(db, 'attendance');
+    const qAttendance = query(attendanceRef, where('userId', '==', uid));
+    const attendanceSnap = await getDocs(qAttendance);
+    
+    let totalMinutes = 0;
+    attendanceSnap.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.punchIn && data.punchOut) {
+        const start = data.punchIn instanceof Timestamp ? data.punchIn.toDate() : new Date(data.punchIn);
+        const end = data.punchOut instanceof Timestamp ? data.punchOut.toDate() : new Date(data.punchOut);
+        totalMinutes += (end.getTime() - start.getTime()) / (1000 * 60);
+      }
+    });
+
+    return {
+      completedCount: completed.length,
+      activeCount: active,
+      totalHours: Math.round(totalMinutes / 60),
+      totalPayout
+    };
+  } catch (error) {
+    console.error("Error getting developer stats:", error);
+    return { completedCount: 0, activeCount: 0, totalHours: 0, totalPayout: 0 };
+  }
+};
+
+export const getDeveloperAttendanceStatus = (uid: string, callback: (isPunchedIn: boolean) => void) => {
+  const dateStr = new Date().toISOString().split('T')[0];
+  const attendanceId = `${uid}_${dateStr}`;
+  const attendanceRef = doc(db, 'attendance', attendanceId);
+  
+  return onSnapshot(attendanceRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      callback(!!data.punchIn && !data.punchOut);
+    } else {
+      callback(false);
+    }
+  });
+};
+
 export const punchIn = async (userId: string) => {
   const dateStr = new Date().toISOString().split('T')[0];
   const attendanceId = `${userId}_${dateStr}`;
@@ -525,19 +589,27 @@ export const punchIn = async (userId: string) => {
   
   try {
     const existing = await getDoc(attendanceRef);
-    if (existing.exists() && existing.data().punchIn) {
+    if (existing.exists() && existing.data().punchIn && !existing.data().punchOut) {
       toast.error("Already punched in today.");
       return;
     }
 
     await setDoc(attendanceRef, {
       userId,
-      date: serverTimestamp(),
+      date: dateStr,
       punchIn: serverTimestamp(),
       punchOut: null,
       status: 'present',
       updatedAt: serverTimestamp()
     }, { merge: true });
+
+    // Update user status to active
+    await updateDoc(doc(db, 'users', userId), {
+      status: 'active',
+      isPunchedIn: true,
+      lastPunchIn: serverTimestamp()
+    });
+
     toast.success("Punched in successfully.");
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, 'attendance');
@@ -564,6 +636,14 @@ export const punchOut = async (userId: string) => {
       punchOut: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
+
+    // Update user status
+    await updateDoc(doc(db, 'users', userId), {
+      status: 'online',
+      isPunchedIn: false,
+      lastPunchOut: serverTimestamp()
+    });
+
     toast.success("Punched out successfully.");
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, 'attendance');

@@ -77,11 +77,24 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       oneTime: { basic: '', standard: '', premium: '' }
     }
   });
+  const [isPunchedIn, setIsPunchedIn] = useState(false);
+  const [devStats, setDevStats] = useState({ completedCount: 0, activeCount: 0, totalHours: 0, totalPayout: 0 });
 
   useEffect(() => {
     if (!user?.uid) return;
     const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
-    return () => unsub?.();
+    
+    // Real-time attendance status
+    const { getDeveloperAttendanceStatus, getDeveloperStats } = import('../services/database').then(db => {
+      const unsubAttendance = db.getDeveloperAttendanceStatus(user.uid, setIsPunchedIn);
+      db.getDeveloperStats(user.uid).then(setDevStats);
+      return { unsubAttendance };
+    });
+
+    return () => {
+      unsub?.();
+      getDeveloperAttendanceStatus.then(res => res.unsubAttendance?.());
+    };
   }, [user?.uid]);
 
   useEffect(() => {
@@ -529,41 +542,64 @@ Created At: ${formatDate(project.createdAt)}
                 {/* Attendance & Stats Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Attendance Card */}
-                  <div className="lg:col-span-1 bg-white/5 border border-white/10 rounded-[2rem] p-8 space-y-6">
-                    <div className="flex items-center gap-3">
-                      <Clock className="text-[#c7c42a]" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Daily Attendance</p>
+                  <div className="lg:col-span-1 bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl" />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Clock size={20} className="text-[#c7c42a]" />
+                        <h3 className="text-sm font-black uppercase tracking-widest text-white/40 italic">Activity Center</h3>
+                      </div>
+                      <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${isPunchedIn ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                        {isPunchedIn ? 'On Duty' : 'Off Duty'}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <button 
-                        onClick={() => punchIn(user!.uid)}
-                        className="py-4 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all"
-                      >
-                        Punch In
-                      </button>
-                      <button 
-                        onClick={() => punchOut(user!.uid)}
-                        className="py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:bg-white hover:text-black transition-all"
-                      >
-                        Punch Out
-                      </button>
+
+                    <div className="space-y-4">
+                      {isPunchedIn ? (
+                        <button 
+                          onClick={() => punchOut(user!.uid)}
+                          className="w-full py-6 bg-red-500 text-white rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-red-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
+                          Punch Out
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => punchIn(user!.uid)}
+                          className="w-full py-6 bg-[#c7c42a] text-black rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
+                          Punch In
+                        </button>
+                      )}
+                      
+                      <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                          <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Total Hours</p>
+                          <p className="text-lg font-black italic">{devStats.totalHours}h</p>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                          <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Status</p>
+                          <p className={`text-lg font-black italic ${isPunchedIn ? 'text-green-500' : 'text-red-500'}`}>{isPunchedIn ? 'Active' : 'Offline'}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
                     {[
-                      { label: 'Completed', value: stats.completed, color: 'text-green-500' },
-                      { label: 'Active', value: stats.pending, color: 'text-[#c7c42a]' },
+                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500' },
+                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]' },
                       { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', onClick: () => setActiveTab('pool') },
-                      { label: 'Earnings', value: `₹${stats.earnings.toLocaleString()}`, color: 'text-[#c7c42a]' }
+                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]' }
                     ].map((stat, i) => (
                       <div 
                         key={i} 
-                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2 ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50' : ''}`}
+                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2 ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
                         onClick={stat.onClick}
                       >
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
-                        <h3 className={`text-2xl md:text-3xl font-black italic ${stat.color}`}>{stat.value}</h3>
+                        <h3 className={`text-2xl md:text-4xl font-black italic ${stat.color}`}>{stat.value}</h3>
                       </div>
                     ))}
                   </div>

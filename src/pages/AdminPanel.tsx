@@ -264,6 +264,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [appTab, setAppTab] = useState<'developer' | 'sales' | 'invites'>('developer');
+  const [developerStats, setDeveloperStats] = useState<Record<string, any>>({});
 
   const isUserAdmin = profile?.role === 'admin' || (user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
@@ -357,6 +358,21 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         setDeveloperInvites(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       }, (error) => {
         if (!error.message.includes('Quota')) console.error("Admin DevInvites Snapshot Error:", error);
+      });
+    }
+
+    if (activeTab === 'developers') {
+      const { getDeveloperStats } = import('../services/database').then(db => {
+        const fetchDevStats = async () => {
+          const statsMap: Record<string, any> = {};
+          const devs = users.filter(u => u.role === 'developer');
+          for (const dev of devs) {
+            const stats = await db.getDeveloperStats(dev.uid);
+            statsMap[dev.uid] = stats;
+          }
+          setDeveloperStats(statsMap);
+        };
+        fetchDevStats();
       });
     }
 
@@ -1855,20 +1871,41 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   const active = devProjects.filter(p => ['Accepted', 'Development Started', 'assigned', 'pending'].includes(p.status)).length;
                   const total = completed + active;
                   const efficiency = total > 0 ? Math.round((completed / total) * 100) : 0;
+                  const stats = developerStats[dev.uid] || { totalHours: 0, totalPayout: 0 };
+                  const isPunchedIn = dev.isPunchedIn || false;
 
                   return (
-                    <div key={dev.uid} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 space-y-6">
+                    <div key={dev.uid} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 space-y-6 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      
                       <div className="flex justify-between items-start">
                         <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic">
-                          {dev.displayName?.[0]}
+                          {dev.photoURL ? (
+                            <img src={dev.photoURL} alt="" className="w-full h-full object-cover rounded-2xl" referrerPolicy="no-referrer" />
+                          ) : (
+                            dev.displayName?.[0] || 'D'
+                          )}
                         </div>
-                        <div className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[8px] font-black uppercase tracking-widest">
-                          Online
+                        <div className={`px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 ${isPunchedIn ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-white/5 text-white/30 border border-white/5'}`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? 'bg-green-500 animate-pulse' : 'bg-white/20'}`} />
+                          {isPunchedIn ? 'Punched In' : 'Punched Out'}
                         </div>
                       </div>
+                      
                       <div>
                         <h4 className="text-xl font-bold text-white uppercase tracking-tight">{dev.displayName}</h4>
                         <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{dev.email}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                          <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Weekly Hours</p>
+                          <p className="text-xl font-black italic text-[#c7c42a]">{stats.totalHours}h</p>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                          <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Weekly Payout</p>
+                          <p className="text-xl font-black italic text-green-500">₹{stats.totalPayout.toLocaleString()}</p>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 pt-2">
@@ -1887,7 +1924,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       </div>
 
                       <div className="pt-6 border-t border-white/5 flex gap-2">
-                         <button onClick={() => { setSelectedUser(dev); setShowDirectChat(true); }} className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl font-bold text-[10px] uppercase tracking-widest">Message</button>
+                         <button onClick={() => { setSelectedUser(dev); setShowDirectChat(true); }} className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Message</button>
                          <button className="flex-1 py-3 bg-white/5 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/10">Profile</button>
                       </div>
                     </div>

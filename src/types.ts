@@ -261,6 +261,7 @@ export interface Project {
   urlSubmittedAt?: string | Timestamp;
   aiPrompt?: string;
   startedAt?: string | Timestamp;
+  payout?: number;
 }
 
 export interface Attachment {

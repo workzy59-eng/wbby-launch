@@ -6,14 +6,17 @@ import App from './App.tsx';
 import './index.css';
 
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
       <AuthProvider>
-        <Router>
-          <App />
-        </Router>
+        <NotificationProvider>
+          <Router>
+            <App />
+          </Router>
+        </NotificationProvider>
       </AuthProvider>
     </HelmetProvider>
   </StrictMode>,
