@@ -42,11 +42,29 @@ export const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'createdAt
 
 export const acceptMeeting = async (meetingId: string, userId: string) => {
   const meetingRef = doc(db, COLLECTION_NAME, meetingId);
-  return await updateDoc(meetingRef, {
+  const meetingSnap = await getDoc(meetingRef);
+  
+  if (!meetingSnap.exists()) throw new Error('Meeting not found');
+  const meetingData = meetingSnap.data();
+
+  await updateDoc(meetingRef, {
     status: 'accepted',
     acceptedBy: userId,
     updatedAt: serverTimestamp()
   });
+
+  // Notify the other party
+  const otherId = meetingData.requestedBy === userId ? (meetingData.clientId || meetingData.developerId) : meetingData.requestedBy;
+  
+  if (otherId) {
+    await createNotification({
+      userId: otherId,
+      type: 'meeting',
+      title: 'Meeting Accepted',
+      description: `Meeting "${meetingData.title}" has been accepted.`,
+      createdAt: serverTimestamp()
+    });
+  }
 };
 
 export const declineMeeting = async (meetingId: string) => {

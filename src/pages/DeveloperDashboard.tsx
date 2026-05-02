@@ -560,16 +560,16 @@ Created At: ${formatDate(project.createdAt)}
                       {isPunchedIn ? (
                         <button 
                           onClick={() => punchOut(user!.uid)}
-                          className="w-full py-6 bg-red-500 text-white rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-red-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                          className="w-full py-6 bg-[#c7c42a] text-black rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/20 hover:scale-[1.02] active:scale-[0.98] transition-all animate-pulse border-2 border-[#c7c42a]"
                         >
-                          Punch Out
+                          ON DUTY / PUNCH OUT
                         </button>
                       ) : (
                         <button 
                           onClick={() => punchIn(user!.uid)}
-                          className="w-full py-6 bg-[#c7c42a] text-black rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                          className="w-full py-6 bg-black text-[#c7c42a] border-2 border-[#c7c42a] rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/10 hover:bg-[#c7c42a] hover:text-black transition-all"
                         >
-                          Punch In
+                          PUNCH IN
                         </button>
                       )}
                       

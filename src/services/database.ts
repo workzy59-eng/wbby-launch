@@ -583,6 +583,11 @@ export const getDeveloperAttendanceStatus = (uid: string, callback: (isPunchedIn
 };
 
 export const punchIn = async (userId: string) => {
+  if (!currentUser || userId !== currentUser.uid) {
+    toast.error("Identity verification failed.");
+    return;
+  }
+
   const dateStr = new Date().toISOString().split('T')[0];
   const attendanceId = `${userId}_${dateStr}`;
   const attendanceRef = doc(db, 'attendance', attendanceId);
@@ -595,28 +600,34 @@ export const punchIn = async (userId: string) => {
     }
 
     await setDoc(attendanceRef, {
-      userId,
+      userId: currentUser.uid,
       date: dateStr,
       punchIn: serverTimestamp(),
       punchOut: null,
-      status: 'present',
+      status: 'active',
       updatedAt: serverTimestamp()
     }, { merge: true });
 
-    // Update user status to active
+    // Update user status
     await updateDoc(doc(db, 'users', userId), {
       status: 'active',
       isPunchedIn: true,
       lastPunchIn: serverTimestamp()
     });
 
-    toast.success("Punched in successfully.");
+    toast.success("PUNCH IN SECURED. IDENTITY VERIFIED.");
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'attendance');
+    console.error("Attendance security failure:", error);
+    handleFirestoreError(error, OperationType.WRITE, `attendance/${attendanceId}`);
   }
 };
 
 export const punchOut = async (userId: string) => {
+  if (!currentUser || userId !== currentUser.uid) {
+    toast.error("Identity verification failed.");
+    return;
+  }
+
   const dateStr = new Date().toISOString().split('T')[0];
   const attendanceId = `${userId}_${dateStr}`;
   const attendanceRef = doc(db, 'attendance', attendanceId);
@@ -634,6 +645,7 @@ export const punchOut = async (userId: string) => {
 
     await updateDoc(attendanceRef, {
       punchOut: serverTimestamp(),
+      status: 'completed',
       updatedAt: serverTimestamp()
     });
 
@@ -644,9 +656,10 @@ export const punchOut = async (userId: string) => {
       lastPunchOut: serverTimestamp()
     });
 
-    toast.success("Punched out successfully.");
+    toast.success("PUNCH OUT SECURED. STATUS UPDATED.");
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'attendance');
+    console.error("Attendance security failure:", error);
+    handleFirestoreError(error, OperationType.WRITE, `attendance/${attendanceId}`);
   }
 };
 
