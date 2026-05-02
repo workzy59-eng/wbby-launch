@@ -9,7 +9,8 @@ import {
   orderBy, 
   onSnapshot,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  getDoc
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { handleFirestoreError, OperationType, createNotification } from './database';

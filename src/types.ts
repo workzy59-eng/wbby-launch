@@ -76,6 +76,9 @@ export interface UserProfile {
   plan?: 'Basic' | 'Standard' | 'Premium';
   lastLogin?: string | Timestamp;
   favoriteConversations?: string[];
+  isPunchedIn?: boolean;
+  lastPunchIn?: string | Timestamp;
+  lastPunchOut?: string | Timestamp;
 
   // Business details for clients (Legacy/Duplicate - keeping for compatibility but preferring structured fields above)
   businessName?: string;
@@ -262,6 +265,7 @@ export interface Project {
   aiPrompt?: string;
   startedAt?: string | Timestamp;
   payout?: number;
+  domainPrice?: number;
 }
 
 export interface Attachment {
@@ -384,6 +388,7 @@ export interface Meeting {
 export interface MeetingRequest {
   id: string;
   clientId: string;
+  developerId?: string;
   preferredDate: string;
   preferredTime: string;
   message?: string;

@@ -42,7 +42,8 @@ service cloud.firestore {
     function isWhitelistedDeveloper() {
       return isSignedIn() && (
         request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
-        request.auth.token.email.lower() == 'priyankapudi4u@gmail.com'
+        request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
+        request.auth.token.email.lower() == 'workzy59@gmail.com'
       );
     }
 
@@ -104,77 +105,82 @@ service cloud.firestore {
     // CONVERSATIONS & MESSAGES
     // =========================
     match /conversations/{conversationId} {
-      allow read, update: if isAuth() && request.auth.uid in resource.data.participants;
+      allow read, update: if isAdmin() || (isAuth() && request.auth.uid in resource.data.participants);
       allow create: if isAuth() && request.auth.uid in incoming().participants;
 
       match /messages/{messageId} {
-        allow read: if isAuth() && 
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow read: if isAdmin() || (isAuth() && 
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
 
-        allow create: if isAuth() && 
+        allow create: if isAdmin() || (isAuth() && 
           incoming().senderId == request.auth.uid &&
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
 
-        allow update, delete: if false; 
+        allow update, delete: if isAdmin();
       }
     }
 
     // =========================
     // ADMIN & SYSTEM COLLECTIONS
     // =========================
-    match /payments/{id} { allow read, write: if isAdmin(); }
-    match /commissions/{id} { allow read, write: if isAdmin(); }
-    match /leads/{id} { allow read, write: if isAdmin(); }
+    match /payments/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
+    match /commissions/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
+    match /leads/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
 
     match /developer_requests/{id} {
       allow create: if isAuth();
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if isAdmin() || isWhitelistedDeveloper();
     }
 
     match /sales_applications/{id} {
       allow create: if isAuth();
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if isAdmin() || isWhitelistedDeveloper();
     }
 
     match /system_settings/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || isWhitelistedDeveloper();
     }
 
     match /blog_posts/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || isWhitelistedDeveloper();
     }
 
     match /developer_invites/{id} {
       allow read: if isAuth();
-      allow write: if isAdmin();
+      allow write: if isAdmin() || isWhitelistedDeveloper();
     }
 
     match /visit_sessions/{id} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow update: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
-      allow read: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
+      allow update: if isAuth() && (existing().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow read: if isAuth() && (existing().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
     }
 
     // --- Meetings ---
     match /meetings/{meetingId} {
-      allow get: if isAuth() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow list: if isAuth() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow write: if isAdmin() || (isAuth() && incoming().clientId == request.auth.uid);
+      allow get: if isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow list: if isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (incoming().clientId == request.auth.uid || incoming().developerId == request.auth.uid));
+    }
+
+    match /meeting_requests/{requestId} {
+      allow read, write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || incoming().clientId == request.auth.uid || incoming().developerId == request.auth.uid));
     }
     
     // --- Leave Requests & Attendance ---
     match /leave_requests/{requestId} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow read: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
-      allow update: if isAdmin();
+      allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin() || isWhitelistedDeveloper();
     }
     
     match /attendance/{attendanceId} {
-      allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow read: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
-      allow update: if isAdmin();
+      allow create: if isAuth() && (incoming().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      // Allow reading if the doc doesn't exist yet (for getDoc checks) or if they own it
+      allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (resource == null || resource.data.userId == request.auth.uid));
+      allow update: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && resource.data.userId == request.auth.uid);
     }
 
     // =========================

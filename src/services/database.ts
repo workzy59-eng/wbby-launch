@@ -200,10 +200,15 @@ export const acceptProject = async (projectId: string) => {
       const snap = await tx.get(ref);
 
       if (!snap.exists()) throw "Not found";
+      
+      const projectData = snap.data();
+      
+      // Validation: Check if client provided necessary links/info
+      if (!projectData.referenceWebsite && !projectData.documentsUrl && !projectData.businessLocation) {
+        throw "Client hasn't provided necessary links yet. Please wait for client info.";
+      }
 
       if (snap.data().developerId) throw "Already taken";
-
-      const projectData = snap.data();
       const plan = projectData.plan?.toLowerCase() || 'basic';
       const payout = plan === 'premium' ? 7500 : plan === 'standard' ? 4000 : 1500;
 

@@ -30,7 +30,25 @@ import {
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects, sendMessage, acceptProject, getNotifications, markNotificationAsRead, punchIn, punchOut, getUnreadMessageCount } from '../services/database';
+import { 
+  getProjects, 
+  updateProject, 
+  getUserProfile, 
+  getAdmins, 
+  getPayments, 
+  updateUserProfile, 
+  getClients, 
+  getUnassignedProjects, 
+  sendMessage, 
+  acceptProject, 
+  getNotifications, 
+  markNotificationAsRead, 
+  punchIn, 
+  punchOut, 
+  getUnreadMessageCount,
+  getDeveloperAttendanceStatus,
+  getDeveloperStats
+} from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
@@ -61,6 +79,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [showRejectPopup, setShowRejectPopup] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
+  const [domainPrice, setDomainPrice] = useState<number>(0);
   const [paymentLinkBasic, setPaymentLinkBasic] = useState('');
   const [paymentLinkPremium, setPaymentLinkPremium] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,15 +104,12 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
     
     // Real-time attendance status
-    const { getDeveloperAttendanceStatus, getDeveloperStats } = import('../services/database').then(db => {
-      const unsubAttendance = db.getDeveloperAttendanceStatus(user.uid, setIsPunchedIn);
-      db.getDeveloperStats(user.uid).then(setDevStats);
-      return { unsubAttendance };
-    });
+    const unsubAttendance = getDeveloperAttendanceStatus(user.uid, setIsPunchedIn);
+    getDeveloperStats(user.uid).then(setDevStats);
 
     return () => {
       unsub?.();
-      getDeveloperAttendanceStatus.then(res => res.unsubAttendance?.());
+      unsubAttendance?.();
     };
   }, [user?.uid]);
 
@@ -233,6 +249,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       // Update with details provided in popup
       await updateProject(projectId, {
         websiteUrl: websiteUrl,
+        domainPrice: domainPrice,
         paymentLinkBasic: paymentLinkBasic,
         paymentLinkPremium: paymentLinkPremium,
         paymentLink: p.plan?.toLowerCase() === 'premium' ? paymentLinkPremium : paymentLinkBasic
@@ -241,6 +258,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       setActiveTab('projects');
       setShowAcceptPopup(null);
       setWebsiteUrl('');
+      setDomainPrice(0);
       setPaymentLinkBasic('');
       setPaymentLinkPremium('');
       toast.success('Mission accepted and infrastructure initialized');
@@ -839,7 +857,12 @@ Created At: ${formatDate(project.createdAt)}
                                <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[10px] tracking-widest">
                                  Mission Progress
                                </div>
-                               <span className="text-2xl font-black italic text-[#c7c42a]">{p.progress || 0}%</span>
+                               <div className="flex flex-col items-end">
+                                 <span className="text-2xl font-black italic text-[#c7c42a]">{p.progress || 0}%</span>
+                                 {p.domainPrice && p.domainPrice > 0 && (
+                                   <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest mt-1">Domain: ₹{p.domainPrice}</span>
+                                 )}
+                               </div>
                             </div>
                             <div className="h-4 bg-white/5 rounded-full overflow-hidden shadow-inner p-1">
                                <motion.div 
@@ -1235,6 +1258,20 @@ Created At: ${formatDate(project.createdAt)}
                 </div>
 
                 <div className="space-y-2">
+                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Domain Price (₹)</label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                    <input 
+                      type="number" 
+                      value={domainPrice || ''}
+                      onChange={(e) => setDomainPrice(parseInt(e.target.value) || 0)}
+                      placeholder="e.g. 800"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Basic Payment Link</label>
                   <div className="relative">
                     <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
@@ -1427,6 +1464,17 @@ Created At: ${formatDate(project.createdAt)}
                   />
                 </div>
 
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic ml-4">Domain Price (₹)</label>
+                  <input 
+                    type="number"
+                    value={editingProject.domainPrice || ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, domainPrice: parseInt(e.target.value) || 0 })}
+                    placeholder="e.g. 800"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                  />
+                </div>
+
                 {editingProject.paymentStatus === 'verifying' && (
                   <div className="p-6 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 space-y-4">
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic text-center">Client claims payment is completed. confirm?</p>
@@ -1482,6 +1530,7 @@ Created At: ${formatDate(project.createdAt)}
                         status: editingProject.status,
                         progress: editingProject.progress,
                         websiteUrl: editingProject.websiteUrl,
+                        domainPrice: editingProject.domainPrice,
                         paymentLink: editingProject.paymentLink,
                         paymentLinkBasic: editingProject.paymentLinkBasic,
                         paymentLinkPremium: editingProject.paymentLinkPremium,

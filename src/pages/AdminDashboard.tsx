@@ -1190,6 +1190,17 @@ Requirements:
                         </select>
                       </div>
 
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Domain Price (₹)</label>
+                        <input 
+                          type="number"
+                          placeholder="0"
+                          value={editingProject.domainPrice || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, domainPrice: parseInt(e.target.value) || 0 })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#00F2FF]"
+                        />
+                      </div>
+
                       {editingProject.status === 'rejected' && (
                         <div>
                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Rejection Reason</label>
@@ -1215,7 +1226,8 @@ Requirements:
                           status: editingProject.status, 
                           progress: editingProject.progress,
                           rejectionReason: editingProject.rejectionReason,
-                          developerId: editingProject.developerId
+                          developerId: editingProject.developerId,
+                          domainPrice: editingProject.domainPrice
                         })}
                         className="flex-1 py-4 rounded-xl bg-[#c7c42a] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
                       >

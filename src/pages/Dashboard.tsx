@@ -1012,6 +1012,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             {selectedProject?.plan === 'Standard' ? '₹15,000' : selectedProject?.plan === 'Pro' ? '₹30,000' : '₹5,000'}/-
                           </span>
                         </div>
+                        {selectedProject?.domainPrice && selectedProject.domainPrice > 0 && (
+                          <div className="flex justify-between items-center text-sm pt-2 border-t border-white/5">
+                            <span className="text-white/40 font-bold uppercase tracking-widest">
+                              Domain Charges
+                            </span>
+                            <span className="text-[#c7c42a] font-black italic">
+                              ₹{selectedProject.domainPrice.toLocaleString()}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="pt-4 relative z-10">
@@ -1065,6 +1075,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                          <ShieldCheck size={20} />
                                          Pay Premium (₹15,000)
                                        </button>
+                                     )}
+                                     {selectedProject.domainPrice && selectedProject.domainPrice > 0 && (
+                                       <div className="p-4 rounded-2xl bg-[#c7c42a]/5 border border-[#c7c42a]/20 flex justify-between items-center">
+                                         <span className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Domain Charge (Unpaid)</span>
+                                         <span className="text-lg font-black italic text-[#c7c42a]">₹{selectedProject.domainPrice.toLocaleString()}</span>
+                                       </div>
                                      )}
                                      {!selectedProject.paymentLinkBasic && (
                                        <button 
