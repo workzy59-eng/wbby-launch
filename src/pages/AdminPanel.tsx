@@ -66,6 +66,9 @@ import { MeetingList } from '../components/meetings/MeetingList';
 import Papa from 'papaparse';
 import { Monitor, Smartphone, Tablet, ExternalLink, Zap, Mail, MessageSquare } from 'lucide-react';
 
+import BottomNav from '../components/BottomNav';
+import { getUnreadMessageCount } from '../services/database';
+
 const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
   const containerClasses = {
     desktop: 'w-full h-[500px]',
@@ -155,6 +158,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers'>('dashboard');
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
+    return () => unsub?.();
+  }, [user?.uid]);
 
   const [developerInvites, setDeveloperInvites] = useState<any[]>([]);
 
@@ -307,7 +317,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     let unsubscribeUsers = () => {};
     let unsubscribeDevInvites = () => {};
 
-    if (activeTab === 'dashboard' || activeTab === 'projects' || activeTab === 'recycle') {
+    if (activeTab === 'dashboard' || activeTab === 'projects' || activeTab === 'recycle' || activeTab === 'developers') {
       const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(100));
       unsubscribeProjects = onSnapshot(q, (snapshot) => {
         setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
@@ -607,6 +617,7 @@ Generated on: ${new Date().toLocaleString()}
     activeProjects: projects.filter(p => !p.isDeleted && ['Accepted', 'Development Started', 'assigned', 'pending'].includes(p.status)).length,
     pendingRequests: projects.filter(p => p.status === 'Waiting for Review' && !p.isDeleted).length,
     completedProjects: projects.filter(p => p.status === 'Completed' && !p.isDeleted).length,
+    totalMessages: projects.reduce((acc, p) => acc + (p.unreadCount ? Object.values(p.unreadCount).reduce((a: any, b: any) => a + b, 0) : 0), 0),
     totalRevenue: projects.filter(p => !p.isDeleted && p.paymentStatus === 'paid').reduce((acc, p) => acc + (p.plan === 'Basic' ? 5000 : p.plan === 'Standard' ? 15000 : p.plan === 'Premium' ? 30000 : 0), 0),
   };
 
@@ -617,176 +628,107 @@ Generated on: ${new Date().toLocaleString()}
     { name: 'Rejected', value: projects.filter(p => p.status === 'Rejected').length, color: '#ef4444' },
   ].filter(d => d.value > 0);
 
-  const renderDashboard = () => (
-    <div className="space-y-12">
-      <div className="flex justify-between items-end gap-2">
+  const renderDashboard = () => {
+    const totalCompleted = projects.filter(p => !p.isDeleted && p.status === 'Completed').length;
+    const pendingJobs = projects.filter(p => !p.isDeleted && !p.developerId).length;
+    const platformEfficiency = projects.length > 0 ? Math.round((totalCompleted / projects.length) * 100) : 0;
+
+    const messageCount = stats.totalMessages || 0;
+
+    return (
+      <div className="space-y-12">
         <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Overview</span>
-          <h2 className="text-6xl font-bold tracking-tighter text-white">COMMAND CENTER</h2>
+          <span className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.4em]">Operational Intelligence</span>
+          <h2 className="text-6xl font-black tracking-tighter text-white uppercase italic">Operations Control</h2>
         </div>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },
-          { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-[#00F2FF]' },
-          { label: 'Pending Requests', value: stats.pendingRequests, icon: Clock, color: 'text-[#c7c42a]' },
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-white' },
-        ].map((stat, i) => (
-          <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
-            <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <stat.icon size={120} />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { label: 'Platform Speed', value: `${platformEfficiency}%`, icon: Zap, color: 'text-[#c7c42a]' },
+            { label: 'Network Signal', value: messageCount, icon: MessageCircle, color: 'text-[#00F2FF]' },
+            { label: 'Pending Jobs', value: pendingJobs, icon: Bell, color: 'text-red-500' },
+            { label: 'Total Volume', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },
+          ].map((stat, i) => (
+            <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
+              <div className="flex justify-between items-start mb-6">
+                <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <stat.icon size={24} className={stat.color} />
+                </div>
+              </div>
+              <div className="text-4xl font-bold mb-1 text-white tabular-nums tracking-tighter italic">{stat.value}</div>
+              <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
             </div>
-            <div className="flex justify-between items-start mb-6">
-              <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                <stat.icon size={24} className={stat.color} />
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white/5 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10">
+            <div className="flex justify-between items-center mb-10">
+              <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">Active Pulse</h3>
+              <div className="flex gap-2">
+                <div className="px-4 py-1.5 bg-green-500/10 text-green-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">Systems Nominal</div>
               </div>
             </div>
-            <div className="text-4xl font-bold mb-1 text-white tabular-nums tracking-tighter">{stat.value}</div>
-            <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">Project Distribution</h3>
-            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Real-time Analytics</span>
-          </div>
-          <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={projectStatusData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 'bold' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 'bold' }} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                  itemStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold' }}
-                />
-                <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                  {projectStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex flex-col">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">User Base</h3>
-          </div>
-          <div className="h-80 w-full relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Clients', value: stats.clients, color: '#c7c42a' },
-                    { name: 'Developers', value: stats.developers, color: '#00F2FF' },
-                    { name: 'Admins', value: users.filter(u => u.role === 'admin').length, color: '#ffffff' },
-                  ].filter(d => d.value > 0)}
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {[
-                    { color: '#c7c42a' },
-                    { color: '#00F2FF' },
-                    { color: '#ffffff' },
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex items-center justify-center flex-col pt-8 pointer-events-none">
-              <span className="text-4xl font-bold text-white">{stats.totalUsers}</span>
-              <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Total Users</span>
-            </div>
-          </div>
-          <div className="mt-4 space-y-2">
-             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                <span className="text-[#c7c42a]">Clients</span>
-                <span className="text-white">{stats.clients}</span>
-             </div>
-             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                <span className="text-[#00F2FF]">Developers</span>
-                <span className="text-white">{stats.developers}</span>
-             </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">Recent Activity</h3>
-            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Live Feed</span>
-          </div>
-          <div className="space-y-4">
-            {projects.slice(0, 5).map((p, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 group hover:border-[#c7c42a]/30 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#c7c42a]/10 flex items-center justify-center">
-                    <FileText size={16} className="text-[#c7c42a]" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white tracking-tight">{p.businessName}</div>
-                    <div className="text-[10px] text-white/40 uppercase tracking-widest">{p.status}</div>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => { setViewingProject(p); setShowProjectDetailModal(true); }}
-                  className="p-2 hover:bg-white/5 rounded-lg text-white/20 hover:text-white transition-all"
-                >
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-white uppercase italic tracking-tight">System Health</h3>
-            <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest">Stable</span>
-          </div>
-          <div className="space-y-6">
-            {[
-              { label: 'Server Load', value: 24, icon: Zap },
-              { label: 'DB Latency', value: 12, icon: Database },
-              { label: 'Uptime', value: 99, icon: CheckCheck },
-            ].map((item, i) => {
-              const Icon = (item as any).icon || Zap;
-              return (
-              <div key={i}>
-                <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">
-                  <span className="flex items-center gap-2">
-                    <Icon size={12} />
-                    {item.label}
-                  </span>
-                  <span>{item.value}%</span>
-                </div>
-                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${item.value}%` }}
-                    className="h-full bg-[#c7c42a]"
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={projects.slice(-7).map((p, i) => ({ name: `P${i}`, val: p.progress || 0 }))}>
+                  <defs>
+                    <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#c7c42a" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#c7c42a" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#000', border: '1px solid #ffffff10', borderRadius: '16px' }}
                   />
-                </div>
+                  <Area type="monotone" dataKey="val" stroke="#c7c42a" strokeWidth={4} fillOpacity={1} fill="url(#colorPulse)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10">
+            <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-8">Ecosystem</h3>
+            <div className="h-64 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Clients', value: stats.clients, color: '#c7c42a' },
+                      { name: 'Devs', value: stats.developers, color: '#00F2FF' }
+                    ]}
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {[0, 1].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#c7c42a' : '#00F2FF'} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center flex-col pt-6 pointer-events-none">
+                <span className="text-3xl font-black text-white italic">{stats.totalUsers - 1}</span>
+                <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Network</span>
               </div>
-            )})}
+            </div>
+            <div className="mt-8 space-y-4">
+               <div className="flex justify-between items-center text-[10px] font-black uppercase italic tracking-widest">
+                  <span className="text-white/40">Partner Devs</span>
+                  <span className="text-[#00F2FF]">{stats.developers}</span>
+               </div>
+               <div className="flex justify-between items-center text-[10px] font-black uppercase italic tracking-widest">
+                  <span className="text-white/40">Verified Clients</span>
+                  <span className="text-[#c7c42a]">{stats.clients}</span>
+               </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderRequests = () => (
     <div className="space-y-12">
@@ -1828,14 +1770,14 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
             </div>
             <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">
-              {['workzy59@gmail.com', 'aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '') ? 'Developer Dashboard' : 'Admin Panel'}
+              {['workzy59@gmail.com', 'priyankapudi4u@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '') ? 'Developer Dashboard' : 'Admin Panel'}
             </div>
           </div>
         </div>
-        <nav className="flex-1 p-6 space-y-3">
+        <nav className="flex-1 p-6 space-y-3 overflow-y-auto">
           {[
-            {id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard},
-            {id: 'my-tasks', label: 'My Projects', icon: Briefcase},
+            {id: 'dashboard', label: 'Operations', icon: LayoutDashboard},
+            {id: 'my-tasks', label: 'My Projects', icon: Briefcase, hide: user.email?.toLowerCase() === 'workzy59@gmail.com'},
             {id: 'requests', label: 'Job Pool', icon: FileText},
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
@@ -1845,7 +1787,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             { id: 'meetings', label: 'Meetings', icon: Video },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
             { id: 'system', label: 'System Settings', icon: Settings },
-          ].map((item) => (
+          ].filter(item => !item.hide).map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
@@ -1907,26 +1849,50 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {users.filter(u => u.role === 'developer').map((dev) => (
-                  <div key={dev.uid} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 space-y-6">
-                    <div className="flex justify-between items-start">
-                      <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic">
-                        {dev.displayName?.[0]}
+                {users.filter(u => u.role === 'developer').map((dev) => {
+                  const devProjects = projects.filter(p => !p.isDeleted && (p.developerId === dev.uid || p.assignedTo === dev.uid));
+                  const completed = devProjects.filter(p => p.status === 'Completed').length;
+                  const active = devProjects.filter(p => ['Accepted', 'Development Started', 'assigned', 'pending'].includes(p.status)).length;
+                  const total = completed + active;
+                  const efficiency = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                  return (
+                    <div key={dev.uid} className="bg-white/5 p-8 rounded-[2rem] border border-white/10 space-y-6">
+                      <div className="flex justify-between items-start">
+                        <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic">
+                          {dev.displayName?.[0]}
+                        </div>
+                        <div className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[8px] font-black uppercase tracking-widest">
+                          Online
+                        </div>
                       </div>
-                      <div className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[8px] font-black uppercase tracking-widest">
-                        Online
+                      <div>
+                        <h4 className="text-xl font-bold text-white uppercase tracking-tight">{dev.displayName}</h4>
+                        <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{dev.email}</p>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 pt-2">
+                        <div className="text-center p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-[#c7c42a]/30 transition-all">
+                          <div className="text-xl font-black text-white italic">{completed}</div>
+                          <div className="text-[6px] font-black text-white/30 uppercase tracking-[0.2em]">Done</div>
+                        </div>
+                        <div className="text-center p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-[#00F2FF]/30 transition-all">
+                          <div className="text-xl font-black text-white italic">{active}</div>
+                          <div className="text-[6px] font-black text-white/30 uppercase tracking-[0.2em]">Active</div>
+                        </div>
+                        <div className="text-center p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-[#c7c42a]/30 transition-all">
+                          <div className="text-xl font-black text-[#c7c42a] italic">{efficiency}%</div>
+                          <div className="text-[6px] font-black text-white/30 uppercase tracking-[0.2em]">Efficiency</div>
+                        </div>
+                      </div>
+
+                      <div className="pt-6 border-t border-white/5 flex gap-2">
+                         <button onClick={() => { setSelectedUser(dev); setShowDirectChat(true); }} className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl font-bold text-[10px] uppercase tracking-widest">Message</button>
+                         <button className="flex-1 py-3 bg-white/5 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/10">Profile</button>
                       </div>
                     </div>
-                    <div>
-                      <h4 className="text-xl font-bold text-white uppercase tracking-tight">{dev.displayName}</h4>
-                      <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{dev.email}</p>
-                    </div>
-                    <div className="pt-6 border-t border-white/5 flex gap-2">
-                       <button onClick={() => { setSelectedUser(dev); setShowDirectChat(true); }} className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl font-bold text-[10px] uppercase tracking-widest">Message</button>
-                       <button className="flex-1 py-3 bg-white/5 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest">Profile</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>}
             {activeTab === 'analytics' && renderAnalytics()}
@@ -1939,11 +1905,12 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Scheduling</span>
                   <h2 className="text-6xl font-bold tracking-tighter text-white uppercase italic">Meeting Manager</h2>
                 </div>
-                <MeetingList user={user} profile={profile!} allClients={users.filter(u => u.role === 'developer')} />
+                <MeetingList user={user} profile={profile!} allClients={users.filter(u => u.role === 'client')} />
               </div>
             )}
           </motion.div>
         </AnimatePresence>
+        <BottomNav userId={user!.uid} role="admin" onOpenMessages={() => setActiveTab('messages')} />
       </main>
 
       {/* Reset Modal */}

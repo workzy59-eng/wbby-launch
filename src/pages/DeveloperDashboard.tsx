@@ -30,19 +30,21 @@ import {
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project } from '../types';
-import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects, sendMessage, acceptProject, getNotifications, markNotificationAsRead } from '../services/database';
+import { getProjects, updateProject, getUserProfile, getAdmins, getPayments, updateUserProfile, getClients, getUnassignedProjects, sendMessage, acceptProject, getNotifications, markNotificationAsRead, punchIn, punchOut, getUnreadMessageCount } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { Bell, Info } from 'lucide-react';
 
+import BottomNav from '../components/BottomNav';
+
 interface DeveloperDashboardProps {
   user: FirebaseUser | null;
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'meetings' | 'earnings' | 'settings';
+type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'meetings' | 'earnings' | 'settings' | 'attendance';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const navigate = useNavigate();
@@ -64,6 +66,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [settingsData, setSettingsData] = useState({
     emailNotifications: true,
     pushNotifications: true,
@@ -76,8 +79,15 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   });
 
   useEffect(() => {
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
-    if (user?.email && devEmails.includes(user.email.toLowerCase())) {
+    if (!user?.uid) return;
+    const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
+    return () => unsub?.();
+  }, [user?.uid]);
+
+  useEffect(() => {
+    const devEmails = ['sain17296174@gmail.com', 'workzy59@gmail.com'];
+    const adminEmails = ['priyankapudi4u@gmail.com', 'workzy59@gmail.com'];
+    if (user?.email && (devEmails.includes(user.email.toLowerCase()) || adminEmails.includes(user.email.toLowerCase()))) {
       const hasSeen = localStorage.getItem(`dev_welcome_${user.uid}`);
       if (!hasSeen) {
         setShowDeveloperWelcome(true);
@@ -206,9 +216,21 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       if (!p) throw new Error("Project not found");
 
       await acceptProject(projectId);
+      
+      // Update with details provided in popup
+      await updateProject(projectId, {
+        websiteUrl: websiteUrl,
+        paymentLinkBasic: paymentLinkBasic,
+        paymentLinkPremium: paymentLinkPremium,
+        paymentLink: p.plan?.toLowerCase() === 'premium' ? paymentLinkPremium : paymentLinkBasic
+      });
 
       setActiveTab('projects');
       setShowAcceptPopup(null);
+      setWebsiteUrl('');
+      setPaymentLinkBasic('');
+      setPaymentLinkPremium('');
+      toast.success('Mission accepted and infrastructure initialized');
     } catch (error: any) {
       console.error('Acceptance failed:', error);
     } finally {
@@ -292,8 +314,6 @@ Created At: ${formatDate(project.createdAt)}
       </div>
     );
   }
-
-  const unreadCount = projects.reduce((acc, p) => acc + (p.unreadCount?.[user?.uid || ''] || 0), 0);
 
   const NavItem = ({ tab, icon: Icon, label }: { tab: Tab, icon: any, label: string }) => (
     <button
@@ -490,7 +510,15 @@ Created At: ${formatDate(project.createdAt)}
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-32 md:pb-10 custom-scrollbar">
           <AnimatePresence mode="wait">
-            {activeTab === 'dashboard' && (
+            {activeTab === 'chat' ? (
+              <div className="h-full -m-6 md:-m-10">
+                <MessagesModule 
+                  currentUser={user!} 
+                  profile={profile} 
+                  onClose={() => setActiveTab('dashboard')} 
+                />
+              </div>
+            ) : activeTab === 'dashboard' && (
               <motion.div 
                 key="dashboard"
                 initial={{ opacity: 0, y: 20 }}
@@ -498,24 +526,47 @@ Created At: ${formatDate(project.createdAt)}
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-10"
               >
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
-                  {[
-                    { label: 'Total', value: stats.total, color: 'text-white' },
-                    { label: 'Completed', value: stats.completed, color: 'text-green-500' },
-                    { label: 'Active', value: stats.pending, color: 'text-[#c7c42a]' },
-                    { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]' },
-                    { label: 'Earnings', value: `₹${stats.earnings.toLocaleString()}`, color: 'text-[#c7c42a]' }
-                  ].map((stat, i) => (
-                    <div 
-                      key={i} 
-                      className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2 ${stat.label === 'New Jobs' ? 'cursor-pointer hover:border-[#c7c42a]/50' : ''}`}
-                      onClick={() => stat.label === 'New Jobs' ? setActiveTab('pool') : null}
-                    >
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
-                      <h3 className={`text-2xl md:text-3xl font-black italic ${stat.color}`}>{stat.value}</h3>
+                {/* Attendance & Stats Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Attendance Card */}
+                  <div className="lg:col-span-1 bg-white/5 border border-white/10 rounded-[2rem] p-8 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <Clock className="text-[#c7c42a]" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Daily Attendance</p>
                     </div>
-                  ))}
+                    <div className="grid grid-cols-2 gap-4">
+                      <button 
+                        onClick={() => punchIn(user!.uid)}
+                        className="py-4 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all"
+                      >
+                        Punch In
+                      </button>
+                      <button 
+                        onClick={() => punchOut(user!.uid)}
+                        className="py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:bg-white hover:text-black transition-all"
+                      >
+                        Punch Out
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
+                    {[
+                      { label: 'Completed', value: stats.completed, color: 'text-green-500' },
+                      { label: 'Active', value: stats.pending, color: 'text-[#c7c42a]' },
+                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', onClick: () => setActiveTab('pool') },
+                      { label: 'Earnings', value: `₹${stats.earnings.toLocaleString()}`, color: 'text-[#c7c42a]' }
+                    ].map((stat, i) => (
+                      <div 
+                        key={i} 
+                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2 ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50' : ''}`}
+                        onClick={stat.onClick}
+                      >
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
+                        <h3 className={`text-2xl md:text-3xl font-black italic ${stat.color}`}>{stat.value}</h3>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Important Projects (Assignments) */}
@@ -1318,6 +1369,28 @@ Created At: ${formatDate(project.createdAt)}
                   />
                 </div>
 
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic ml-4">Basic Payment Link</label>
+                  <input 
+                    type="text"
+                    value={editingProject.paymentLinkBasic || ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, paymentLinkBasic: e.target.value })}
+                    placeholder="Razorpay/Stripe Link"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic ml-4">Premium Payment Link</label>
+                  <input 
+                    type="text"
+                    value={editingProject.paymentLinkPremium || ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, paymentLinkPremium: e.target.value })}
+                    placeholder="Razorpay/Stripe Link"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                  />
+                </div>
+
                 {editingProject.paymentStatus === 'verifying' && (
                   <div className="p-6 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 space-y-4">
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic text-center">Client claims payment is completed. confirm?</p>
@@ -1373,6 +1446,9 @@ Created At: ${formatDate(project.createdAt)}
                         status: editingProject.status,
                         progress: editingProject.progress,
                         websiteUrl: editingProject.websiteUrl,
+                        paymentLink: editingProject.paymentLink,
+                        paymentLinkBasic: editingProject.paymentLinkBasic,
+                        paymentLinkPremium: editingProject.paymentLinkPremium,
                         updatedAt: new Date().toISOString()
                       });
                       toast.success('Project details updated');
@@ -1394,6 +1470,7 @@ Created At: ${formatDate(project.createdAt)}
         )}
       </AnimatePresence>
 
+      <BottomNav userId={user!.uid} role="developer" onOpenMessages={() => setActiveTab('chat')} />
     </div>
     </>
   );

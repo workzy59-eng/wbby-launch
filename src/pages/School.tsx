@@ -217,7 +217,7 @@ export default function School() {
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-10 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6">
            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">
-             © 2024 WebbyLaunch. Premium Mobile-First Web Solutions.
+             © 2024 WebbyLaunch. Premium Website solutions.
            </p>
         </div>
       </footer>

@@ -11,7 +11,7 @@ export default function About() {
       exit={{ opacity: 0 }}
       className="pt-40 pb-20 px-10"
     >
-      <SEO title="About WebbyLaunch – Premium Mobile-First Web Solutions" />
+      <SEO title="About WebbyLaunch – Premium Website solutions" />
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-20">
           <motion.h1 
@@ -27,7 +27,7 @@ export default function About() {
             transition={{ delay: 0.1 }}
             className="max-w-2xl mx-auto text-white/60 text-lg font-medium leading-relaxed"
           >
-            WebbyLaunch is a premium web development agency dedicated to helping businesses establish a powerful, mobile-first online presence in record time.
+            WebbyLaunch is a premium web development agency dedicated to helping businesses establish a powerful online presence with Premium Website solutions in record time.
           </motion.p>
         </div>
 
@@ -63,7 +63,7 @@ export default function About() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
-            { icon: Zap, title: 'Speed', desc: '24-48 hour delivery for standard projects.' },
+            { icon: Zap, title: 'Speed', desc: '52 hour delivery for standard projects.' },
             { icon: Shield, title: 'Trust', desc: 'Secure, reliable, and professional service.' },
             { icon: Users, title: 'Community', desc: 'Trusted by 50+ businesses across India.' },
             { icon: Globe, title: 'Reach', desc: 'SEO optimized to help you reach more clients.' }

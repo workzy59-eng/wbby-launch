@@ -11,9 +11,9 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({ 
-  title = "Affordable Website Development in India | Webby Launch", 
-  description = "Webby Launch builds fast, SEO-friendly websites in India. Get responsive design, Google indexing & affordable plans for your business.", 
-  keywords = "website development company in India, affordable web design services India, SEO services for small businesses India, fast website development India, startup website builder India, mobile responsive website India",
+  title = "Premium Website solutions | WebbyLaunch", 
+  description = "WebbyLaunch builds high-performance websites in 52 hours. Specializing in Gyms, Resorts, and Clothing brands with elite UI/UX.", 
+  keywords = "website development company in India, affordable web design services India, 52 hour website delivery, premium website solutions, startup website builder India",
   image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200&h=630",
   url = "https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/",
   canonical

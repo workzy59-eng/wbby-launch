@@ -99,7 +99,7 @@ export default function Pricing() {
           >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Limited Throughput: 3 Slots Remaining</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Limited Throughput: 5 Slots Remaining</span>
             </div>
           </motion.div>
         </div>
@@ -154,7 +154,7 @@ export default function Pricing() {
               <div className="pt-16 space-y-8">
                 <div className="flex flex-col gap-2 text-left opacity-30 text-[10px] font-black uppercase tracking-widest italic group-hover:opacity-60 transition-opacity">
                   <span className="flex items-center gap-2"> <Check size={10} /> Secure Node via Stripe</span>
-                  <span className="flex items-center gap-2"> <Check size={10} /> 24hr Direct Channel Entry</span>
+                  <span className="flex items-center gap-2"> <Check size={10} /> 52hr Direct Channel Entry</span>
                 </div>
                 <button 
                   onClick={() => handleSubscribe(plan.stripeLink)}

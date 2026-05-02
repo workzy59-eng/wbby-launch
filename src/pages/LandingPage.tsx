@@ -131,7 +131,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
   const steps = [
     { title: 'Submit Request', description: 'Tell us about your business and requirements.' },
-    { title: 'We Build', description: 'Our experts craft your custom website in 24-48 hours.' },
+    { title: 'We Build', description: 'Our experts craft your custom website in 52 hours.' },
     { title: 'You Review', description: 'Check the preview and request any final tweaks.' },
     { title: 'Get Access', description: 'Launch your professional website to the world.' }
   ];
@@ -273,7 +273,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ delay: 0.8, duration: 1 }}
             className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/40 leading-tight italic"
           >
-            Scale your <span className="text-white">CLOTHING BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 48 hours.
+            Scale your <span className="text-white">CLOTHING BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 52 hours.
           </motion.p>
 
           <motion.div 
@@ -313,7 +313,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   Mobile Optimized <Smartphone size={20} className="text-[#c7c42a]" />
                 </span>
                 <span className="text-2xl font-black italic tracking-tighter uppercase text-white/20 flex items-center gap-4">
-                  24 Hour Delivery <Clock size={20} className="text-[#c7c42a]" />
+                  52 Hour Delivery <Clock size={20} className="text-[#c7c42a]" />
                 </span>
                 <span className="text-2xl font-black italic tracking-tighter uppercase text-white/20 flex items-center gap-4">
                   Secure Systems <ShieldCheck size={20} className="text-[#c7c42a]" />
@@ -600,7 +600,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               </div>
               <div className="space-y-4 text-black">
                 {[
-                  "Your site live in just 24-48 hours",
+                  "Your site live in just 52 hours",
                   "Transparent pricing with no risk",
                   "Zero tech knowledge required from you",
                   "Lifetime maintenance and expert support"
@@ -681,7 +681,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-16">
               {[
-                { icon: Zap, title: '24h Delivery', desc: 'Surgical deployment in hours, not months.' },
+                { icon: Zap, title: '52h Delivery', desc: 'Surgical deployment in hours, not months.' },
                 { icon: Smartphone, title: 'Ultra-Fluid', desc: 'Psychologically optimized mobile UX.' },
                 { icon: Search, title: 'SEO Engine', desc: 'Engineered for search visibility.' },
                 { icon: LayoutIcon, title: 'Custom DNA', desc: 'Every build coded from the ground up.' }
@@ -943,7 +943,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               Ready <span className="text-[#c7c42a]">to Build?</span>
             </h3>
             <p className="text-white/30 text-2xl max-w-2xl mx-auto font-medium italic leading-tight">
-              We are currently accepting <span className="text-white"> 3 new project slots </span> for this week. Guaranteed 24-hour turnaround.
+              We are currently accepting <span className="text-white"> 3 new project slots </span> for this week. Guaranteed 52-hour turnaround.
             </p>
             <div className="pt-12">
               <Link 

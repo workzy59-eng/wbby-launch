@@ -30,7 +30,8 @@ export const MeetingCountdown: React.FC<MeetingCountdownProps> = ({ startTime, t
     return () => clearInterval(timer);
   }, [startTime]);
 
-  const h = Math.floor(timeLeft / 3600);
+  const d = Math.floor(timeLeft / 86400);
+  const h = Math.floor((timeLeft % 86400) / 3600);
   const m = Math.floor((timeLeft % 3600) / 60);
   const s = timeLeft % 60;
 
@@ -53,7 +54,16 @@ export const MeetingCountdown: React.FC<MeetingCountdownProps> = ({ startTime, t
 
       <div className="space-y-4">
         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#c7c42a]">Next Sync In</p>
-        <div className="flex gap-4 font-mono text-4xl md:text-7xl font-black italic tracking-tighter text-[#c7c42a]">
+        <div className="flex gap-4 font-mono text-3xl md:text-6xl font-black italic tracking-tighter text-[#c7c42a]">
+          {d > 0 && (
+            <>
+              <div className="flex flex-col items-center">
+                <span>{d.toString().padStart(2, '0')}</span>
+                <span className="text-[8px] uppercase tracking-widest mt-2 opacity-40">days</span>
+              </div>
+              <span className="animate-pulse">:</span>
+            </>
+          )}
           <div className="flex flex-col items-center">
             <span>{h.toString().padStart(2, '0')}</span>
             <span className="text-[8px] uppercase tracking-widest mt-2 opacity-40">hrs</span>

@@ -123,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
               </div>
             </div>
             <p className="text-white/40 text-sm font-medium leading-relaxed">
-              Professional website development for small businesses in India. Get your business online in 24-48 hours with zero hassle.
+              Professional website development for small businesses in India. Get your business online in 52 hours with zero hassle.
             </p>
             <div className="flex gap-4">
               <a href="https://www.instagram.com/webbylaunch/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-[#c7c42a] hover:text-black transition-all">
@@ -169,7 +169,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
         <div className="max-w-7xl mx-auto mt-32 pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
-            © 2024 {APP_NAME}. Premium Mobile-First Web Solutions.
+            © 2024 {APP_NAME}. Premium Website solutions.
           </p>
           <div className="flex items-center gap-8">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Made in India</span>

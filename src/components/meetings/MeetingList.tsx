@@ -19,6 +19,7 @@ import { MeetingCard } from './MeetingCard';
 import { MeetingForm } from './MeetingForm';
 import { RequestMeetingForm } from './RequestMeetingForm';
 import { MeetingCountdown } from './MeetingCountdown';
+import { db, createNotification, getConversationId } from '../../services/database';
 import { 
   subscribeToMeetings, 
   createMeeting, 
@@ -67,10 +68,40 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         await updateMeeting(editingMeeting.id, data);
         toast.success('Meeting updated successfully!');
       } else {
-        await createMeeting({
+        const meetingData = {
           ...data,
-          adminId: user.uid
-        });
+          requestedBy: user.uid,
+          ...(profile.role === 'admin' ? { adminId: user.uid } : { developerId: user.uid, adminId: 'SYSTEM' })
+        };
+        const meetingRef = await createMeeting(meetingData);
+        
+        // System Notification in Chat
+        try {
+          const conversationId = getConversationId(user.uid, data.clientId);
+          const notificationText = `📅 NEW MEETING SCHEDULED: "${data.title}" on ${data.date} at ${data.time}. Link: ${data.meetingLink}`;
+          
+          const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+          await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
+            text: notificationText,
+            senderId: user.uid,
+            createdAt: serverTimestamp(),
+            status: 'sent',
+            seen: false,
+            type: 'text'
+          });
+
+          // Also a general notification for the client
+          await createNotification({
+            userId: data.clientId,
+            type: 'system',
+            title: 'New Meeting Scheduled',
+            description: `A meeting "${data.title}" has been scheduled for ${data.date}.`,
+            read: false
+          });
+        } catch (msgErr) {
+          console.warn("Notification message failed:", msgErr);
+        }
+
         toast.success('Meeting scheduled successfully!');
       }
       setShowForm(false);
@@ -135,13 +166,43 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
   const history = meetings.filter(m => 
     m.status === 'completed' || 
     m.status === 'declined' || 
-    isBefore(new Date(`${m.date}T${m.time}`), now)
+    (m.status === 'accepted' && isBefore(new Date(`${m.date}T${m.time}`), now))
   );
 
-  const handleAccept = async (id: string) => {
+  const handleAccept = async (id: string, meeting: Meeting) => {
     try {
       await acceptMeeting(id, user.uid);
-      toast.success('Meeting Confirmed! Link will activate 5m before start.');
+      
+      // System Notification in messages
+      try {
+        const otherId = meeting.requestedBy === user.uid ? meeting.clientId : meeting.requestedBy;
+        const conversationId = getConversationId(user.uid, otherId);
+        
+        const notificationText = `✅ MEETING ACCEPTED: "${meeting.title}" on ${meeting.date} at ${meeting.time}. Link: ${meeting.meetingLink}`;
+        
+        const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+        await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
+          text: notificationText,
+          senderId: user.uid,
+          createdAt: serverTimestamp(),
+          status: 'sent',
+          seen: false,
+          type: 'text'
+        });
+
+        // Also a general notification
+        await createNotification({
+          userId: otherId,
+          type: 'system',
+          title: 'Meeting Accepted',
+          description: `Meeting "${meeting.title}" has been accepted.`,
+          read: false
+        });
+      } catch (msgErr) {
+         console.warn("Accept notification failed:", msgErr);
+      }
+
+      toast.success('Meeting Confirmed!');
     } catch (error) {
       toast.error('Failed to accept meeting');
     }
@@ -196,6 +257,94 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           </div>
         )}
 
+        {/* All Upcoming Meetings */}
+        <div className="space-y-6">
+          <h3 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">Active Sync Windows</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {meetings.filter(m => m.status === 'accepted' && isAfter(new Date(`${m.date}T${m.time}`), now)).map(m => (
+              <motion.div 
+                key={m.id}
+                layout
+                className={`p-6 rounded-3xl border transition-all ${
+                  upcomingMeeting?.id === m.id 
+                    ? 'bg-[#c7c42a]/10 border-[#c7c42a] shadow-[0_0_30px_rgba(199,196,42,0.1)]' 
+                    : 'bg-[#111] border-white/5 hover:border-white/20'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h4 className="text-lg font-black italic uppercase text-white tracking-tight">{m.title}</h4>
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">
+                      {m.clientId === user.uid ? 'Organized with Platform' : 'Client Sync Session'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-black text-[#c7c42a] italic">{format(new Date(`${m.date}T${m.time}`), 'MMM dd')}</p>
+                    <p className="text-[10px] font-mono text-white/40">{m.time}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a 
+                    href={m.meetingLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl text-center text-[10px] font-black uppercase tracking-widest transition-all"
+                  >
+                    Join Signal
+                  </a>
+                  {isAdmin && (
+                    <button 
+                      onClick={() => handleDecline(m.id)}
+                      className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                    >
+                      <XCircle size={16} />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+            {meetings.filter(m => m.status === 'accepted' && isAfter(new Date(`${m.date}T${m.time}`), now)).length === 0 && (
+              <div className="col-span-2 py-10 border border-dashed border-white/5 rounded-3xl flex items-center justify-center">
+                <p className="text-[10px] font-bold uppercase text-white/10 tracking-widest italic">No confirmed windows</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {myRequests.length > 0 && (
+          <div className="space-y-6">
+            <h3 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">Your Pending Requests</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {myRequests.map(m => (
+                <motion.div 
+                  key={m.id}
+                  layout
+                  className="bg-[#111]/40 border border-white/5 p-6 rounded-3xl space-y-4"
+                >
+                  <div className="flex justify-between items-start opacity-60">
+                    <div>
+                      <p className="text-[8px] font-black uppercase text-white/40 tracking-widest mb-1">Awaiting Response</p>
+                      <h4 className="text-lg font-black italic uppercase text-white tracking-tight">{m.title}</h4>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-mono text-white/60">{m.date}</p>
+                      <p className="text-xs font-mono text-white/40">{m.time}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button 
+                      onClick={() => handleDelete(m.id)}
+                      className="text-[10px] font-bold text-red-500/60 hover:text-red-500 transition-colors uppercase tracking-widest"
+                    >
+                      Cancel Request
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-6">
           <h3 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">Incoming Requests</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,7 +366,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                 </div>
                 <div className="flex items-center gap-2 pt-2">
                   <button 
-                    onClick={() => handleAccept(m.id)}
+                    onClick={() => handleAccept(m.id, m)}
                     className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all"
                   >
                     Confirm

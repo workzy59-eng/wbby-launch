@@ -247,7 +247,7 @@ export default function BlogPost() {
                 Ready to launch <br /> your business?
               </h2>
               <p className="text-black/60 text-xl font-black uppercase tracking-[0.2em] italic">
-                Get your professional website in 24-48 hours.
+                Get your professional website in 52 hours.
               </p>
               <div className="flex flex-wrap justify-center gap-6 pt-6">
                 <Link 

@@ -69,6 +69,9 @@ import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
 import InvoiceSystem from '../components/InvoiceSystem';
 import BasicRating from '../components/ui/rating-group';
 
+import BottomNav from '../components/BottomNav';
+import { getUnreadMessageCount } from '../services/database';
+
 interface DashboardProps {
   user: FirebaseUser;
   profile: UserProfile | null;
@@ -167,10 +170,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [showAdminWelcome, setShowAdminWelcome] = useState(false);
+  
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
+    return () => unsub?.();
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!profile || !user.email) return;
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const devEmails = ['sain17296174@gmail.com'];
     const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     const isDeveloper = devEmails.includes(user.email.toLowerCase());
     
@@ -1474,6 +1483,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </motion.div>
           </AnimatePresence>
         </div>
+        <BottomNav userId={user!.uid} role="client" onOpenMessages={() => setActiveTab('messages')} />
       </main>
 
 

@@ -9,7 +9,7 @@ export default function LocationPage() {
   const cityName = city ? city.charAt(0).toUpperCase() + city.slice(1) : '';
 
   const features = [
-    { icon: Zap, title: 'Fast Delivery', desc: 'Get your site in 24-48 hours.' },
+    { icon: Zap, title: 'Fast Delivery', desc: 'Get your site in 52 hours.' },
     { icon: Smartphone, title: 'Responsive', desc: 'Perfect on every device.' },
     { icon: Search, title: 'SEO Ready', desc: 'Rank higher on Google.' }
   ];
@@ -95,7 +95,7 @@ export default function LocationPage() {
             {[
               'Local SEO Optimization',
               'Mobile-First Design',
-              'Fast 2-5 Day Delivery',
+              'Fast 52-Hour Delivery',
               'Affordable Monthly Plans',
               'Google Search Console Setup',
               'Secure HTTPS Hosting'

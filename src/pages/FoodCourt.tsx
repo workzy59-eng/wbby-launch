@@ -158,7 +158,7 @@ export default function FoodCourt() {
         </Link>
       </div>
       <footer className="py-10 text-center border-t border-white/5 opacity-20">
-         <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed italic">© 2024 WebbyLaunch. Premium Mobile-First Web Solutions.</p>
+         <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed italic">© 2024 WebbyLaunch. Premium Website solutions.</p>
       </footer>
     </div>
   );

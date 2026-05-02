@@ -7,6 +7,20 @@ import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, Syst
 import { ADMIN_EMAIL } from '../constants';
 import { toast } from 'react-hot-toast';
 
+export { db };
+
+export const createNotification = async (data: any) => {
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      ...data,
+      isRead: false,
+      createdAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Notification failed:', error);
+  }
+};
+
 export let currentUser: FirebaseUser | null = null;
 
 onAuthStateChanged(auth, (user) => {
@@ -128,7 +142,9 @@ export const isUserAdmin = async (uid: string) => {
   const userDoc = await getDoc(doc(db, 'users', uid));
   if (!userDoc.exists()) return false;
   const data = userDoc.data();
-  return data.role === 'admin' || data.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'];
+  const userEmail = data.email?.toLowerCase() || '';
+  return data.role === 'admin' || adminEmails.includes(userEmail);
 };
 
 export const createUserProfile = async (user: FirebaseUser, additionalData: any = {}) => {
@@ -142,8 +158,8 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   
   try {
     let role = 'client';
-    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com'];
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'];
+    const devEmails = ['sain17296174@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
@@ -151,12 +167,14 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
       role = 'developer';
     }
 
+    const defaultName = user.email === 'priyankapudi4u@gmail.com' ? "Priyanka Pudi | senior devloper" : (user.displayName || "");
+
     // PART 2 — FIX USER WRITE METHOD: setDoc with user.uid and merge: true
     await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       email: user.email,
-      displayName: user.displayName || "",
-      name: user.displayName || "",
+      displayName: defaultName,
+      name: defaultName,
       photoURL: user.photoURL || "",
       role: role,
       status: 'online',
@@ -500,6 +518,58 @@ export const updateLeaveRequest = async (requestId: string, status: string) => {
 };
 
 // Attendance Operations
+export const punchIn = async (userId: string) => {
+  const dateStr = new Date().toISOString().split('T')[0];
+  const attendanceId = `${userId}_${dateStr}`;
+  const attendanceRef = doc(db, 'attendance', attendanceId);
+  
+  try {
+    const existing = await getDoc(attendanceRef);
+    if (existing.exists() && existing.data().punchIn) {
+      toast.error("Already punched in today.");
+      return;
+    }
+
+    await setDoc(attendanceRef, {
+      userId,
+      date: serverTimestamp(),
+      punchIn: serverTimestamp(),
+      punchOut: null,
+      status: 'present',
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    toast.success("Punched in successfully.");
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, 'attendance');
+  }
+};
+
+export const punchOut = async (userId: string) => {
+  const dateStr = new Date().toISOString().split('T')[0];
+  const attendanceId = `${userId}_${dateStr}`;
+  const attendanceRef = doc(db, 'attendance', attendanceId);
+  
+  try {
+    const existing = await getDoc(attendanceRef);
+    if (!existing.exists() || !existing.data().punchIn) {
+      toast.error("You must punch in first.");
+      return;
+    }
+    if (existing.data().punchOut) {
+      toast.error("Already punched out today.");
+      return;
+    }
+
+    await updateDoc(attendanceRef, {
+      punchOut: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    toast.success("Punched out successfully.");
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, 'attendance');
+  }
+};
+
 export const getAttendance = async (userId: string) => {
   const path = 'attendance';
   try {
@@ -795,6 +865,28 @@ export const toggleFavoriteConversation = async (userId: string, conversationId:
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
   return false;
+};
+
+export const getUnreadMessageCount = (userId: string, callback: (count: number) => void) => {
+  if (!userId) return;
+
+  // Real-time listener for all unread counts in conversations
+  const q = query(
+    collection(db, 'conversations'),
+    where('participants', 'array-contains', userId)
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    let totalUnread = 0;
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const unreadCount = data.unreadCount?.[userId] || 0;
+      totalUnread += unreadCount;
+    });
+    callback(totalUnread);
+  }, (error) => {
+    console.error("Unread count listener error:", error);
+  });
 };
 
 export const markProjectAsSeen = async (projectId: string, userId: string) => {

@@ -37,7 +37,7 @@ const DOCS_CONTENT = {
     sections: [
       {
         subtitle: 'The Process',
-        content: '1. Client selects a plan and completes onboarding.\n2. Payment is secured through our platform.\n3. A dedicated developer is assigned to the project.\n4. Real-time collaboration via our built-in chat system.\n5. Project delivery within 24-48 hours for standard plans.'
+        content: '1. Client selects a plan and completes onboarding.\n2. Payment is secured through our platform.\n3. A dedicated developer is assigned to the project.\n4. Real-time collaboration via our built-in chat system.\n5. Project delivery within 52 hours for standard plans.'
       }
     ]
   },
@@ -107,7 +107,7 @@ const DOCS_CONTENT = {
     sections: [
       {
         subtitle: 'What is the delivery time?',
-        content: 'Standard projects are typically delivered within 24-48 hours. Custom enterprise solutions may take longer depending on complexity.'
+        content: 'Standard projects are typically delivered within 52 hours. Custom enterprise solutions may take longer depending on complexity.'
       },
       {
         subtitle: 'Do you provide support?',

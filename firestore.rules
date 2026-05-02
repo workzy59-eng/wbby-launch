@@ -29,6 +29,7 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email.lower() == 'workzy59@gmail.com' ||
+        request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
@@ -41,7 +42,7 @@ service cloud.firestore {
     function isWhitelistedDeveloper() {
       return isSignedIn() && (
         request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
-        request.auth.token.email.lower() == 'aither2029@gmail.com'
+        request.auth.token.email.lower() == 'priyankapudi4u@gmail.com'
       );
     }
 
@@ -50,8 +51,8 @@ service cloud.firestore {
     // =========================
     match /users/{userId} {
       allow create: if isAuth() && request.auth.uid == userId;
-      allow get: if isAuth() && (request.auth.uid == userId || isAdmin());
-      allow list: if isAdmin();
+      allow get: if isAuth() && (request.auth.uid == userId || isAdmin() || isWhitelistedDeveloper());
+      allow list: if isAdmin() || isWhitelistedDeveloper();
       allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
