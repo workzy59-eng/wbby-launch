@@ -895,7 +895,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Scheduling</span>
                     <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Meetings</h2>
                   </div>
-                  <MeetingList user={user} profile={profile!} />
+                  <MeetingList user={user} profile={profile!} assignedDeveloper={assignedDeveloper} />
                 </div>
               ) : activeTab === 'settings' ? (
                 <div className="space-y-12">

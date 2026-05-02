@@ -36,12 +36,14 @@ interface MeetingListProps {
   user: any;
   profile: UserProfile;
   allClients?: UserProfile[]; // Only for admin
+  assignedDeveloper?: UserProfile | null;
 }
 
-export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClients = [] }) => {
+export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClients = [], assignedDeveloper }) => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showRequestForm, setShowRequestForm] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<Meeting | undefined>();
   const [filter, setFilter] = useState<MeetingStatus | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,6 +51,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
 
   const isAdmin = profile?.role === 'admin';
   const isDev = profile?.role === 'developer';
+  const isClient = profile?.role === 'client';
   const isManager = isAdmin || isDev;
 
   useEffect(() => {
@@ -233,13 +236,23 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
       <div className="xl:col-span-8 space-y-10">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">Active Queue</h2>
-          <button 
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
-          >
-            <Plus size={16} />
-            Initialize Request
-          </button>
+          {isManager ? (
+            <button 
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
+            >
+              <Plus size={16} />
+              Initialize Meeting
+            </button>
+          ) : (
+            <button 
+              onClick={() => setShowRequestForm(true)}
+              className="flex items-center gap-2 px-6 py-3 border border-[#c7c42a] text-[#c7c42a] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#c7c42a] hover:text-black transition-all"
+            >
+              <Calendar size={16} />
+              Request Sync
+            </button>
+          )}
         </div>
 
         {upcomingMeeting ? (
@@ -450,6 +463,14 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
               setEditingMeeting(undefined);
             }}
             onSubmit={handleCreateMeeting}
+          />
+        )}
+        {showRequestForm && (
+          <RequestMeetingForm
+            isOpen={showRequestForm}
+            onClose={() => setShowRequestForm(false)}
+            clientId={user.uid}
+            developerId={assignedDeveloper?.uid}
           />
         )}
       </AnimatePresence>

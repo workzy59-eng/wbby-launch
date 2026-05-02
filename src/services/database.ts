@@ -13,7 +13,7 @@ export const createNotification = async (data: any) => {
   try {
     await addDoc(collection(db, 'notifications'), {
       ...data,
-      isRead: false,
+      read: false,
       createdAt: serverTimestamp()
     });
   } catch (error) {
@@ -223,7 +223,7 @@ export const acceptProject = async (projectId: string) => {
         title: 'New Project Claimed',
         message: `You have successfully claimed the project: ${snap.data().businessName}`,
         projectId: projectId,
-        isRead: false,
+        read: false,
         createdAt: serverTimestamp()
       });
 
@@ -235,7 +235,7 @@ export const acceptProject = async (projectId: string) => {
         title: 'Project Claimed',
         message: `Developer ${currentUser!.displayName || 'User'} has claimed project: ${snap.data().businessName}`,
         projectId: projectId,
-        isRead: false,
+        read: false,
         createdAt: serverTimestamp()
       });
 
@@ -997,7 +997,7 @@ export const getNotifications = (userId: string, callback: (notifications: any[]
 };
 
 export const markNotificationAsRead = async (notificationId: string) => {
-  await updateDoc(doc(db, 'notifications', notificationId), { isRead: true });
+  await updateDoc(doc(db, 'notifications', notificationId), { read: true });
 };
 
 export const deleteNotification = async (notificationId: string) => {

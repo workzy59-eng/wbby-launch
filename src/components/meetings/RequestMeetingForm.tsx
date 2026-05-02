@@ -8,9 +8,10 @@ interface RequestMeetingFormProps {
   isOpen: boolean;
   onClose: () => void;
   clientId: string;
+  developerId?: string | null;
 }
 
-export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, onClose, clientId }) => {
+export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, onClose, clientId, developerId }) => {
   const [formData, setFormData] = useState({
     preferredDate: '',
     preferredTime: '',
@@ -25,10 +26,16 @@ export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, 
       return;
     }
 
+    if (!developerId) {
+      toast.error('No developer assigned to this project. Please contact admin.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await createMeetingRequest({
         clientId,
+        developerId,
         preferredDate: formData.preferredDate,
         preferredTime: formData.preferredTime,
         message: formData.message,

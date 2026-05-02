@@ -1445,8 +1445,8 @@ Requirements:
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all"
               >
-                <Bell size={20} className={notifications.some(n => !n.isRead) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
-                {notifications.some(n => !n.isRead) && (
+                <Bell size={20} className={notifications.some(n => !n.read) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                {notifications.some(n => !n.read) && (
                   <span className="absolute top-2 right-2 w-2 h-2 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
                 )}
               </button>
@@ -1462,7 +1462,7 @@ Requirements:
                     <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
                       <h3 className="text-sm font-black italic uppercase tracking-widest text-[#c7c42a]">System Intelligence</h3>
                       <button 
-                        onClick={() => notifications.forEach(n => !n.isRead && markNotificationAsRead(n.id))}
+                        onClick={() => notifications.forEach(n => !n.read && markNotificationAsRead(n.id))}
                         className="text-[10px] font-black uppercase text-white/40 hover:text-white transition-colors"
                       >
                         Clear All
@@ -1473,8 +1473,8 @@ Requirements:
                         notifications.map((n) => (
                           <div 
                             key={n.id} 
-                            onClick={() => !n.isRead && markNotificationAsRead(n.id)}
-                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/10 transition-colors ${!n.isRead ? 'bg-[#c7c42a]/5' : ''}`}
+                            onClick={() => !n.read && markNotificationAsRead(n.id)}
+                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/10 transition-colors ${!n.read ? 'bg-[#c7c42a]/5' : ''}`}
                           >
                             <div className="flex justify-between items-start mb-2">
                               <p className="text-[10px] font-black uppercase text-[#c7c42a] tracking-widest">{n.title}</p>

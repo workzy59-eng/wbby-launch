@@ -455,8 +455,8 @@ Created At: ${formatDate(project.createdAt)}
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all"
               >
-                <Bell size={18} className={notifications.some(n => !n.isRead) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
-                {notifications.some(n => !n.isRead) && (
+                <Bell size={18} className={notifications.some(n => !n.read) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                {notifications.some(n => !n.read) && (
                   <span className="absolute top-2 right-2 w-2 h-2 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
                 )}
               </button>
@@ -472,7 +472,7 @@ Created At: ${formatDate(project.createdAt)}
                     <div className="p-6 border-b border-white/5 flex justify-between items-center">
                       <h3 className="text-sm font-black italic uppercase tracking-widest">Notifications</h3>
                       <button 
-                        onClick={() => notifications.forEach(n => !n.isRead && markNotificationAsRead(n.id))}
+                        onClick={() => notifications.forEach(n => !n.read && markNotificationAsRead(n.id))}
                         className="text-[10px] font-bold uppercase text-[#c7c42a] hover:underline"
                       >
                         Mark all as read
@@ -483,8 +483,8 @@ Created At: ${formatDate(project.createdAt)}
                         notifications.map((n) => (
                           <div 
                             key={n.id} 
-                            onClick={() => !n.isRead && markNotificationAsRead(n.id)}
-                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${!n.isRead ? 'bg-[#c7c42a]/5' : ''}`}
+                            onClick={() => !n.read && markNotificationAsRead(n.id)}
+                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${!n.read ? 'bg-[#c7c42a]/5' : ''}`}
                           >
                             <p className="text-[10px] font-black uppercase text-[#c7c42a] tracking-widest mb-1">{n.title}</p>
                             <p className="text-xs text-white/60 leading-relaxed">{n.message}</p>

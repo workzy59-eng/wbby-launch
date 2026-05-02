@@ -12,19 +12,32 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { handleFirestoreError, OperationType } from './database';
+import { handleFirestoreError, OperationType, createNotification } from './database';
 import { Meeting, MeetingStatus, MeetingRequest } from '../types';
 
 const COLLECTION_NAME = 'meetings';
 const REQUESTS_COLLECTION = 'meeting_requests';
 
 export const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'createdAt' | 'updatedAt'>) => {
-  return await addDoc(collection(db, COLLECTION_NAME), {
+  const docRef = await addDoc(collection(db, COLLECTION_NAME), {
     ...meetingData,
     status: meetingData.status || 'pending',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
+
+  // Notify client if developer created it (accepted)
+  if (meetingData.developerId && meetingData.clientId && meetingData.status === 'accepted') {
+    await createNotification({
+      userId: meetingData.clientId,
+      type: 'meeting',
+      title: 'Meeting Confirmed',
+      description: `Your developer has confirmed the meeting for ${meetingData.date} at ${meetingData.time}.`,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  return docRef;
 };
 
 export const acceptMeeting = async (meetingId: string, userId: string) => {
@@ -58,11 +71,24 @@ export const deleteMeeting = async (meetingId: string) => {
 };
 
 export const createMeetingRequest = async (requestData: Omit<MeetingRequest, 'id' | 'createdAt' | 'updatedAt'>) => {
-  return await addDoc(collection(db, REQUESTS_COLLECTION), {
+  const docRef = await addDoc(collection(db, REQUESTS_COLLECTION), {
     ...requestData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
+
+  // Notify developer if assigned
+  if (requestData.developerId) {
+    await createNotification({
+      userId: requestData.developerId,
+      type: 'meeting',
+      title: 'New Meeting Request',
+      description: `Client has requested a meeting for ${requestData.preferredDate} at ${requestData.preferredTime}. Tap to respond.`,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  return docRef;
 };
 
 export const updateMeetingRequest = async (requestId: string, updates: Partial<MeetingRequest>) => {

@@ -244,6 +244,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   };
   const [userUnreadCounts, setUserUnreadCounts] = useState<Record<string, number>>({});
   const [projectUnreadCounts, setProjectUnreadCounts] = useState<Record<string, number>>({});
+  const [devUnreadCounts, setDevUnreadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const directTotal = Object.values(userUnreadCounts).reduce((acc, count) => acc + count, 0);
@@ -362,10 +363,16 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     }
 
     if (activeTab === 'developers') {
-      const { getDeveloperStats } = import('../services/database').then(db => {
+      const devs = users.filter(u => u.role === 'developer');
+      const unsubs = devs.map(dev => {
+        return getUnreadMessageCount(dev.uid, (count) => {
+          setDevUnreadCounts(prev => ({ ...prev, [dev.uid]: count }));
+        });
+      });
+
+      import('../services/database').then(db => {
         const fetchDevStats = async () => {
           const statsMap: Record<string, any> = {};
-          const devs = users.filter(u => u.role === 'developer');
           for (const dev of devs) {
             const stats = await db.getDeveloperStats(dev.uid);
             statsMap[dev.uid] = stats;
@@ -374,6 +381,8 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         };
         fetchDevStats();
       });
+
+      return () => unsubs.forEach(unsub => unsub?.());
     }
 
     return () => {
@@ -1890,6 +1899,12 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? 'bg-green-500 animate-pulse' : 'bg-white/20'}`} />
                           {isPunchedIn ? 'Punched In' : 'Punched Out'}
                         </div>
+                        {devUnreadCounts[dev.uid] > 0 && (
+                          <div className="px-4 py-2 bg-[#00F2FF]/10 text-[#00F2FF] border border-[#00F2FF]/20 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 rounded-full bg-[#00F2FF] animate-pulse" />
+                             Signal: {devUnreadCounts[dev.uid]}
+                          </div>
+                        )}
                       </div>
                       
                       <div>
