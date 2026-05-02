@@ -97,6 +97,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     }
   });
   const [isPunchedIn, setIsPunchedIn] = useState(false);
+  const [punchInTime, setPunchInTime] = useState<any>(null);
+  const [punchOutTimer, setPunchOutTimer] = useState<string | null>(null);
   const [devStats, setDevStats] = useState({ completedCount: 0, activeCount: 0, totalHours: 0, totalPayout: 0 });
 
   useEffect(() => {
@@ -104,7 +106,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
     
     // Real-time attendance status
-    const unsubAttendance = getDeveloperAttendanceStatus(user.uid, setIsPunchedIn);
+    const unsubAttendance = getDeveloperAttendanceStatus(user.uid, (data) => {
+      setIsPunchedIn(data.isPunchedIn);
+      setPunchInTime(data.punchIn);
+    });
     getDeveloperStats(user.uid).then(setDevStats);
 
     return () => {
@@ -123,6 +128,34 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!isPunchedIn || !punchInTime) {
+      setPunchOutTimer(null);
+      return;
+    }
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const punchDate = punchInTime.toDate ? punchInTime.toDate().getTime() : new Date(punchInTime).getTime();
+      const fiveHoursInMs = 5 * 60 * 60 * 1000;
+      const targetTime = punchDate + fiveHoursInMs;
+      const diff = targetTime - now;
+
+      if (diff <= 0) {
+        setPunchOutTimer(null);
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setPunchOutTimer(`${hours}h ${minutes}m ${seconds}s`);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [isPunchedIn, punchInTime]);
 
   const handleCloseWelcome = () => {
     if (user) {
@@ -576,12 +609,25 @@ Created At: ${formatDate(project.createdAt)}
 
                     <div className="space-y-4">
                       {isPunchedIn ? (
-                        <button 
-                          onClick={() => punchOut(user!.uid)}
-                          className="w-full py-6 bg-[#c7c42a] text-black rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/20 hover:scale-[1.02] active:scale-[0.98] transition-all animate-pulse border-2 border-[#c7c42a]"
-                        >
-                          ON DUTY / PUNCH OUT
-                        </button>
+                        <div className="space-y-4">
+                          <button 
+                            onClick={() => punchOut(user!.uid)}
+                            disabled={!!punchOutTimer}
+                            className={`w-full py-6 rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl transition-all border-2 ${
+                              punchOutTimer 
+                                ? 'bg-[#c7c42a]/10 text-[#c7c42a]/40 border-[#c7c42a]/10 cursor-not-allowed' 
+                                : 'bg-[#c7c42a] text-black border-[#c7c42a] shadow-[#c7c42a]/20 hover:scale-[1.02] active:scale-[0.98] animate-pulse'
+                            }`}
+                          >
+                            {punchOutTimer ? 'MINIMUM SHIFT ACTIVE' : 'COMPLETE SHIFT / PUNCH OUT'}
+                          </button>
+                          {punchOutTimer && (
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Time Remaining until Punch Out</p>
+                              <p className="text-xl font-black italic text-[#c7c42a] tabular-nums">{punchOutTimer}</p>
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <button 
                           onClick={() => punchIn(user!.uid)}

@@ -42,9 +42,13 @@ service cloud.firestore {
 
     function isWhitelistedDeveloper() {
       return isSignedIn() && (
-        request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
-        request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
-        request.auth.token.email.lower() == 'workzy59@gmail.com'
+        request.auth.token.email.lower() in [
+          'sain17296174@gmail.com',
+          'priyankapudi4u@gmail.com',
+          'workzy59@gmail.com',
+          'bharathmath1729@gmail.com'
+        ] ||
+        request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2']
       );
     }
 
@@ -53,7 +57,7 @@ service cloud.firestore {
     // =========================
     match /users/{userId} {
       allow create: if isAuth() && request.auth.uid == userId;
-      allow get: if isAuth() && (request.auth.uid == userId || isAdmin() || isWhitelistedDeveloper());
+      allow read: if isAuth();
       allow list: if isAdmin() || isWhitelistedDeveloper();
       allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
@@ -187,7 +191,12 @@ service cloud.firestore {
       allow create: if isAuth() && (incoming().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
       // Allow reading if the doc doesn't exist yet (for getDoc checks) or if they own it
       allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (resource == null || resource.data.userId == request.auth.uid));
-      allow update: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow update: if isAuth() && (
+        isAdmin() || isWhitelistedDeveloper() || (
+          request.auth.uid == resource.data.userId &&
+          request.time >= resource.data.punchIn + duration.value(5, 'h')
+        )
+      );
     }
 
     // =========================

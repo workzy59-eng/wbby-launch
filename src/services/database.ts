@@ -572,7 +572,7 @@ export const getDeveloperStats = async (uid: string) => {
   }
 };
 
-export const getDeveloperAttendanceStatus = (uid: string, callback: (isPunchedIn: boolean) => void) => {
+export const getDeveloperAttendanceStatus = (uid: string, callback: (data: { isPunchedIn: boolean, punchIn: any }) => void) => {
   const dateStr = new Date().toISOString().split('T')[0];
   const attendanceId = `${uid}_${dateStr}`;
   const attendanceRef = doc(db, 'attendance', attendanceId);
@@ -580,9 +580,12 @@ export const getDeveloperAttendanceStatus = (uid: string, callback: (isPunchedIn
   return onSnapshot(attendanceRef, (snap) => {
     if (snap.exists()) {
       const data = snap.data();
-      callback(!!data.punchIn && !data.punchOut);
+      callback({
+        isPunchedIn: !!data.punchIn && !data.punchOut,
+        punchIn: data.punchIn
+      });
     } else {
-      callback(false);
+      callback({ isPunchedIn: false, punchIn: null });
     }
   }, (error) => {
     console.error("Attendance listener error:", error);
