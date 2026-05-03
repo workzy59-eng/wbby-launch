@@ -203,11 +203,6 @@ export const acceptProject = async (projectId: string) => {
       
       const projectData = snap.data();
       
-      // Validation: Check if client provided necessary links/info
-      if (!projectData.referenceWebsite && !projectData.documentsUrl && !projectData.businessLocation) {
-        throw "Client hasn't provided necessary links yet. Please wait for client info.";
-      }
-
       if (snap.data().developerId) throw "Already taken";
       const plan = projectData.plan?.toLowerCase() || 'basic';
       const payout = plan === 'premium' ? 7500 : plan === 'standard' ? 4000 : 1500;
