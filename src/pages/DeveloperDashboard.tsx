@@ -264,6 +264,58 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     return () => clearInterval(timer);
   }, [projects]);
 
+  // Financial Intelligence State
+  const [tempDomainPrice, setTempDomainPrice] = useState<number>(0);
+  const [tempPaymentLink, setTempPaymentLink] = useState('');
+  const [isFinancialIntelSaved, setIsFinancialIntelSaved] = useState(false);
+
+  const handleSaveFinancialIntel = async (projectId: string) => {
+    setIsSubmitting(true);
+    try {
+      await updateProject(projectId, {
+        domainPrice: tempDomainPrice,
+        paymentLink: tempPaymentLink,
+        updatedAt: new Date().toISOString()
+      });
+      setIsFinancialIntelSaved(true);
+      toast.success('Financial intel committed to the ledger');
+    } catch (error) {
+      toast.error('Failed to commit financial data');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const calculatePayout = (plan?: string) => {
+    const p = plan?.toLowerCase() || 'basic';
+    if (p === 'premium') return 4500;
+    if (p === 'standard') return 2250;
+    return 1125;
+  };
+
+  const getPlanPrice = (plan?: string) => {
+    const p = plan?.toLowerCase() || 'basic';
+    if (p === 'premium') return 30000;
+    if (p === 'standard') return 15000;
+    return 7500;
+  };
+
+  const handleContact = (project: Project) => {
+    const isMobile = /iPhone|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = `tel:${project.userPhone}`;
+    } else {
+      alert(`Client Intelligence:\nName: ${project.userName}\nPhone: ${project.userPhone}\nEmail: ${project.userEmail}`);
+    }
+  };
+
+  const openAcceptPopup = (projectId: string) => {
+    setTempDomainPrice(0);
+    setTempPaymentLink('');
+    setIsFinancialIntelSaved(false);
+    setShowAcceptPopup(projectId);
+  };
+
   const handleLogout = async () => {
     await auth.signOut();
     navigate('/auth');
@@ -279,21 +331,18 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
       await acceptProject(projectId);
       
-      // Update with details provided in popup
+      // Values are already saved via handleSaveFinancialIntel, 
+      // but we ensure status is correct and links matches current plan if not already set
       await updateProject(projectId, {
-        websiteUrl: websiteUrl,
-        domainPrice: domainPrice,
-        paymentLinkBasic: paymentLinkBasic,
-        paymentLinkPremium: paymentLinkPremium,
-        paymentLink: p.plan?.toLowerCase() === 'premium' ? paymentLinkPremium : paymentLinkBasic
+        status: 'in-progress'
       });
 
       setActiveTab('projects');
       setShowAcceptPopup(null);
       setWebsiteUrl('');
-      setDomainPrice(0);
-      setPaymentLinkBasic('');
-      setPaymentLinkPremium('');
+      setTempDomainPrice(0);
+      setTempPaymentLink('');
+      setIsFinancialIntelSaved(false);
       toast.success('Mission accepted and infrastructure initialized');
     } catch (error: any) {
       console.error('Acceptance failed:', error);
@@ -454,6 +503,43 @@ Created At: ${formatDate(project.createdAt)}
 
       <div className="h-screen flex flex-col md:flex-row bg-[#050505] text-white overflow-hidden font-sans">
       
+        {/* DUTY-GATED BLACKOUT OVERLAY */}
+        {!isPunchedIn && (
+          <div className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center p-10 text-center">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="flex flex-col items-center"
+            >
+              <AlertCircle size={100} className="text-[#FFFF00] mb-8 animate-pulse" />
+              <h1 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter text-[#FFFF00] leading-none mb-6">
+                DASHBOARD LOCKED
+              </h1>
+              <p className="text-[#FFFF00]/60 text-xl md:text-2xl font-bold uppercase tracking-widest max-w-2xl balance">
+                YOU MUST PUNCH IN TO ACCESS PROJECTS, CLIENT DATA, AND FINANCIAL INTEL.
+              </p>
+              
+              <div className="mt-16 p-10 border-2 border-[#FFFF00]/20 rounded-[4rem] bg-[#FFFF00]/5 backdrop-blur-xl">
+                <p className="text-[#FFFF00] text-sm font-black uppercase tracking-[0.4em] mb-10">Security Protocol Alpha-6</p>
+                <div className="flex flex-col gap-4">
+                  <button 
+                    onClick={() => punchIn(user!.uid)}
+                    className="px-20 py-8 bg-[#FFFF00] text-black rounded-full font-black uppercase italic text-lg tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-[0_0_60px_rgba(255,255,0,0.4)]"
+                  >
+                    DEPLOY / PUNCH IN
+                  </button>
+                  <button 
+                    onClick={handleLogout}
+                    className="text-[#FFFF00]/40 font-black uppercase italic text-xs tracking-widest hover:text-[#FFFF00] transition-colors"
+                  >
+                    Abort Session
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex w-72 flex-col bg-[#111] border-r border-white/5 p-8 space-y-10">
         <div className="flex items-center gap-3">
@@ -695,7 +781,7 @@ Created At: ${formatDate(project.createdAt)}
                         {/* Progress Bar */}
                         <div className="space-y-3">
                           <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
-                            <span className="text-white/40">Development Progress</span>
+                            <span className="text-white/40">Mission Progress</span>
                             <span className="text-[#c7c42a]">{p.progress || 0}%</span>
                           </div>
                           <div className="h-2 bg-white/5 rounded-full overflow-hidden">
@@ -704,6 +790,18 @@ Created At: ${formatDate(project.createdAt)}
                               animate={{ width: `${p.progress || 0}%` }}
                               className="h-full bg-[#c7c42a] shadow-[0_0_15px_rgba(199,196,42,0.5)]"
                             />
+                          </div>
+                        </div>
+
+                        {/* Pricing & Payout Display */}
+                        <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 flex items-center justify-between">
+                          <div>
+                            <p className="text-[8px] font-black uppercase text-white/40 tracking-widest">Project Value</p>
+                            <p className="text-lg font-black italic">₹{getPlanPrice(p.plan).toLocaleString()}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[8px] font-black uppercase text-[#c7c42a] tracking-widest">Your Payout (15%)</p>
+                            <p className="text-lg font-black italic text-[#c7c42a]">₹{calculatePayout(p.plan).toLocaleString()}</p>
                           </div>
                         </div>
 
@@ -728,10 +826,10 @@ Created At: ${formatDate(project.createdAt)}
                              AI Prompt <Download size={14} />
                            </button>
                            <button 
-                             onClick={() => handleDownloadClientDetails(p)}
+                             onClick={() => handleContact(p)}
                              className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
                            >
-                             Details <UserIcon size={14} />
+                             {/iPhone|Android/i.test(navigator.userAgent) ? 'Call' : 'Contact'} <Info size={14} />
                            </button>
                         </div>
 
@@ -740,7 +838,7 @@ Created At: ${formatDate(project.createdAt)}
                           {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId ? (
                             <>
                               <button 
-                                onClick={() => handleAcceptProject(p.id)}
+                                onClick={() => openAcceptPopup(p.id)}
                                 className="flex-1 py-4 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/10"
                               >
                                 Accept Project
@@ -814,11 +912,7 @@ Created At: ${formatDate(project.createdAt)}
                       </p>
                       
                       <button 
-                        onClick={() => {
-                          if (confirm('Claim this project? You will be responsible for its delivery.')) {
-                            handleAcceptProject(p.id);
-                          }
-                        }}
+                        onClick={() => openAcceptPopup(p.id)}
                         className="w-full py-4 bg-white text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-[#c7c42a] transition-all"
                       >
                         Claim Project
@@ -1278,26 +1372,29 @@ Created At: ${formatDate(project.createdAt)}
                   <Globe size={40} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Accept Assignment</h3>
-                  <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] italic">Mission Critical Infrastructure Setup</p>
+                  <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Financial Entry</h3>
+                  <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] italic">Pre-Acceptance Verification</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <p className="text-xs font-bold text-white/60 text-center uppercase tracking-widest leading-relaxed">
-                  Enter delivery details. Note: Domain charges are not included and must be communicated separately.
+                  Enter financial parameters to unlock the 'Accept Mission' command. Intel must be committed to the database first.
                 </p>
                 
                 <div className="space-y-2">
-                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Deployment URL</label>
+                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Razorpay Payment Link</label>
                   <div className="relative">
-                    <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                     <input 
                       type="url" 
                       required
-                      value={websiteUrl}
-                      onChange={(e) => setWebsiteUrl(e.target.value)}
-                      placeholder="https://example.com"
+                      value={tempPaymentLink}
+                      onChange={(e) => {
+                        setTempPaymentLink(e.target.value);
+                        setIsFinancialIntelSaved(false);
+                      }}
+                      placeholder="https://rzp.io/l/..."
                       className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                     />
                   </div>
@@ -1309,48 +1406,37 @@ Created At: ${formatDate(project.createdAt)}
                     <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                     <input 
                       type="number" 
-                      value={domainPrice || ''}
-                      onChange={(e) => setDomainPrice(parseInt(e.target.value) || 0)}
+                      value={tempDomainPrice || ''}
+                      onChange={(e) => {
+                        setTempDomainPrice(parseInt(e.target.value) || 0);
+                        setIsFinancialIntelSaved(false);
+                      }}
                       placeholder="e.g. 800"
                       className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                     />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Basic Payment Link</label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                    <input 
-                      type="url" 
-                      value={paymentLinkBasic}
-                      onChange={(e) => setPaymentLinkBasic(e.target.value)}
-                      placeholder="Razorpay/Stripe Link"
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Premium Payment Link</label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                    <input 
-                      type="url" 
-                      value={paymentLinkPremium}
-                      onChange={(e) => setPaymentLinkPremium(e.target.value)}
-                      placeholder="Razorpay/Stripe Link"
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
-                    />
-                  </div>
-                </div>
+                
+                <button 
+                  onClick={() => handleSaveFinancialIntel(showAcceptPopup)}
+                  disabled={isSubmitting || !tempPaymentLink || tempDomainPrice <= 0}
+                  className={`w-full py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all border ${
+                    isFinancialIntelSaved 
+                      ? 'bg-green-500/10 border-green-500/20 text-green-500' 
+                      : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                  }`}
+                >
+                  {isSubmitting ? 'Syncing...' : isFinancialIntelSaved ? 'INTELLIGENCE SAVED ✓' : 'SAVE FINANCIAL INTEL'}
+                </button>
               </div>
 
               <div className="flex gap-4">
                 <button 
                   onClick={() => {
                     setShowAcceptPopup(null);
-                    setWebsiteUrl('');
+                    setTempPaymentLink('');
+                    setTempDomainPrice(0);
+                    setIsFinancialIntelSaved(false);
                   }} 
                   className="flex-1 py-4 rounded-2xl border border-white/10 text-white font-black uppercase italic text-xs tracking-widest hover:bg-white/5 transition-all"
                 >
@@ -1358,8 +1444,12 @@ Created At: ${formatDate(project.createdAt)}
                 </button>
                 <button 
                   onClick={() => handleAcceptProject(showAcceptPopup)}
-                  disabled={isSubmitting || !websiteUrl}
-                  className="flex-1 py-4 rounded-2xl bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/20 disabled:opacity-50"
+                  disabled={isSubmitting || !isFinancialIntelSaved}
+                  className={`flex-1 py-4 rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all shadow-xl ${
+                    isFinancialIntelSaved 
+                      ? 'bg-[#c7c42a] text-black shadow-[#c7c42a]/20 hover:scale-105 active:scale-95' 
+                      : 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                  }`}
                 >
                   {isSubmitting ? 'Processing...' : 'Accept Mission'}
                 </button>

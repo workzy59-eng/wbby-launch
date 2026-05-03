@@ -205,11 +205,11 @@ export const acceptProject = async (projectId: string) => {
       
       if (snap.data().developerId) throw "Already taken";
       const plan = projectData.plan?.toLowerCase() || 'basic';
-      const payout = plan === 'premium' ? 7500 : plan === 'standard' ? 4000 : 1500;
+      const payout = plan === 'premium' ? 4500 : plan === 'standard' ? 2250 : 1125;
 
       tx.update(ref, {
         developerId: currentUser!.uid,
-        status: "in_progress",
+        status: "in-progress",
         payout: payout,
         acceptedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
