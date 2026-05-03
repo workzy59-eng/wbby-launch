@@ -13,6 +13,7 @@ export const auth = getAuth(app);
 // Use memory cache to avoid "ID: ca9" assertion errors in restricted iframe environments
 export const db = initializeFirestore(app, {
   localCache: memoryLocalCache(),
+  ignoreUndefinedProperties: true,
 }, firebaseConfig.firestoreDatabaseId);
 
 export const storage = getStorage(app);
