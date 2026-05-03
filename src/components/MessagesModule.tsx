@@ -756,33 +756,30 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
     if (m.type === 'file' || isUrlFile) {
       const fileName = m.fileName || (m.text.split('/').pop()?.split('?')[0]) || 'Intel Document';
+      const isProjectFile = fileName.toLowerCase().match(/\.(zip|pdf|rar)$/);
+
       return (
-        <div className={`flex items-center gap-3 p-4 rounded-2xl border-2 mb-2 transition-all group/file ${
-          m.senderId === currentUser.uid 
-            ? 'bg-[#FFFF00]/5 border-[#FFFF00]/20 hover:border-[#FFFF00]/40' 
-            : 'bg-white/5 border-white/10 hover:border-white/20'
+        <div className={`p-5 rounded-3xl border-2 mb-2 transition-all group/file bg-black shadow-2xl ${
+          isProjectFile ? 'border-[#FFFF00]' : 'border-[#FFFF00]/10'
         }`}>
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-            m.senderId === currentUser.uid ? 'bg-[#FFFF00] text-black' : 'bg-white/10 text-[#FFFF00]'
-          }`}>
-            <FileText size={24} />
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#FFFF00] text-black">
+              <FileText size={24} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-black text-[#FFFF00] truncate tracking-tight uppercase italic">{fileName}</p>
+              <p className="text-[10px] text-[#FFFF00]/60 font-black uppercase tracking-widest mt-0.5">
+                {isProjectFile ? 'Critical Project Resource' : 'Data Document'}
+              </p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-black text-white truncate uppercase tracking-tight">{fileName}</p>
-            <p className="text-[9px] text-[#FFFF00]/60 font-black uppercase tracking-[0.2em] mt-0.5">Secure Document Transfer</p>
-          </div>
-          <a 
-            href={effectiveUrl} 
-            target="_blank" 
-            rel="noreferrer" 
-            className={`p-3 rounded-xl transition-all shadow-lg ${
-              m.senderId === currentUser.uid 
-                ? 'bg-[#FFFF00] text-black hover:scale-110 active:scale-95' 
-                : 'bg-white/10 text-white hover:bg-white/20'
-            }`}
+          <button 
+            onClick={() => window.open(effectiveUrl, '_blank')}
+            className="w-full py-4 bg-[#FFFF00] text-black rounded-2xl font-black uppercase italic text-xs hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#FFFF00]/20"
           >
-            <Download size={20} />
-          </a>
+            <Download size={16} />
+            {isProjectFile ? 'Download Project Files' : 'Retrieve Intelligence'}
+          </button>
         </div>
       );
     }
@@ -1120,9 +1117,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                          const fileRegex = /\.(pdf|zip|rar|doc|docx|xls|xlsx|ppt|pptx)$/i;
                          const isUrlImage = m.text && (imageRegex.test(m.text) || m.text.includes('cloudinary.com') || m.text.includes('firebasestorage.googleapis.com'));
                          const isUrlFile = m.text && fileRegex.test(m.text);
+                         const isPlaceholder = m.text === 'Sent a photo' || m.text === 'Sent a file' || m.text === 'sent image' || m.text === 'Sent a photo.';
                          
-                         // If it's just a file/image URL, don't repeat the text
-                         if ((isUrlImage || isUrlFile) && (m.text.trim() === m.mediaUrl || m.text.trim() === m.fileUrl || m.text.split('?')[0].includes(m.text.trim()))) {
+                         // If it's just a file/image URL or a placeholder, don't repeat the text
+                         if ((isUrlImage || isUrlFile || (isPlaceholder && (m.mediaUrl || m.fileUrl))) && (!m.text || m.text.trim() === m.mediaUrl || m.text.trim() === m.fileUrl || isPlaceholder || m.text.split('?')[0].includes(m.text.trim()))) {
                            return null;
                          }
 

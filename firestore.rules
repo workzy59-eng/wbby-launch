@@ -28,9 +28,12 @@ service cloud.firestore {
     // Safely checks for admin role with email fallback
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.token.email.lower() == 'workzy59@gmail.com' ||
-        request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
-        request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
+        request.auth.uid in ['vN3cIRGUKXeEnbBCA4shsOXNlE03', 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
+        (request.auth.token.email != null && 
+         (request.auth.token.email.lower() == 'workzy59@gmail.com' ||
+          request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
+          request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
+          request.auth.token.email.lower() == 'aither2029@gmail.com')) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
@@ -42,14 +45,16 @@ service cloud.firestore {
 
     function isWhitelistedDeveloper() {
       return isSignedIn() && (
-        request.auth.token.email.lower() in [
+        request.auth.uid in ['vN3cIRGUKXeEnbBCA4shsOXNlE03', 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
+        (request.auth.token.email != null && 
+         request.auth.token.email.lower() in [
           'sain17296174@gmail.com',
           'priyankapudi4u@gmail.com',
           'workzy59@gmail.com',
+          'bharathmath17296@gmail.com',
           'bharathmath1729@gmail.com',
           'aither2029@gmail.com'
-        ] ||
-        request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2']
+        ])
       );
     }
 
@@ -58,8 +63,7 @@ service cloud.firestore {
     // =========================
     match /users/{userId} {
       allow create: if isAuth() && request.auth.uid == userId;
-      allow read: if isAuth();
-      allow list: if isAdmin() || isWhitelistedDeveloper();
+      allow read: if isAuth(); 
       allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
@@ -74,22 +78,23 @@ service cloud.firestore {
         incoming().userId == request.auth.uid;
 
       // Users can only read projects they are a part of
+      // Whitelisted devs can see any project to claim them or review them
       allow read: if isAuth() && (
         existing().userId == request.auth.uid || 
         (existing().developerId != null && existing().developerId == request.auth.uid) || 
-        isAdmin()
+        isAdmin() ||
+        isWhitelistedDeveloper()
       );
 
       // Only the owner, assigned developer, or admin can update
-      // Whitelisted developers can accept unassigned projects or update financial intel pre-acceptance
       allow update: if isAuth() && (
         existing().userId == request.auth.uid ||
         (existing().developerId != null && existing().developerId == request.auth.uid) ||
         isAdmin() ||
-        (existing().developerId == null && isWhitelistedDeveloper() && (
+        (isWhitelistedDeveloper() && (
           // Case 1: Accepting the project
           (incoming().developerId == request.auth.uid) ||
-          // Case 2: Setting financial intel before acceptance
+          // Case 2: Setting financial intel before/after acceptance
           (incoming().diff(existing()).affectedKeys().hasAny(['domainPrice', 'paymentLink', 'paymentLinkBasic', 'paymentLinkPremium']))
         ))
       );
@@ -131,12 +136,19 @@ service cloud.firestore {
       }
 
       match /typing/{userId} {
-        allow read: if isAdmin() || (isAuth() && 
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
+        // Allow anyone in the conversation to see who is typing
+        // In DMs, the ID often contains the UIDs. 
+        // We relax this for devs/admins or if the user is part of the conversation.
+        allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
+          conversationId.contains(request.auth.uid)
+        ));
         
-        allow write: if isAdmin() || (isAuth() && 
+        allow write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && 
           userId == request.auth.uid &&
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
+          (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
+           conversationId.contains(request.auth.uid))
+        );
       }
     }
 

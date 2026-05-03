@@ -63,7 +63,7 @@ interface DeveloperDashboardProps {
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'meetings' | 'earnings' | 'settings' | 'attendance';
+type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const navigate = useNavigate();
@@ -190,8 +190,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       });
     }
 
-    if (activeTab === 'meetings') {
-      getClients().then(setClients);
+    if (activeTab === 'analytics') {
+      // Analytics data fetch logic could go here
     }
 
     return () => {
@@ -558,19 +558,19 @@ Created At: ${formatDate(project.createdAt)}
         )}
 
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex w-72 flex-col bg-[#111] border-r border-white/5 p-8 space-y-10">
+      <aside className="hidden md:flex w-[250px] flex-col bg-black border-r border-[#FFFF00]/10 p-8 space-y-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black font-black text-xl italic italic">W</div>
-          <h1 className="text-xl font-black italic uppercase tracking-tighter">WebbyLaunch</h1>
+          <div className="w-10 h-10 bg-[#FFFF00] rounded-xl flex items-center justify-center text-black font-black text-xl italic">W</div>
+          <h1 className="text-xl font-black italic uppercase tracking-tighter text-white">WebbyLaunch</h1>
         </div>
 
         <nav className="flex-1 flex flex-col gap-2">
-          <NavItem tab="dashboard" icon={LayoutDashboard} label="Dashboard" />
-          <NavItem tab="pool" icon={Plus} label="New Jobs" />
-          <NavItem tab="projects" icon={Briefcase} label="Projects" />
-          <NavItem tab="chat" icon={MessageSquare} label={`MESSAGES ${unreadCount > 0 ? `(${unreadCount})` : ''}`} />
-          <NavItem tab="meetings" icon={Video} label="Meetings" />
-          <NavItem tab="earnings" icon={DollarSign} label="Earnings" />
+          <NavItem tab="dashboard" icon={LayoutDashboard} label="Overview" />
+          <NavItem tab="projects" icon={Briefcase} label="My Task" />
+          <NavItem tab="pool" icon={Plus} label="Pool" />
+          <NavItem tab="chat" icon={MessageSquare} label={unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages'} />
+          <NavItem tab="analytics" icon={LineChart} label="Analytics" />
+          <NavItem tab="earnings" icon={Wallet} label="Payments" />
           <NavItem tab="settings" icon={SettingsIcon} label="Settings" />
         </nav>
 
@@ -1102,18 +1102,36 @@ Created At: ${formatDate(project.createdAt)}
               </motion.div>
             )}
 
-            {activeTab === 'meetings' && (
+            {activeTab === 'analytics' && (
               <motion.div 
-                key="meetings"
+                key="analytics"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="space-y-8"
+                className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8"
               >
-                <div className="flex justify-between items-center">
-                  <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Meetings Control</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    { label: 'Intelligence Velocity', value: '4.8/5', sub: '+12% from last epoch' },
+                    { label: 'Mission Success Rate', value: '98.2%', sub: '24/25 missions successful' },
+                    { label: 'Transmission Volume', value: '1,242', sub: 'Messages exchanged' },
+                    { label: 'Compute Efficiency', value: '0.42ms', sub: 'Average response time' }
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-white/[0.03] border border-white/5 p-8 rounded-[2rem] space-y-2">
+                       <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
+                       <p className="text-3xl font-black italic">{stat.value}</p>
+                       <p className="text-[9px] text-[#FFFF00] font-bold uppercase tracking-widest opacity-60">{stat.sub}</p>
+                    </div>
+                  ))}
                 </div>
-                <MeetingList user={user!} profile={profile!} allClients={clients} />
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 h-96 flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <LineChart className="mx-auto text-[#FFFF00]/20" size={64} />
+                    <p className="text-sm font-black uppercase italic tracking-widest text-white/20">Analytical Visualization Offline</p>
+                    <p className="text-[10px] text-white/10 uppercase font-medium max-w-xs mx-auto">Neural insights require specialized clearance level Gamma-9</p>
+                  </div>
+                </div>
               </motion.div>
             )}
 
