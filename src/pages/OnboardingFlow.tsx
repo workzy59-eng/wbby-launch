@@ -242,7 +242,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         'Work Portfolio',
         'Fast Loading Performance'
       ],
-      plan: 'basic' as 'basic' | 'standard' | 'pro',
+      plan: 'basic' as 'basic' | 'standard' | 'premium',
       billingCycle: 'one-time' as 'one-time',
       referenceWebsite: '',
       templateId: '',
@@ -1341,20 +1341,20 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 { 
                   id: 'basic', 
                   name: 'Basic', 
-                  price: '₹5,000/-', 
-                  features: ['5 Pages', 'Basic SEO', 'Email Support'] 
+                  price: '₹7,500/-', 
+                  features: ['1–3 Pages Website', 'Simple Design', 'Mobile Responsive'] 
                 },
                 { 
                   id: 'standard', 
                   name: 'Standard', 
                   price: '₹15,000/-', 
-                  features: ['Everything in Basic', 'SEO optimization', 'Blog updates'] 
+                  features: ['4–7 Pages Website', 'Modern UI/UX', 'Basic SEO'] 
                 },
                 { 
-                  id: 'pro', 
-                  name: 'Pro', 
+                  id: 'premium', 
+                  name: 'Premium', 
                   price: '₹30,000/-', 
-                  features: ['Everything in Standard', 'E-commerce', 'AI features'] 
+                  features: ['Full Custom Website', 'Advanced UI/UX', 'SEO Optimization'] 
                 }
               ].map((plan) => (
                 <button

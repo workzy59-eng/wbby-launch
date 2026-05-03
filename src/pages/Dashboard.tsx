@@ -6,6 +6,7 @@ import { db, FirebaseUser, logOut } from '../firebase';
 import { initiatePayment } from '../services/razorpay';
 import { UserProfile, Project } from '../types';
 import { 
+  Bell,
   LogOut, 
   User, 
   MessageCircle, 
@@ -62,7 +63,7 @@ import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
 import { subscribeToMeetings } from '../services/meetingService';
 import { Meeting } from '../types';
-import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile } from '../services/database';
+import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { toast } from 'react-hot-toast';
 import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
@@ -87,6 +88,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'analytics'>('dashboard');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   
   // Handle Payment Success
   useEffect(() => {
@@ -223,6 +226,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const currentStepIndex = selectedProject 
     ? statusSteps.indexOf(selectedProject.status === 'Rejected' ? 'Declined' : selectedProject.status) 
     : -1;
+
+  useEffect(() => {
+    if (user?.uid) {
+      const unsubscribe = getNotifications(user.uid, (data) => {
+        setNotifications(data);
+      });
+      return () => unsubscribe();
+    }
+  }, [user?.uid]);
 
   useEffect(() => {
     const fetchStatsOrAdmin = async () => {
@@ -479,6 +491,68 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           <span className="text-white font-black text-2xl italic tracking-tighter relative z-10">W</span>
           <span className="text-[6px] font-black uppercase text-[#c7c42a]/60 leading-none tracking-widest group-hover:text-[#c7c42a] transition-colors relative z-10">Chat</span>
         </button>
+
+        <div className="relative group/notif">
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all border ${
+              showNotifications ? 'bg-[#FFFF00] text-black border-[#FFFF00]' : 'bg-black text-white/30 border-white/5 hover:text-white hover:border-white/20'
+            }`}
+          >
+            <Bell size={22} />
+            {notifications.filter(n => !n.read).length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FFFF00] text-black text-[9px] font-black rounded-full flex items-center justify-center border-2 border-black animate-pulse">
+                {notifications.filter(n => !n.read).length}
+              </span>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {showNotifications && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="absolute left-full ml-4 top-0 w-80 bg-black border border-[#FFFF00]/20 rounded-3xl shadow-2xl z-[100] overflow-hidden"
+              >
+                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black">
+                  <h3 className="text-sm font-black italic uppercase tracking-widest text-[#FFFF00]">Notifications</h3>
+                  <button 
+                    onClick={() => {
+                      notifications.forEach(n => !n.read && markNotificationAsRead(n.id));
+                      setShowNotifications(false);
+                    }}
+                    className="text-[10px] font-bold uppercase text-[#FFFF00] hover:underline"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="max-h-96 overflow-y-auto custom-scrollbar bg-black">
+                  {notifications.length > 0 ? (
+                    notifications.map((n) => (
+                      <div 
+                        key={n.id} 
+                        onClick={() => {
+                          if (!n.read) markNotificationAsRead(n.id);
+                          setShowNotifications(false);
+                        }}
+                        className={`p-6 border-b border-white/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
+                      >
+                        <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest mb-1">{n.title}</p>
+                        <p className="text-xs text-[#FFFF00]/60 leading-relaxed font-medium italic">{n.message}</p>
+                        <p className="text-[8px] text-[#FFFF00]/20 uppercase mt-2 font-black tracking-widest">{formatDate(n.createdAt)}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-12 text-center">
+                      <p className="text-[10px] font-black uppercase italic tracking-widest text-white/20">System Quiet. No Signal Detected.</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <nav className="flex-1 flex flex-col gap-5">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
@@ -1009,7 +1083,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             Total Cost
                           </span>
                           <span className="text-white font-black italic">
-                            {selectedProject?.plan === 'Standard' ? '₹15,000' : selectedProject?.plan === 'Pro' ? '₹30,000' : '₹5,000'}/-
+                            {selectedProject?.plan === 'Standard' ? '₹15,000' : (selectedProject?.plan === 'Premium' || selectedProject?.plan === 'Pro') ? '₹30,000' : '₹7,500'}/-
                           </span>
                         </div>
                         {selectedProject?.domainPrice && selectedProject.domainPrice > 0 && (
@@ -1064,7 +1138,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                          className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20 flex items-center justify-center gap-3"
                                        >
                                          <CreditCard size={20} />
-                                         Pay Basic (₹5,000)
+                                         Pay Basic (₹7,500)
                                        </button>
                                      )}
                                      {selectedProject.paymentLinkPremium && (
@@ -1073,7 +1147,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                          className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-3"
                                        >
                                          <ShieldCheck size={20} />
-                                         Pay Premium (₹15,000)
+                                         Pay Premium (₹30,000)
                                        </button>
                                      )}
                                      {selectedProject.domainPrice && selectedProject.domainPrice > 0 && (
@@ -1117,8 +1191,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                           {[
-                            { date: 'Apr 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Monthly Subscription`, amount: `₹${selectedProject?.plan === 'Standard' ? '5,999' : selectedProject?.plan === 'Premium' ? '9,999' : '999'}`, status: 'Paid' },
-                            { date: 'Mar 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Setup Fee + 1st Month`, amount: `₹${selectedProject?.plan === 'Standard' ? '8,998' : selectedProject?.plan === 'Premium' ? '14,998' : '2,998'}`, status: 'Paid' },
+                            { date: 'Apr 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Monthly Subscription`, amount: `₹${selectedProject?.plan === 'Standard' ? '5,999' : (selectedProject?.plan === 'Premium' || selectedProject?.plan === 'Pro') ? '9,999' : '1,499'}`, status: 'Paid' },
+                            { date: 'Mar 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Setup Fee + 1st Month`, amount: `₹${selectedProject?.plan === 'Standard' ? '8,998' : (selectedProject?.plan === 'Premium' || selectedProject?.plan === 'Pro') ? '14,998' : '2,998'}`, status: 'Paid' },
                           ].map((tx, i) => (
                             <tr key={i} className="group hover:bg-white/5 transition-all">
                               <td className="px-8 py-6 text-xs font-bold text-white/60">{tx.date}</td>

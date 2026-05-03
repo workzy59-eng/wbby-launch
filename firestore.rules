@@ -129,6 +129,15 @@ service cloud.firestore {
 
         allow update, delete: if isAdmin();
       }
+
+      match /typing/{userId} {
+        allow read: if isAdmin() || (isAuth() && 
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
+        
+        allow write: if isAdmin() || (isAuth() && 
+          userId == request.auth.uid &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
+      }
     }
 
     // =========================
@@ -165,8 +174,8 @@ service cloud.firestore {
 
     match /visit_sessions/{id} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow update: if isAuth() && (existing().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
-      allow read: if isAuth() && (existing().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow update: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || existing().userId == request.auth.uid);
+      allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || (resource == null || existing().userId == request.auth.uid));
     }
 
     // --- Meetings ---

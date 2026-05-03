@@ -1478,6 +1478,7 @@ export const createVisitSession = async (userId: string) => {
 };
 
 export const endVisitSession = async (sessionId: string) => {
+  if (!auth.currentUser) return; // Skip if user already signed out during cleanup
   const docRef = doc(db, 'visit_sessions', sessionId);
   try {
     const snap = await getDoc(docRef);
@@ -1493,7 +1494,12 @@ export const endVisitSession = async (sessionId: string) => {
         });
       }
     }
-  } catch (err) {
+  } catch (err: any) {
+    // Suppress permission errors if they occur during logout race conditions
+    if (err.message?.includes('permission-denied') || err.message?.includes('insufficient permissions')) {
+      console.debug("Silent failure: Permission denied ending visit session (likely signed out)");
+      return;
+    }
     console.error("Error ending visit session:", err);
   }
 };

@@ -8,7 +8,7 @@ export default function Pricing() {
   const oneTimePlans = [
     {
       name: 'Basic',
-      price: '₹5,000',
+      price: '₹7,500',
       period: 'One-Time',
       description: '1–3 pages website. Perfect for small businesses starting their digital journey.',
       features: [
@@ -37,7 +37,7 @@ export default function Pricing() {
       stripeLink: 'https://buy.stripe.com/test_6oU6oGdOY8zi7Deb9JbAs0b'
     },
     {
-      name: 'Pro',
+      name: 'Premium',
       price: '₹30,000',
       period: 'One-Time',
       description: 'Full custom website. Advanced UI/UX and full optimization for established businesses.',

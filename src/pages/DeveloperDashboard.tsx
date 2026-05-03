@@ -47,7 +47,8 @@ import {
   punchOut, 
   getUnreadMessageCount,
   getDeveloperAttendanceStatus,
-  getDeveloperStats
+  getDeveloperStats,
+  createNotification
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
@@ -272,14 +273,30 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const handleSaveFinancialIntel = async (projectId: string) => {
     setIsSubmitting(true);
     try {
+      const project = projects.find(p => p.id === projectId) || unassignedProjects.find(p => p.id === projectId);
+      
       await updateProject(projectId, {
         domainPrice: tempDomainPrice,
         paymentLink: tempPaymentLink,
         updatedAt: new Date().toISOString()
       });
+
+      // Send notification to client if domain price is set/updated
+      if (project && tempDomainPrice > 0) {
+        await createNotification({
+          userId: project.userId,
+          title: 'Domain Infrastructure Update',
+          message: `Your domain price is ₹${tempDomainPrice}. Once the project is completed, we will buy a domain and handover the full site access to you.`,
+          type: 'domain_update',
+          projectId: projectId,
+          severity: 'high'
+        });
+      }
+
       setIsFinancialIntelSaved(true);
       toast.success('Financial intel committed to the ledger');
     } catch (error) {
+      console.error('Save failed:', error);
       toast.error('Failed to commit financial data');
     } finally {
       setIsSubmitting(false);
@@ -604,32 +621,32 @@ Created At: ${formatDate(project.createdAt)}
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-4 w-80 bg-[#111] border border-white/10 rounded-3xl shadow-2xl z-50 overflow-hidden"
+                    className="absolute right-0 mt-4 w-80 bg-black border border-[#FFFF00]/20 rounded-3xl shadow-2xl z-50 overflow-hidden"
                   >
-                    <div className="p-6 border-b border-white/5 flex justify-between items-center">
-                      <h3 className="text-sm font-black italic uppercase tracking-widest">Notifications</h3>
+                    <div className="p-6 border-b border-[#FFFF00]/10 flex justify-between items-center bg-black">
+                      <h3 className="text-sm font-black italic uppercase tracking-widest text-[#FFFF00]">Notifications</h3>
                       <button 
                         onClick={() => notifications.forEach(n => !n.read && markNotificationAsRead(n.id))}
-                        className="text-[10px] font-bold uppercase text-[#c7c42a] hover:underline"
+                        className="text-[10px] font-bold uppercase text-[#FFFF00] hover:underline"
                       >
                         Mark all as read
                       </button>
                     </div>
-                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                    <div className="max-h-96 overflow-y-auto custom-scrollbar bg-black">
                       {notifications.length > 0 ? (
                         notifications.map((n) => (
                           <div 
                             key={n.id} 
                             onClick={() => !n.read && markNotificationAsRead(n.id)}
-                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${!n.read ? 'bg-[#c7c42a]/5' : ''}`}
+                            className={`p-6 border-b border-[#FFFF00]/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
                           >
-                            <p className="text-[10px] font-black uppercase text-[#c7c42a] tracking-widest mb-1">{n.title}</p>
-                            <p className="text-xs text-white/60 leading-relaxed">{n.message}</p>
-                            <p className="text-[8px] text-white/20 uppercase mt-2">{formatDate(n.createdAt)}</p>
+                            <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest mb-1">{n.title}</p>
+                            <p className="text-xs text-[#FFFF00]/60 leading-relaxed font-medium italic">{n.message}</p>
+                            <p className="text-[8px] text-[#FFFF00]/20 uppercase mt-2 font-black tracking-widest">{formatDate(n.createdAt)}</p>
                           </div>
                         ))
                       ) : (
-                        <div className="p-10 text-center text-white/20">
+                        <div className="p-10 text-center text-[#FFFF00]/20">
                           <p className="text-xs font-bold uppercase italic italic">No new signals</p>
                         </div>
                       )}

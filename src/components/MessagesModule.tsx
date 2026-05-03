@@ -728,47 +728,60 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (m.isDeleted) return null;
     
     const mediaUrl = m.mediaUrl || m.fileUrl || m.imageUrl || m.fileData;
-    if (!mediaUrl) return null;
+    
+    // Check if message text is a URL (fallback for when type isn't set correctly)
+    const imageRegex = /\.(jpeg|jpg|gif|png|webp|svg)$/i;
+    const fileRegex = /\.(pdf|zip|rar|doc|docx|xls|xlsx|ppt|pptx)$/i;
+    const isUrlImage = m.text && (imageRegex.test(m.text) || m.text.includes('cloudinary.com') || m.text.includes('firebasestorage.googleapis.com'));
+    const isUrlFile = m.text && fileRegex.test(m.text);
 
-    if (m.type === 'image') {
+    const effectiveUrl = mediaUrl || (isUrlImage || isUrlFile ? m.text : null);
+
+    if (!effectiveUrl) return null;
+
+    if (m.type === 'image' || isUrlImage) {
       return (
         <div 
-          className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/5 cursor-pointer bg-[#2a3942]" 
-          onClick={() => setSelectedImage(mediaUrl)}
+          className="relative group/media mb-2 rounded-xl overflow-hidden border border-[#FFFF00]/10 cursor-pointer bg-[#2a3942]" 
+          onClick={() => setSelectedImage(effectiveUrl)}
         >
-          <img src={mediaUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
+          <img src={effectiveUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center">
             <Maximize2 size={24} className="text-white drop-shadow-lg" />
           </div>
+          <p className="absolute bottom-2 left-2 text-[8px] font-black uppercase text-[#FFFF00] bg-black/60 px-2 py-0.5 rounded-full tracking-widest backdrop-blur-sm opacity-0 group-hover/media:opacity-100 transition-opacity">Visual Intel Attached</p>
         </div>
       );
     }
 
-    if (m.type === 'video') {
+    if (m.type === 'file' || isUrlFile) {
+      const fileName = m.fileName || (m.text.split('/').pop()?.split('?')[0]) || 'Intel Document';
       return (
-        <div className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/5 bg-[#2a3942]">
-          <video src={mediaUrl} className="max-w-full h-auto max-h-[300px]" controls />
-        </div>
-      );
-    }
-
-    if (m.type === 'file') {
-      return (
-        <div className={`flex items-center gap-3 p-3 rounded-xl border mb-2 ${m.senderId === currentUser.uid ? 'bg-black/10 border-black/5' : 'bg-white/5 border-white/10'}`}>
-          <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-[#ffc107]">
+        <div className={`flex items-center gap-3 p-4 rounded-2xl border-2 mb-2 transition-all group/file ${
+          m.senderId === currentUser.uid 
+            ? 'bg-[#FFFF00]/5 border-[#FFFF00]/20 hover:border-[#FFFF00]/40' 
+            : 'bg-white/5 border-white/10 hover:border-white/20'
+        }`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+            m.senderId === currentUser.uid ? 'bg-[#FFFF00] text-black' : 'bg-white/10 text-[#FFFF00]'
+          }`}>
             <FileText size={24} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-[#e9edef] truncate">{m.fileName || 'Attachment'}</p>
-            <p className="text-[10px] text-[#8696a0] uppercase tracking-wider font-medium">Document</p>
+            <p className="text-xs font-black text-white truncate uppercase tracking-tight">{fileName}</p>
+            <p className="text-[9px] text-[#FFFF00]/60 font-black uppercase tracking-[0.2em] mt-0.5">Secure Document Transfer</p>
           </div>
           <a 
-            href={mediaUrl} 
+            href={effectiveUrl} 
             target="_blank" 
             rel="noreferrer" 
-            className="p-2 hover:bg-white/10 rounded-lg transition-all text-[#8696a0] hover:text-[#e9edef]"
+            className={`p-3 rounded-xl transition-all shadow-lg ${
+              m.senderId === currentUser.uid 
+                ? 'bg-[#FFFF00] text-black hover:scale-110 active:scale-95' 
+                : 'bg-white/10 text-white hover:bg-white/20'
+            }`}
           >
-            <ExternalLink size={18} />
+            <Download size={20} />
           </a>
         </div>
       );
@@ -1072,22 +1085,22 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
               <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} relative group/msg`}>
                 <div 
-                  className={`relative px-4 py-3 text-[14px] leading-relaxed shadow-lg transition-all ${
+                  className={`relative px-5 py-4 text-[14px] leading-relaxed shadow-2xl transition-all border ${
                   isMe 
-                    ? 'bg-[#3b82f6] text-white' 
-                    : 'bg-[#262626] text-white'
+                    ? 'bg-[#FFFF00] text-black border-[#FFFF00]' 
+                    : 'bg-black text-[#FFFF00] border-[#FFFF00]/20'
                 } ${
                   isMe 
-                    ? `rounded-[20px] ${isLastOfGroup ? 'rounded-br-sm' : ''} ${!isFirstOfGroup ? 'rounded-tr-2xl' : ''}` 
-                    : `rounded-[20px] ${isLastOfGroup ? 'rounded-bl-sm' : ''} ${!isFirstOfGroup ? 'rounded-tl-2xl' : ''}`
+                    ? `rounded-[24px] ${isLastOfGroup ? 'rounded-br-sm' : ''} ${!isFirstOfGroup ? 'rounded-tr-2xl' : ''}` 
+                    : `rounded-[24px] ${isLastOfGroup ? 'rounded-bl-sm' : ''} ${!isFirstOfGroup ? 'rounded-tl-2xl' : ''}`
                 } ${m.temp ? 'opacity-70 animate-pulse' : ''}`}
                 >
                   {m.replyTo && !m.isDeleted && (
-                    <div className={`mb-3 p-2.5 rounded-xl border-l-[3px] bg-black/20 ${isMe ? 'border-white/40' : 'border-[#3b82f6]/60'}`}>
-                      <p className="text-[10px] font-black uppercase tracking-wider text-white/40 mb-1">
+                    <div className={`mb-3 p-3 rounded-xl border-l-[4px] bg-black/40 ${isMe ? 'border-black/40' : 'border-[#FFFF00]/60'}`}>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[#FFFF00]/60 mb-1">
                         {m.replyTo.senderName}
                       </p>
-                      <p className="text-xs text-white/60 truncate italic line-clamp-1">
+                      <p className={`text-xs truncate italic line-clamp-1 ${isMe ? 'text-black/60' : 'text-white/60'}`}>
                         {m.replyTo.text}
                       </p>
                     </div>
@@ -1102,14 +1115,28 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                     </p>
                   ) : (
                     <div className="space-y-2">
-                       <p className="whitespace-pre-wrap break-words font-medium">
-                        {m.text.split(' ').map((word, i) => {
-                          if (word.startsWith('@')) {
-                            return <span key={i} className="text-blue-300 font-black cursor-pointer hover:underline">{word} </span>;
-                          }
-                          return word + ' ';
-                        })}
-                      </p>
+                       {(() => {
+                         const imageRegex = /\.(jpeg|jpg|gif|png|webp|svg)$/i;
+                         const fileRegex = /\.(pdf|zip|rar|doc|docx|xls|xlsx|ppt|pptx)$/i;
+                         const isUrlImage = m.text && (imageRegex.test(m.text) || m.text.includes('cloudinary.com') || m.text.includes('firebasestorage.googleapis.com'));
+                         const isUrlFile = m.text && fileRegex.test(m.text);
+                         
+                         // If it's just a file/image URL, don't repeat the text
+                         if ((isUrlImage || isUrlFile) && (m.text.trim() === m.mediaUrl || m.text.trim() === m.fileUrl || m.text.split('?')[0].includes(m.text.trim()))) {
+                           return null;
+                         }
+
+                         return (
+                           <p className="whitespace-pre-wrap break-words font-medium">
+                            {m.text.split(' ').map((word, i) => {
+                              if (word.startsWith('@')) {
+                                return <span key={i} className="text-[#FFFF00] font-black cursor-pointer hover:underline">{word} </span>;
+                              }
+                              return word + ' ';
+                            })}
+                          </p>
+                         );
+                       })()}
                       {m.edited && (
                         <p className="text-[9px] text-white/30 italic">Edited</p>
                       )}
