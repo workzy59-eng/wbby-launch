@@ -159,7 +159,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   try {
     let role = 'client';
     const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'];
-    const devEmails = ['sain17296174@gmail.com'];
+    const devEmails = ['sain17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';

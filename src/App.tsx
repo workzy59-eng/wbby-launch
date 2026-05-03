@@ -119,7 +119,7 @@ export default function App() {
                       (profile?.role === 'admin' || 
                        [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                         <Navigate to="/admin" />
-                      ) : (['sain17296174@gmail.com', 'sin17296174@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                      ) : (['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
                         <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
@@ -170,7 +170,7 @@ export default function App() {
                          [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <AdminPanel user={user} profile={profile} />
                         ) : (profile.role === 'developer' || 
-                             ['sain17296174@gmail.com', 'sin17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                             ['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
