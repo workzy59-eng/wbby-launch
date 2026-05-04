@@ -744,8 +744,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                    </div>
                 </div>
               )}
-                </div>
-              )}
 
               {activeTab === 'messages' ? (
                 <MessagesModule 

@@ -9,52 +9,37 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Safe check for any authenticated user
     function isAuth() {
-      return isSignedIn();
+      return request.auth != null && request.auth.uid != null;
     }
 
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    // Safely checks for admin role with email fallback
     function isAdmin() {
-      return isSignedIn() && (
-        request.auth.uid in ['vN3cIRGUKXeEnbBCA4shsOXNlE03', 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
+      return isAuth() && (
+        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' || 
+        request.auth.uid == 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73' || 
+        request.auth.uid == 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2' ||
         (request.auth.token.email != null && 
          (request.auth.token.email.lower() == 'workzy59@gmail.com' ||
           request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
           request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
-          request.auth.token.email.lower() == 'aither2029@gmail.com')) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+          request.auth.token.email.lower() == 'aither2029@gmail.com'))
       );
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
     function isWhitelistedDeveloper() {
-      return isSignedIn() && (
-        request.auth.uid in ['vN3cIRGUKXeEnbBCA4shsOXNlE03', 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
+      return isAuth() && (
+        isAdmin() ||
+        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' || 
+        request.auth.uid == 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73' || 
+        request.auth.uid == 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2' ||
         (request.auth.token.email != null && 
-         request.auth.token.email.lower() in [
-          'sain17296174@gmail.com',
-          'priyankapudi4u@gmail.com',
-          'workzy59@gmail.com',
-          'bharathmath17296@gmail.com',
-          'bharathmath1729@gmail.com',
-          'aither2029@gmail.com'
-        ])
+         (request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
+          request.auth.token.email.lower() == 'priyankapudi4u@gmail.com' ||
+          request.auth.token.email.lower() == 'workzy59@gmail.com' ||
+          request.auth.token.email.lower() == 'bharathmath17296@gmail.com' ||
+          request.auth.token.email.lower() == 'bharathmath1729@gmail.com' ||
+          request.auth.token.email.lower() == 'aither2029@gmail.com'))
       );
     }
 
@@ -72,30 +57,24 @@ service cloud.firestore {
     // PROJECTS
     // =========================
     match /projects/{projectId} {
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
       
-      // FIX: Ensures the document being created belongs to the person creating it
-      allow create: if isAuth() && 
-        incoming().userId == request.auth.uid;
-
-      // Users can only read projects they are a part of
-      // Whitelisted devs can see any project to claim them or review them
       allow read: if isAuth() && (
-        existing().userId == request.auth.uid || 
-        (existing().developerId != null && existing().developerId == request.auth.uid) || 
-        isAdmin() ||
-        isWhitelistedDeveloper()
+        isAdmin() || 
+        isWhitelistedDeveloper() ||
+        (resource != null && (
+          resource.data.userId == request.auth.uid || 
+          resource.data.developerId == request.auth.uid
+        ))
       );
 
-      // Only the owner, assigned developer, or admin can update
       allow update: if isAuth() && (
-        existing().userId == request.auth.uid ||
-        (existing().developerId != null && existing().developerId == request.auth.uid) ||
         isAdmin() ||
+        existing().userId == request.auth.uid ||
+        existing().developerId == request.auth.uid ||
         (isWhitelistedDeveloper() && (
-          // Case 1: Accepting the project
-          (incoming().developerId == request.auth.uid) ||
-          // Case 2: Setting financial intel before/after acceptance
-          (incoming().diff(existing()).affectedKeys().hasAny(['domainPrice', 'paymentLink', 'paymentLinkBasic', 'paymentLinkPremium']))
+          incoming().developerId == request.auth.uid ||
+          incoming().diff(existing()).affectedKeys().hasAny(['domainPrice', 'paymentLink', 'paymentLinkBasic', 'paymentLinkPremium', 'websiteUrl', 'progress', 'status'])
         ))
       );
 
