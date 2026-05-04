@@ -136,19 +136,8 @@ service cloud.firestore {
       }
 
       match /typing/{userId} {
-        // Allow anyone in the conversation to see who is typing
-        // In DMs, the ID often contains the UIDs. 
-        // We relax this for devs/admins or if the user is part of the conversation.
-        allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
-          conversationId.contains(request.auth.uid)
-        ));
-        
-        allow write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && 
-          userId == request.auth.uid &&
-          (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
-           conversationId.contains(request.auth.uid))
-        );
+        allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || conversationId.contains(request.auth.uid));
+        allow write: if isAuth() && (userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
       }
     }
 
@@ -202,9 +191,9 @@ service cloud.firestore {
     }
 
     match /notifications/{notificationId} {
-      allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.userId == request.auth.uid);
       allow create: if isAuth(); 
-      allow update, delete: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.userId == request.auth.uid);
     }
     
     // --- Leave Requests & Attendance ---

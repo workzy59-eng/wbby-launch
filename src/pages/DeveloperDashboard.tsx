@@ -29,7 +29,7 @@ import {
   FileText
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
-import { UserProfile, Project } from '../types';
+import { UserProfile, Project, Attendance } from '../types';
 import { 
   getProjects, 
   updateProject, 
@@ -48,7 +48,8 @@ import {
   getUnreadMessageCount,
   getDeveloperAttendanceStatus,
   getDeveloperStats,
-  createNotification
+  createNotification,
+  getAttendance
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
@@ -85,6 +86,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [paymentLinkPremium, setPaymentLinkPremium] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [selectedProjectForDrawer, setSelectedProjectForDrawer] = useState<Project | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [settingsData, setSettingsData] = useState({
@@ -101,6 +104,11 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [punchInTime, setPunchInTime] = useState<any>(null);
   const [punchOutTimer, setPunchOutTimer] = useState<string | null>(null);
   const [devStats, setDevStats] = useState({ completedCount: 0, activeCount: 0, totalHours: 0, totalPayout: 0 });
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [totalHours, setTotalHours] = useState(0);
+  const [isSuspended, setIsSuspended] = useState(false);
+  const [isStickyOpen, setIsStickyOpen] = useState(false);
+  const [stickyNotes, setStickyNotes] = useState(profile?.notes || '');
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -112,6 +120,38 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       setPunchInTime(data.punchIn);
     });
     getDeveloperStats(user.uid).then(setDevStats);
+    
+    // Fetch detailed attendance for calendar
+    getAttendance(user.uid).then(data => {
+      setAttendance(data as Attendance[]);
+      // Calculate total hours from attendance
+      const total = (data as Attendance[]).reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
+      setTotalHours(total);
+
+      // Check for consecutive absences
+      const today = new Date();
+      const oneDay = 24 * 60 * 60 * 1000;
+      let consecutiveAbsences = 0;
+      
+      for (let i = 0; i < 3; i++) {
+        const checkDate = new Date(today.getTime() - (i * oneDay));
+        const record = (data as Attendance[]).find(a => {
+          const d = new Date(a.date);
+          return d.getDate() === checkDate.getDate() && 
+                 d.getMonth() === checkDate.getMonth() && 
+                 d.getFullYear() === checkDate.getFullYear();
+        });
+        if (!record) consecutiveAbsences++;
+      }
+
+      if (consecutiveAbsences >= 3) {
+        setIsSuspended(true);
+      }
+    });
+
+    if (profile?.status === 'suspended') {
+      setIsSuspended(true);
+    }
 
     return () => {
       unsub?.();
@@ -427,6 +467,13 @@ Created At: ${formatDate(project.createdAt)}
     toast.success('Prompt downloaded');
   };
 
+  const calculateAttendancePayout = () => {
+    const salary = (profile as any)?.salary || 70000; // Default Salary
+    const activeDaysInMonth = 22; 
+    const presentDays = attendance.length;
+    return (salary / activeDaysInMonth) * presentDays;
+  };
+
   const stats = useMemo(() => {
     const total = projects.length;
     const completed = projects.filter(p => p.status?.toLowerCase() === 'completed').length;
@@ -520,8 +567,45 @@ Created At: ${formatDate(project.createdAt)}
 
       <div className="h-screen flex flex-col md:flex-row bg-[#050505] text-white overflow-hidden font-sans">
       
+        {/* MISSION_FAIL SUSPENSION OVERLAY */}
+        {isSuspended && (
+          <div className="fixed inset-0 z-[2000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-10 text-center overflow-hidden">
+             <div className="absolute inset-0 bg-red-500/5 animate-pulse" />
+             <div className="max-w-2xl text-center space-y-10 relative z-10">
+                <div className="inline-block px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-red-500 text-xs font-black uppercase tracking-[0.5em] animate-bounce">
+                   Protocol Compromised
+                </div>
+                <h2 className="text-7xl md:text-9xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
+                   MISSION<br />
+                   <span className="text-red-500">FAIL.</span>
+                </h2>
+                <div className="p-8 bg-white/5 border border-white/10 rounded-[2rem] space-y-4">
+                   <p className="text-xl font-black uppercase italic tracking-tight text-white/80">TEMPORARY_SUSPENSION_ACTIVE</p>
+                   <p className="text-sm font-bold text-white/40 uppercase tracking-widest leading-relaxed">
+                      BIOMETRIC SYNC FAILURE: 3 CONSECUTIVE ABSENCES DETECTED. ALL MISSION ACCESS HAS BEEN REVOKED BY CENTRAL COMMAND.
+                   </p>
+                </div>
+                <div className="flex flex-col md:flex-row gap-4 justify-center">
+                   <button 
+                     onClick={() => window.location.href = "mailto:webbylaunch@gmail.com?subject=Appeal: Suspension&body=Mission Revocation Appeal for Developer: " + profile?.displayName}
+                     className="px-12 py-5 bg-red-500 text-white font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(239,68,68,0.3)]"
+                   >
+                     [ APPEAL_REVOCATION ]
+                   </button>
+                   <button 
+                     onClick={handleLogout}
+                     className="px-12 py-5 bg-white/5 border border-white/10 text-white font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all"
+                   >
+                     [ ABORT_SESSION ]
+                   </button>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10">MISSION CRITICAL // BIOMETRIC LOCK Alpha-1</p>
+             </div>
+          </div>
+        )}
+
         {/* DUTY-GATED BLACKOUT OVERLAY */}
-        {!isPunchedIn && (
+        {!isPunchedIn && activeTab !== 'chat' && !isSuspended && (
           <div className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center p-10 text-center">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
@@ -569,7 +653,8 @@ Created At: ${formatDate(project.createdAt)}
           <NavItem tab="projects" icon={Briefcase} label="My Task" />
           <NavItem tab="pool" icon={Plus} label="Pool" />
           <NavItem tab="chat" icon={MessageSquare} label={unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages'} />
-          <NavItem tab="analytics" icon={LineChart} label="Analytics" />
+          <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
+          <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
           <NavItem tab="earnings" icon={Wallet} label="Payments" />
           <NavItem tab="settings" icon={SettingsIcon} label="Settings" />
         </nav>
@@ -793,6 +878,15 @@ Created At: ${formatDate(project.createdAt)}
                           }`}>
                             {p.status}
                           </div>
+                          <button 
+                            onClick={() => {
+                              setSelectedProjectForDrawer(p);
+                              setIsDrawerOpen(true);
+                            }}
+                            className="p-2 bg-[#FFFF00] text-black rounded hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,0,0.3)] ml-2"
+                          >
+                            <ChevronRight size={18} />
+                          </button>
                         </div>
 
                         {/* Progress Bar */}
@@ -979,6 +1073,15 @@ Created At: ${formatDate(project.createdAt)}
                               <h4 className="text-4xl font-black italic uppercase tracking-tighter text-white leading-tight">{p.businessName}</h4>
                               <p className="text-sm font-black uppercase text-[#c7c42a] tracking-widest mt-1">{p.businessType || 'Mission Assignment'}</p>
                             </div>
+                            <button 
+                              onClick={() => {
+                                setSelectedProjectForDrawer(p);
+                                setIsDrawerOpen(true);
+                              }}
+                              className="ml-auto p-4 bg-[#FFFF00] text-black rounded hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,0,0.4)]"
+                            >
+                              <ChevronRight size={24} />
+                            </button>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1127,11 +1230,127 @@ Created At: ${formatDate(project.createdAt)}
 
                 <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 h-96 flex items-center justify-center">
                   <div className="text-center space-y-4">
-                    <LineChart className="mx-auto text-[#FFFF00]/20" size={64} />
+                    <TrendingUp className="mx-auto text-[#FFFF00]/20" size={64} />
                     <p className="text-sm font-black uppercase italic tracking-widest text-white/20">Analytical Visualization Offline</p>
                     <p className="text-[10px] text-white/10 uppercase font-medium max-w-xs mx-auto">Neural insights require specialized clearance level Gamma-9</p>
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'attendance' && (
+              <motion.div 
+                key="attendance"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-12"
+              >
+                 <div className="flex flex-col gap-2">
+                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FFFF00]">Bio-Sync Protocol</span>
+                   <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Attendance Log</h2>
+                 </div>
+
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    <div className="lg:col-span-1 space-y-6">
+                      <div className="p-8 bg-white/5 border border-white/5 rounded-[2.5rem] space-y-8">
+                         <div className="flex justify-between items-start">
+                            <div className="w-12 h-12 bg-[#FFFF00]/10 rounded-2xl flex items-center justify-center text-[#FFFF00]">
+                               <Clock size={24} />
+                            </div>
+                            <div className="text-right">
+                               <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Protocol uptime</p>
+                               <p className="text-2xl font-black italic text-white">98.4%</p>
+                            </div>
+                         </div>
+                         
+                         <div className="space-y-4">
+                            <div className="flex justify-between items-center p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
+                               <span className="text-[10px] font-black uppercase text-white/40 tracking-widest">Days Logged</span>
+                               <span className="text-xl font-black italic text-[#FFFF00]">{attendance.length}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
+                               <span className="text-[10px] font-black uppercase text-white/40 tracking-widest">Total Active (Hrs)</span>
+                               <span className="text-xl font-black italic text-[#FFFF00]">{Math.floor(totalHours)}h {Math.floor((totalHours % 1) * 60)}m</span>
+                            </div>
+                         </div>
+
+                         <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-2xl">
+                            <p className="text-[10px] font-black uppercase text-red-500 tracking-[0.2em] mb-2">Safety Lock Status</p>
+                            <p className="text-xs font-bold text-white/60 uppercase leading-relaxed italic">3 Consecutive Absences will trigger automatic profile lockout. Maintain active status code.</p>
+                         </div>
+                      </div>
+                    </div>
+
+                    <div className="lg:col-span-2">
+                        <div className="p-10 bg-white/5 border border-white/5 rounded-[3rem] space-y-10 min-h-[500px] relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-20 opacity-[0.03] rotate-12">
+                               <LayoutDashboard size={300} />
+                            </div>
+                            <div className="flex justify-between items-center relative z-10">
+                              <h3 className="text-2xl font-black uppercase italic tracking-tighter">Mission Calendar</h3>
+                              <div className="flex gap-4">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                                    <span className="text-[8px] font-black uppercase text-white/40 tracking-widest italic">Present</span>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                                    <span className="text-[8px] font-black uppercase text-white/40 tracking-widest italic">Absent</span>
+                                 </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-7 gap-4 relative z-10">
+                               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                                 <div key={day} className="text-center text-[10px] font-black uppercase text-white/20 tracking-widest mb-4 italic">{day}</div>
+                               ))}
+                               {Array.from({ length: 31 }).map((_, i) => {
+                                 const dayNum = i + 1;
+                                 const attendanceRecord = attendance.find(a => new Date(a.date).getDate() === dayNum);
+                                 
+                                 return (
+                                   <div 
+                                      key={i} 
+                                      className={`h-24 lg:h-32 border ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col p-4 relative group cursor-crosshair`}
+                                   >
+                                      <span className={`text-xs font-black italic ${attendanceRecord ? 'text-green-500' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
+                                      
+                                      {attendanceRecord && (
+                                         <div className="mt-auto">
+                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                                            <p className="text-[8px] font-black uppercase text-green-500/60 tracking-[0.2em] mt-2 italic">Bio-Active</p>
+                                         </div>
+                                      )}
+                                      
+                                      {/* Info Overlay */}
+                                      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-center p-3 z-20">
+                                         <p className="text-[8px] font-black uppercase tracking-[0.4em] text-[#FFFF00] italic mb-2">Protocol Intel</p>
+                                         {attendanceRecord ? (
+                                           <div className="space-y-1">
+                                             <p className="text-xs font-black text-white italic">{attendanceRecord.totalHours?.toFixed(1)}h Active</p>
+                                             <p className="text-[8px] font-bold text-[#FFFF00] uppercase tracking-widest">In: {attendanceRecord.checkIn ? new Date(attendanceRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
+                                           </div>
+                                         ) : (
+                                           <div className="flex flex-col items-center">
+                                              <XCircle size={16} className="text-red-500/40 mb-1" />
+                                              <p className="text-[10px] font-black text-red-500/60 italic">Signal Lost</p>
+                                           </div>
+                                         )}
+                                      </div>
+                                   </div>
+                                 );
+                               })}
+                            </div>
+                            
+                            <div className="pt-10 border-t border-white/5 relative z-10">
+                               <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/10 text-center italic">
+                                  Sync-Cycle: May 2026 // Distributed Ledger Verification Active
+                               </p>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
               </motion.div>
             )}
 
@@ -1155,11 +1374,11 @@ Created At: ${formatDate(project.createdAt)}
                   </div>
 
                   <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">In Queue / Processing</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FFFF00] italic">Core Sync Salary</p>
                     <h3 className="text-4xl font-black italic text-white">
-                      ₹{payments.filter(p => !p.status || p.status === 'pending').reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}
+                      ₹{calculateAttendancePayout().toLocaleString()}
                     </h3>
-                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic pt-4 leading-relaxed">Payments are processed every Monday for completed missions.</p>
+                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic pt-4 leading-relaxed">Based on {attendance.length}/22 active days sync.</p>
                   </div>
 
                   <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-2 flex flex-col justify-center items-center text-center">
@@ -1327,9 +1546,10 @@ Created At: ${formatDate(project.createdAt)}
             { tab: 'dashboard' as Tab, icon: LayoutDashboard, label: 'Home' },
             { tab: 'projects' as Tab, icon: Briefcase, label: 'Projects' },
             { tab: 'chat' as Tab, icon: MessageSquare, label: 'Chat' },
-            { tab: 'meetings' as Tab, icon: Video, label: 'Meets' },
+            { tab: 'attendance' as Tab, icon: Clock, label: 'Bio' },
+            { tab: 'analytics' as Tab, icon: TrendingUp, label: 'Pulse' },
             { tab: 'earnings' as Tab, icon: DollarSign, label: 'Pay' },
-            { tab: 'settings' as Tab, icon: SettingsIcon, label: 'Settings' }
+            { tab: 'settings' as Tab, icon: SettingsIcon, label: 'User' }
           ].map((item) => (
             <button 
               key={item.tab}
@@ -1366,7 +1586,8 @@ Created At: ${formatDate(project.createdAt)}
                   <NavItem tab="dashboard" icon={LayoutDashboard} label="Dashboard" />
                   <NavItem tab="projects" icon={Briefcase} label="Projects" />
                   <NavItem tab="chat" icon={MessageSquare} label="Chat" />
-                  <NavItem tab="meetings" icon={Video} label="Meetings" />
+                  <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
+                  <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
                   <NavItem tab="earnings" icon={DollarSign} label="Earnings" />
                   <NavItem tab="settings" icon={SettingsIcon} label="Settings" />
                   
@@ -1382,6 +1603,252 @@ Created At: ${formatDate(project.createdAt)}
                 </div>
               </div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Global Floating Sticky Note (Module 4) */}
+        <div className="fixed bottom-10 right-10 z-[2000] flex flex-col items-end gap-4 pointer-events-none">
+           <AnimatePresence>
+              {isStickyOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="w-80 bg-black border-2 border-[#FFFF00] shadow-[0_0_100px_rgba(255,255,0,0.2)] overflow-hidden pointer-events-auto"
+                >
+                   <div className="p-4 bg-[#FFFF00] flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                         <FileText size={14} className="text-black" />
+                         <h4 className="text-[10px] font-black uppercase italic tracking-widest text-black">Mission Secure Note</h4>
+                      </div>
+                      <button onClick={() => setIsStickyOpen(false)} className="text-black/60 hover:text-black">
+                         <X size={14} />
+                      </button>
+                   </div>
+                   <div className="p-6 space-y-4">
+                      <textarea 
+                        placeholder="ENTER CRITICAL MISSION INTEL (KEYS, LOGINS, URLS)..."
+                        value={stickyNotes}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setStickyNotes(val);
+                          // Sync to DB (debounced would be better but let's try direct for now)
+                          if (user?.uid) {
+                             updateUserProfile(user.uid, { notes: val });
+                          }
+                        }}
+                        className="w-full h-64 bg-transparent text-xs font-bold text-[#FFFF00] uppercase italic tracking-[0.15em] outline-none resize-none placeholder:text-[#FFFF00]/10 leading-relaxed font-mono"
+                      />
+                      <div className="pt-4 border-t border-[#FFFF00]/10 flex justify-between items-center text-[8px] font-black text-[#FFFF00]/40 uppercase tracking-widest">
+                         <span className="flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-[#FFFF00] animate-pulse" />
+                            Encrypted & Synced
+                         </span>
+                         <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                   </div>
+                </motion.div>
+              )}
+           </AnimatePresence>
+           
+           <button 
+             onClick={() => setIsStickyOpen(!isStickyOpen)}
+             className={`w-16 h-16 bg-black border-2 border-[#FFFF00] flex items-center justify-center text-[#FFFF00] shadow-2xl hover:scale-110 active:scale-95 transition-all pointer-events-auto ${isStickyOpen ? 'rotate-90' : ''}`}
+           >
+              {isStickyOpen ? <X size={28} /> : <FileText size={28} />}
+           </button>
+        </div>
+
+        {/* Developer Right-Arrow Control Drawer */}
+        <AnimatePresence>
+          {isDrawerOpen && selectedProjectForDrawer && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsDrawerOpen(false)}
+                className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                className="fixed top-0 right-0 h-full w-full max-w-md z-[301] bg-black border-l border-[#FFFF00]/10 shadow-2xl flex flex-col"
+              >
+                {/* Header */}
+                <div className="p-8 border-b border-[#FFFF00]/10 flex items-center justify-between bg-black">
+                  <div>
+                    <h2 className="text-2xl font-black italic uppercase tracking-tighter text-[#FFFF00]">Control Center</h2>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FFFF00]/40">Active Intelligence: {selectedProjectForDrawer.businessName}</p>
+                  </div>
+                  <button 
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="p-3 bg-[#FFFF00]/5 hover:bg-[#FFFF00]/10 text-[#FFFF00] rounded transition-all"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                  {/* Status & Acceptance */}
+                  {(selectedProjectForDrawer.status?.toLowerCase() === 'pending' || selectedProjectForDrawer.status?.toLowerCase() === 'assigned' || !selectedProjectForDrawer.developerId) ? (
+                    <div className="p-8 bg-[#FFFF00]/5 border-2 border-[#FFFF00]/20 space-y-6">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="text-[#FFFF00]" size={24} />
+                        <h3 className="text-sm font-black uppercase italic tracking-widest text-[#FFFF00]">Mission Pending</h3>
+                      </div>
+                      <p className="text-xs font-bold text-[#FFFF00]/60 uppercase leading-relaxed tracking-wider">
+                        AWAITING DEVELOPER CONFIRMATION. ONCE ACCEPTED, CLIENT MESSAGING AND BILLING INFRASTRUCTURE WILL BE INITIALIZED.
+                      </p>
+                      <button 
+                        onClick={() => {
+                          setIsDrawerOpen(false);
+                          openAcceptPopup(selectedProjectForDrawer.id);
+                        }}
+                        className="w-full py-5 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,0,0.3)]"
+                      >
+                        [ ACCEPT_PROJECT ]
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-8">
+                      {/* Progress Slider (Module 3) */}
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-end">
+                          <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Mission Progress</h3>
+                          <span className="text-2xl font-black italic text-[#FFFF00]">{selectedProjectForDrawer.progress || 0}%</span>
+                        </div>
+                        <div className="relative pt-4">
+                          <input 
+                            type="range" 
+                            min="0" 
+                            max="100" 
+                            value={selectedProjectForDrawer.progress || 0}
+                            onChange={async (e) => {
+                              const newProgress = parseInt(e.target.value);
+                              const updatedProj = { ...selectedProjectForDrawer, progress: newProgress };
+                              setSelectedProjectForDrawer(updatedProj);
+                              
+                              // Sync to DB
+                              try {
+                                await updateProject(selectedProjectForDrawer.id, { progress: newProgress });
+                                // Toast would be too noisy here, maybe just update local state
+                              } catch (err) {
+                                toast.error('Progress sync failed');
+                              }
+                            }}
+                            className="w-full h-8 bg-white/5 appearance-none cursor-pointer outline-none overflow-hidden border border-[#FFFF00]/10 accent-[#FFFF00]"
+                          />
+                          <style>{`
+                            input[type=range]::-webkit-slider-thumb {
+                              -webkit-appearance: none;
+                              height: 32px;
+                              width: 16px;
+                              background: #FFFF00;
+                              cursor: pointer;
+                              border-radius: 0;
+                              box-shadow: -400px 0 0 400px rgba(255, 255, 0, 0.4);
+                            }
+                          `}</style>
+                        </div>
+                        <p className="text-[8px] font-bold text-[#FFFF00]/40 uppercase tracking-[0.3em] text-center italic">
+                          Manual Override: Slide to update global status indicators
+                        </p>
+                      </div>
+
+                      {/* Financial Intel */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
+                          <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Payout</p>
+                          <p className="text-lg font-black italic text-[#FFFF00]">₹{calculatePayout(selectedProjectForDrawer.plan).toLocaleString()}</p>
+                        </div>
+                        <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
+                          <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Plan</p>
+                          <p className="text-lg font-black italic uppercase">{selectedProjectForDrawer.plan || 'BASIC'}</p>
+                        </div>
+                      </div>
+
+                      {/* Status Control */}
+                      <div className="space-y-4">
+                        <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Deployment Status</h3>
+                        <select 
+                          value={selectedProjectForDrawer.status}
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            try {
+                              await updateProject(selectedProjectForDrawer.id, { status: newStatus });
+                              setSelectedProjectForDrawer({ ...selectedProjectForDrawer, status: newStatus as any });
+                              toast.success(`Deployment shifted to: ${newStatus.toUpperCase()}`);
+                            } catch (err) {
+                              toast.error('Status transition failed');
+                            }
+                          }}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-xs font-black uppercase italic tracking-widest text-white outline-none focus:border-[#FFFF00] transition-all"
+                        >
+                          <option value="Development Started" className="bg-black">Development Started</option>
+                          <option value="in-progress" className="bg-black">In Progress</option>
+                          <option value="Waiting for Review" className="bg-black">Under Review</option>
+                          <option value="completed" className="bg-black">Completed</option>
+                        </select>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="grid grid-cols-1 gap-3 pt-4">
+                         <button 
+                            onClick={() => {
+                              setActiveTab('chat');
+                              setIsDrawerOpen(false);
+                            }}
+                            className="w-full py-5 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] rounded-2xl font-black uppercase italic text-xs tracking-widest hover:bg-[#FFFF00] hover:text-black transition-all flex items-center justify-center gap-3"
+                          >
+                            COMMUNICATION HUB <MessageSquare size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDownloadPrompt(selectedProjectForDrawer)}
+                            className="w-full py-5 bg-white/5 border border-white/10 text-white/60 rounded-2xl font-black uppercase italic text-xs tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3"
+                          >
+                            DOWNLOAD BLUEPRINT <Download size={16} />
+                          </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Client Dossier */}
+                  <div className="pt-10 border-t border-[#FFFF00]/10 space-y-6">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Client Dossier</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-[#FFFF00]">
+                            <UserIcon size={20} />
+                         </div>
+                         <div>
+                            <p className="text-sm font-black italic uppercase">{selectedProjectForDrawer.userName || 'Private Identity'}</p>
+                            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{selectedProjectForDrawer.userEmail}</p>
+                         </div>
+                      </div>
+                      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-2">
+                        <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Business Brief</p>
+                        <p className="text-xs font-medium italic text-white/60 leading-relaxed uppercase">{selectedProjectForDrawer.description || 'No brief provided.'}</p>
+                      </div>
+                      <button 
+                        onClick={() => handleContact(selectedProjectForDrawer)}
+                        className="w-full py-4 border border-[#FFFF00]/20 text-[#FFFF00] rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:bg-[#FFFF00]/5 transition-all"
+                      >
+                        ESTABLISH SECURE CONTACT
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Footer Footer */}
+                <div className="p-8 border-t border-[#FFFF00]/10 bg-black/50 backdrop-blur-xl">
+                  <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/10 text-center">
+                    WebbyLaunch // Security Protocol Alpha-9 // Mission ID: #{selectedProjectForDrawer.id.slice(-8).toUpperCase()}
+                  </p>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </main>

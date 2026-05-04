@@ -217,7 +217,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     }
   }, [selectedProject?.developerId, selectedProject?.assignedTo]);
 
-  const hasAcceptedProject = projects.some(p => p.status !== 'Waiting for Review' && p.status !== 'Rejected');
+  const hasAcceptedProject = projects.some(p => 
+    !['Waiting for Review', 'Rejected', 'Under Review', 'pending', 'assigned'].includes(p.status?.toLowerCase() || '')
+  );
 
   const statusSteps = selectedProject?.status === 'Rejected' 
     ? ["Waiting for Review", "Under Review", "Declined"]
@@ -344,7 +346,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   // Removed old statusSteps and currentStepIndex from here
 
-  const primaryColor = '#c7c42a';
+  const primaryColor = '#FFFF00';
 
   return (
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black">
@@ -556,9 +558,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <nav className="flex-1 flex flex-col gap-5">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'analytics', icon: TrendingUp, label: 'Stats' },
-            { id: 'messages', icon: MessageCircle, label: 'Chat' },
-            { id: 'meetings', icon: Video, label: 'Meets' },
+            { id: 'analytics', icon: TrendingUp, label: 'Pulse' },
+            ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
             { id: 'payments', icon: CreditCard, label: 'Plans' },
             { id: 'settings', icon: Settings, label: 'User' },
           ].map((tab) => (
@@ -652,14 +653,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
           {/* Mobile Navigation */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
-              {[
-                { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-                { id: 'analytics', icon: TrendingUp, label: 'Stats' },
-                { id: 'progress', icon: FolderKanban, label: 'Progress' },
-                { id: 'messages', icon: MessageCircle, label: 'Chat' },
-                { id: 'meetings', icon: Video, label: 'Meets' },
-                { id: 'settings', icon: Settings, label: 'Settings' },
-              ].map((tab) => (
+          {[
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            { id: 'analytics', icon: TrendingUp, label: 'Stats' },
+            { id: 'progress', icon: FolderKanban, label: 'Progress' },
+            ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
+            { id: 'meetings', icon: Video, label: 'Meets' },
+            { id: 'settings', icon: Settings, label: 'Settings' },
+          ].map((tab) => (
               <button 
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -715,7 +716,37 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3, ease: "circOut" }}
+              className="relative"
             >
+              {!hasAcceptedProject && activeTab === 'dashboard' && (
+                <div className="absolute inset-0 z-50 bg-black flex items-center justify-center border-2 border-[#FFFF00]/10 overflow-hidden">
+                   <div className="absolute inset-0 bg-yellow-500/5 animate-pulse" />
+                   <div className="p-12 text-center space-y-10 relative z-10">
+                      <div className="inline-block px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-xs font-black uppercase tracking-[0.4em] animate-pulse">
+                        ACCESS_DENIED // SYSTEM_RESTRICTED
+                      </div>
+                      <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
+                        DASHBOARD<br/>
+                        <span className="text-[#FFFF00]">LOCKED.</span>
+                      </h2>
+                      <div className="p-6 bg-[#FFFF00]/5 border border-[#FFFF00]/10 space-y-4">
+                        <p className="text-sm font-bold text-[#FFFF00] uppercase tracking-[0.2em] italic">MISSION CRITICAL: BIO-SYNC PENDING</p>
+                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
+                          INTERNAL COMMUNICATION AND FINANCIAL TOOLS ARE OFFLINE UNTIL A DEVELOPER ACCEPTS THE MISSION.
+                        </p>
+                      </div>
+                      <button 
+                         onClick={() => setActiveTab('progress')}
+                         className="px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
+                      >
+                         PROCEED TO PROGRESS_HUB
+                      </button>
+                   </div>
+                </div>
+              )}
+                </div>
+              )}
+
               {activeTab === 'messages' ? (
                 <MessagesModule 
                   currentUser={user}
@@ -1407,23 +1438,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                        }} />
                                     </div>
                                   )}
-                                  {selectedProject.paymentStatus !== 'paid' && selectedProject.paymentStatus !== 'verifying' && (
-                                    <button 
-                                      onClick={async () => {
-                                        if (selectedProject.paymentLink) {
-                                          window.open(selectedProject.paymentLink, '_blank');
-                                          await updateProject(selectedProject.id, { paymentStatus: 'verifying' });
-                                          toast.success('Please complete payment. We will verify it.');
-                                        } else {
-                                          toast.error('Payment link is being generated by your developer.');
-                                        }
-                                      }}
-                                      className="flex items-center gap-2 bg-[#c7c42a] border border-[#c7c42a] px-8 py-3 rounded-xl text-black hover:scale-105 transition-all group"
-                                    >
-                                      <CreditCard size={16} />
-                                      <span className="text-[10px] font-black uppercase tracking-widest">Pay Now</span>
-                                    </button>
-                                  )}
+                                    {hasAcceptedProject && selectedProject.paymentStatus !== 'paid' && selectedProject.paymentStatus !== 'verifying' && (
+                                      <button 
+                                        onClick={async () => {
+                                          if (selectedProject.paymentLink) {
+                                            window.open(selectedProject.paymentLink, '_blank');
+                                            await updateProject(selectedProject.id, { paymentStatus: 'verifying' });
+                                            toast.success('Please complete payment. We will verify it.');
+                                          } else {
+                                            toast.error('Payment link is being generated by your developer.');
+                                          }
+                                        }}
+                                        className="flex items-center gap-2 bg-[#c7c42a] border border-[#c7c42a] px-8 py-3 rounded-xl text-black hover:scale-105 transition-all group"
+                                      >
+                                        <CreditCard size={16} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Pay Now</span>
+                                      </button>
+                                    )}
                                   {selectedProject.paymentStatus === 'verifying' && (
                                     <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-white/40 italic">
                                       <RefreshCw size={16} className="animate-spin" />

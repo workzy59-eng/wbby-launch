@@ -8,7 +8,7 @@ export interface UserProfile {
   role: 'admin' | 'client' | 'developer' | 'sales';
   phone?: string;
   username?: string;
-  status: 'online' | 'offline' | 'away' | 'active' | 'inactive' | RequestStatus;
+  status: 'online' | 'offline' | 'away' | 'active' | 'inactive' | 'suspended' | RequestStatus;
   lastSeen?: string | Timestamp;
   createdAt: string | Timestamp;
   updatedAt?: string | Timestamp;
@@ -20,6 +20,7 @@ export interface UserProfile {
   state?: string;
   city?: string;
   pincode?: string;
+  notes?: string; 
   // ... rest of the fields
   
   // Settings & Preferences
@@ -186,6 +187,9 @@ export interface Attendance {
   inTime?: string;
   outTime?: string;
   checkInTime?: string;
+  checkIn?: string;
+  checkOut?: string;
+  totalHours?: number;
 }
 
 export type ProjectStatus = 
