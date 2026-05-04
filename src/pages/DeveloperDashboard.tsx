@@ -838,20 +838,23 @@ Created At: ${formatDate(project.createdAt)}
                     </div>
                   </div>
 
-                  <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
+                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
                     {[
-                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500' },
-                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]' },
-                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', onClick: () => setActiveTab('pool') },
-                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]' }
+                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500', size: 'text-[85px]' },
+                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]', size: 'text-[85px]' },
+                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', size: 'text-[78px]', onClick: () => setActiveTab('pool') },
+                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]', size: 'text-[78px]' }
                     ].map((stat, i) => (
                       <div 
                         key={i} 
-                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2 ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
+                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col justify-between ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
                         onClick={stat.onClick}
                       >
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
-                        <h3 className={`text-2xl md:text-4xl font-black italic ${stat.color}`}>{stat.value}</h3>
+                        <h3 className={`${stat.size || 'text-2xl md:text-4xl'} font-black italic ${stat.color} leading-none mt-4`}>
+                          <span className="sr-only">{stat.label} value</span>
+                          <span>{stat.value}</span>
+                        </h3>
                       </div>
                     ))}
                   </div>
@@ -1668,184 +1671,177 @@ Created At: ${formatDate(project.createdAt)}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsDrawerOpen(false)}
-                className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm"
+                className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md"
               />
               <motion.div 
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
-                className="fixed top-0 right-0 h-full w-full max-w-md z-[301] bg-black border-l border-[#FFFF00]/10 shadow-2xl flex flex-col"
+                className="fixed top-0 right-0 h-full w-full max-w-2xl z-[301] bg-[#5B6D5E] border-l border-black shadow-2xl flex flex-col font-mono overflow-hidden"
               >
-                {/* Header */}
-                <div className="p-8 border-b border-[#FFFF00]/10 flex items-center justify-between bg-black">
-                  <div>
-                    <h2 className="text-2xl font-black italic uppercase tracking-tighter text-[#FFFF00]">Control Center</h2>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FFFF00]/40">Active Intelligence: {selectedProjectForDrawer.businessName}</p>
+                {/* Header - TITAN Design */}
+                <div className="p-10 border-b border-black/10 flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white leading-none">
+                      {selectedProjectForDrawer.businessName || 'TITAN'}
+                    </h2>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/60">Project Details</p>
                   </div>
-                  <button 
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="p-3 bg-[#FFFF00]/5 hover:bg-[#FFFF00]/10 text-[#FFFF00] rounded transition-all"
-                  >
-                    <X size={20} />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => handleDownloadClientDetails(selectedProjectForDrawer)}
+                      className="bg-[#D4E157] text-black px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 hover:bg-[#c7d14d] transition-all"
+                    >
+                      <Download size={14} /> Details
+                    </button>
+                    <button 
+                      onClick={() => handleDownloadPrompt(selectedProjectForDrawer)}
+                      className="bg-[#00E5FF] text-black px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 hover:bg-[#00d5ed] transition-all"
+                    >
+                      <Plus size={14} /> AI Prompt
+                    </button>
+                    <button 
+                      onClick={() => setIsDrawerOpen(false)}
+                      className="text-white hover:text-black transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                  {/* Status & Acceptance */}
-                  {(selectedProjectForDrawer.status?.toLowerCase() === 'pending' || selectedProjectForDrawer.status?.toLowerCase() === 'assigned' || !selectedProjectForDrawer.developerId) ? (
-                    <div className="p-8 bg-[#FFFF00]/5 border-2 border-[#FFFF00]/20 space-y-6">
-                      <div className="flex items-center gap-3">
-                        <AlertCircle className="text-[#FFFF00]" size={24} />
-                        <h3 className="text-sm font-black uppercase italic tracking-widest text-[#FFFF00]">Mission Pending</h3>
+                {/* Tabs */}
+                <div className="px-10 flex gap-4 mt-6">
+                  <button className="bg-[#D4E157] text-black px-8 py-2 text-[10px] font-black uppercase">Overview</button>
+                  <button className="bg-transparent text-black/40 px-8 py-2 text-[10px] font-black uppercase hover:text-black">Preview</button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar text-black">
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Client Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Client Information</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">Name</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.userName || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Email</span>
+                        <span className="text-right lowercase truncate">{selectedProjectForDrawer.userEmail || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Phone</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.userPhone || 'N/A'}</span>
                       </div>
-                      <p className="text-xs font-bold text-[#FFFF00]/60 uppercase leading-relaxed tracking-wider">
-                        AWAITING DEVELOPER CONFIRMATION. ONCE ACCEPTED, CLIENT MESSAGING AND BILLING INFRASTRUCTURE WILL BE INITIALIZED.
-                      </p>
-                      <button 
-                        onClick={() => {
-                          setIsDrawerOpen(false);
-                          openAcceptPopup(selectedProjectForDrawer.id);
-                        }}
-                        className="w-full py-5 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,0,0.3)]"
-                      >
-                        [ ACCEPT_PROJECT ]
-                      </button>
                     </div>
-                  ) : (
-                    <div className="space-y-8">
-                      {/* Progress Slider (Module 3) */}
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-end">
-                          <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Mission Progress</h3>
-                          <span className="text-2xl font-black italic text-[#FFFF00]">{selectedProjectForDrawer.progress || 0}%</span>
-                        </div>
-                        <div className="relative pt-4">
-                          <input 
-                            type="range" 
-                            min="0" 
-                            max="100" 
-                            value={selectedProjectForDrawer.progress || 0}
-                            onChange={async (e) => {
-                              const newProgress = parseInt(e.target.value);
-                              const updatedProj = { ...selectedProjectForDrawer, progress: newProgress };
-                              setSelectedProjectForDrawer(updatedProj);
-                              
-                              // Sync to DB
-                              try {
-                                await updateProject(selectedProjectForDrawer.id, { progress: newProgress });
-                                // Toast would be too noisy here, maybe just update local state
-                              } catch (err) {
-                                toast.error('Progress sync failed');
-                              }
-                            }}
-                            className="w-full h-8 bg-white/5 appearance-none cursor-pointer outline-none overflow-hidden border border-[#FFFF00]/10 accent-[#FFFF00]"
-                          />
-                          <style>{`
-                            input[type=range]::-webkit-slider-thumb {
-                              -webkit-appearance: none;
-                              height: 32px;
-                              width: 16px;
-                              background: #FFFF00;
-                              cursor: pointer;
-                              border-radius: 0;
-                              box-shadow: -400px 0 0 400px rgba(255, 255, 0, 0.4);
-                            }
-                          `}</style>
-                        </div>
-                        <p className="text-[8px] font-bold text-[#FFFF00]/40 uppercase tracking-[0.3em] text-center italic">
-                          Manual Override: Slide to update global status indicators
+
+                    {/* Business Details */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Business Details</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">Business Name</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.businessName || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Business Phone</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.userPhone || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Location</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.location || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Project Overview */}
+                    <div className="space-y-4 bg-black/5 p-6 border border-black/10">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Project Overview</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">Type</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.businessType || 'Website'}</span>
+                        <span className="text-black/40 uppercase">Plan</span>
+                        <span className="text-right uppercase text-[#D4E157]">{selectedProjectForDrawer.plan || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Status</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.status || 'Pending'}</span>
+                        <span className="text-black/40 uppercase">Progress</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.progress || 0}%</span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Description</h3>
+                      <div className="bg-black/10 p-4 h-32 overflow-hidden">
+                        <p className="text-[10px] font-bold uppercase leading-relaxed text-black/60 italic">
+                          {selectedProjectForDrawer.description || 'No description provided.'}
                         </p>
                       </div>
-
-                      {/* Financial Intel */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Payout</p>
-                          <p className="text-lg font-black italic text-[#FFFF00]">₹{calculatePayout(selectedProjectForDrawer.plan).toLocaleString()}</p>
-                        </div>
-                        <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Plan</p>
-                          <p className="text-lg font-black italic uppercase">{selectedProjectForDrawer.plan || 'BASIC'}</p>
-                        </div>
-                      </div>
-
-                      {/* Status Control */}
-                      <div className="space-y-4">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Deployment Status</h3>
-                        <select 
-                          value={selectedProjectForDrawer.status}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value;
-                            try {
-                              await updateProject(selectedProjectForDrawer.id, { status: newStatus });
-                              setSelectedProjectForDrawer({ ...selectedProjectForDrawer, status: newStatus as any });
-                              toast.success(`Deployment shifted to: ${newStatus.toUpperCase()}`);
-                            } catch (err) {
-                              toast.error('Status transition failed');
-                            }
-                          }}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-xs font-black uppercase italic tracking-widest text-white outline-none focus:border-[#FFFF00] transition-all"
-                        >
-                          <option value="Development Started" className="bg-black">Development Started</option>
-                          <option value="in-progress" className="bg-black">In Progress</option>
-                          <option value="Waiting for Review" className="bg-black">Under Review</option>
-                          <option value="completed" className="bg-black">Completed</option>
-                        </select>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="grid grid-cols-1 gap-3 pt-4">
-                         <button 
-                            onClick={() => {
-                              setActiveTab('chat');
-                              setIsDrawerOpen(false);
-                            }}
-                            className="w-full py-5 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] rounded-2xl font-black uppercase italic text-xs tracking-widest hover:bg-[#FFFF00] hover:text-black transition-all flex items-center justify-center gap-3"
-                          >
-                            COMMUNICATION HUB <MessageSquare size={16} />
-                          </button>
-                          <button 
-                            onClick={() => handleDownloadPrompt(selectedProjectForDrawer)}
-                            className="w-full py-5 bg-white/5 border border-white/10 text-white/60 rounded-2xl font-black uppercase italic text-xs tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3"
-                          >
-                            DOWNLOAD BLUEPRINT <Download size={16} />
-                          </button>
-                      </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Client Dossier */}
-                  <div className="pt-10 border-t border-[#FFFF00]/10 space-y-6">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Client Dossier</h3>
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Domain Preferences */}
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-[#FFFF00]">
-                            <UserIcon size={20} />
-                         </div>
-                         <div>
-                            <p className="text-sm font-black italic uppercase">{selectedProjectForDrawer.userName || 'Private Identity'}</p>
-                            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{selectedProjectForDrawer.userEmail}</p>
-                         </div>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Preferences</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">1st Preference</span>
+                        <span className="text-right uppercase text-[#D4E157]">{selectedProjectForDrawer.businessName?.toLowerCase()}.com</span>
+                        <span className="text-black/40 uppercase">2nd Preference</span>
+                        <span className="text-right uppercase text-[#D4E157]">N/A</span>
+                        <span className="text-black/40 uppercase">3rd Preference</span>
+                        <span className="text-right uppercase text-[#D4E157]">N/A</span>
                       </div>
-                      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-2">
-                        <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Business Brief</p>
-                        <p className="text-xs font-medium italic text-white/60 leading-relaxed uppercase">{selectedProjectForDrawer.description || 'No brief provided.'}</p>
-                      </div>
-                      <button 
-                        onClick={() => handleContact(selectedProjectForDrawer)}
-                        className="w-full py-4 border border-[#FFFF00]/20 text-[#FFFF00] rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:bg-[#FFFF00]/5 transition-all"
-                      >
-                        ESTABLISH SECURE CONTACT
-                      </button>
                     </div>
+
+                    {/* Selected Features */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Selected Features</h3>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {['Custom UI', 'Responsive', 'CMS', 'SEO'].map(f => (
+                          <span key={f} className="px-3 py-1 bg-black/10 text-[8px] font-black uppercase">{f}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Timeline */}
+                  <div className="space-y-4 bg-black/5 p-6 border border-black/10">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Timeline</h3>
+                    <div className="grid grid-cols-4 gap-4 text-center">
+                      <div>
+                        <p className="text-black/40 text-[8px] font-black uppercase mb-1">Start Date</p>
+                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">{formatDate(selectedProjectForDrawer.createdAt)}</p>
+                      </div>
+                      <div>
+                        <p className="text-black/40 text-[8px] font-black uppercase mb-1">Deadline</p>
+                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">N/A</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Internal Notes */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Internal Notes</h3>
+                    <div className="bg-black/5 p-6 border border-[#D4E157]/20">
+                      <p className="text-[10px] font-bold uppercase italic text-[#D4E157]/60">No internal notes added.</p>
+                    </div>
+                  </div>
+
+                  {/* Files & Assets */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Files & Assets</h3>
                   </div>
                 </div>
 
-                {/* Footer Footer Footer */}
-                <div className="p-8 border-t border-[#FFFF00]/10 bg-black/50 backdrop-blur-xl">
-                  <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/10 text-center">
-                    WebbyLaunch // Security Protocol Alpha-9 // Mission ID: #{selectedProjectForDrawer.id.slice(-8).toUpperCase()}
-                  </p>
+                {/* Footer Actions */}
+                <div className="p-10 border-t border-black/10 grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => {
+                      setEditingProject(selectedProjectForDrawer);
+                      setIsDrawerOpen(false);
+                    }}
+                    className="bg-[#D4E157] text-black py-4 text-xs font-black uppercase italic tracking-widest hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    Edit Project
+                  </button>
+                  <button 
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="bg-black/20 text-white/60 py-4 text-xs font-black uppercase italic tracking-widest hover:bg-black/30 transition-all font-mono"
+                  >
+                    Close
+                  </button>
                 </div>
               </motion.div>
             </>
