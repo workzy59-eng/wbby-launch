@@ -840,18 +840,18 @@ Created At: ${formatDate(project.createdAt)}
 
                     <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
                     {[
-                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500', size: 'text-[85px]' },
-                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]', size: 'text-[85px]' },
-                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', size: 'text-[78px]', onClick: () => setActiveTab('pool') },
-                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]', size: 'text-[78px]' }
+                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500', size: 'text-6xl md:text-[85px]' },
+                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]', size: 'text-6xl md:text-[85px]' },
+                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', size: 'text-5xl md:text-[78px]', onClick: () => setActiveTab('pool') },
+                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]', size: 'text-3xl md:text-[60px] xl:text-[78px]', onClick: () => setActiveTab('earnings') }
                     ].map((stat, i) => (
                       <div 
                         key={i} 
-                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col justify-between ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
+                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col justify-between min-h-[200px] ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
                         onClick={stat.onClick}
                       >
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
-                        <h3 className={`${stat.size || 'text-2xl md:text-4xl'} font-black italic ${stat.color} leading-none mt-4`}>
+                        <h3 className={`${stat.size} font-black italic ${stat.color} leading-none mt-4 overflow-hidden text-ellipsis`}>
                           <span className="sr-only">{stat.label} value</span>
                           <span>{stat.value}</span>
                         </h3>
@@ -1722,7 +1722,7 @@ Created At: ${formatDate(project.createdAt)}
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Client Information</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
                         <span className="text-black/40 uppercase">Name</span>
-                        <span className="text-right uppercase">{selectedProjectForDrawer.userName || 'N/A'}</span>
+                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.userName || 'N/A'}</span>
                         <span className="text-black/40 uppercase">Email</span>
                         <span className="text-right lowercase truncate">{selectedProjectForDrawer.userEmail || 'N/A'}</span>
                         <span className="text-black/40 uppercase">Phone</span>
@@ -1735,24 +1735,24 @@ Created At: ${formatDate(project.createdAt)}
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Business Details</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
                         <span className="text-black/40 uppercase">Business Name</span>
-                        <span className="text-right uppercase">{selectedProjectForDrawer.businessName || 'N/A'}</span>
+                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.businessName || 'N/A'}</span>
                         <span className="text-black/40 uppercase">Business Phone</span>
                         <span className="text-right uppercase">{selectedProjectForDrawer.userPhone || 'N/A'}</span>
                         <span className="text-black/40 uppercase">Location</span>
-                        <span className="text-right uppercase">{selectedProjectForDrawer.location || 'N/A'}</span>
+                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.location || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-8">
                     {/* Project Overview */}
-                    <div className="space-y-4 bg-black/5 p-6 border border-black/10">
+                    <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-sm">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Project Overview</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
                         <span className="text-black/40 uppercase">Type</span>
                         <span className="text-right uppercase">{selectedProjectForDrawer.businessType || 'Website'}</span>
                         <span className="text-black/40 uppercase">Plan</span>
-                        <span className="text-right uppercase text-[#D4E157]">{selectedProjectForDrawer.plan || 'N/A'}</span>
+                        <span className="text-right uppercase text-[#D4E157] font-black">{selectedProjectForDrawer.plan || 'N/A'}</span>
                         <span className="text-black/40 uppercase">Status</span>
                         <span className="text-right uppercase">{selectedProjectForDrawer.status || 'Pending'}</span>
                         <span className="text-black/40 uppercase">Progress</span>
@@ -1763,8 +1763,8 @@ Created At: ${formatDate(project.createdAt)}
                     {/* Description */}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Description</h3>
-                      <div className="bg-black/10 p-4 h-32 overflow-hidden">
-                        <p className="text-[10px] font-bold uppercase leading-relaxed text-black/60 italic">
+                      <div className="bg-black/10 p-4 h-32 overflow-y-auto custom-scrollbar-slim rounded-sm">
+                        <p className="text-[10px] font-bold uppercase leading-relaxed text-black/70 italic">
                           {selectedProjectForDrawer.description || 'No description provided.'}
                         </p>
                       </div>
@@ -1777,7 +1777,7 @@ Created At: ${formatDate(project.createdAt)}
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Preferences</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
                         <span className="text-black/40 uppercase">1st Preference</span>
-                        <span className="text-right uppercase text-[#D4E157]">{selectedProjectForDrawer.businessName?.toLowerCase()}.com</span>
+                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.businessName?.toLowerCase()?.replace(/\s+/g, '') || 'titan'}.com</span>
                         <span className="text-black/40 uppercase">2nd Preference</span>
                         <span className="text-right uppercase text-[#D4E157]">N/A</span>
                         <span className="text-black/40 uppercase">3rd Preference</span>
@@ -1789,15 +1789,15 @@ Created At: ${formatDate(project.createdAt)}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Selected Features</h3>
                       <div className="flex flex-wrap gap-2 pt-2">
-                        {['Custom UI', 'Responsive', 'CMS', 'SEO'].map(f => (
-                          <span key={f} className="px-3 py-1 bg-black/10 text-[8px] font-black uppercase">{f}</span>
+                        {['Custom UI', 'Responsive Design', 'CMS Integration', 'SEO Optimized', 'Fast Loading'].map(f => (
+                          <span key={f} className="px-3 py-1 bg-black/10 text-[9px] font-black uppercase border border-white/5">{f}</span>
                         ))}
                       </div>
                     </div>
                   </div>
 
                   {/* Timeline */}
-                  <div className="space-y-4 bg-black/5 p-6 border border-black/10">
+                  <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-sm">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Timeline</h3>
                     <div className="grid grid-cols-4 gap-4 text-center">
                       <div>
@@ -1806,7 +1806,11 @@ Created At: ${formatDate(project.createdAt)}
                       </div>
                       <div>
                         <p className="text-black/40 text-[8px] font-black uppercase mb-1">Deadline</p>
-                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">N/A</p>
+                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">TBD</p>
+                      </div>
+                      <div>
+                        <p className="text-black/40 text-[8px] font-black uppercase mb-1">Last Update</p>
+                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">{formatDate(selectedProjectForDrawer.updatedAt)}</p>
                       </div>
                     </div>
                   </div>
@@ -1814,14 +1818,25 @@ Created At: ${formatDate(project.createdAt)}
                   {/* Internal Notes */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Internal Notes</h3>
-                    <div className="bg-black/5 p-6 border border-[#D4E157]/20">
-                      <p className="text-[10px] font-bold uppercase italic text-[#D4E157]/60">No internal notes added.</p>
+                    <div className="bg-[#D4E157]/5 p-6 border border-[#D4E157]/20 rounded-sm">
+                      <p className="text-[10px] font-bold uppercase italic text-[#D4E157]/80">
+                        {selectedProjectForDrawer.notes || 'No internal notes added by the system or team.'}
+                      </p>
                     </div>
                   </div>
 
                   {/* Files & Assets */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Files & Assets</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all">
+                          <div className="flex items-center gap-3">
+                            <FileText size={16} className="text-black/40" />
+                            <span className="text-[10px] font-bold uppercase">Specifications.pdf</span>
+                          </div>
+                          <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
+                       </div>
+                    </div>
                   </div>
                 </div>
 
