@@ -410,14 +410,47 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
   const handleDownloadClientDetails = (project: Project) => {
     const details = `
-Project: ${project.businessName}
-Client: ${project.userName}
-Email: ${project.userEmail}
-Status: ${project.status}
-Business Type: ${project.businessType}
-Description: ${project.description}
-Created At: ${formatDate(project.createdAt)}
-    `.trim();
+WEBBYLAUNCH MISSION INTELLIGENCE REPORT
+=======================================
+
+CLIENT PROFILE
+--------------
+NAME: ${project.userName || 'N/A'}
+EMAIL: ${project.userEmail || 'N/A'}
+PHONE: ${project.userPhone || 'N/A'}
+COUNTRY: ${project.country || 'INDIA'}
+
+BUSINESS INTEL
+--------------
+BRAND: ${project.businessName || 'N/A'}
+CATEGORY: ${project.businessType || 'N/A'}
+CONFIG: ${project.storeType === 'online_store' ? 'ONLINE STORE / SHIPMENT' : 'LOCAL STORE / WALK-IN'}
+REGION: ${project.locationState || 'N/A'}
+CITY/LOCATION: ${project.city || 'N/A'}
+BIZ PHONE: ${project.businessPhone || 'N/A'}
+BIZ EMAIL: ${project.businessEmail || 'N/A'}
+
+TECHNICAL SPECIFICATIONS
+------------------------
+SYSTEM PLAN: ${project.plan?.toUpperCase() || 'BASIC'}
+PRIMARY COLOR: ${project.primaryColor || '#C7C42A'}
+SECONDARY COLOR: ${project.secondaryColor || '#000000'}
+SELECTED DOMAIN: ${project.domain || 'PENDING'}
+DOMAIN PREFERENCES: ${project.domainPreferences?.join(', ') || 'N/A'}
+FEATURES: ${project.selectedFeatures?.join(', ') || 'DEFAULT STACK'}
+
+MISSION PARAMETERS
+------------------
+ID: ${project.id}
+STATUS: ${project.status}
+PROGRESS: ${project.progress}%
+CREATED: ${formatDate(project.createdAt)}
+
+DESCRIPTION:
+${project.description || 'NO DESCRIPTION PROVIDED.'}
+=======================================
+PRECISION BUILT BY WEBBYLAUNCH
+`.trim();
 
     const element = document.createElement("a");
     const file = new Blob([details], {type: 'text/plain'});
@@ -454,17 +487,43 @@ Created At: ${formatDate(project.createdAt)}
   };
 
   const handleDownloadPrompt = (project: Project) => {
-    if (!project.aiPrompt) {
-      toast.error('No AI prompt available for this project');
-      return;
-    }
+    const blueprintPrompt = `
+TITAN AI MISSION BLUEPRINT: ${project.businessName.toUpperCase()}
+=======================================================
+
+MISSION OBJECTIVE:
+Construct a high-performance ${project.businessType} for a ${project.storeType === 'online_store' ? 'GLOBAL ECOMMERCE' : 'LOCAL SERVICE'} entity.
+
+GEOGRAPHIC FOCUS:
+Located in ${project.city || 'N/A'}, ${project.locationState || 'N/A'} (${project.country || 'INDIA'}).
+
+VISUAL PROTOCOL:
+- PRIMARY DEPOT: ${project.primaryColor || '#C7C42A'}
+- SECONDARY DEPOT: ${project.secondaryColor || '#000000'}
+- DESIGN PHILOSOPHY: MODERNS, CLEAN, SHARP EDGES.
+
+FUNCTIONAL REQUIREMENTS:
+${project.selectedFeatures?.map(f => `- ${f.toUpperCase()}`).join('\n') || '- CORE SYSTEM ARCHITECTURE'}
+- MOBILE FLUIDITY: MANDATORY (100% RESPONSIVE)
+- LATENCY TARGET: < 2S LOAD TIME
+
+CORE CONTENT & INTEL:
+${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
+
+INSTRUCTIONS:
+Generate source code focusing on performance and visual precision as per the TITAN Design Framework.
+=======================================================
+AI AGENT PROTOCOL: WEBBYLAUNCH-TITAN-01
+`.trim();
+
+    const finalPrompt = project.aiPrompt || blueprintPrompt;
     const element = document.createElement("a");
-    const file = new Blob([project.aiPrompt], {type: 'text/plain'});
+    const file = new Blob([finalPrompt], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = `${project.businessName}_prompt.txt`;
+    element.download = `${project.businessName}_ai_blueprint.txt`;
     document.body.appendChild(element);
     element.click();
-    toast.success('Prompt downloaded');
+    toast.success('AI Blueprint downloaded');
   };
 
   const calculateAttendancePayout = () => {
@@ -1727,6 +1786,11 @@ Created At: ${formatDate(project.createdAt)}
                         <span className="text-right lowercase truncate">{selectedProjectForDrawer.userEmail || 'N/A'}</span>
                         <span className="text-black/40 uppercase">Phone</span>
                         <span className="text-right uppercase">{selectedProjectForDrawer.userPhone || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Country</span>
+                        <span className="text-right uppercase flex items-center justify-end gap-2">
+                          {selectedProjectForDrawer.country === 'India' ? '🇮🇳' : selectedProjectForDrawer.country === 'US' ? '🇺🇸' : '🇬🇧'} 
+                          {selectedProjectForDrawer.country || 'India'}
+                        </span>
                       </div>
                     </div>
 
@@ -1737,9 +1801,11 @@ Created At: ${formatDate(project.createdAt)}
                         <span className="text-black/40 uppercase">Business Name</span>
                         <span className="text-right uppercase truncate">{selectedProjectForDrawer.businessName || 'N/A'}</span>
                         <span className="text-black/40 uppercase">Business Phone</span>
-                        <span className="text-right uppercase">{selectedProjectForDrawer.userPhone || 'N/A'}</span>
-                        <span className="text-black/40 uppercase">Location</span>
-                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.location || 'N/A'}</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.businessPhone || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Configuration</span>
+                        <span className="text-right uppercase font-black text-[#D4E157]">{selectedProjectForDrawer.storeType === 'online_store' ? 'ONLINE STORE' : 'LOCAL STORE'}</span>
+                        <span className="text-black/40 uppercase">Region</span>
+                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.locationState || 'N/A'}, {selectedProjectForDrawer.city || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
@@ -1777,11 +1843,11 @@ Created At: ${formatDate(project.createdAt)}
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Preferences</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
                         <span className="text-black/40 uppercase">1st Preference</span>
-                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.businessName?.toLowerCase()?.replace(/\s+/g, '') || 'titan'}.com</span>
+                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.domainPreferences?.[0] || 'N/A'}</span>
                         <span className="text-black/40 uppercase">2nd Preference</span>
-                        <span className="text-right uppercase text-[#D4E157]">N/A</span>
+                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.domainPreferences?.[1] || 'N/A'}</span>
                         <span className="text-black/40 uppercase">3rd Preference</span>
-                        <span className="text-right uppercase text-[#D4E157]">N/A</span>
+                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.domainPreferences?.[2] || 'N/A'}</span>
                       </div>
                     </div>
 
@@ -1789,9 +1855,13 @@ Created At: ${formatDate(project.createdAt)}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Selected Features</h3>
                       <div className="flex flex-wrap gap-2 pt-2">
-                        {['Custom UI', 'Responsive Design', 'CMS Integration', 'SEO Optimized', 'Fast Loading'].map(f => (
-                          <span key={f} className="px-3 py-1 bg-black/10 text-[9px] font-black uppercase border border-white/5">{f}</span>
-                        ))}
+                        {selectedProjectForDrawer.selectedFeatures && selectedProjectForDrawer.selectedFeatures.length > 0 ? (
+                          selectedProjectForDrawer.selectedFeatures.map(f => (
+                            <span key={f} className="px-3 py-1 bg-black/10 text-[9px] font-black uppercase border border-white/5">{f}</span>
+                          ))
+                        ) : (
+                          <span className="text-[9px] font-black text-black/40">NO FEATURES SELECTED</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1820,7 +1890,7 @@ Created At: ${formatDate(project.createdAt)}
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Internal Notes</h3>
                     <div className="bg-[#D4E157]/5 p-6 border border-[#D4E157]/20 rounded-sm">
                       <p className="text-[10px] font-bold uppercase italic text-[#D4E157]/80">
-                        {selectedProjectForDrawer.notes || 'No internal notes added by the system or team.'}
+                        {selectedProjectForDrawer.internalNotes || 'No internal notes added by the system or team.'}
                       </p>
                     </div>
                   </div>
@@ -2124,6 +2194,32 @@ Created At: ${formatDate(project.createdAt)}
                   />
                 </div>
 
+                <div className="space-y-4 bg-white/5 p-6 rounded-2xl border border-white/10">
+                   <h4 className="text-[8px] font-black uppercase tracking-[0.3em] text-[#c7c42a] mb-4">Core Intelligence</h4>
+                   <div className="space-y-4">
+                      <div>
+                        <label className="text-[8px] font-bold text-white/40 uppercase ml-2">Business Phone</label>
+                        <input 
+                          type="text"
+                          value={editingProject.businessPhone || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, businessPhone: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white font-bold outline-none focus:border-[#c7c42a]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-white/40 uppercase ml-2">Store Type</label>
+                        <select 
+                          value={editingProject.storeType || 'online_store'}
+                          onChange={(e) => setEditingProject({ ...editingProject, storeType: e.target.value as any })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white font-bold outline-none focus:border-[#c7c42a]"
+                        >
+                          <option value="online_store" className="bg-[#111]">Online Store</option>
+                          <option value="local_store" className="bg-[#111]">Local Store</option>
+                        </select>
+                      </div>
+                   </div>
+                </div>
+
                 {editingProject.paymentStatus === 'verifying' && (
                   <div className="p-6 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 space-y-4">
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic text-center">Client claims payment is completed. confirm?</p>
@@ -2183,6 +2279,8 @@ Created At: ${formatDate(project.createdAt)}
                         paymentLink: editingProject.paymentLink,
                         paymentLinkBasic: editingProject.paymentLinkBasic,
                         paymentLinkPremium: editingProject.paymentLinkPremium,
+                        businessPhone: editingProject.businessPhone,
+                        storeType: editingProject.storeType,
                         updatedAt: new Date().toISOString()
                       });
                       toast.success('Project details updated');

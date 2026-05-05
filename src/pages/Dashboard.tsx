@@ -1490,9 +1490,20 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 </div>
                               </div>
                               <div className="space-y-6">
-                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Project Details</h3>
-                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 text-center">
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Project information is being processed</p>
+                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Project Intel</h3>
+                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-3">
+                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                    <span className="text-white/20">Store Type</span>
+                                    <span className="text-[#c7c42a]">{selectedProject.storeType === 'online_store' ? 'Online / Shipping' : 'Local / Walk-in'}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                    <span className="text-white/20">Region</span>
+                                    <span className="text-white/70 italic">{selectedProject.country || 'India'} ({selectedProject.locationState || 'N/A'})</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                    <span className="text-white/20">Identity</span>
+                                    <span className="text-white/70">{selectedProject.businessName?.substring(0, 15)}...</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>

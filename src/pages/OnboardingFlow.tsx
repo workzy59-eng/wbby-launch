@@ -222,11 +222,12 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       businessNumber: '',
       businessEmail: '',
       businessPhone: '',
+      storeType: 'online_store' as 'online_store' | 'local_store',
       addressLine: '',
       city: '',
       state: '',
       pincode: '',
-      country: 'India',
+      country: 'India' as 'India' | 'US' | 'UK',
       businessType: '',
       otherBusinessType: '',
       description: '',
@@ -331,8 +332,9 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.businessPhone || !validatePhone(formData.businessPhone)) invalid.push('businessPhone');
         if (!formData.addressLine) invalid.push('addressLine');
         if (!formData.city) invalid.push('city');
-        if (!formData.state) invalid.push('state');
+        if (formData.country === 'India' && !formData.state) invalid.push('state');
         if (!formData.pincode) invalid.push('pincode');
+        if (!formData.country) invalid.push('country');
         if (req.description && !formData.description) invalid.push('description');
         break;
       case 3: // Features Select
@@ -775,11 +777,60 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Details</h3>
-              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Help us understand your brand ecosystem</p>
+              <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Intelligence</h3>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Define your operational footprint</p>
             </div>
 
             <div className="space-y-6">
+              {/* Store Type Selection */}
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Store Configuration <span className="text-error">*</span></label>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { id: 'online_store', label: 'Online Store', desc: 'Ships anywhere' },
+                    { id: 'local_store', label: 'Local Store', desc: 'Walk-in location' }
+                  ].map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => handleInputChange('storeType', type.id)}
+                      className={`p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-1 ${
+                        formData.storeType === type.id 
+                          ? 'bg-primary/10 border-primary' 
+                          : 'bg-white/5 border-white/5 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 hover:border-white/10'
+                      }`}
+                    >
+                      <span className={`text-lg font-black italic uppercase tracking-tighter ${formData.storeType === type.id ? 'text-primary' : 'text-white'}`}>{type.label}</span>
+                      <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">{type.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Country Selection */}
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Operational Region <span className="text-error">*</span></label>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { id: 'India', label: 'India', flag: '🇮🇳' },
+                    { id: 'US', label: 'United States', flag: '🇺🇸' },
+                    { id: 'UK', label: 'United Kingdom', flag: '🇬🇧' }
+                  ].map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => handleInputChange('country', c.id)}
+                      className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center gap-2 ${
+                        formData.country === c.id 
+                          ? 'bg-primary/10 border-primary scale-[1.02]' 
+                          : 'bg-white/5 border-white/5 opacity-40 hover:opacity-100 hover:border-white/10'
+                      }`}
+                    >
+                      <span className="text-3xl">{c.flag}</span>
+                      <span className={`text-[10px] font-black italic uppercase tracking-tighter ${formData.country === c.id ? 'text-primary' : 'text-white'}`}>{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Name <span className="text-error">*</span></label>
@@ -841,14 +892,33 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               </div>
 
               <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Location Selection <span className="text-error">*</span></label>
-                <StateCityDropdown 
-                  onSelect={(state, city) => {
-                    handleInputChange('state', state);
-                    handleInputChange('city', city);
-                  }}
-                  error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
-                />
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Location Details <span className="text-error">*</span></label>
+                {formData.country === 'India' ? (
+                  <StateCityDropdown 
+                    onSelect={(state, city) => {
+                      handleInputChange('state', state);
+                      handleInputChange('city', city);
+                    }}
+                    error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      className={getInputClass('city', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.city}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      placeholder="ENTER CITY"
+                    />
+                    <input
+                      type="text"
+                      className={getInputClass('state', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.state}
+                      onChange={(e) => handleInputChange('state', e.target.value)}
+                      placeholder={formData.country === 'US' ? "ENTER STATE (E.G. NY)" : "ENTER COUNTY/REGION"}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">

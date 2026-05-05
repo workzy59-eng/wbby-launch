@@ -227,6 +227,10 @@ export interface Project {
   state: string;
   pincode: string;
   country: string;
+  storeType: 'online_store' | 'local_store';
+  locationState?: string;
+  preferredColors?: string[];
+  preferredDomains?: string[];
   description: string;
   websiteName: string;
   primaryColor: string;
@@ -251,6 +255,7 @@ export interface Project {
   internalNotes?: string;
   estimatedCompletion: string | Timestamp | null;
   createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
   rejectionReason?: string;
   isDeleted?: boolean;
   isLocked: boolean; // For the lock system
