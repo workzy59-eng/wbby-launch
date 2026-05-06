@@ -32,8 +32,10 @@ service cloud.firestore {
     function isWhitelistedDeveloper() {
       return isAuth() && (
         isAdmin() ||
-        (request.auth.token.email != null && 
-         request.auth.token.email.lower() == 'aither2029@gmail.com')
+        (request.auth.token.email != null && (
+         request.auth.token.email.lower() == 'aither2029@gmail.com' ||
+         request.auth.token.email.lower() == 'sain17296174@gmail.com'
+        ))
       );
     }
 
