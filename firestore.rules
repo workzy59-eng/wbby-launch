@@ -25,7 +25,6 @@ service cloud.firestore {
     function isAdmin() {
       return isAuth() && (
         request.auth.token.email != null && 
-        request.auth.token.email_verified == true &&
         request.auth.token.email.lower() == 'workzy59@gmail.com'
       );
     }
@@ -34,7 +33,6 @@ service cloud.firestore {
       return isAuth() && (
         isAdmin() ||
         (request.auth.token.email != null && 
-         request.auth.token.email_verified == true &&
          request.auth.token.email.lower() == 'aither2029@gmail.com')
       );
     }
@@ -132,13 +130,13 @@ service cloud.firestore {
         isAdmin() || 
         isWhitelistedDeveloper() || 
         resource.data.userId == request.auth.uid || 
-        resource.data.role == 'admin'
+        resource.data.get('role', '') == 'admin'
       );
       allow list: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() || 
         (resource.data.userId == request.auth.uid) || 
-        (resource.data.role == 'admin')
+        (resource.data.get('role', '') == 'admin')
       );
       allow create: if isAuth();
       allow update, delete: if isAuth() && (

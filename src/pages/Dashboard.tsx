@@ -724,8 +724,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#FFFF00]/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FFFF00]/5 rounded-full blur-[120px]" />
 
-                  <div className="max-w-2xl w-full text-center space-y-10 relative z-10 p-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-full aspect-square flex flex-col items-center justify-center">
-                    <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-[10px] font-black uppercase tracking-[0.4em] rounded-full">
+                  <div className="max-w-2xl w-full text-center space-y-10 relative z-10 p-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl flex flex-col items-center justify-center">
+                    <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-[10px] font-black uppercase tracking-[0.4em] rounded-lg">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00] animate-pulse" />
                       Awaiting Biometric Validation
                     </div>
@@ -745,13 +745,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                       <button 
                          onClick={() => setActiveTab('progress')}
-                         className="w-full md:w-auto px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
+                         className="w-full md:w-auto px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
                       >
                          Track Current Mission
                       </button>
                       <button 
                          onClick={() => navigate('/onboarding')}
-                         className="w-full md:w-auto px-12 py-6 bg-white/5 border border-white/10 text-white font-black uppercase italic text-xs tracking-[0.3em] rounded-full hover:bg-white/10 transition-all"
+                         className="w-full md:w-auto px-12 py-6 bg-white/5 border border-white/10 text-white font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:bg-white/10 transition-all"
                       >
                          Start New Mission +
                       </button>
