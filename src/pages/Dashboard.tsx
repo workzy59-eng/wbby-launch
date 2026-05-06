@@ -86,6 +86,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'analytics'>('dashboard');
+  
+  // Whitelisted developers should be on the Developer Dashboard
+  useEffect(() => {
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    if (user?.email && devEmails.includes(user.email.toLowerCase())) {
+      navigate('/developer-dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
