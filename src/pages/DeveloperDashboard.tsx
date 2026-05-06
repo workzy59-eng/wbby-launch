@@ -29,7 +29,7 @@ import {
   FileText
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
-import { UserProfile, Project, Attendance } from '../types';
+import { UserProfile, Project, Attendance, LeaveRequest } from '../types';
 import { 
   getProjects, 
   updateProject, 
@@ -49,7 +49,9 @@ import {
   getDeveloperAttendanceStatus,
   getDeveloperStats,
   createNotification,
-  getAttendance
+  getAttendance,
+  getLeaveRequests,
+  requestLeave
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
@@ -105,14 +107,61 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [punchOutTimer, setPunchOutTimer] = useState<string | null>(null);
   const [devStats, setDevStats] = useState({ completedCount: 0, activeCount: 0, totalHours: 0, totalPayout: 0 });
   const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [totalHours, setTotalHours] = useState(0);
   const [isSuspended, setIsSuspended] = useState(false);
   const [isStickyOpen, setIsStickyOpen] = useState(false);
   const [stickyNotes, setStickyNotes] = useState(profile?.notes || '');
+  const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
+  const [leaveDate, setLeaveDate] = useState<string>('');
+  const [leaveReason, setLeaveReason] = useState('');
+
+  const handleApplyLeave = async () => {
+    if (!user?.uid || !leaveDate || !leaveReason) return;
+    setIsSubmitting(true);
+    try {
+      await requestLeave({
+        userId: user.uid,
+        userName: profile?.displayName || 'Developer',
+        startDate: leaveDate,
+        endDate: leaveDate,
+        reason: leaveReason,
+        status: 'pending'
+      });
+      toast.success('Leave request sent for verification');
+      
+      // Update local state to show it immediately
+      const lDate = new Date(leaveDate).toISOString().split('T')[0];
+      setLeaveRequests(prev => [...prev, {
+        id: 'temp-' + Date.now(),
+        userId: user.uid,
+        userName: profile?.displayName || 'Developer',
+        startDate: leaveDate,
+        endDate: leaveDate,
+        reason: leaveReason,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      } as LeaveRequest]);
+
+      setIsLeavePopupOpen(false);
+      setLeaveReason('');
+    } catch (error) {
+      toast.error('Failed to submit leave');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (!user?.uid) return;
-    const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
+    const unsub = getUnreadMessageCount(user.uid, (count) => {
+      if (count > unreadCount && document.hidden) {
+        // Play notification sound
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3');
+        audio.play().catch(e => console.log('Audio play failed:', e));
+      }
+      setUnreadCount(count);
+    });
     
     // Real-time attendance status
     const unsubAttendance = getDeveloperAttendanceStatus(user.uid, (data) => {
@@ -147,6 +196,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       if (consecutiveAbsences >= 3) {
         setIsSuspended(true);
       }
+    });
+
+    getLeaveRequests(user.uid).then(data => {
+      setLeaveRequests(data as LeaveRequest[]);
     });
 
     if (profile?.status === 'suspended') {
@@ -487,15 +540,16 @@ PRECISION BUILT BY WEBBYLAUNCH
   };
 
   const handleDownloadPrompt = (project: Project) => {
+    // Priority phrasing according to user requirements
     const blueprintPrompt = `
-TITAN AI MISSION BLUEPRINT: ${project.businessName.toUpperCase()}
-=======================================================
+Build me a website named ${project.businessName}, ${project.businessType}.
 
 MISSION OBJECTIVE:
 Construct a high-performance ${project.businessType} for a ${project.storeType === 'online_store' ? 'GLOBAL ECOMMERCE' : 'LOCAL SERVICE'} entity.
 
-GEOGRAPHIC FOCUS:
-Located in ${project.city || 'N/A'}, ${project.locationState || 'N/A'} (${project.country || 'INDIA'}).
+BUSINESS: ${project.businessName}
+CATEGORY: ${project.businessType}
+LOCATION: ${project.city || 'N/A'}, ${project.locationState || 'N/A'}
 
 VISUAL PROTOCOL:
 - PRIMARY DEPOT: ${project.primaryColor || '#C7C42A'}
@@ -505,20 +559,13 @@ VISUAL PROTOCOL:
 FUNCTIONAL REQUIREMENTS:
 ${project.selectedFeatures?.map(f => `- ${f.toUpperCase()}`).join('\n') || '- CORE SYSTEM ARCHITECTURE'}
 - MOBILE FLUIDITY: MANDATORY (100% RESPONSIVE)
-- LATENCY TARGET: < 2S LOAD TIME
 
-CORE CONTENT & INTEL:
+DESCRIPTION:
 ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
-
-INSTRUCTIONS:
-Generate source code focusing on performance and visual precision as per the TITAN Design Framework.
-=======================================================
-AI AGENT PROTOCOL: WEBBYLAUNCH-TITAN-01
 `.trim();
 
-    const finalPrompt = project.aiPrompt || blueprintPrompt;
     const element = document.createElement("a");
-    const file = new Blob([finalPrompt], {type: 'text/plain'});
+    const file = new Blob([blueprintPrompt], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.download = `${project.businessName}_ai_blueprint.txt`;
     document.body.appendChild(element);
@@ -1360,46 +1407,81 @@ AI AGENT PROTOCOL: WEBBYLAUNCH-TITAN-01
                                     <div className="w-2 h-2 rounded-full bg-red-500" />
                                     <span className="text-[8px] font-black uppercase text-white/40 tracking-widest italic">Absent</span>
                                  </div>
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-[#FFFF00]" />
+                                    <span className="text-[8px] font-black uppercase text-white/40 tracking-widest italic">Leave</span>
+                                 </div>
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-7 gap-4 relative z-10">
+                             <div className="grid grid-cols-7 gap-4 relative z-10">
                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                                  <div key={day} className="text-center text-[10px] font-black uppercase text-white/20 tracking-widest mb-4 italic">{day}</div>
                                ))}
                                {Array.from({ length: 31 }).map((_, i) => {
                                  const dayNum = i + 1;
-                                 const attendanceRecord = attendance.find(a => new Date(a.date).getDate() === dayNum);
+                                 const today = new Date();
+                                 const currentMonthDate = new Date(today.getFullYear(), today.getMonth(), dayNum);
+                                 const dateStr = currentMonthDate.toISOString().split('T')[0];
+                                 
+                                 const attendanceRecord = attendance.find(a => a.date === dateStr);
+                                 const leaveRecord = leaveRequests.find(l => {
+                                   const lDate = typeof l.startDate === 'string' ? l.startDate : (l.startDate as any)?.toDate?.()?.toISOString().split('T')[0];
+                                   return lDate === dateStr;
+                                 });
+                                 
+                                 const isFuture = currentMonthDate > today;
+                                 const isLeave = !!leaveRecord;
                                  
                                  return (
                                    <div 
                                       key={i} 
-                                      className={`h-24 lg:h-32 border ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col p-4 relative group cursor-crosshair`}
+                                      onClick={() => {
+                                        if (isFuture && !isLeave) {
+                                          setLeaveDate(dateStr);
+                                          setIsLeavePopupOpen(true);
+                                        }
+                                      }}
+                                      className={`h-24 lg:h-32 border rounded-full aspect-square mx-auto ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : isLeave ? 'border-[#FFFF00]/40 bg-[#FFFF00]/10' : isFuture ? 'border-[#FFFF00]/20 bg-[#FFFF00]/5 cursor-pointer hover:border-[#FFFF00]' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col items-center justify-center p-4 relative group`}
                                    >
-                                      <span className={`text-xs font-black italic ${attendanceRecord ? 'text-green-500' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
+                                      <span className={`text-xs font-black italic ${attendanceRecord ? 'text-green-500' : isLeave ? 'text-[#FFFF00]' : isFuture ? 'text-[#FFFF00]/60' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
                                       
                                       {attendanceRecord && (
-                                         <div className="mt-auto">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                            <p className="text-[8px] font-black uppercase text-green-500/60 tracking-[0.2em] mt-2 italic">Bio-Active</p>
+                                         <div className="mt-2 text-center">
+                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] mx-auto" />
+                                            <p className="text-[6px] font-black uppercase text-green-500/60 mt-1">Bio-Active</p>
+                                         </div>
+                                      )}
+
+                                      {isLeave && (
+                                         <div className="mt-2 text-center">
+                                            <div className="w-2 h-2 rounded-full bg-[#FFFF00] shadow-[0_0_10px_rgba(255,255,0,0.5)] mx-auto" />
+                                            <p className="text-[6px] font-black uppercase text-[#FFFF00]/60 mt-1">On Leave</p>
+                                         </div>
+                                      )}
+
+                                      {isFuture && !isLeave && (
+                                         <div className="mt-2 text-[8px] font-black uppercase text-[#FFFF00]/40 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                                            Ref Leave
                                          </div>
                                       )}
                                       
                                       {/* Info Overlay */}
-                                      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-center p-3 z-20">
-                                         <p className="text-[8px] font-black uppercase tracking-[0.4em] text-[#FFFF00] italic mb-2">Protocol Intel</p>
-                                         {attendanceRecord ? (
-                                           <div className="space-y-1">
-                                             <p className="text-xs font-black text-white italic">{attendanceRecord.totalHours?.toFixed(1)}h Active</p>
-                                             <p className="text-[8px] font-bold text-[#FFFF00] uppercase tracking-widest">In: {attendanceRecord.checkIn ? new Date(attendanceRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
-                                           </div>
-                                         ) : (
-                                           <div className="flex flex-col items-center">
-                                              <XCircle size={16} className="text-red-500/40 mb-1" />
-                                              <p className="text-[10px] font-black text-red-500/60 italic">Signal Lost</p>
-                                           </div>
-                                         )}
-                                      </div>
+                                      {!isFuture && (
+                                        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-center p-3 z-20 rounded-full">
+                                          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-[#FFFF00] italic mb-2">Protocol Intel</p>
+                                          {attendanceRecord ? (
+                                            <div className="space-y-1">
+                                              <p className="text-xs font-black text-white italic">{attendanceRecord.totalHours?.toFixed(1)}h Active</p>
+                                            </div>
+                                          ) : (
+                                            <div className="flex flex-col items-center">
+                                               <XCircle size={16} className="text-red-500/40 mb-1" />
+                                               <p className="text-[10px] font-black text-red-500/60 italic">Signal Lost</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
                                    </div>
                                  );
                                })}
@@ -1838,16 +1920,12 @@ AI AGENT PROTOCOL: WEBBYLAUNCH-TITAN-01
                   </div>
 
                   <div className="grid grid-cols-2 gap-8">
-                    {/* Domain Preferences */}
+                    {/* Domain Intelligence */}
                     <div className="space-y-4">
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Preferences</h3>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Intelligence</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
-                        <span className="text-black/40 uppercase">1st Preference</span>
-                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.domainPreferences?.[0] || 'N/A'}</span>
-                        <span className="text-black/40 uppercase">2nd Preference</span>
-                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.domainPreferences?.[1] || 'N/A'}</span>
-                        <span className="text-black/40 uppercase">3rd Preference</span>
-                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.domainPreferences?.[2] || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">User Requested Domain</span>
+                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.requestedDomain || selectedProjectForDrawer.domainPreferences?.[0] || 'N/A'}</span>
                       </div>
                     </div>
 
@@ -1930,6 +2008,57 @@ AI AGENT PROTOCOL: WEBBYLAUNCH-TITAN-01
                 </div>
               </motion.div>
             </>
+          )}
+        </AnimatePresence>
+        {/* Leave Request Popup */}
+        <AnimatePresence>
+          {isLeavePopupOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/80 backdrop-blur-3xl"
+            >
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                className="max-w-md w-full bg-[#111] border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl relative"
+              >
+                <div className="absolute top-0 left-0 w-full h-1 bg-[#FFFF00]" />
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Apply for Leave</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Mission Date: {leaveDate}</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#FFFF00] italic ml-4 text-left block">Reason for absence</label>
+                    <textarea 
+                      value={leaveReason}
+                      onChange={(e) => setLeaveReason(e.target.value)}
+                      placeholder="ENTER VALID REASON FOR LEAVE..."
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white text-xs font-bold outline-none focus:border-[#FFFF00] transition-all min-h-[120px] resize-none uppercase italic tracking-wider"
+                    />
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => setIsLeavePopupOpen(false)}
+                      className="flex-1 py-4 border border-white/10 rounded-2xl text-[10px] font-black uppercase italic tracking-widest text-white/40 hover:bg-white/5 transition-all"
+                    >
+                      Abort
+                    </button>
+                    <button 
+                      onClick={handleApplyLeave}
+                      disabled={isSubmitting || !leaveReason.trim()}
+                      className="flex-1 py-4 bg-[#FFFF00] text-black rounded-2xl text-[10px] font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {isSubmitting ? 'Syncing...' : 'Request Leave'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>
       </main>

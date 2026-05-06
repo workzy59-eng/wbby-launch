@@ -165,12 +165,12 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
           <section className="py-12 px-10 border-t border-gray-100 flex flex-col items-center gap-8 bg-gray-50">
              <div className="flex gap-10">
                 <div className="flex items-center gap-3">
-                  <Mail size={16} className="text-gray-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{data.businessEmail || 'hello@webbylaunch.com'}</span>
+                  <Mail size={16} style={{ color: data.primaryColor || '#c7c42a' }} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#111]">{data.businessEmail || 'hello@webbylaunch.com'}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Smartphone size={16} className="text-gray-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{data.businessPhone || '+91 88000 00000'}</span>
+                  <Smartphone size={16} style={{ color: data.primaryColor || '#c7c42a' }} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#111]">{data.businessPhone || '+91 88000 00000'}</span>
                 </div>
              </div>
           </section>
@@ -247,7 +247,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       billingCycle: 'one-time' as 'one-time',
       referenceWebsite: '',
       templateId: '',
-      domainPreferences: ['', '', ''],
+      requestedDomain: '',
       referralSource: '',
       salesCode: '',
     };
@@ -1041,10 +1041,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                         : 'bg-card border-border text-subtext hover:border-primary/50'
                     }`}
                   >
-                    <div className={`mt-1 w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${
+                    <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${
                       isSelected ? 'bg-white border-white text-primary' : 'border-border text-transparent'
-                    }`}>
-                      <Check size={14} strokeWidth={4} />
+                    }`} style={{ backgroundColor: isSelected ? formData.primaryColor : 'transparent', borderColor: isSelected ? formData.primaryColor : '#cbd5e1' }}>
+                      <Check size={14} strokeWidth={4} className={isSelected ? 'text-white' : ''} />
                     </div>
                     <div>
                       <div className="text-sm font-bold uppercase tracking-widest">{feature}</div>
@@ -1085,19 +1085,20 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       key={i}
                       onClick={() => {
                         handleInputChange('domain', d.name);
+                        handleInputChange('requestedDomain', d.name);
                         handleInputChange('websiteName', d.name.split('.')[0]);
-                        handleInputChange('domainPreferences', [d.name, ...formData.domainPreferences.filter(p => p !== d.name)].slice(0, 3));
                       }}
                       className={`group flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
                         formData.domain === d.name 
                           ? 'bg-primary/10 border-primary' 
                           : 'bg-white/5 border-white/5'
                       }`}
+                      style={{ borderColor: formData.domain === d.name ? formData.primaryColor : 'rgba(255,255,255,0.05)' }}
                     >
-                      <span className={`text-xl font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white/80'}`}>
+                      <span className={`text-xl font-black italic uppercase tracking-tighter`} style={{ color: formData.domain === d.name ? formData.primaryColor : 'rgba(255,255,255,0.8)' }}>
                         {d.name}
                       </span>
-                      {formData.domain === d.name && <Check size={20} className="text-primary" strokeWidth={4} />}
+                      {formData.domain === d.name && <Check size={20} style={{ color: formData.primaryColor }} strokeWidth={4} />}
                     </button>
                   ))
                 ) : (
@@ -1159,8 +1160,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                           <button 
                             onClick={() => {
                               handleInputChange('domain', customDomain);
+                              handleInputChange('requestedDomain', customDomain);
                               handleInputChange('websiteName', customDomain.split('.')[0]);
-                              handleInputChange('domainPreferences', [customDomain, ...formData.domainPreferences.filter(p => p !== customDomain)].slice(0, 3));
                             }}
                             className="ml-4 px-4 py-1.5 bg-green-400 text-black rounded-lg text-[9px] font-black uppercase"
                           >

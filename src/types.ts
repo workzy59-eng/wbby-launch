@@ -230,7 +230,7 @@ export interface Project {
   storeType: 'online_store' | 'local_store';
   locationState?: string;
   preferredColors?: string[];
-  preferredDomains?: string[];
+  requestedDomain?: string;
   description: string;
   websiteName: string;
   primaryColor: string;
