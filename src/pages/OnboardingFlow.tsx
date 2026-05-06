@@ -1061,8 +1061,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           </motion.div>
         );
       case 4:
-        const bName = formData.businessName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'yourbusiness';
-        
         return (
           <motion.div 
             key="step4"
@@ -1073,118 +1071,37 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-white italic uppercase leading-none">Best domains for your business</h3>
-              <p className="text-white/40 text-sm font-medium italic uppercase tracking-widest">Select your digital identity</p>
+              <h3 className="text-4xl font-bold tracking-tight text-white italic uppercase leading-none">Your Digital Identity</h3>
+              <p className="text-white/40 text-sm font-medium italic uppercase tracking-widest">Enter your requested domain name</p>
             </div>
 
             <div className="space-y-8">
-              <div className="grid grid-cols-1 gap-3">
-                {suggestedDomains.length > 0 ? (
-                  suggestedDomains.map((d, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        handleInputChange('domain', d.name);
-                        handleInputChange('requestedDomain', d.name);
-                        handleInputChange('websiteName', d.name.split('.')[0]);
-                      }}
-                      className={`group flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
-                        formData.domain === d.name 
-                          ? 'bg-primary/10 border-primary' 
-                          : 'bg-white/5 border-white/5'
-                      }`}
-                      style={{ borderColor: formData.domain === d.name ? formData.primaryColor : 'rgba(255,255,255,0.05)' }}
-                    >
-                      <span className={`text-xl font-black italic uppercase tracking-tighter`} style={{ color: formData.domain === d.name ? formData.primaryColor : 'rgba(255,255,255,0.8)' }}>
-                        {d.name}
-                      </span>
-                      {formData.domain === d.name && <Check size={20} style={{ color: formData.primaryColor }} strokeWidth={4} />}
-                    </button>
-                  ))
-                ) : (
-                  <div className="p-8 rounded-2xl bg-white/5 border border-dashed border-white/10 text-center">
-                    <p className="text-xs font-bold text-white/20 uppercase tracking-widest italic">Generating suggestions...</p>
-                  </div>
-                )}
+              <div className="relative group">
+                <input 
+                  type="text"
+                  value={formData.domain}
+                  onChange={(e) => {
+                    const val = e.target.value.toLowerCase().trim();
+                    handleInputChange('domain', val);
+                    handleInputChange('requestedDomain', val);
+                    handleInputChange('websiteName', val.split('.')[0]);
+                  }}
+                  placeholder="e.g. yourbusiness.com"
+                  className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
+                />
               </div>
 
               <div className="p-6 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
                 <p className="text-yellow-500 font-bold uppercase tracking-tight text-xs flex items-start gap-2">
                   <span className="shrink-0">⚠️</span>
-                  Domain charges are NOT included in your plan. You will need to purchase the domain separately during checkout.
+                  Domain charges are NOT included in your plan. You will need to purchase the domain separately during checkout. Our team will verify and secure this domain for you.
                 </p>
-              </div>
-
-              {/* Custom Domain Section */}
-              <div className="space-y-4 pt-4 border-t border-white/5">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Or enter your own domain</label>
-                <div className="relative group">
-                  <input 
-                    type="text"
-                    value={customDomain}
-                    onChange={(e) => {
-                      setCustomDomain(e.target.value.toLowerCase().trim());
-                      setCustomStatus('idle');
-                    }}
-                    placeholder="mycoolbrand.xyz"
-                    className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase pr-40"
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    <button 
-                      onClick={checkCustom}
-                      disabled={isCheckingCustom || !customDomain}
-                      className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black text-white uppercase italic transition-all disabled:opacity-50"
-                    >
-                      {isCheckingCustom ? 'Checking...' : 'Check Status'}
-                    </button>
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {customStatus !== 'idle' && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`ml-4 p-4 rounded-xl inline-flex items-center gap-3 ${
-                        customStatus === 'available' ? 'bg-green-400/10 border border-green-400/20' : 
-                        customStatus === 'taken' ? 'bg-red-400/10 border border-red-400/20' : 
-                        'bg-white/5'
-                      }`}
-                    >
-                      {customStatus === 'loading' ? (
-                        <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      ) : customStatus === 'available' ? (
-                        <>
-                          <div className="w-2 h-2 rounded-full bg-green-400" />
-                          <span className="text-[10px] font-black text-green-400 uppercase italic tracking-widest">Domain is available!</span>
-                          <button 
-                            onClick={() => {
-                              handleInputChange('domain', customDomain);
-                              handleInputChange('requestedDomain', customDomain);
-                              handleInputChange('websiteName', customDomain.split('.')[0]);
-                            }}
-                            className="ml-4 px-4 py-1.5 bg-green-400 text-black rounded-lg text-[9px] font-black uppercase"
-                          >
-                            Use This
-                          </button>
-                        </>
-                      ) : customStatus === 'taken' ? (
-                        <>
-                          <div className="w-2 h-2 rounded-full bg-red-400" />
-                          <span className="text-[10px] font-black text-red-400 uppercase italic tracking-widest">Domain is already taken</span>
-                        </>
-                      ) : (
-                        <span className="text-[10px] font-black text-white/40 uppercase italic tracking-widest">Error checking domain</span>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
               <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
                 <ShieldCheck size={20} className="text-primary shrink-0 mt-1" />
                 <p className="text-[10px] font-medium text-primary leading-relaxed italic uppercase tracking-[0.05em]">
-                  ⚠️ Note: Domain availability is checked via live DNS records. Final availability and registration will be confirmed by our team during setup.
+                  The domain you request will be the primary identity of your website. Please ensure it represents your mission perfectly.
                 </p>
               </div>
             </div>

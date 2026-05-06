@@ -58,6 +58,7 @@ import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { Bell, Info } from 'lucide-react';
+import { ADMIN_EMAIL } from '../constants';
 
 import BottomNav from '../components/BottomNav';
 
@@ -214,7 +215,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
   useEffect(() => {
     const devEmails = ['aither2029@gmail.com'];
-    const adminEmails = ['workzy59@gmail.com'];
+    const adminEmails = [ADMIN_EMAIL];
     if (user?.email && (devEmails.includes(user.email.toLowerCase()) || adminEmails.includes(user.email.toLowerCase()))) {
       const hasSeen = localStorage.getItem(`dev_welcome_${user.uid}`);
       if (!hasSeen) {
@@ -540,37 +541,31 @@ PRECISION BUILT BY WEBBYLAUNCH
   };
 
   const handleDownloadPrompt = (project: Project) => {
-    // Priority phrasing according to user requirements
-    const blueprintPrompt = `
+    const prompt = `
 Build me a website named ${project.businessName}, ${project.businessType}.
+Build me a ${project.businessType} website named ${project.businessName}.
 
-MISSION OBJECTIVE:
-Construct a high-performance ${project.businessType} for a ${project.storeType === 'online_store' ? 'GLOBAL ECOMMERCE' : 'LOCAL SERVICE'} entity.
+The contact details are these:
+Name: ${project.userName}
+Email: ${project.userEmail}
+Phone: ${project.userPhone || 'N/A'}
+Business Email: ${project.businessEmail || 'N/A'}
+Business Phone: ${project.businessPhone || 'N/A'}
 
-BUSINESS: ${project.businessName}
-CATEGORY: ${project.businessType}
-LOCATION: ${project.city || 'N/A'}, ${project.locationState || 'N/A'}
+I needed it in the color of ${project.primaryColor || '#c7c42a'} and ${project.secondaryColor || '#000000'}.
+The chosen elements are ${project.selectedFeatures?.join(', ') || 'Standard responsive layout'}.
 
-VISUAL PROTOCOL:
-- PRIMARY DEPOT: ${project.primaryColor || '#C7C42A'}
-- SECONDARY DEPOT: ${project.secondaryColor || '#000000'}
-- DESIGN PHILOSOPHY: MODERNS, CLEAN, SHARP EDGES.
-
-FUNCTIONAL REQUIREMENTS:
-${project.selectedFeatures?.map(f => `- ${f.toUpperCase()}`).join('\n') || '- CORE SYSTEM ARCHITECTURE'}
-- MOBILE FLUIDITY: MANDATORY (100% RESPONSIVE)
-
-DESCRIPTION:
-${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
+Description: ${project.description || 'No description provided.'}
 `.trim();
 
     const element = document.createElement("a");
-    const file = new Blob([blueprintPrompt], {type: 'text/plain'});
+    const file = new Blob([prompt], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = `${project.businessName}_ai_blueprint.txt`;
+    element.download = `${project.businessName}_AI_Prompt.txt`;
     document.body.appendChild(element);
     element.click();
-    toast.success('AI Blueprint downloaded');
+    document.body.removeChild(element);
+    toast.success('AI Prompt downloaded');
   };
 
   const calculateAttendancePayout = () => {
@@ -858,7 +853,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                   <p className="text-xs font-black uppercase italic text-white">{profile?.displayName}</p>
                   <p className="text-[10px] font-bold uppercase text-white/40">Level 1 Developer</p>
                </div>
-               <div className="w-12 h-12 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 flex items-center justify-center text-[#c7c42a]">
+               <div className="w-12 h-12 rounded-full bg-[#c7c42a]/10 border border-[#c7c42a]/20 flex items-center justify-center text-[#c7c42a]">
                   <TrendingUp size={20} />
                </div>
             </div>
@@ -887,7 +882,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                 {/* Attendance & Stats Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Attendance Card */}
-                  <div className="lg:col-span-1 bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden group">
+                  <div className="lg:col-span-1 bg-[#111] border border-white/5 rounded-[4rem] p-10 space-y-8 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl" />
                     
                     <div className="flex items-center justify-between">
@@ -907,7 +902,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                           <button 
                             onClick={() => punchOut(user!.uid)}
                             disabled={!!punchOutTimer}
-                            className={`w-full py-6 rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl transition-all border-2 ${
+                            className={`w-full py-6 rounded-full font-black uppercase italic text-sm tracking-[0.2em] shadow-xl transition-all border-2 ${
                               punchOutTimer 
                                 ? 'bg-[#c7c42a]/10 text-[#c7c42a]/40 border-[#c7c42a]/10 cursor-not-allowed' 
                                 : 'bg-[#c7c42a] text-black border-[#c7c42a] shadow-[#c7c42a]/20 hover:scale-[1.02] active:scale-[0.98] animate-pulse'
@@ -916,7 +911,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                             {punchOutTimer ? 'MINIMUM SHIFT ACTIVE' : 'COMPLETE SHIFT / PUNCH OUT'}
                           </button>
                           {punchOutTimer && (
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                            <div className="bg-white/5 border border-white/10 rounded-full p-6 text-center">
                               <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Time Remaining until Punch Out</p>
                               <p className="text-xl font-black italic text-[#c7c42a] tabular-nums">{punchOutTimer}</p>
                             </div>
@@ -925,18 +920,18 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                       ) : (
                         <button 
                           onClick={() => punchIn(user!.uid)}
-                          className="w-full py-6 bg-black text-[#c7c42a] border-2 border-[#c7c42a] rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/10 hover:bg-[#c7c42a] hover:text-black transition-all"
+                          className="w-full py-6 bg-black text-[#c7c42a] border-2 border-[#c7c42a] rounded-full font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/10 hover:bg-[#c7c42a] hover:text-black transition-all"
                         >
                           PUNCH IN
                         </button>
                       )}
                       
                       <div className="grid grid-cols-2 gap-3 text-center">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="p-6 bg-white/5 rounded-full border border-white/5">
                           <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Total Hours</p>
                           <p className="text-lg font-black italic">{devStats.totalHours}h</p>
                         </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="p-6 bg-white/5 rounded-full border border-white/5">
                           <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Status</p>
                           <p className={`text-lg font-black italic ${isPunchedIn ? 'text-green-500' : 'text-red-500'}`}>{isPunchedIn ? 'Active' : 'Offline'}</p>
                         </div>
@@ -953,7 +948,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                     ].map((stat, i) => (
                       <div 
                         key={i} 
-                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col justify-between min-h-[200px] ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
+                        className={`bg-white/5 border border-white/10 rounded-[4.5rem] p-10 flex flex-col justify-between min-h-[200px] ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
                         onClick={stat.onClick}
                       >
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
@@ -971,7 +966,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                   <h3 className="text-lg font-black italic uppercase tracking-widest text-[#c7c42a]">Active Projects</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {projects.map(p => (
-                      <div key={p.id} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden group">
+                      <div key={p.id} className="bg-white/5 border border-white/10 rounded-[4rem] p-10 space-y-6 relative overflow-hidden group">
                         {/* Background Decoration */}
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl group-hover:bg-[#c7c42a]/10 transition-all" />
                         
@@ -992,7 +987,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                               setSelectedProjectForDrawer(p);
                               setIsDrawerOpen(true);
                             }}
-                            className="p-2 bg-[#FFFF00] text-black rounded hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,0,0.3)] ml-2"
+                            className="p-3 bg-[#FFFF00] text-black rounded-full hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,0,0.3)] ml-2"
                           >
                             <ChevronRight size={18} />
                           </button>
@@ -1118,27 +1113,28 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {unassignedProjects.map(p => (
-                    <div key={p.id} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 group">
-                      <div className="space-y-2">
-                        <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
-                        <div className="flex items-center gap-2">
-                           <span className="px-3 py-1 bg-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-white/40">{p.businessType}</span>
-                           <span className="px-3 py-1 bg-[#c7c42a]/10 rounded-lg text-[8px] font-black uppercase tracking-widest text-[#c7c42a]">{p.plan}</span>
+                    {unassignedProjects.map(p => (
+                      <div key={p.id} className="bg-white/5 border border-white/10 rounded-[4rem] p-10 space-y-6 group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl" />
+                        <div className="space-y-2">
+                          <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
+                          <div className="flex items-center gap-2">
+                             <span className="px-3 py-1 bg-white/5 rounded-full text-[8px] font-black uppercase tracking-widest text-white/40">{p.businessType}</span>
+                             <span className="px-3 py-1 bg-[#c7c42a]/10 rounded-full text-[8px] font-black uppercase tracking-widest text-[#c7c42a]">{p.plan}</span>
+                          </div>
                         </div>
+                        <p className="text-xs font-medium text-white/60 line-clamp-3 leading-relaxed italic">
+                          {p.description || 'No description provided.'}
+                        </p>
+                        
+                        <button 
+                          onClick={() => openAcceptPopup(p.id)}
+                          className="w-full py-5 bg-white text-black font-black uppercase italic text-xs tracking-widest rounded-full hover:bg-[#c7c42a] transition-all shadow-xl shadow-white/5"
+                        >
+                          Claim Project
+                        </button>
                       </div>
-                      <p className="text-xs font-medium text-white/60 line-clamp-3 leading-relaxed italic">
-                        {p.description || 'No description provided.'}
-                      </p>
-                      
-                      <button 
-                        onClick={() => openAcceptPopup(p.id)}
-                        className="w-full py-4 bg-white text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-[#c7c42a] transition-all"
-                      >
-                        Claim Project
-                      </button>
-                    </div>
-                  ))}
+                    ))}
                   {unassignedProjects.length === 0 && (
                      <div className="col-span-full py-20 flex flex-col items-center justify-center space-y-4 border-2 border-dashed border-white/5 rounded-[3rem]">
                         <p className="text-sm font-bold uppercase italic text-white/20 tracking-widest">No new projects available in the pool</p>
@@ -1168,14 +1164,14 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
 
                 <div className="grid grid-cols-1 gap-8">
                   {projects.map(p => (
-                    <div key={p.id} className="bg-[#0A0A0A] border border-white/10 rounded-[3rem] p-10 relative overflow-hidden group">
+                    <div key={p.id} className="bg-[#0A0A0A] border border-white/10 rounded-[4rem] p-12 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 w-64 h-64 bg-[#c7c42a]/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-[#c7c42a]/10 transition-all duration-700" />
                       
                       <div className="flex flex-col lg:flex-row gap-12 relative z-10">
                         {/* Primary Info */}
                         <div className="flex-1 space-y-8">
                           <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 bg-[#c7c42a] rounded-[2rem] flex items-center justify-center text-black font-black text-4xl italic shadow-2xl shadow-[#c7c42a]/20">
+                            <div className="w-24 h-24 bg-[#c7c42a] rounded-full flex items-center justify-center text-black font-black text-4xl italic shadow-2xl shadow-[#c7c42a]/20">
                               {p.businessName?.[0]}
                             </div>
                             <div>
@@ -1187,14 +1183,14 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                                 setSelectedProjectForDrawer(p);
                                 setIsDrawerOpen(true);
                               }}
-                              className="ml-auto p-4 bg-[#FFFF00] text-black rounded hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,0,0.4)]"
+                              className="ml-auto w-14 h-14 bg-[#FFFF00] text-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,0,0.4)]"
                             >
                               <ChevronRight size={24} />
                             </button>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-6 space-y-4">
+                            <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 space-y-4">
                                <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[10px] tracking-widest">
                                  <UserIcon size={14} className="text-[#c7c42a]" />
                                  Client Intelligence
@@ -1204,7 +1200,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                                  <p className="text-xs font-bold text-white/20">{p.userEmail}</p>
                                </div>
                             </div>
-                            <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-6 space-y-4 relative overflow-hidden">
+                            <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden">
                                <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[10px] tracking-widest">
                                  <FileText size={14} className="text-[#c7c42a]" />
                                  AI Blueprints
@@ -1213,7 +1209,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                                  <span className="text-xs font-bold text-white/60">Configured Prompt</span>
                                  <button 
                                    onClick={() => handleDownloadPrompt(p)}
-                                   className="flex items-center gap-2 px-4 py-2 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all shadow-lg"
+                                   className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full text-[10px] font-black uppercase italic tracking-widest text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all shadow-lg"
                                  >
                                    Download <Download size={12} />
                                  </button>
@@ -1221,7 +1217,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                             </div>
                           </div>
 
-                          <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 space-y-4">
+                          <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-10 space-y-4">
                             <div className="flex justify-between items-center bg-transparent">
                                <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[10px] tracking-widest">
                                  Mission Progress
@@ -1247,11 +1243,11 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
 
                         {/* Control Center */}
                         <div className="w-full lg:w-96 space-y-4 flex flex-col justify-center">
-                           <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-8 space-y-6">
+                           <div className="bg-white/[0.03] border border-white/5 rounded-[3rem] p-10 space-y-6">
                               <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-white/40 italic ml-2">Quick Command Status</label>
                                 <div className="grid grid-cols-1 gap-3">
-                                   <div className={`px-6 py-4 rounded-2xl border text-center font-black uppercase italic text-xs tracking-widest ${
+                                   <div className={`px-6 py-4 rounded-full border text-center font-black uppercase italic text-xs tracking-widest ${
                                      p.status?.toLowerCase() === 'completed' 
                                        ? 'bg-green-500/10 border-green-500/20 text-green-500' 
                                        : 'bg-[#c7c42a]/5 border-[#c7c42a]/20 text-[#c7c42a]'
@@ -1264,7 +1260,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                               <div className="grid grid-cols-1 gap-3">
                                 <button 
                                   onClick={() => setEditingProject(p)}
-                                  className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-white/5 flex items-center justify-center gap-3"
+                                  className="w-full py-5 bg-white text-black rounded-full font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-white/5 flex items-center justify-center gap-3"
                                 >
                                   Update Intel <Settings2 size={16} />
                                 </button>
@@ -1273,7 +1269,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                                     setActiveTab('chat');
                                     // You might want to pre-select the project in chat
                                   }}
-                                  className="w-full py-5 bg-blue-500 text-white rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3"
+                                  className="w-full py-5 bg-blue-500 text-white rounded-full font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3"
                                 >
                                   Direct Link <MessageSquare size={16} />
                                 </button>
@@ -1282,7 +1278,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                                     href={p.websiteUrl} 
                                     target="_blank" 
                                     rel="noreferrer" 
-                                    className="w-full py-5 bg-white/5 border border-white/10 text-white/60 rounded-2xl font-black uppercase italic text-xs tracking-widest text-center hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+                                    className="w-full py-5 bg-white/5 border border-white/10 text-white/60 rounded-full font-black uppercase italic text-xs tracking-widest text-center hover:bg-white/10 transition-all flex items-center justify-center gap-3"
                                    >
                                       External Link <ExternalLink size={16} />
                                    </a>
@@ -1442,7 +1438,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                                           setIsLeavePopupOpen(true);
                                         }
                                       }}
-                                      className={`h-24 lg:h-32 border rounded-full aspect-square mx-auto ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : isLeave ? 'border-[#FFFF00]/40 bg-[#FFFF00]/10' : isFuture ? 'border-[#FFFF00]/20 bg-[#FFFF00]/5 cursor-pointer hover:border-[#FFFF00]' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col items-center justify-center p-4 relative group`}
+                                      className={`h-24 lg:h-32 rounded-full aspect-square mx-auto border ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : isLeave ? 'border-[#FFFF00]/40 bg-[#FFFF00]/10' : isFuture ? 'border-[#FFFF00]/20 bg-[#FFFF00]/5 cursor-pointer hover:border-[#FFFF00]' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col items-center justify-center p-4 relative group`}
                                    >
                                       <span className={`text-xs font-black italic ${attendanceRecord ? 'text-green-500' : isLeave ? 'text-[#FFFF00]' : isFuture ? 'text-[#FFFF00]/60' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
                                       
@@ -1894,7 +1890,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
 
                   <div className="grid grid-cols-2 gap-8">
                     {/* Project Overview */}
-                    <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-sm">
+                    <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-full">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Project Overview</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
                         <span className="text-black/40 uppercase">Type</span>
@@ -1911,7 +1907,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                     {/* Description */}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Description</h3>
-                      <div className="bg-black/10 p-4 h-32 overflow-y-auto custom-scrollbar-slim rounded-sm">
+                      <div className="bg-black/10 p-6 h-32 overflow-y-auto custom-scrollbar-slim rounded-3xl">
                         <p className="text-[10px] font-bold uppercase leading-relaxed text-black/70 italic">
                           {selectedProjectForDrawer.description || 'No description provided.'}
                         </p>
@@ -1945,7 +1941,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                   </div>
 
                   {/* Timeline */}
-                  <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-sm">
+                  <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-full">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Timeline</h3>
                     <div className="grid grid-cols-4 gap-4 text-center">
                       <div>
@@ -1966,7 +1962,7 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
                   {/* Internal Notes */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Internal Notes</h3>
-                    <div className="bg-[#D4E157]/5 p-6 border border-[#D4E157]/20 rounded-sm">
+                    <div className="bg-[#D4E157]/5 p-6 border border-[#D4E157]/20 rounded-full">
                       <p className="text-[10px] font-bold uppercase italic text-[#D4E157]/80">
                         {selectedProjectForDrawer.internalNotes || 'No internal notes added by the system or team.'}
                       </p>
@@ -2022,38 +2018,37 @@ ${project.description || 'NO ADDITIONAL INTEL PROVIDED.'}
               <motion.div 
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="max-w-md w-full bg-[#111] border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl relative"
+                className="max-w-md w-full bg-[#111] border border-white/10 rounded-full aspect-square p-12 flex flex-col items-center justify-center space-y-6 shadow-2xl relative"
               >
-                <div className="absolute top-0 left-0 w-full h-1 bg-[#FFFF00]" />
                 <div className="text-center space-y-2">
-                  <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Apply for Leave</h3>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Mission Date: {leaveDate}</p>
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Apply leave if it is a future date</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FFFF00] italic">MISSION DATE SECURED: {leaveDate}</p>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#FFFF00] italic ml-4 text-left block">Reason for absence</label>
+                <div className="w-full space-y-4 px-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 italic text-center block">REASON FOR ABSENCE</label>
                     <textarea 
                       value={leaveReason}
                       onChange={(e) => setLeaveReason(e.target.value)}
                       placeholder="ENTER VALID REASON FOR LEAVE..."
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white text-xs font-bold outline-none focus:border-[#FFFF00] transition-all min-h-[120px] resize-none uppercase italic tracking-wider"
+                      className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-white text-[10px] font-bold outline-none focus:border-[#FFFF00] transition-all min-h-[100px] resize-none uppercase italic tracking-wider text-center"
                     />
                   </div>
 
-                  <div className="flex gap-4">
-                    <button 
-                      onClick={() => setIsLeavePopupOpen(false)}
-                      className="flex-1 py-4 border border-white/10 rounded-2xl text-[10px] font-black uppercase italic tracking-widest text-white/40 hover:bg-white/5 transition-all"
-                    >
-                      Abort
-                    </button>
+                  <div className="flex flex-col gap-3">
                     <button 
                       onClick={handleApplyLeave}
                       disabled={isSubmitting || !leaveReason.trim()}
-                      className="flex-1 py-4 bg-[#FFFF00] text-black rounded-2xl text-[10px] font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                      className="w-full py-4 bg-[#FFFF00] text-black rounded-full text-[10px] font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                     >
                       {isSubmitting ? 'Syncing...' : 'Request Leave'}
+                    </button>
+                    <button 
+                      onClick={() => setIsLeavePopupOpen(false)}
+                      className="w-full py-2 text-[10px] font-black uppercase italic tracking-widest text-white/20 hover:text-white transition-all"
+                    >
+                      Abort
                     </button>
                   </div>
                 </div>

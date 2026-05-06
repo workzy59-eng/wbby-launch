@@ -512,10 +512,19 @@ export const getAllLeaveRequests = async () => {
   }
 };
 
-export const updateLeaveRequest = async (requestId: string, status: string) => {
+export const getAllLeaveRequestsSnap = (callback: (leaves: LeaveRequest[]) => void) => {
+  const q = query(collection(db, 'leave_requests'), orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LeaveRequest)));
+  }, (error) => {
+    console.error("Leave requests snapshot error:", error);
+  });
+};
+
+export const updateLeaveStatus = async (requestId: string, status: string) => {
   const path = `leave_requests/${requestId}`;
   try {
-    await updateDoc(doc(db, 'leave_requests', requestId), { status });
+    await updateDoc(doc(db, 'leave_requests', requestId), { status, updatedAt: serverTimestamp() });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -1019,14 +1028,15 @@ export const markProjectAsSeen = async (projectId: string, userId: string) => {
 };
 
 export const getNotifications = (userId: string, callback: (notifications: any[]) => void, role?: string) => {
+  const path = 'notifications';
   const q = role === 'admin' 
-    ? query(collection(db, 'notifications'), where('role', '==', 'admin'), orderBy('createdAt', 'desc'), limit(20))
-    : query(collection(db, 'notifications'), where('userId', '==', userId), orderBy('createdAt', 'desc'), limit(20));
+    ? query(collection(db, path), where('role', '==', 'admin'), orderBy('createdAt', 'desc'), limit(20))
+    : query(collection(db, path), where('userId', '==', userId), orderBy('createdAt', 'desc'), limit(20));
     
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {
-    console.error("Notifications listener error:", error);
+    handleFirestoreError(error, OperationType.GET, path);
   });
 };
 

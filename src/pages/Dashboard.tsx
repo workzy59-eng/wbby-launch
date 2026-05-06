@@ -719,29 +719,44 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               className="relative"
             >
               {!hasAcceptedProject && activeTab === 'dashboard' && (
-                <div className="absolute inset-0 z-50 bg-black flex items-center justify-center border-2 border-[#FFFF00]/10 overflow-hidden">
-                   <div className="absolute inset-0 bg-yellow-500/5 animate-pulse" />
-                   <div className="p-12 text-center space-y-10 relative z-10">
-                      <div className="inline-block px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-xs font-black uppercase tracking-[0.4em] animate-pulse">
-                        ACCESS_DENIED // SYSTEM_RESTRICTED
-                      </div>
-                      <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
-                        DASHBOARD<br/>
-                        <span className="text-[#FFFF00]">LOCKED.</span>
-                      </h2>
-                      <div className="p-6 bg-[#FFFF00]/5 border border-[#FFFF00]/10 space-y-4">
-                        <p className="text-sm font-bold text-[#FFFF00] uppercase tracking-[0.2em] italic">MISSION CRITICAL: BIO-SYNC PENDING</p>
-                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
-                          INTERNAL COMMUNICATION AND FINANCIAL TOOLS ARE OFFLINE UNTIL A DEVELOPER ACCEPTS THE MISSION.
-                        </p>
-                      </div>
+                <div className="relative flex flex-col items-center justify-center min-h-[600px] py-20">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#FFFF00]/10 rounded-full animate-[spin_20s_linear_infinite]" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#FFFF00]/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FFFF00]/5 rounded-full blur-[120px]" />
+
+                  <div className="max-w-2xl w-full text-center space-y-10 relative z-10 p-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-full aspect-square flex flex-col items-center justify-center">
+                    <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-[10px] font-black uppercase tracking-[0.4em] rounded-full">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00] animate-pulse" />
+                      Awaiting Biometric Validation
+                    </div>
+                    
+                    <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
+                      Mission<br/>
+                      <span className="text-[#FFFF00]">Queued.</span>
+                    </h2>
+
+                    <div className="space-y-4">
+                      <p className="text-sm font-bold text-[#FFFF00] uppercase tracking-[0.2em] italic">Deploying to Central Command</p>
+                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
+                        Your project protocol is being verified by our elite engineering unit. System features will activate as soon as a developer accepts the mission.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                       <button 
                          onClick={() => setActiveTab('progress')}
-                         className="px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
+                         className="w-full md:w-auto px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
                       >
-                         PROCEED TO PROGRESS_HUB
+                         Track Current Mission
                       </button>
-                   </div>
+                      <button 
+                         onClick={() => navigate('/onboarding')}
+                         className="w-full md:w-auto px-12 py-6 bg-white/5 border border-white/10 text-white font-black uppercase italic text-xs tracking-[0.3em] rounded-full hover:bg-white/10 transition-all"
+                      >
+                         Start New Mission +
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 

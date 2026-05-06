@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc, serverTimestamp, orderBy, limit } from '../firebase';
-import { UserProfile, Project, ProjectStatus } from '../types';
+import { UserProfile, Project, ProjectStatus, LeaveRequest } from '../types';
 import { Link } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { DomainSelect } from '../components/DomainSelect';
@@ -147,6 +147,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
 };
 
 import { ADMIN_EMAIL } from '../constants';
+import { formatDate } from '../lib/utils';
 
 interface AdminPanelProps {
   user: FirebaseUser;
@@ -157,7 +158,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers' | 'leaves'>('dashboard');
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -167,6 +168,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   }, [user?.uid]);
 
   const [developerInvites, setDeveloperInvites] = useState<any[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -358,6 +360,19 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       });
     }
 
+    if (activeTab === 'leaves') {
+      import('../services/database').then(db => {
+        unsubscribeUsers = db.getAllLeaveRequestsSnap((leaves) => {
+          setLeaveRequests(leaves);
+        });
+      });
+      // Also need developers for display
+      const q = query(collection(db, 'users'), where('role', '==', 'developer'));
+      unsubscribeUsers = onSnapshot(q, (snapshot) => {
+        setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
+      });
+    }
+
     if (activeTab === 'system' && appTab === 'invites') {
       unsubscribeDevInvites = onSnapshot(collection(db, 'developer_invites'), (snapshot) => {
         setDeveloperInvites(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -426,18 +441,31 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   };
 
   const handleDownloadPrompt = (project: Project) => {
-    if (!project.aiPrompt) {
-      toast.error('No AI prompt available for this project');
-      return;
-    }
+    const prompt = `
+Build me a website named ${project.businessName}, ${project.businessType}.
+Build me a ${project.businessType} website named ${project.businessName}.
+
+The contact details are these:
+Name: ${project.userName}
+Email: ${project.userEmail}
+Phone: ${project.userPhone || 'N/A'}
+Business Email: ${project.businessEmail || 'N/A'}
+Business Phone: ${project.businessPhone || 'N/A'}
+
+I needed it in the color of ${project.primaryColor || '#c7c42a'} and ${project.secondaryColor || '#000000'}.
+The chosen elements are ${project.selectedFeatures?.join(', ') || 'Standard responsive layout'}.
+
+Description: ${project.description || 'No description provided.'}
+`.trim();
+
     const element = document.createElement("a");
-    const file = new Blob([project.aiPrompt], {type: 'text/plain'});
+    const file = new Blob([prompt], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = `${project.businessName}_prompt.txt`;
+    element.download = `${project.businessName}_AI_Prompt.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-    toast.success('Prompt downloaded');
+    toast.success('AI Prompt downloaded');
   };
 
   const handleUpdateProgress = async () => {
@@ -1100,6 +1128,90 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       </div>
     );
   };
+
+  const renderLeaves = () => (
+    <div className="space-y-12">
+      <div className="flex flex-col gap-2">
+        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Staff Management</span>
+        <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Absence Registry</h2>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {leaveRequests.length > 0 ? (
+          leaveRequests.map((req) => {
+            const dev = users.find(u => u.uid === req.userId);
+            return (
+              <div key={req.id} className="bg-white/5 border border-white/10 rounded-full p-8 px-12 flex flex-col md:flex-row justify-between items-center gap-8 group hover:border-[#c7c42a]/30 transition-all">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-xl italic shadow-xl">
+                    {dev?.displayName?.[0] || 'D'}
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-white uppercase italic tracking-tight">{dev?.displayName || 'Unknown Developer'}</h4>
+                    <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">{dev?.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-8 text-center pb-4 md:pb-0">
+                  <div>
+                    <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Mission Date</p>
+                    <p className="text-sm font-bold text-[#c7c42a] uppercase italic">{formatDate(req.startDate)}</p>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Clearance Reason</p>
+                    <p className="text-[10px] font-medium text-white/60 uppercase italic leading-relaxed line-clamp-2">{req.reason}</p>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Authorization Status</p>
+                    <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                      req.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                      req.status === 'declined' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                      'bg-[#FFFF00]/10 text-[#FFFF00] border border-[#FFFF00]/20'
+                    }`}>
+                      {req.status?.toUpperCase() || 'PENDING'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 shrink-0">
+                  {req.status === 'pending' && (
+                    <>
+                      <button 
+                        onClick={async () => {
+                          const { updateLeaveStatus } = await import('../services/database');
+                          await updateLeaveStatus(req.id, 'approved');
+                          setLeaveRequests(prev => prev.map(l => l.id === req.id ? {...l, status: 'approved'} : l));
+                          toast.success('Absence Authorized');
+                        }}
+                        className="px-8 py-4 bg-green-500 text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                      >
+                        Authorize
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          const { updateLeaveStatus } = await import('../services/database');
+                          await updateLeaveStatus(req.id, 'declined');
+                          setLeaveRequests(prev => prev.map(l => l.id === req.id ? {...l, status: 'declined'} : l));
+                          toast.success('Access Denied');
+                        }}
+                        className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
+                      >
+                        Decline
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-20 bg-white/5 border border-dashed border-white/10 rounded-full text-center aspect-[2/1] flex flex-col items-center justify-center">
+            <p className="text-[10px] font-black uppercase italic tracking-widest text-white/20">System Quiet. No leave requests detected.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   const renderAnalytics = () => (
     <div className="space-y-12">
@@ -1806,12 +1918,13 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
         <nav className="flex-1 p-6 space-y-3 overflow-y-auto">
           {[
             {id: 'dashboard', label: 'Operations', icon: LayoutDashboard},
-            {id: 'my-tasks', label: 'My Projects', icon: Briefcase, hide: user.email?.toLowerCase() === 'workzy59@gmail.com'},
+            {id: 'my-tasks', label: 'My Projects', icon: Briefcase, hide: user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()},
             {id: 'requests', label: 'Job Pool', icon: FileText},
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'clients', label: 'Clients', icon: Users },
             { id: 'developers', label: 'Developers', icon: Shield },
+            { id: 'leaves', label: 'Leave Requests', icon: Calendar },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'meetings', label: 'Meetings', icon: Video },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -1951,6 +2064,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                 })}
               </div>
             </div>}
+            {activeTab === 'leaves' && renderLeaves()}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'recycle' && renderRecycleBin()}
@@ -2251,7 +2365,7 @@ DESIGN & FEATURES
 -----------------
 Primary Color: ${viewingProject.primaryColor}
 Secondary Color: ${viewingProject.secondaryColor}
-Domain Requested: ${viewingProject.domain || viewingProject.domainPreferences?.join(', ') || 'N/A'}
+Domain Requested: ${viewingProject.requestedDomain || viewingProject.domain || 'N/A'}
 
 SELECTED FEATURES:
 ${(viewingProject.selectedFeatures || []).map((f: string) => `- ${f}`).join('\n') || 'None selected'}
@@ -2277,40 +2391,26 @@ ${viewingProject.description}
                   <button 
                     onClick={() => {
                       const prompt = `
-Build me a fully responsive website for my ${viewingProject.businessType} business.
+Build me a website named ${viewingProject.businessName}, ${viewingProject.businessType}.
+Build me a ${viewingProject.businessType} website named ${viewingProject.businessName}.
 
-Business Name: ${viewingProject.businessName}
-Description: ${viewingProject.description}
+The contact details are these:
+Name: ${viewingProject.userName}
+Email: ${viewingProject.userEmail}
+Phone: ${viewingProject.userPhone || 'N/A'}
+Business Email: ${viewingProject.businessEmail || 'N/A'}
+Business Phone: ${viewingProject.businessPhone || 'N/A'}
 
-Design Aesthetic:
-- Primary Color: ${viewingProject.primaryColor}
-- Secondary Color: ${viewingProject.secondaryColor}
-- Style: ${viewingProject.businessType === 'Logistics' ? 'Industrial Corporate / Tech-Noir Hybrid' : 'Modern & Professional'}
+I needed it in the color of ${viewingProject.primaryColor || '#c7c42a'} and ${viewingProject.secondaryColor || '#000000'}.
+The chosen elements are ${viewingProject.selectedFeatures?.join(', ') || 'Standard responsive layout'}.
 
-Features required:
-${(viewingProject.selectedFeatures || []).map((f: string) => `- ${f}`).join('\n')}
-
-Technical Requirements:
-- Fully Responsive (Mobile/Tablet/Desktop)
-- Modern UI with sharp edges and premium typography
-- Fast loading speed
-- Basic SEO optimized
-${(viewingProject.selectedFeatures || []).includes('Booking System') ? '- Implement a high-end booking/scheduling system' : ''}
-${(viewingProject.selectedFeatures || []).includes('Google Login System') ? '- Secure Google Authentication' : ''}
-
-Contact Information for Footer:
-- Phone: ${viewingProject.businessPhone || viewingProject.userPhone}
-- Email: ${viewingProject.businessEmail || viewingProject.userEmail}
-- Location: ${viewingProject.city}, ${viewingProject.state}
-
-Specific Project Brief:
-${viewingProject.description}
-                      `;
+Description: ${viewingProject.description || 'No description provided.'}
+`.trim();
                       const blob = new Blob([prompt], { type: 'text/plain' });
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement('a');
                       link.href = url;
-                      link.download = `${viewingProject.businessName}_ai_prompt.txt`;
+                      link.download = `${viewingProject.businessName}_AI_Prompt.txt`;
                       link.click();
                       toast.success('AI Prompt downloaded');
                     }}
@@ -2395,18 +2495,16 @@ ${viewingProject.description}
                     </section>
 
                     <section>
-                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Preferences</h4>
-                      <div className="bg-[#c7c42a]/5 p-6 rounded-3xl border border-[#c7c42a]/10 space-y-3">
-                        {[0, 1, 2].map((idx) => (
-                          <div key={idx} className="flex justify-between items-center">
-                            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
-                              {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
-                            </span>
-                            <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#c7c42a]' : 'text-white/60'}`}>
-                              {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
-                            </span>
-                          </div>
-                        ))}
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Intelligence</h4>
+                      <div className="bg-[#c7c42a]/5 p-6 rounded-full border border-[#c7c42a]/10 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
+                            Requested Domain
+                          </span>
+                          <span className="text-[10px] font-black uppercase italic text-[#c7c42a]">
+                            {viewingProject.requestedDomain || viewingProject.domain || 'N/A'}
+                          </span>
+                        </div>
                       </div>
                     </section>
 
