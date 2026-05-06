@@ -142,7 +142,7 @@ export const isUserAdmin = async (uid: string) => {
   const userDoc = await getDoc(doc(db, 'users', uid));
   if (!userDoc.exists()) return false;
   const data = userDoc.data();
-  const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'];
+  const adminEmails = [ADMIN_EMAIL.toLowerCase()];
   const userEmail = data.email?.toLowerCase() || '';
   return data.role === 'admin' || adminEmails.includes(userEmail);
 };
@@ -158,8 +158,8 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   
   try {
     let role = 'client';
-    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'];
-    const devEmails = ['sain17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'];
+    const adminEmails = [ADMIN_EMAIL.toLowerCase()];
+    const devEmails = ['aither2029@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
@@ -167,7 +167,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
       role = 'developer';
     }
 
-    const defaultName = user.email === 'priyankapudi4u@gmail.com' ? "Priyanka Pudi | senior devloper" : (user.displayName || "");
+    const defaultName = (user.displayName || "");
 
     // PART 2 — FIX USER WRITE METHOD: setDoc with user.uid and merge: true
     await setDoc(doc(db, 'users', user.uid), {
@@ -1268,10 +1268,9 @@ export const getProjectUnreadNotifications = (callback: (projects: any[]) => voi
   if (!currentUser) return;
   const path = 'projects';
   
+  const isAdmin = currentUser.email?.toLowerCase() === 'workzy59@gmail.com';
+  
   // Only listen to projects that have unread messages for admin
-  // Note: Firestore doesn't support 'unreadCount.admin > 0' efficiently across all docs without an index 
-  // but we can try to at least filter by status or a smaller window.
-  // Actually, a better way is to listen to recent projects.
   const q = query(
     collection(db, 'projects'), 
     orderBy('updatedAt', 'desc'), 

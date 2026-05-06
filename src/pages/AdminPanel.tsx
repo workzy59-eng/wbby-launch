@@ -1799,7 +1799,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
             </div>
             <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">
-              {['workzy59@gmail.com', 'priyankapudi4u@gmail.com', 'sain17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '') ? 'Developer Dashboard' : 'Admin Panel'}
+              {user.email?.toLowerCase() === 'workzy59@gmail.com' ? 'Admin Panel' : 'Staff Portal'}
             </div>
           </div>
         </div>

@@ -977,7 +977,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       const admins = await getAdmins();
       if (admins.length > 0) {
         // Find the main admin by email if possible, else take the first one
-        const mainAdmin = admins.find(a => a.email === 'workzy59@gmail.com') || admins[0];
+        const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
         startNewChat(mainAdmin);
       } else {
         alert('No admin found. Please try again later.');
@@ -1615,7 +1615,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                           className="w-full p-4 hover:bg-[#202c33] rounded-xl transition-all flex items-center gap-4 text-left"
                         >
                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
-                             u.email === 'workzy59@gmail.com' ? 'bg-[#ffc107] text-black' : 'bg-[#3b4a54] text-white'
+                             u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'bg-[#ffc107] text-black' : 'bg-[#3b4a54] text-white'
                            }`}>
                               {u.displayName?.[0] || 'U'}
                            </div>

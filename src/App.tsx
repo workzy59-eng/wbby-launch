@@ -117,9 +117,9 @@ export default function App() {
                   element={
                     user ? (
                       (profile?.role === 'admin' || 
-                       [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                       user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                         <Navigate to="/admin" />
-                      ) : (['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                      ) : (user.email?.toLowerCase() === 'aither2029@gmail.com' || profile?.role === 'developer') ? (
                         <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
@@ -167,10 +167,10 @@ export default function App() {
                     user ? (
                       profile ? (
                         (profile.role === 'admin' || 
-                         [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                         user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                           <AdminPanel user={user} profile={profile} />
                         ) : (profile.role === 'developer' || 
-                             ['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                             user.email?.toLowerCase() === 'aither2029@gmail.com') ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
@@ -213,7 +213,7 @@ export default function App() {
                 />
                 <Route 
                   path="/admin" 
-                  element={user && (profile?.role === 'admin' || [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                  element={user && (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
                 />
                 <Route 
                   path="/portfolio/gym" 
