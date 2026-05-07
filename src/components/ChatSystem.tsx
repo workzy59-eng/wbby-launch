@@ -67,6 +67,7 @@ import { generateAIImageFromMessage } from '../services/geminiService';
 import imageCompression from 'browser-image-compression';
 
 import FilePreviewEditor from './chat/FilePreviewEditor';
+import FileDropZone from './chat/FileDropZone';
 
 interface ChatSystemProps {
   projectId?: string;
@@ -102,6 +103,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentions, setMentions] = useState<string[]>([]);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  
+  const [isHoveringDrop, setIsHoveringDrop] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -587,6 +590,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       {/* Messages Area */}
       <div 
         ref={scrollRef}
+        onDragOver={(e) => { e.preventDefault(); setIsHoveringDrop(true); }}
         className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8 space-y-4 md:space-y-6 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
         style={{
           backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
@@ -770,6 +774,39 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             Someone is typing...
           </div>
         )}
+
+        <AnimatePresence>
+          {isHoveringDrop && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-black/80 backdrop-blur-3xl p-10 flex flex-col items-center justify-center"
+              onDragLeave={() => setIsHoveringDrop(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsHoveringDrop(false);
+                const files = e.dataTransfer.files;
+                if (files.length > 0) handleFileUpload(files);
+              }}
+            >
+              <FileDropZone 
+                onUpload={(files) => {
+                  setIsHoveringDrop(false);
+                  const dt = new DataTransfer();
+                  files.forEach(f => dt.items.add(f));
+                  handleFileUpload(dt.files);
+                }} 
+              />
+              <button 
+                onClick={() => setIsHoveringDrop(false)}
+                className="mt-6 text-[10px] font-black uppercase tracking-[0.5em] text-white/40 hover:text-white transition-colors"
+              >
+                Abort Upload
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Upload Progress Overlay */}

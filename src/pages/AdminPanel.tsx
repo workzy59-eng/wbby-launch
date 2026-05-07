@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc, serverTimestamp, orderBy, limit } from '../firebase';
 import { UserProfile, Project, ProjectStatus, LeaveRequest } from '../types';
@@ -59,7 +59,7 @@ import {
   Bar
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications, getNotifications, markNotificationAsRead } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -185,6 +185,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [reasonToShow, setReasonToShow] = useState('');
   const [projectSearch, setProjectSearch] = useState('');
   const [unreadTotal, setUnreadTotal] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+  }, []);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState({
     name: '',
@@ -303,6 +310,16 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       setConversations(convs);
     });
 
+    const unsubNotifs = getNotifications(user.uid, (data) => {
+      const prevUnreadCount = notifications.filter(n => !n.read).length;
+      const newUnreadCount = data.filter((n: any) => !n.read).length;
+      
+      if (newUnreadCount > prevUnreadCount) {
+        notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
+      }
+      setNotifications(data);
+    }, 'admin');
+
     getSystemSettings().then(settings => {
       if (settings) setSystemSettings(settings);
     });
@@ -310,8 +327,9 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     return () => {
       unsubUnread?.();
       unsubscribeConversations?.();
+      unsubNotifs?.();
     };
-  }, [user.uid, isUserAdmin]); // NOT dependent on activeTab
+  }, [user.uid, isUserAdmin, notifications.length]);
 
   useEffect(() => {
     // Tab-specific data loading
@@ -1960,8 +1978,119 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 md:p-16 overflow-y-auto">
-        <AnimatePresence mode="wait">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <header className="p-8 md:p-10 border-b border-white/5 flex items-center justify-between bg-black/50 backdrop-blur-xl z-20 shrink-0">
+          <div className="flex items-center gap-4">
+             <div className="flex flex-col">
+               <h2 className="text-2xl font-black italic uppercase tracking-tighter">
+                 {activeTab.replace('-', ' ').toUpperCase()}
+               </h2>
+               <div className="flex items-center gap-2 mt-1">
+                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                 <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic">Secure Connection Active</span>
+               </div>
+             </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            {/* Notification Bell */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all group"
+              >
+                <Bell size={20} className={notifications.some(n => !n.read) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                {notifications.some(n => !n.read) && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white border-2 border-black">
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-4 w-[400px] bg-[#111] border border-white/10 rounded-[2rem] shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#1a1a1a]">
+                      <h3 className="text-sm font-black uppercase tracking-tighter">Admin Alerts</h3>
+                      <button 
+                        onClick={async () => {
+                          const { markNotificationAsRead } = await import('../services/database');
+                          await Promise.all(notifications.filter(n => !n.read).map(n => markNotificationAsRead(n.id)));
+                        }}
+                        className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest hover:underline"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+                      {notifications.length > 0 ? (
+                        notifications.map((notif) => (
+                          <div 
+                            key={notif.id}
+                            className={`p-6 border-b border-white/5 hover:bg-white/5 transition-colors relative cursor-pointer ${!notif.read ? 'bg-[#c7c42a]/5' : ''}`}
+                            onClick={async () => {
+                              const { markNotificationAsRead } = await import('../services/database');
+                              if (!notif.read) await markNotificationAsRead(notif.id);
+                              if (notif.projectId) setActiveTab('projects');
+                              if (notif.type === 'leave_requested') setActiveTab('leaves');
+                              setShowNotifications(false);
+                            }}
+                          >
+                            <div className="flex gap-4">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                notif.type === 'leave_requested' ? 'bg-orange-500/20 text-orange-500' : 
+                                notif.type === 'new_project' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' :
+                                'bg-blue-500/20 text-blue-500'
+                              }`}>
+                                <Bell size={18} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start mb-1">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">{notif.title}</span>
+                                  <span className="text-[8px] font-bold text-white/20 uppercase">{formatDate(notif.createdAt)}</span>
+                                </div>
+                                <p className="text-xs font-bold text-white/70 leading-relaxed">{notif.message}</p>
+                              </div>
+                            </div>
+                            {!notif.read && (
+                              <div className="absolute top-1/2 right-4 -translate-y-1/2 w-1.5 h-1.5 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-20 text-center text-white/20 uppercase font-black text-xs tracking-widest">
+                          No alerts in the queue
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="h-10 w-px bg-white/5 mx-2" />
+            
+            <div className="flex items-center gap-4 bg-white/5 p-2 pr-6 rounded-2xl border border-white/10">
+              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
+                <User size={20} className="text-[#c7c42a]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-tighter leading-none italic">{profile?.displayName || 'Admin'}</span>
+                <span className="text-[8px] font-black text-[#c7c42a] uppercase tracking-widest mt-1">Status: Master</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic Content */}
+        <div className="flex-1 p-8 md:p-16 overflow-y-auto">
+          <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 20 }}
@@ -2080,6 +2209,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             )}
           </motion.div>
         </AnimatePresence>
+        </div>
         <BottomNav userId={user!.uid} role="admin" onOpenMessages={() => setActiveTab('messages')} />
       </main>
 
@@ -2496,15 +2626,35 @@ Description: ${viewingProject.description || 'No description provided.'}
 
                     <section>
                       <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Intelligence</h4>
-                      <div className="bg-[#c7c42a]/5 p-6 rounded-full border border-[#c7c42a]/10 space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
+                      <div className="bg-[#c7c42a]/5 p-6 rounded-3xl border border-[#c7c42a]/10 space-y-4">
+                        <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
                             Requested Domain
                           </span>
-                          <span className="text-[10px] font-black uppercase italic text-[#c7c42a]">
+                          <span className="text-xs font-black uppercase italic text-[#c7c42a]">
                             {viewingProject.requestedDomain || viewingProject.domain || 'N/A'}
                           </span>
                         </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                            Domain Status
+                          </span>
+                          <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${
+                             viewingProject.domainStatus === 'owned' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                          }`}>
+                            {viewingProject.domainStatus === 'owned' ? 'Already Owned' : 'Need to Buy'}
+                          </span>
+                        </div>
+                        {viewingProject.domainPreferences && (
+                          <div>
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-1">
+                              Preferences
+                            </span>
+                            <span className="text-xs font-bold text-white uppercase italic">
+                              {viewingProject.domainPreferences}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </section>
 

@@ -96,6 +96,7 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read: if isAuth() && canAccessProject();
         allow create: if isAuth() && incoming().senderId == request.auth.uid && canAccessProject();
+        allow update: if isAuth();
       }
     }
 
@@ -103,19 +104,39 @@ service cloud.firestore {
     // CONVERSATIONS
     // =========================
     match /conversations/{conversationId} {
-      function isParticipant() {
-        return isAdmin() || (request.auth.uid in resource.data.participants);
+      function getConversation() {
+        return existsAfter(/databases/$(database)/documents/conversations/$(conversationId))
+          ? getAfter(/databases/$(database)/documents/conversations/$(conversationId))
+          : get(/databases/$(database)/documents/conversations/$(conversationId));
       }
 
-      allow get: if isAuth() && isParticipant();
+      function isParticipant() {
+        return isAuth() && (
+          isAdmin() || 
+          request.auth.uid in resource.data.participants
+        );
+      }
+
+      function isParticipantAfter() {
+        return isAuth() && (
+          isAdmin() || 
+          request.auth.uid in getConversation().data.participants
+        );
+      }
+
+      allow get: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
       allow list: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
-      allow update: if isAuth() && isParticipant();
+      allow update: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
       allow create: if isAuth() && request.auth.uid in incoming().participants;
 
       match /messages/{messageId} {
-        allow read: if isAuth() && isParticipant();
-        allow create: if isAuth() && incoming().senderId == request.auth.uid && isParticipant();
-        allow update, delete: if isAdmin();
+        allow read: if isAuth() && isParticipantAfter();
+        allow create: if isAuth() && incoming().senderId == request.auth.uid && isParticipantAfter();
+        allow update: if isAuth() && (
+          isAdmin() || 
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'seen', 'seenTime'])
+        );
+        allow delete: if isAdmin();
       }
 
       match /typing/{userId} {

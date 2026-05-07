@@ -31,7 +31,7 @@ import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
 import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
-import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
 
 const AVAILABLE_FEATURES = [
   'Google Login System',
@@ -545,15 +545,34 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     setDomainData(prev => ({ ...prev, preferences: newPrefs }));
   };
 
-  const handleDomainNext = () => {
-    const domainPrefs = domainData.preferences.map(ext => `${domainData.businessName}${ext}`);
-    setFormData(prev => ({ 
-      ...prev, 
-      websiteName: domainPrefs[0], 
-      domain: domainPrefs[0],
-      domainPreferences: domainPrefs
-    }));
-    setStep(4);
+  const [isCheckingDomain, setIsCheckingDomain] = useState(false);
+  const [domainTaken, setDomainTaken] = useState(false);
+
+  const handleDomainNext = async () => {
+    if (!formData.domain) return;
+    
+    setIsCheckingDomain(true);
+    
+    const restrictedDomains = ['google.com', 'youtube.com', 'facebook.com', 'instagram.com', 'twitter.com', 'apple.com', 'amazon.com', 'microsoft.com', 'webbylaunch.com', 'admin.com', 'test.com'];
+    if (restrictedDomains.some(d => formData.domain?.toLowerCase().includes(d))) {
+      toast.error("SECURITY ALERT: This domain is restricted or system-reserved.");
+      setIsCheckingDomain(false);
+      return;
+    }
+
+    const { checkDomainInUse } = await import('../services/database');
+    const inUse = await checkDomainInUse(formData.domain);
+    
+    if (inUse) {
+      setDomainTaken(true);
+      toast.error("MISSION ABORTED: This domain is already registered in our secure network.");
+      setIsCheckingDomain(false);
+      return;
+    }
+
+    setDomainTaken(false);
+    setStep(5); // Moving to design step
+    setIsCheckingDomain(false);
   };
 
   const toggleFeature = (feature: string) => {
@@ -1076,25 +1095,117 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
 
             <div className="space-y-8">
-              <div className="relative group">
-                <input 
-                  type="text"
-                  value={formData.domain}
-                  onChange={(e) => {
-                    const val = e.target.value.toLowerCase().trim();
-                    handleInputChange('domain', val);
-                    handleInputChange('requestedDomain', val);
-                    handleInputChange('websiteName', val.split('.')[0]);
-                  }}
-                  placeholder="e.g. yourbusiness.com"
-                  className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
-                />
+              {/* Ownership Toggle */}
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => handleInputChange('ownsDomain', false)}
+                  className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center gap-2 ${
+                    !formData.ownsDomain
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-white/5 border-white/5 opacity-40 hover:opacity-100'
+                  }`}
+                >
+                  <Globe size={24} className={!formData.ownsDomain ? 'text-primary' : 'text-white/40'} />
+                  <span className="text-[10px] font-black uppercase italic tracking-tighter">Need a Domain</span>
+                </button>
+                <button
+                  onClick={() => handleInputChange('ownsDomain', true)}
+                  className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center gap-2 ${
+                    formData.ownsDomain
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-white/5 border-white/5 opacity-40 hover:opacity-100'
+                  }`}
+                >
+                  <Check size={24} className={formData.ownsDomain ? 'text-primary' : 'text-white/40'} />
+                  <span className="text-[10px] font-black uppercase italic tracking-tighter">Own a Domain</span>
+                </button>
               </div>
+
+              {!formData.ownsDomain ? (
+                <div className="space-y-6">
+                  <div className="relative group">
+                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest ml-4 italic mb-2 block">Desired Domain Name</label>
+                    <input 
+                      type="text"
+                      value={formData.domain}
+                      onChange={(e) => {
+                        const val = e.target.value.toLowerCase().trim();
+                        handleInputChange('domain', val);
+                        handleInputChange('requestedDomain', val);
+                        handleInputChange('websiteName', val.split('.')[0]);
+                      }}
+                      placeholder="e.g. yourbusiness.com"
+                      className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest ml-4 italic">Alternative Choices (Top 3)</label>
+                    <div className="grid grid-cols-1 gap-3">
+                      {[0, 1, 2].map((i) => (
+                        <input
+                          key={i}
+                          type="text"
+                          placeholder={`CHOICE #${i + 1} (e.g. brand-keyword.com)`}
+                          className="w-full p-4 rounded-2xl bg-white/5 border border-white/5 text-white/60 focus:outline-none focus:border-primary/30 font-bold italic text-sm tracking-tighter uppercase"
+                          value={formData.domainChoices?.[i] || ''}
+                          onChange={(e) => {
+                            const newChoices = [...(formData.domainChoices || ['', '', ''])];
+                            newChoices[i] = e.target.value.toLowerCase().trim();
+                            handleInputChange('domainChoices', newChoices);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="relative group">
+                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest ml-4 italic mb-2 block">Your Registered Domain</label>
+                    <input 
+                      type="text"
+                      value={formData.domain}
+                      onChange={(e) => {
+                        const val = e.target.value.toLowerCase().trim();
+                        handleInputChange('domain', val);
+                        handleInputChange('requestedDomain', val);
+                        handleInputChange('websiteName', val.split('.')[0]);
+                      }}
+                      placeholder="e.g. alreadyowned.com"
+                      className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest ml-4 italic">Registrar (e.g. GoDaddy)</label>
+                       <input 
+                        type="text"
+                        value={formData.domainRegistrar || ''}
+                        onChange={(e) => handleInputChange('domainRegistrar', e.target.value)}
+                        placeholder="GODADDY / NAMECHEAP"
+                        className="w-full p-4 rounded-2xl bg-white/5 border border-white/5 text-white/60 focus:outline-none focus:border-primary/30 font-bold italic text-sm tracking-tighter uppercase"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest ml-4 italic">Transfer Code (Optional)</label>
+                       <input 
+                        type="text"
+                        value={formData.domainTransferAuth || ''}
+                        onChange={(e) => handleInputChange('domainTransferAuth', e.target.value)}
+                        placeholder="EPP / AUTH CODE"
+                        className="w-full p-4 rounded-2xl bg-white/5 border border-white/5 text-white/60 focus:outline-none focus:border-primary/30 font-bold italic text-sm tracking-tighter uppercase"
+                       />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="p-6 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
                 <p className="text-yellow-500 font-bold uppercase tracking-tight text-xs flex items-start gap-2">
                   <span className="shrink-0">⚠️</span>
-                  Domain charges are NOT included in your plan. You will need to purchase the domain separately during checkout. Our team will verify and secure this domain for you.
+                  Domain charges are NOT included in your plan. If you need a new domain, we will invoice you the registration fee separately.
                 </p>
               </div>
 
@@ -1114,12 +1225,19 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 Back
               </button>
               <button 
-                onClick={handleNext} 
-                disabled={!formData.domain}
-                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleDomainNext} 
+                disabled={!formData.domain || isCheckingDomain}
+                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{ backgroundColor: formData.primaryColor }}
               >
-                Continue
+                {isCheckingDomain ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>Verifying...</span>
+                  </>
+                ) : (
+                  <span>Continue</span>
+                )}
               </button>
             </div>
           </motion.div>

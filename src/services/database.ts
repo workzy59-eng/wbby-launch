@@ -11,11 +11,18 @@ export { db };
 
 export const createNotification = async (data: any) => {
   try {
-    await addDoc(collection(db, 'notifications'), {
+    const notificationData = {
       ...data,
       read: false,
       createdAt: serverTimestamp()
-    });
+    };
+    
+    // Ensure userId or role is present
+    if (!notificationData.userId && !notificationData.role) {
+      console.warn('Notification missing recipient (userId or role):', notificationData);
+    }
+    
+    await addDoc(collection(db, 'notifications'), notificationData);
   } catch (error) {
     console.error('Notification failed:', error);
   }
@@ -366,6 +373,21 @@ export const checkUsernameUnique = async (username: string) => {
   }
 };
 
+// Domain availability check
+export const checkDomainInUse = async (domain: string) => {
+  try {
+    const dLower = domain.toLowerCase();
+    const q1 = query(collection(db, 'projects'), where('domain', '==', dLower), limit(1));
+    const q2 = query(collection(db, 'projects'), where('requestedDomain', '==', dLower), limit(1));
+    
+    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    return !snap1.empty || !snap2.empty;
+  } catch (error) {
+    console.error('Error checking domain:', error);
+    return false;
+  }
+};
+
 export const getUserProfile = async (uid: string) => {
   const path = `users/${uid}`;
   try {
@@ -479,10 +501,22 @@ export const getClients = async () => {
 export const requestLeave = async (leaveData: any) => {
   const path = 'leave_requests';
   try {
-    await addDoc(collection(db, 'leave_requests'), {
+    const docRef = await addDoc(collection(db, 'leave_requests'), {
       ...leaveData,
       createdAt: serverTimestamp(),
     });
+
+    // Notify admins about the new leave request
+    await createNotification({
+      role: 'admin',
+      type: 'leave_requested',
+      title: 'New Leave Request',
+      message: `${leaveData.userName} has requested leave for ${leaveData.startDate} to ${leaveData.endDate}.`,
+      leaveRequestId: docRef.id,
+      userId: leaveData.userId // Keep requester ID for context
+    });
+
+    return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
   }
@@ -525,6 +559,21 @@ export const updateLeaveStatus = async (requestId: string, status: string) => {
   const path = `leave_requests/${requestId}`;
   try {
     await updateDoc(doc(db, 'leave_requests', requestId), { status, updatedAt: serverTimestamp() });
+    
+    // Get the leave request to know who to notify
+    const leaveSnap = await getDoc(doc(db, 'leave_requests', requestId));
+    if (leaveSnap.exists()) {
+      const leaveData = leaveSnap.data();
+      
+      await createNotification({
+        userId: leaveData.userId,
+        type: 'leave_status_update',
+        title: `Leave ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+        message: `Your leave request from ${leaveData.startDate} has been ${status}.`,
+        leaveRequestId: requestId,
+        status: status
+      });
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -716,6 +765,15 @@ export const getProject = async (projectId: string) => {
 export const createProject = async (form: any) => {
   if (!currentUser) throw new Error("Auth required");
   const path = 'projects';
+  
+  // Strict Domain Check
+  if (form.onboardingData?.domain) {
+    const isTaken = await checkDomainInUse(form.onboardingData.domain);
+    if (isTaken) {
+      throw new Error(`Domain "${form.onboardingData.domain}" is already registered in our system.`);
+    }
+  }
+
   try {
     const docRef = await addDoc(collection(db, "projects"), {
       userId: currentUser.uid,
@@ -742,13 +800,25 @@ export const createProject = async (form: any) => {
       progress: 0,
       isDeleted: false,
       isLocked: false,
+      logoUrl: form.onboardingData?.logoUrl || '',
+      documentsUrl: form.onboardingData?.documentsUrl || '',
+      domain: form.onboardingData?.domain || '',
+      requestedDomain: form.onboardingData?.requestedDomain || '',
+      domainPreferences: form.onboardingData?.domainPreferences || '',
       onboardingData: form.onboardingData || null
     });
 
     const projectId = docRef.id;
 
-    // Remove automatic admin conversation creation. 
-    // Projects now stay in the unassigned pool for developers to claim.
+    // Notify admins about the new project
+    await createNotification({
+      role: 'admin',
+      type: 'new_project',
+      title: 'New Mission Received',
+      message: `A new project for ${form.businessName} has been submitted by ${form.userName}.`,
+      projectId: projectId,
+      clientName: form.userName
+    });
     
     return projectId;
   } catch (error) {
@@ -759,10 +829,37 @@ export const createProject = async (form: any) => {
 export const updateProject = async (projectId: string, updateData: any) => {
   const path = `projects/${projectId}`;
   try {
+    const oldSnap = await getDoc(doc(db, 'projects', projectId));
+    const oldData = oldSnap.exists() ? oldSnap.data() : null;
+    
     await updateDoc(doc(db, 'projects', projectId), {
       ...updateData,
       updatedAt: serverTimestamp()
     });
+
+    if (oldData) {
+      // Notify client when status changes
+      if (updateData.status && updateData.status !== oldData.status) {
+        await createNotification({
+          userId: oldData.userId,
+          type: 'progress',
+          title: 'Project Status Updated',
+          message: `Your project "${oldData.businessName}" is now ${updateData.status}.`,
+          projectId: projectId
+        });
+      }
+
+      // Notify admin when website URL is submitted
+      if (updateData.websiteUrl && updateData.websiteUrl !== oldData.websiteUrl) {
+         await createNotification({
+          role: 'admin',
+          type: 'system',
+          title: 'Mission URL Submitted',
+          message: `Developer has submitted a preview URL for project "${oldData.businessName}".`,
+          projectId: projectId
+        });
+      }
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }

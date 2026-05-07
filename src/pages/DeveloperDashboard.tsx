@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -26,7 +26,8 @@ import {
   XCircle,
   Download,
   User as UserIcon,
-  FileText
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project, Attendance, LeaveRequest } from '../types';
@@ -67,18 +68,24 @@ interface DeveloperDashboardProps {
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance';
+type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance' | 'meetings';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [assignedClients, setAssignedClients] = useState<UserProfile[]>([]);
   const [unassignedProjects, setUnassignedProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+  }, []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAcceptPopup, setShowAcceptPopup] = useState<string | null>(null);
   const [showRejectPopup, setShowRejectPopup] = useState<string | null>(null);
@@ -268,12 +275,26 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   useEffect(() => {
     if (!user?.uid) return;
 
-    const unsubProjects = getProjects((projs) => {
+    const unsubProjects = getProjects(async (projs) => {
       setProjects(projs);
+      
+      // Fetch associated client profiles
+      const uniqueUserIds = Array.from(new Set(projs.map(p => p.userId).filter(Boolean)));
+      if (uniqueUserIds.length > 0) {
+        const profiles = await Promise.all(uniqueUserIds.map(uid => getUserProfile(uid!)));
+        setAssignedClients(profiles.filter(p => p !== null) as UserProfile[]);
+      }
+      
       setLoading(false);
     }, user.uid, 'developer');
 
     const unsubNotifications = getNotifications(user.uid, (notifs) => {
+      const prevUnread = notifications.filter(n => !n.read).length;
+      const newUnread = notifs.filter((n: any) => !n.read).length;
+      
+      if (newUnread > prevUnread) {
+        notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
+      }
       setNotifications(notifs);
     });
 
@@ -293,7 +314,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       unsubNotifications();
       unsubUnassigned();
     };
-  }, [user?.uid, activeTab]);
+  }, [user?.uid, activeTab, notifications.length]);
 
   // Sync settings when profile updates
   useEffect(() => {
@@ -490,7 +511,10 @@ SYSTEM PLAN: ${project.plan?.toUpperCase() || 'BASIC'}
 PRIMARY COLOR: ${project.primaryColor || '#C7C42A'}
 SECONDARY COLOR: ${project.secondaryColor || '#000000'}
 SELECTED DOMAIN: ${project.domain || 'PENDING'}
-DOMAIN PREFERENCES: ${project.domainPreferences?.join(', ') || 'N/A'}
+DOMAIN STATUS: ${project.ownsDomain ? 'HAS OWN DOMAIN' : 'NEEDS ONE REGISTERED'}
+DOMAIN PREFERENCES: ${project.domainPreferences || 'N/A'}
+REGISTRAR: ${project.domainRegistrar || 'N/A'}
+TRANSFER AUTH: ${project.domainTransferAuth || 'N/A'}
 FEATURES: ${project.selectedFeatures?.join(', ') || 'DEFAULT STACK'}
 
 MISSION PARAMETERS
@@ -753,6 +777,7 @@ Description: ${project.description || 'No description provided.'}
           <NavItem tab="dashboard" icon={LayoutDashboard} label="Overview" />
           <NavItem tab="projects" icon={Briefcase} label="My Task" />
           <NavItem tab="pool" icon={Plus} label="Pool" />
+          <NavItem tab="meetings" icon={Video} label="Meetings" />
           <NavItem tab="chat" icon={MessageSquare} label={unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages'} />
           <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
           <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
@@ -863,6 +888,27 @@ Description: ${project.description || 'No description provided.'}
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-32 md:pb-10 custom-scrollbar">
           <AnimatePresence mode="wait">
+            {activeTab === 'meetings' && (
+              <div className="p-8 space-y-10">
+                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                   <div>
+                     <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white">Project Syncs</h2>
+                     <p className="text-white/40 text-xs font-black uppercase tracking-widest mt-1">Meetings for your assigned missions</p>
+                   </div>
+                 </div>
+                 
+                 <div className="bg-[#0a0a0a] border border-white/5 rounded-[3rem] p-4 md:p-10">
+                    {user && profile && (
+                      <MeetingList 
+                        user={user} 
+                        profile={profile} 
+                        allClients={assignedClients}
+                      />
+                    )}
+                 </div>
+              </div>
+            )}
+
             {activeTab === 'chat' ? (
               <div className="h-full -m-6 md:-m-10">
                 <MessagesModule 
@@ -1041,10 +1087,15 @@ Description: ${project.description || 'No description provided.'}
                              AI Prompt <Download size={14} />
                            </button>
                            <button 
-                             onClick={() => handleContact(p)}
-                             className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+                             onClick={() => {
+                               if (p.logoUrl) window.open(p.logoUrl, '_blank');
+                               if (p.documentsUrl) window.open(p.documentsUrl, '_blank');
+                               if (!p.logoUrl && !p.documentsUrl) toast.error('No assets found');
+                               else toast.success('Opening client assets...');
+                             }}
+                             className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all"
                            >
-                             {/iPhone|Android/i.test(navigator.userAgent) ? 'Call' : 'Contact'} <Info size={14} />
+                             Assets <FileText size={14} />
                            </button>
                         </div>
 
@@ -1920,8 +1971,27 @@ Description: ${project.description || 'No description provided.'}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Intelligence</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
-                        <span className="text-black/40 uppercase">User Requested Domain</span>
-                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.requestedDomain || selectedProjectForDrawer.domainPreferences?.[0] || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Requested Domain</span>
+                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.requestedDomain || selectedProjectForDrawer.domain || 'N/A'}</span>
+                        
+                        <span className="text-black/40 uppercase">Owns Domain?</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.ownsDomain ? 'YES' : 'NO'}</span>
+
+                        {selectedProjectForDrawer.ownsDomain ? (
+                          <>
+                            <span className="text-black/40 uppercase">Registrar</span>
+                            <span className="text-right uppercase">{selectedProjectForDrawer.domainRegistrar || 'N/A'}</span>
+                            <span className="text-black/40 uppercase">Auth Code</span>
+                            <span className="text-right uppercase">{selectedProjectForDrawer.domainTransferAuth || 'N/A'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-black/40 uppercase">Alt Choices</span>
+                            <span className="text-right uppercase text-[9px] leading-tight">
+                              {selectedProjectForDrawer.domainChoices?.filter(c => c).join(', ') || 'NONE'}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -1972,14 +2042,37 @@ Description: ${project.description || 'No description provided.'}
                   {/* Files & Assets */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Files & Assets</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all">
-                          <div className="flex items-center gap-3">
-                            <FileText size={16} className="text-black/40" />
-                            <span className="text-[10px] font-bold uppercase">Specifications.pdf</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                       {selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl ? (
+                          <div 
+                            onClick={() => window.open(selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl, '_blank')}
+                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all"
+                          >
+                             <div className="flex items-center gap-3">
+                               <ImageIcon size={16} className="text-black/40" />
+                               <span className="text-[10px] font-bold uppercase">Company Logo</span>
+                             </div>
+                             <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
                           </div>
-                          <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
-                       </div>
+                       ) : null}
+
+                       {selectedProjectForDrawer.documentsUrl || (selectedProjectForDrawer as any).onboardingData?.documentsUrl ? (
+                          <div 
+                            onClick={() => window.open(selectedProjectForDrawer.documentsUrl || (selectedProjectForDrawer as any).onboardingData?.documentsUrl, '_blank')}
+                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all"
+                          >
+                             <div className="flex items-center gap-3">
+                               <FileText size={16} className="text-black/40" />
+                               <span className="text-[10px] font-bold uppercase">Business Assets</span>
+                             </div>
+                             <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
+                          </div>
+                       ) : null}
+
+                       {!selectedProjectForDrawer.logoUrl && !(selectedProjectForDrawer as any).onboardingData?.logoUrl && 
+                        !selectedProjectForDrawer.documentsUrl && !(selectedProjectForDrawer as any).onboardingData?.documentsUrl && (
+                         <p className="text-[9px] font-black text-black/20 uppercase tracking-widest italic py-4">No assets provided by client</p>
+                       )}
                     </div>
                   </div>
                 </div>

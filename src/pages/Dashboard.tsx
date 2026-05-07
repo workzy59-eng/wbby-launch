@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
@@ -85,7 +85,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'analytics'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
   
   // Whitelisted developers should be on the Developer Dashboard
   useEffect(() => {
@@ -99,6 +99,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+  }, []);
   
   // Handle Payment Success
   useEffect(() => {
@@ -241,11 +246,17 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   useEffect(() => {
     if (user?.uid) {
       const unsubscribe = getNotifications(user.uid, (data) => {
+        const prevUnread = notifications.filter(n => !n.read).length;
+        const newUnread = data.filter((n: any) => !n.read).length;
+        
+        if (newUnread > prevUnread) {
+          notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
+        }
         setNotifications(data);
       });
       return () => unsubscribe();
     }
-  }, [user?.uid]);
+  }, [user?.uid, notifications.length]);
 
   useEffect(() => {
     const fetchStatsOrAdmin = async () => {
@@ -259,12 +270,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           const admins = await getAdmins();
           const primaryAdmin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
           setAdminProfile(primaryAdmin);
-          
-          // Only fetch full list if explicitly requested or on analytics
-          if (activeTab === 'analytics') {
-             const { getUserCount } = await import('../services/database');
-             getUserCount().then(count => setTotalUsersCount(count));
-          }
         } else {
           // Clients need to find an admin to chat with
           const admins = await getAdmins();
@@ -567,7 +572,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <nav className="flex-1 flex flex-col gap-5">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'analytics', icon: TrendingUp, label: 'Pulse' },
+            { id: 'progress', icon: FolderKanban, label: 'Pulse' },
+            { id: 'meetings', icon: Video, label: 'Meetings' },
             ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
             { id: 'payments', icon: CreditCard, label: 'Plans' },
             { id: 'settings', icon: Settings, label: 'User' },
@@ -664,7 +670,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'analytics', icon: TrendingUp, label: 'Stats' },
             { id: 'progress', icon: FolderKanban, label: 'Progress' },
             ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
             { id: 'meetings', icon: Video, label: 'Meets' },
@@ -751,7 +756,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       </p>
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
                       <button 
                          onClick={() => setActiveTab('progress')}
                          className="w-full md:w-auto px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
@@ -760,9 +765,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       </button>
                       <button 
                          onClick={() => navigate('/onboarding')}
-                         className="w-full md:w-auto px-12 py-6 bg-white/5 border border-white/10 text-white font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:bg-white/10 transition-all"
+                         className="w-16 h-16 md:w-20 md:h-20 bg-white/5 border-2 border-white/20 text-white rounded-full flex items-center justify-center hover:bg-[#FFFF00] hover:text-black hover:border-[#FFFF00] transition-all hover:scale-110 group relative"
+                         title="Start New Mission"
                       >
-                         Start New Mission +
+                         <Plus size={32} className="group-hover:rotate-90 transition-transform duration-500" />
+                         <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Start New Mission</span>
                       </button>
                     </div>
                   </div>
@@ -778,125 +785,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   projects={projects}
                   initialRecipientId={assignedDeveloper?.uid || adminProfile?.uid}
                 />
-              ) : activeTab === 'analytics' ? (
-                <div className="space-y-12">
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Real-time Pulse</span>
-                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Intelligence</h2>
-                  </div>
-
-                  {/* Overview Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { label: 'Total Projects', value: stats.total, icon: FolderKanban, color: '#c7c42a' },
-                { label: 'Active Missions', value: stats.active, icon: Activity, color: '#c7c42a' },
-                { label: 'In Review', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: ShieldCheck, color: '#c7c42a' },
-                { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: '#c7c42a' },
-              ].map((stat, i) => (
-                      <div key={i} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-[#c7c42a]/20 transition-all">
-                        <div className="flex justify-between items-start mb-6">
-                          <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
-                            <stat.icon size={24} style={{ color: stat.color }} />
-                          </div>
-                        </div>
-                        <div className="text-3xl font-black text-white">{stat.value}</div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">{stat.label}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Charts Grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Performance History */}
-                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 min-h-[400px]">
-                      <div className="flex justify-between items-center mb-10">
-                        <h3 className="text-2xl font-black uppercase italic tracking-tighter">System Performance</h3>
-                        <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] text-[8px] font-black uppercase rounded-full border border-[#c7c42a]/20">24h History</span>
-                      </div>
-                      <div className="h-[250px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={[
-                            { time: '00:00', load: 30 },
-                            { time: '04:00', load: 45 },
-                            { time: '08:00', load: 32 },
-                            { time: '12:00', load: 60 },
-                            { time: '16:00', load: 48 },
-                            { time: '20:00', load: 55 },
-                            { time: '23:59', load: 40 },
-                          ]}>
-                            <defs>
-                              <linearGradient id="colorLoad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#c7c42a" stopOpacity={0.3}/>
-                                <stop offset="95%" stopColor="#c7c42a" stopOpacity={0}/>
-                              </linearGradient>
-                            </defs>
-                            <XAxis 
-                              dataKey="time" 
-                              stroke="#ffffff20" 
-                              fontSize={10} 
-                              tickLine={false} 
-                              axisLine={false}
-                            />
-                            <Tooltip 
-                              contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                              itemStyle={{ color: '#c7c42a' }}
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="load" 
-                              stroke="#c7c42a" 
-                              strokeWidth={3}
-                              fillOpacity={1} 
-                              fill="url(#colorLoad)" 
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-
-                    {/* Resource Allocation */}
-                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 min-h-[400px]">
-                      <div className="flex justify-between items-center mb-10">
-                        <h3 className="text-2xl font-black uppercase italic tracking-tighter">Resource Pulse</h3>
-                        <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] text-[8px] font-black uppercase rounded-full border border-[#c7c42a]/20">Live Sync</span>
-                      </div>
-                      <div className="h-[250px] w-full flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={[
-                                { name: 'Development', value: 45 },
-                                { name: 'Compute', value: 25 },
-                                { name: 'Storage', value: 20 },
-                                { name: 'Bandwidth', value: 10 },
-                              ]}
-                              innerRadius={60}
-                              outerRadius={80}
-                              paddingAngle={5}
-                              dataKey="value"
-                            >
-                              {[
-                                '#c7c42a',
-                                '#c7c42a80',
-                                '#c7c42a40',
-                                '#c7c42a10',
-                              ].map((color, index) => (
-                                <Cell key={`cell-${index}`} fill={color} stroke="none" />
-                              ))}
-                            </Pie>
-                            <Tooltip 
-                              contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                        <div className="absolute flex flex-col items-center">
-                          <span className="text-2xl font-black text-white">92%</span>
-                          <span className="text-[8px] font-black uppercase tracking-widest text-white/20">Efficiency</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               ) : activeTab === 'progress' ? (
                 <div className="space-y-12">
                    <div className="flex flex-col gap-2">

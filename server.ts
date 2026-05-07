@@ -16,8 +16,8 @@ dotenv.config();
 // Initialize Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_key: process.env.CLOUDINARY_API_KEY || process.env.VITE_CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET || process.env.VITE_CLOUDINARY_API_SECRET
 });
 
 // Configure Multer for Cloudinary
@@ -42,9 +42,11 @@ const upload = multer({
 if (!admin.apps.length) {
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
   let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  
   if (clientEmail) {
     clientEmail = clientEmail.trim().replace(/^["']|["']$/g, '');
   }
+  
   let projectId = process.env.FIREBASE_PROJECT_ID || firebaseConfig.projectId;
   if (projectId) {
     projectId = projectId.trim().replace(/^["']|["']$/g, '');
@@ -52,18 +54,33 @@ if (!admin.apps.length) {
 
   let privateKey = rawKey;
   if (privateKey) {
-    // 1. Basic trim and quote removal
+    // Basic sanitization
     privateKey = privateKey.trim();
-    if ((privateKey.startsWith('"') && privateKey.endsWith('"')) || 
-        (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
-      privateKey = privateKey.slice(1, -1);
+    
+    // Remove surrounding quotes if they exist (could be double or single)
+    while ((privateKey.startsWith('"') && privateKey.endsWith('"')) || 
+           (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+      privateKey = privateKey.slice(1, -1).trim();
     }
     
-    // 2. Critical: Replace literal \n with real newlines
+    // Replace literal \n with real newlines
     privateKey = privateKey.replace(/\\n/g, '\n');
     
-    // 3. If it's a multi-line string with dashes, it's ready. 
-    // No more aggressive regex reformatting to avoid truncating the key.
+    // Some environments might double escape it
+    privateKey = privateKey.replace(/\\\\n/g, '\n');
+    
+    // Ensure it starts with the header on its own line if it's there
+    if (!privateKey.includes('\n') && privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      // If it's a single line key with spaces instead of newlines, fix it
+      privateKey = privateKey
+        .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
+        .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+    }
+    
+    // Final check to ensure header and footer are present and correct
+    if (privateKey.includes('BEGIN PRIVATE KEY') && !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
+       privateKey = '-----BEGIN PRIVATE KEY-----\n' + privateKey.split('BEGIN PRIVATE KEY-----')[1];
+    }
   }
   
   const hasValidKey = privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----');
@@ -76,7 +93,7 @@ if (!admin.apps.length) {
         credential: admin.credential.cert({
           projectId,
           clientEmail,
-          privateKey,
+          privateKey: privateKey!,
         }),
         storageBucket: firebaseConfig.storageBucket
       });

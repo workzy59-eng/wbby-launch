@@ -231,6 +231,8 @@ export interface Project {
   locationState?: string;
   preferredColors?: string[];
   requestedDomain?: string;
+  domainStatus?: 'owned' | 'buy';
+  domainPreferences?: string;
   description: string;
   websiteName: string;
   primaryColor: string;
@@ -242,7 +244,6 @@ export interface Project {
   selectedFeatures?: string[];
   templateId: string;
   domain?: string;
-  domainPreferences?: string[];
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Standard' | 'Premium' | 'Pro';
   paymentStatus?: 'pending' | 'paid' | 'verifying' | 'unpaid';
@@ -275,6 +276,10 @@ export interface Project {
   startedAt?: string | Timestamp;
   payout?: number;
   domainPrice?: number;
+  ownsDomain?: boolean;
+  domainRegistrar?: string;
+  domainTransferAuth?: string;
+  domainChoices?: string[];
 }
 
 export interface Attachment {
