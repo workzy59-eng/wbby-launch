@@ -29,7 +29,6 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
-import { generateTemplateImage } from '../services/geminiService';
 import { SystemSettings } from '../types';
 import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
 
@@ -85,7 +84,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
 
         <div className="flex-1 overflow-y-auto bg-white text-black font-sans no-scrollbar flex flex-col">
           {/* Navbar */}
-          <nav className="p-5 border-b flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-md z-30">
+          <nav className="p-5 border-b flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-md z-30" style={{ borderBottomColor: data.primaryColor + '40' }}>
             <div className="flex items-center gap-3">
               {data.logoUrl ? (
                 <img src={data.logoUrl} alt="Logo" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
@@ -99,7 +98,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
             <div className="flex gap-4 items-center">
                <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Home</span>
                <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Services</span>
-               <button className="px-4 py-2 rounded-full font-black text-[8px] uppercase tracking-widest shadow-lg text-white" style={{ backgroundColor: data.primaryColor || '#000000' }}>Contact</button>
+               <button className="px-4 py-2 rounded-full font-black text-[8px] uppercase tracking-widest shadow-lg text-white transition-all cursor-pointer hover:scale-105" style={{ backgroundColor: data.primaryColor || '#000000', border: `2.5px solid ${data.secondaryColor || '#000000'}` }}>Contact</button>
             </div>
           </nav>
 
@@ -137,8 +136,8 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
               </motion.p>
               <div className="pt-6">
                 <button 
-                  className="px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95 text-white" 
-                  style={{ backgroundColor: data.primaryColor || '#000000' }}
+                  className="px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95 text-white cursor-pointer" 
+                  style={{ backgroundColor: data.secondaryColor || '#000000', color: '#ffffff', border: `1.5px solid ${data.primaryColor || 'transparent'}` }}
                 >
                   Explore Features
                 </button>
@@ -152,9 +151,9 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
               <div key={i} className="p-6 rounded-[2rem] bg-white border border-gray-100 flex flex-col items-center gap-4 text-center group hover:shadow-2xl transition-all">
                 <div 
                   className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transform group-hover:rotate-12 transition-transform" 
-                  style={{ backgroundColor: data.primaryColor || '#c7c42a', color: '#FFFFFF' }}
+                  style={{ backgroundColor: data.primaryColor || '#c7c42a', border: `2px solid ${data.secondaryColor || '#000000'}` }}
                 >
-                  <Zap size={20} />
+                  <Zap size={20} className="text-white" />
                 </div>
                 <span className="text-[8px] font-black uppercase tracking-widest text-gray-900 leading-tight">{feature}</span>
               </div>
@@ -176,7 +175,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
           </section>
 
           {/* Footer */}
-          <footer className="p-10 bg-black text-white text-center">
+          <footer className="p-10 text-white text-center" style={{ backgroundColor: data.secondaryColor || '#000000' }}>
             <div className="text-xl font-black italic tracking-tighter uppercase mb-4">Webby<span style={{ color: data.primaryColor || '#c7c42a' }}>Launch</span></div>
             <p className="text-[8px] font-bold uppercase tracking-[0.3em] opacity-40">© 2026 {data.businessName || 'Business'}. Precision Built by WebbyLaunch.</p>
           </footer>
@@ -561,11 +560,21 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
 
     const { checkDomainInUse } = await import('../services/database');
-    const inUse = await checkDomainInUse(formData.domain);
     
-    if (inUse) {
+    // Check locally first
+    const inUseLocally = await checkDomainInUse(formData.domain);
+    if (inUseLocally) {
       setDomainTaken(true);
-      toast.error("MISSION ABORTED: This domain is already registered in our secure network.");
+      toast.error("MISSING SIGNAL: Domain is already registered in our local network.");
+      setIsCheckingDomain(false);
+      return;
+    }
+
+    // Check globally
+    const globalStatus = await checkDomain(formData.domain);
+    if (globalStatus === 'taken') {
+      setDomainTaken(true);
+      toast.error("COMMAND REJECTED: This domain is already registered to another owner globally.");
       setIsCheckingDomain(false);
       return;
     }
@@ -590,10 +599,21 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const checkDomain = async (domain: string) => {
     try {
-      const res = await fetch(`https://dns.google/resolve?name=${domain}`);
+      const RESERVED_WORDS = ['google', 'youtube', 'admin', 'byjus', 'facebook', 'instagram', 'twitter', 'amazon', 'apple', 'microsoft', 'webbylaunch', 'test'];
+      const normalized = domain.toLowerCase().trim();
+      const domainNameOnly = normalized.split('.')[0];
+      
+      if (RESERVED_WORDS.some(word => normalized.includes(word) || domainNameOnly.includes(word))) {
+        return "taken";
+      }
+
+      const res = await fetch(`https://dns.google/resolve?name=${normalized}`);
       const data = await res.json();
-      // Google DNS Answer field exists if there are records (domain taken)
-      return data.Answer ? "taken" : "available";
+      // Google DNS: Status 0 is NOERROR (domain is registered/taken globally), Status 3 is NXDOMAIN (available)
+      if (data.Status === 0 || data.Answer || data.Authority) {
+        return "taken";
+      }
+      return "available";
     } catch {
       return "error";
     }
@@ -949,7 +969,25 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                     onChange={(e) => handleInputChange('businessType', e.target.value)}
                   >
                     <option value="">SELECT CATEGORY</option>
+                    <option value="Salon">SALON</option>
+                    <option value="Salon/Studio">SALON / STUDIO</option>
+                    <option value="Salon/Makeup">SALON / MAKEUP</option>
+                    <option value="Food/Cloud Kitchen">FOOD / CLOUD KITCHEN</option>
+                    <option value="Food/Restaurant">FOOD / RESTAURANT</option>
+                    <option value="Food/Retail">FOOD / RETAIL</option>
                     <option value="Food Court">FOOD COURT</option>
+                    <option value="Service/Design">SERVICE / DESIGN</option>
+                    <option value="Professional Svc">PROFESSIONAL SVC</option>
+                    <option value="Coaching">COACHING</option>
+                    <option value="Healthcare">HEALTHCARE</option>
+                    <option value="Academy">ACADEMY</option>
+                    <option value="Local Decor">LOCAL DECOR</option>
+                    <option value="Agency">AGENCY</option>
+                    <option value="Tech Agency">TECH AGENCY</option>
+                    <option value="Interior">INTERIOR</option>
+                    <option value="Travel/Hotel">TRAVEL / HOTEL</option>
+                    <option value="Manufacturing">MANUFACTURING</option>
+                    <option value="Industrial">INDUSTRIAL</option>
                     <option value="Automobiles">AUTOMOBILES</option>
                     <option value="Clothing">CLOTHING</option>
                     <option value="Gym">GYM & FITNESS</option>
@@ -1130,12 +1168,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       value={formData.domain}
                       onChange={(e) => {
                         const val = e.target.value.toLowerCase().trim();
+                        setDomainTaken(false);
                         handleInputChange('domain', val);
                         handleInputChange('requestedDomain', val);
                         handleInputChange('websiteName', val.split('.')[0]);
                       }}
                       placeholder="e.g. yourbusiness.com"
-                      className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
+                      className={`w-full p-8 rounded-[2rem] bg-white/5 border font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase transition-all duration-300 ${
+                        domainTaken 
+                          ? 'input-error-neon border-red-500 text-red-500' 
+                          : 'border-white/10 text-white focus:outline-none focus:border-primary'
+                      }`}
                     />
                   </div>
 
@@ -1168,12 +1211,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                       value={formData.domain}
                       onChange={(e) => {
                         const val = e.target.value.toLowerCase().trim();
+                        setDomainTaken(false);
                         handleInputChange('domain', val);
                         handleInputChange('requestedDomain', val);
                         handleInputChange('websiteName', val.split('.')[0]);
                       }}
                       placeholder="e.g. alreadyowned.com"
-                      className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase"
+                      className={`w-full p-8 rounded-[2rem] bg-white/5 border font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase transition-all duration-300 ${
+                        domainTaken 
+                          ? 'input-error-neon border-red-500 text-red-500' 
+                          : 'border-white/10 text-white focus:outline-none focus:border-primary'
+                      }`}
                     />
                   </div>
 

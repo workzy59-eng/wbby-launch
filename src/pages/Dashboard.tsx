@@ -184,6 +184,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [nowTime, setNowTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
   const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [showAdminWelcome, setShowAdminWelcome] = useState(false);
@@ -1158,93 +1166,87 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 </div>
               ) : (
                 <div className="space-y-10">
-                  {/* Stats Grid - 4 Boxes */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                      { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
-                      { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
-                      { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
-                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: ['Basic Plan'] },
-                    ].map((stat, i) => (
-                      <div key={stat.id} className="relative">
-                        <motion.button 
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.1 }}
-                          onClick={() => setExpandedBox(expandedBox === stat.id ? null : stat.id)}
-                          className={`w-full bg-[#0a0a0a] p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#c7c42a]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#c7c42a]/50' : ''}`}
-                        >
-                          <div className="flex justify-between items-start mb-6">
-                            <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
-                              <stat.icon size={24} />
-                            </div>
-                            <div className="text-4xl font-black italic tracking-tighter">{stat.value}</div>
-                          </div>
-                          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{stat.label}</div>
-                        </motion.button>
-
-                        <AnimatePresence>
-                          {expandedBox === stat.id && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                              className="absolute top-full left-0 right-0 mt-4 z-30 bg-[#rgba(255,255,255,0.05)] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden"
-                            >
-                              <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                {stat.items.length > 0 ? stat.items.map((item, idx) => (
-                                  <div key={idx} className="p-3 bg-white/5 rounded-xl border border-white/5 text-[10px] font-bold uppercase tracking-widest text-white/70 truncate">
-                                    {item}
-                                  </div>
-                                )) : (
-                                  <div className="text-center py-4 text-[10px] font-bold uppercase tracking-widest text-white/20">
-                                    No items found
-                                  </div>
-                                )}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ))}
-                  </div>
-
+                  {/* Stats Grid removed by user request */}
+                  
                   {/* Today's Meetings Highlight */}
                   {meetings.filter(m => {
                     const today = new Date().toDateString();
                     const mDate = new Date(m.date).toDateString();
                     return today === mDate && m.status === 'accepted';
                   }).length > 0 && (
-                    <div className="bg-[#c7c42a] p-10 rounded-[3rem] text-black relative overflow-hidden group">
+                    <div className="bg-[#FFFF00] p-10 rounded-[3rem] text-black relative overflow-hidden group border-2 border-black">
                       <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:scale-110 transition-transform">
                         <Video size={120} />
                       </div>
                       <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-6">
-                          <div className="px-3 py-1 bg-black text-[#c7c42a] text-[8px] font-black uppercase rounded-full">Happening Today</div>
+                          <div className="px-3 py-1 bg-black text-[#FFFF00] text-[8px] font-black uppercase rounded-full">Happening Today</div>
                         </div>
-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-8 leading-none">Upcoming<br />Briefings.</h3>
+                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-8 leading-none text-black">Upcoming<br />Briefings.</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           {meetings.filter(m => {
                             const today = new Date().toDateString();
                             const mDate = new Date(m.date).toDateString();
                             return today === mDate && m.status === 'accepted';
-                          }).map((meeting, idx) => (
-                            <div key={idx} className="bg-black/10 border border-black/10 rounded-2xl p-6 backdrop-blur-md">
-                              <div className="flex justify-between items-start mb-4">
-                                <div className="text-xl font-black uppercase italic tracking-tight">{meeting.title}</div>
-                                <div className="px-3 py-1 border border-black/20 rounded-full text-[8px] font-black uppercase">
-                                  {meeting.time}
+                          }).map((meeting, idx) => {
+                            const meetTime = new Date(`${meeting.date}T${meeting.time}`);
+                            const diffMs = meetTime.getTime() - nowTime.getTime();
+                            const diffMin = diffMs / 60000;
+                            const isGlowActive = diffMin <= 10 && diffMin >= -60;
+                            
+                            let countdownText = '';
+                            if (diffMs > 0) {
+                              const totalSecs = Math.floor(diffMs / 1000);
+                              const hours = Math.floor(totalSecs / 3600);
+                              const mins = Math.floor((totalSecs % 3600) / 60);
+                              const secs = totalSecs % 60;
+                              if (hours > 0) {
+                                countdownText = `${hours}H ${mins}M LEFT`;
+                              } else {
+                                countdownText = `${mins}M ${secs}S LEFT`;
+                              }
+                            } else if (diffMin >= -60) {
+                              countdownText = 'SESSION LIVE NOW';
+                            } else {
+                              countdownText = 'CONCLUDED';
+                            }
+
+                            return (
+                              <div key={idx} className="bg-black text-white border border-white/10 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                                <div className="mb-6">
+                                  <div className="flex justify-between items-start mb-4">
+                                    <div className="text-xl font-black uppercase italic tracking-tight text-white leading-none">{meeting.title}</div>
+                                    <div className="px-3 py-1 bg-white/10 border border-white/10 rounded-full text-[8px] font-black uppercase font-mono text-[#FFFF00]">
+                                      {meeting.time}
+                                    </div>
+                                  </div>
+                                  {meeting.notes && (
+                                    <p className="text-white/60 text-xs mt-2 italic font-medium">"{meeting.notes}"</p>
+                                  )}
+                                </div>
+                                <div className="space-y-3">
+                                  <button 
+                                    onClick={() => meeting.meetingLink && window.open(meeting.meetingLink, '_blank')}
+                                    className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                      isGlowActive
+                                        ? 'bg-[#FFFF00] text-black animate-pulse shadow-[0_0_20px_rgba(255,255,0,0.8)] border-2 border-black hover:scale-105'
+                                        : 'bg-white/10 text-white hover:bg-white/20 hover:scale-[1.03]'
+                                    }`}
+                                  >
+                                    {isGlowActive ? '⚡ JOIN ACTIVE SESSION ⚡' : 'Join Session'} <ArrowRight size={14} />
+                                  </button>
+                                  
+                                  <div className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest text-center rounded-lg border ${
+                                    isGlowActive
+                                      ? 'bg-[#FFFF00]/10 border-[#FFFF00] text-[#FFFF00] animate-bounce'
+                                      : 'bg-white/5 border-white/10 text-white/40'
+                                  }`}>
+                                    {countdownText}
+                                  </div>
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => meeting.meetingLink && window.open(meeting.meetingLink, '_blank')}
-                                className="w-full py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2"
-                              >
-                                Join Session <ArrowRight size={14} />
-                              </button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     </div>

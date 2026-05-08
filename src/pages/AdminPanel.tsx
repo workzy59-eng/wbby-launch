@@ -41,7 +41,8 @@ import {
   Download,
   Shield,
   Database,
-  Briefcase
+  Briefcase,
+  Globe
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { 
@@ -68,6 +69,8 @@ import { Monitor, Smartphone, Tablet, ExternalLink, Zap, Mail, MessageSquare } f
 
 import BottomNav from '../components/BottomNav';
 import { getUnreadMessageCount } from '../services/database';
+
+import { DomainConnectivity } from '../components/admin/DomainConnectivity';
 
 const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
   const containerClasses = {
@@ -158,7 +161,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers' | 'leaves'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers' | 'leaves' | 'domains'>('dashboard');
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -745,7 +748,7 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
             <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="99%" height="100%">
                 <AreaChart data={projects.slice(-7).map((p, i) => ({ name: `P${i}`, val: p.progress || 0 }))}>
                   <defs>
                     <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
@@ -765,7 +768,7 @@ Generated on: ${new Date().toLocaleString()}
           <div className="bg-white/5 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10">
             <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-8">Ecosystem</h3>
             <div className="h-64 relative">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="99%" height="100%">
                 <PieChart>
                   <Pie
                     data={[
@@ -1942,6 +1945,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'clients', label: 'Clients', icon: Users },
             { id: 'developers', label: 'Developers', icon: Shield },
+            { id: 'domains', label: 'Domain Sync', icon: Globe },
             { id: 'leaves', label: 'Leave Requests', icon: Calendar },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'meetings', label: 'Meetings', icon: Video },
@@ -2194,6 +2198,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               </div>
             </div>}
             {activeTab === 'leaves' && renderLeaves()}
+            {activeTab === 'domains' && <DomainConnectivity />}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'recycle' && renderRecycleBin()}

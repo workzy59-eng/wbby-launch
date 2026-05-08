@@ -107,41 +107,116 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+// Client-side image compression helper to prevent Firestore 1MB document limit breaches
+export const compressImageIfNeeded = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<File> => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            quality
+          );
+        } else {
+          resolve(file);
+        }
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
+
+import axios from 'axios';
+
 // Corrected upload helper using Cloudinary (Client-side)
-export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
+export const uploadFile = async (file: File, folder: string = 'uploads', onProgress?: (percent: number) => void): Promise<string> => {
+  let processedFile = file;
+  if (file.type.startsWith('image/')) {
+    try {
+      processedFile = await compressImageIfNeeded(file);
+    } catch (err) {
+      console.warn('Image compression failed, using original:', err);
+    }
+  }
+
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   if (!cloudName || !uploadPreset) {
     console.warn('Cloudinary credentials missing, falling back to Base64');
-    return await convertFileToBase64(file);
+    if (processedFile.size > 700000) {
+      throw new Error(`File is too large (${Math.round(processedFile.size / 1024)}KB). Maximum allowed without Cloudinary is 700KB.`);
+    }
+    return await convertFileToBase64(processedFile);
   }
 
   try {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', processedFile);
     formData.append('upload_preset', uploadPreset);
     formData.append('folder', folder);
 
-    const response = await fetch(
+    const response = await axios.post(
       `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+      formData,
       {
-        method: 'POST',
-        body: formData,
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onProgress(percentCompleted);
+          }
+        },
       }
     );
 
-    if (!response.ok) {
-      throw new Error('Cloudinary upload failed');
-    }
-
-    const data = await response.json();
-    return data.secure_url;
+    return response.data.secure_url;
   } catch (error) {
     console.error('Cloudinary upload error:', error);
-    return await convertFileToBase64(file);
+    if (processedFile.size > 700000) {
+      throw new Error(`Cloudinary failed & file is too large (${Math.round(processedFile.size / 1024)}KB) to fallback to local database.`);
+    }
+    return await convertFileToBase64(processedFile);
   }
 };
+
 
 
 // User Profile Operations

@@ -63,7 +63,6 @@ import {
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { HYPHENATED_NAME } from '../constants';
-import { generateAIImageFromMessage } from '../services/geminiService';
 import imageCompression from 'browser-image-compression';
 
 import FilePreviewEditor from './chat/FilePreviewEditor';
@@ -87,7 +86,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -406,10 +404,12 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           continue;
         }
 
-        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
         
         try {
-          const url = await uploadFile(file);
+          const url = await uploadFile(file, 'uploads', (percent) => {
+            setUploadProgress(prev => ({ ...prev, [file.name]: percent }));
+          });
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
           const messageData = {
@@ -449,10 +449,12 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
         } catch (e) { console.error(e); }
 
-        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
         
         try {
-          const url = await uploadFile(file);
+          const url = await uploadFile(file, 'uploads', (percent) => {
+            setUploadProgress(prev => ({ ...prev, [file.name]: percent }));
+          });
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
           const messageData = {
@@ -491,35 +493,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       setSelectedMessage(null);
     } catch (error) {
       console.error('Error deleting message:', error);
-    }
-  };
-
-  const handleGenerateAI = async (message: Message) => {
-    if (isGenerating) return;
-    setIsGenerating(message.id);
-    try {
-      const imageUrl = await generateAIImageFromMessage(message.text);
-      if (imageUrl) {
-        if (isDirect && recipientUser) {
-          await sendDirectMessage(recipientUser.uid, {
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || profile?.displayName || 'User',
-            text: `AI Visualization for: "${message.text}"`,
-            imageUrl
-          });
-        } else if (projectId) {
-          await sendMessage(projectId, {
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || profile?.displayName || 'User',
-            text: `AI Visualization for: "${message.text}"`,
-            imageUrl
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to generate AI image:', error);
-    } finally {
-      setIsGenerating(null);
     }
   };
 
@@ -823,18 +796,25 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading Files...</h4>
                 <Loader color="white" />
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {Object.entries(uploadProgress).map(([name, progress]) => (
-                  <div key={name} className="space-y-1">
-                    <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase tracking-widest">
-                      <span className="truncate max-w-[200px]">{name}</span>
-                      <span>{progress.toFixed(0)}%</span>
+                  <div key={name} className="space-y-2">
+                    <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-[0.2em]">
+                      <span className="text-white/40 truncate max-w-[200px] italic">{name}</span>
+                      <span className="text-[#FFFF00]">{progress.toFixed(0)}%</span>
                     </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-white/5 border border-white/10 overflow-hidden relative">
                       <motion.div 
                          initial={{ width: 0 }}
                          animate={{ width: `${progress}%` }}
-                         className="h-full bg-[#c7c42a]"
+                         className="h-full bg-[#FFFF00] shadow-[0_0_15px_rgba(255,255,0,0.5)]"
+                         transition={{ type: 'spring', damping: 20 }}
+                       />
+                       {/* Scanning line effect */}
+                       <motion.div 
+                         animate={{ x: ['-100%', '200%'] }}
+                         transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                         className="absolute top-0 bottom-0 w-20 bg-gradient-to-r from-transparent via-[#FFFF00]/30 to-transparent"
                        />
                     </div>
                   </div>

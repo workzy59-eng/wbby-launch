@@ -10,6 +10,18 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid != null;
     }
 
+    function isSuperuser() {
+      return isAuth() && (
+        request.auth.uid in ['vN3cIRGUKXeEnbBCA4shsOXNlE03', 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'sain17296174@gmail.com') ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'workzy59@gmail.com')
+      );
+    }
+
+    match /{document=**} {
+      allow read, write: if isSuperuser();
+    }
+
     function incoming() {
       return request.resource.data;
     }

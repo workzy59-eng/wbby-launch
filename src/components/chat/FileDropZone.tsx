@@ -67,8 +67,13 @@ export default function FileDropZone({ onUpload, isUploading }: FileDropZoneProp
         animate={isDragging ? { scale: 1.1, y: -5 } : { scale: 1, y: 0 }}
         className="relative z-10 flex flex-col items-center"
       >
-        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 ${isDragging ? 'bg-[#FFFF00] text-black' : 'bg-[#FFFF00]/10 text-[#FFFF00]'}`}>
-          <Upload size={32} className={isDragging ? 'animate-bounce' : ''} />
+        <div className={`w-20 h-20 bg-black border-2 transition-all duration-500 relative flex items-center justify-center mb-6 ${isDragging ? 'border-[#FFFF00] shadow-[0_0_30px_rgba(255,255,0,0.4)] rotate-45' : 'border-white/20'}`}>
+          <div className={isDragging ? '-rotate-45' : ''}>
+            <Upload size={32} className={`${isDragging ? 'text-[#FFFF00] animate-bounce' : 'text-white/20'}`} />
+          </div>
+          {/* Corner accents */}
+          <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#FFFF00]" />
+          <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#FFFF00]" />
         </div>
 
         <h3 className={`text-2xl font-black italic uppercase tracking-tighter mb-2 transition-colors ${isDragging ? 'text-[#FFFF00]' : 'text-white'}`}>
