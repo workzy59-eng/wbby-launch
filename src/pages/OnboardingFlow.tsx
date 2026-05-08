@@ -1228,10 +1228,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 6:
+      case 5:
         return (
           <motion.div 
-            key="step6"
+            key="step5"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1239,7 +1239,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
                 <h3 className="text-4xl font-bold tracking-tight text-text">Website Preview</h3>
                 <p className="text-subtext font-medium italic">See how your website will look on different devices</p>
               </div>
@@ -1285,10 +1285,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 7:
+      case 6:
         return (
           <motion.div 
-            key="step7"
+            key="step6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1303,7 +1303,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                   <div className="text-3xl font-bold tracking-tighter text-white uppercase italic">{APP_NAME}</div>
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 7</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 6</h2>
                   <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
                 </div>
               </div>
@@ -1399,17 +1399,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 8:
+      case 7:
         return (
           <motion.div 
-            key="step8"
+            key="step7"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 8</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 7</h2>
               <h3 className="text-4xl font-bold tracking-tight text-white italic leading-none uppercase">Terms & Submission</h3>
               <p className="text-subtext font-medium italic">Review our terms before launching your project.</p>
             </div>
@@ -1498,10 +1498,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 9:
+      case 8:
         return (
           <motion.div 
-            key="step9"
+            key="step8"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-20 px-8 bg-card rounded-[4rem] border border-border relative overflow-hidden"
@@ -1534,7 +1534,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
   };
 
-  const TOTAL_STEPS = 8;
+  const TOTAL_STEPS = 7;
 
   return (
     <div className="min-h-screen bg-black font-sans selection:bg-primary selection:text-black">
@@ -1557,7 +1557,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 style={{ backgroundColor: formData.primaryColor }}
               />
             </div>
-            <div className="text-[10px] font-black italic text-white/40 uppercase tracking-[0.2em]">Step {step <= 8 ? step : 'Final'} of 8</div>
+            <div className="text-[10px] font-black italic text-white/40 uppercase tracking-[0.2em]">Step {step <= 7 ? step : 'Final'} of 7</div>
           </div>
         </div>
       </header>
