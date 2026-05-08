@@ -339,20 +339,17 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       case 3: // Features Select
         if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
         break;
-      case 4: // Domain Selection
-        if (!formData.domain) invalid.push('domain');
-        break;
-      case 5: // Design
+      case 4: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
         if (!formData.secondaryColor) invalid.push('secondaryColor');
         break;
-      case 6: // Preview
+      case 5: // Preview
         // No fields to validate for preview step itself
         break;
-      case 7: // Choose Plan
+      case 6: // Choose Plan
         if (!formData.plan) invalid.push('plan');
         break;
-      case 8: // Terms and Conditions
+      case 7: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
     }
@@ -364,7 +361,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'businessName') {
+        const sanitized = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+        updated.domain = sanitized ? `${sanitized}.com` : '';
+        updated.requestedDomain = sanitized ? `${sanitized}.com` : '';
+        updated.websiteName = value;
+      }
+      return updated;
+    });
     // Also clear individual domain preference errors if applicable
     if (field === 'domainPreferences') {
       setInvalidFields(prev => prev.filter(f => !f.startsWith('domainPreference')));
@@ -454,7 +460,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         localStorage.removeItem('onboarding_step');
         
         toast.success("SUCCESS: DATA SAVED");
-        setStep(9); 
+        setStep(8); 
         
         setTimeout(() => navigate('/dashboard'), 5000);
       } catch (err: any) {
@@ -610,7 +616,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       const res = await fetch(`https://dns.google/resolve?name=${normalized}`);
       const data = await res.json();
       // Google DNS: Status 0 is NOERROR (domain is registered/taken globally), Status 3 is NXDOMAIN (available)
-      if (data.Status === 0 || data.Answer || data.Authority) {
+      if (data.Status === 0 || (data.Answer && data.Answer.length > 0)) {
         return "taken";
       }
       return "available";
