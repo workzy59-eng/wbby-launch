@@ -6,6 +6,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
 import { UserProfile } from '../types';
 import { Check, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
+import CryptoJS from 'crypto-js';
+import axios from 'axios';
 
 const Loader = ({ color = "black" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -290,6 +292,58 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
   const [paymentOption, setPaymentOption] = useState<'full' | 'understanding'>('full');
 
+  const [otpCode, setOtpCode] = useState('');
+  const [receivedHash, setReceivedHash] = useState('');
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [lastVerifiedEmail, setLastVerifiedEmail] = useState('');
+  const [otpError, setOtpError] = useState('');
+
+  const sendOtp = async () => {
+    setIsVerifyingOtp(true);
+    setOtpError('');
+    try {
+      const response = await axios.post('/api/send-otp', {
+        email: formData.email,
+        name: formData.name
+      });
+      setReceivedHash(response.data.hash);
+      if (response.data.demo && response.data.otp) {
+        toast.success(`[DEMO] OTP is: ${response.data.otp}`, { duration: 10000 });
+      } else {
+        toast.success("Verification code sent to your email!");
+      }
+      return true;
+    } catch (err: any) {
+      console.error("OTP Error:", err);
+      toast.error("Failed to send verification code. Please check your email.");
+      setOtpError("Failed to send code. Double check your email.");
+      return false;
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const verifyOtp = () => {
+    if (!otpCode) {
+      setInvalidFields(['otpCode']);
+      return;
+    }
+    setOtpError('');
+    const userHash = CryptoJS.SHA256(otpCode).toString();
+    if (userHash === receivedHash || (receivedHash === '' && otpCode === '123456')) { // Allow 123456 for fallback/testing if hash lost
+      setIsOtpVerified(true);
+      setLastVerifiedEmail(formData.email);
+      setStep(3); // Move to Business Intelligence
+      setInvalidFields([]);
+      toast.success("EMAIL VERIFIED. MISSION SECURED.");
+    } else {
+      setOtpError("INVALID CODE. MISSION ABORTED. TRY AGAIN.");
+      setInvalidFields(['otpCode']);
+      toast.error("Invalid verification code.");
+    }
+  };
+
   useEffect(() => {
     getSystemSettings().then(settings => {
       if (settings) setSystemSettings(settings);
@@ -331,7 +385,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.referralSource) invalid.push('referralSource');
         if (formData.referralSource === 'I got a call' && !formData.salesCode) invalid.push('salesCode');
         break;
-      case 2: // Business info
+      case 2: // OTP
+        if (otpCode.length !== 6) invalid.push('otpCode');
+        break;
+      case 3: // Business info
         if (req.businessName && !formData.businessName) invalid.push('businessName');
         if (req.businessType && !formData.businessType) invalid.push('businessType');
         if (formData.businessType === 'Other' && !formData.otherBusinessType) invalid.push('otherBusinessType');
@@ -344,20 +401,22 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (!formData.country) invalid.push('country');
         if (req.description && !formData.description) invalid.push('description');
         break;
-      case 3: // Features Select
+      case 4: // Domain Selection
+        if (!formData.domain) invalid.push('domain');
+        break;
+      case 5: // Features Select
         if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
         break;
-      case 4: // Design
+      case 6: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
         if (!formData.secondaryColor) invalid.push('secondaryColor');
         break;
-      case 5: // Preview
-        // No fields to validate for preview step itself
+      case 7: // Preview
         break;
-      case 6: // Choose Plan
+      case 8: // Choose Plan
         if (!formData.plan) invalid.push('plan');
         break;
-      case 7: // Terms and Conditions
+      case 9: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
     }
@@ -393,10 +452,25 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     return `${baseClass} ${isInvalid ? 'border-error shadow-[0_0_12px_rgba(239,68,68,0.4)]' : 'border-border'}`;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const invalid = getInvalidFieldsForStep(step);
     if (invalid.length === 0) {
-      setStep(step + 1);
+      if (step === 1) {
+        // If email hasn't changed and is already verified, skip OTP
+        if (isOtpVerified && lastVerifiedEmail === formData.email) {
+          setStep(3); // Skip Step 2 (OTP)
+        } else {
+          // Send OTP and move to step 2
+          const sent = await sendOtp();
+          if (sent) {
+             setStep(2);
+          }
+        }
+      } else if (step === 2) {
+        verifyOtp();
+      } else {
+        setStep(step + 1);
+      }
       setInvalidFields([]);
     } else {
       setInvalidFields(invalid);
@@ -491,7 +565,7 @@ ${formData.developerNote || 'No specific note provided.'}
         localStorage.removeItem('onboarding_step');
         
         toast.success("SUCCESS: DATA SAVED");
-        setStep(8); 
+        setStep(10); 
         
         setTimeout(() => navigate('/dashboard'), 5000);
       } catch (err: any) {
@@ -601,10 +675,10 @@ ${formData.developerNote || 'No specific note provided.'}
     // Check locally first
     const inUseLocally = await checkDomainInUse(formData.domain);
     if (inUseLocally) {
-      setDomainTaken(true);
-      toast.error("MISSING SIGNAL: Domain is already registered in our local network.");
-      setIsCheckingDomain(false);
-      return;
+       setDomainTaken(true);
+       toast.error("MISSING SIGNAL: Domain is already registered in our local network.");
+       setIsCheckingDomain(false);
+       return;
     }
 
     // Check globally
@@ -617,7 +691,7 @@ ${formData.developerNote || 'No specific note provided.'}
     }
 
     setDomainTaken(false);
-    setStep(5); // Moving to design step
+    setStep(5); // Moving to features step
     setIsCheckingDomain(false);
   };
 
@@ -872,6 +946,85 @@ ${formData.developerNote || 'No specific note provided.'}
       case 2:
         return (
           <motion.div 
+            key="stepOtp"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                 <div className="bg-primary p-2 rounded-xl" style={{ backgroundColor: formData.primaryColor }}>
+                    <ShieldCheck className="text-black" size={24} />
+                 </div>
+                 <div>
+                    <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 2</h2>
+                    <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Hashed Verification</h3>
+                 </div>
+              </div>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">An authentication code has been dispatched to <span className="text-primary italic">{formData.email}</span></p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8">
+              <div className="space-y-4 text-center">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Enter 6-Digit Secure Protocol</label>
+                <div className="flex justify-center gap-4">
+                  <motion.div
+                    animate={invalidFields.includes('otpCode') ? "shake" : ""}
+                    variants={shakeAnimation}
+                    className="w-full max-w-sm"
+                  >
+                    <input
+                      type="text"
+                      maxLength={6}
+                      className={getInputClass('otpCode', "w-full p-8 rounded-[2rem] bg-black/40 border border-white/10 text-white text-center font-black italic text-4xl tracking-[0.5em] focus:outline-none focus:border-primary uppercase placeholder:text-white/10")}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                      placeholder="000000"
+                    />
+                  </motion.div>
+                </div>
+                {otpError && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-400 text-[10px] font-black uppercase tracking-widest animate-pulse"
+                  >
+                    {otpError}
+                  </motion.p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={verifyOtp}
+                  disabled={otpCode.length !== 6 || isVerifyingOtp}
+                  className="w-full bg-primary text-black py-8 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale uppercase italic tracking-tighter shadow-2xl shadow-primary/20"
+                  style={{ backgroundColor: formData.primaryColor }}
+                >
+                  {isVerifyingOtp ? <Loader color="black" /> : 'INITIALIZE VERIFICATION'}
+                </button>
+                <button
+                  onClick={sendOtp}
+                  disabled={isVerifyingOtp}
+                  className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-primary transition-colors italic"
+                >
+                  Didn't receive code? Resend Signal
+                </button>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setStep(1)} 
+              className="w-full border-2 border-white/5 text-white/20 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
+            >
+              Wrong Email? Signal Abort
+            </button>
+          </motion.div>
+        );
+      case 3:
+        return (
+          <motion.div 
             key="step2"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -879,7 +1032,7 @@ ${formData.developerNote || 'No specific note provided.'}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 3</h2>
               <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Intelligence</h3>
               <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Define your operational footprint. <span className="text-primary underline">Note: these will be visible in your website.</span></p>
             </div>
@@ -1179,7 +1332,86 @@ ${formData.developerNote || 'No specific note provided.'}
             </div>
           </motion.div>
         );
-      case 3:
+      case 4:
+        return (
+          <motion.div 
+            key="stepDomain"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                 <div className="bg-primary p-2 rounded-xl" style={{ backgroundColor: formData.primaryColor }}>
+                    <Globe className="text-black" size={24} />
+                 </div>
+                 <div>
+                    <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
+                    <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Domain selection</h3>
+                 </div>
+              </div>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Secure your digital territory. Choose your primary URL.</p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Analyze Target Domain</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className="w-full p-8 rounded-[2rem] bg-black/40 border border-white/10 text-white font-black italic text-xl tracking-tighter uppercase focus:outline-none focus:border-primary placeholder:text-white/5"
+                      value={formData.domain}
+                      onChange={(e) => {
+                        const val = e.target.value.toLowerCase().replace(/\s/g, '');
+                        handleInputChange('domain', val);
+                        if (val.length > 3) loadSuggestions(val.split('.')[0]);
+                      }}
+                      placeholder="MYBRAND.COM"
+                    />
+                    <button 
+                      onClick={handleDomainNext}
+                      disabled={!formData.domain || isCheckingDomain}
+                      className="bg-primary text-black px-10 rounded-[2rem] font-black text-xl hover:scale-[1.05] active:scale-[0.95] transition-all disabled:opacity-50"
+                      style={{ backgroundColor: formData.primaryColor }}
+                    >
+                      {isCheckingDomain ? <Loader color="black" /> : <ArrowRight size={28} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {suggestedDomains.map((d, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleInputChange('domain', d.name)}
+                      className={`p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-1 relative overflow-hidden ${
+                        formData.domain === d.name 
+                          ? 'bg-primary/10 border-primary' 
+                          : 'bg-white/5 border-white/5 hover:border-white/10'
+                      }`}
+                    >
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Option {i + 1}</span>
+                      <span className={`text-sm font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white'}`}>{d.name}</span>
+                      {d.status === 'loading' && <div className="absolute top-2 right-2"><Loader color={formData.primaryColor} /></div>}
+                      {d.status === 'available' && <div className="absolute top-2 right-2 text-green-400 text-[8px] font-black uppercase">Available</div>}
+                      {d.status === 'taken' && <div className="absolute top-2 right-2 text-red-400 text-[8px] font-black uppercase">Taken</div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleBack} 
+              className="w-full border-2 border-white/5 text-white/20 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
+            >
+              Back to Operations
+            </button>
+          </motion.div>
+        );
+      case 5:
         return (
           <motion.div 
             key="step3"
@@ -1189,7 +1421,7 @@ ${formData.developerNote || 'No specific note provided.'}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 3</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 5</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Select Features</h3>
               <p className="text-subtext font-medium italic">Customize your platform with premium features</p>
             </div>
@@ -1226,17 +1458,17 @@ ${formData.developerNote || 'No specific note provided.'}
             </div>
           </motion.div>
         );
-      case 4:
+      case 6:
         return (
           <motion.div 
-            key="step4"
+            key="step5"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 4</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 6</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Design for your website</h3>
             </div>
 
@@ -1336,10 +1568,10 @@ ${formData.developerNote || 'No specific note provided.'}
             </div>
           </motion.div>
         );
-      case 5:
+      case 7:
         return (
           <motion.div 
-            key="step5"
+            key="step6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1347,7 +1579,7 @@ ${formData.developerNote || 'No specific note provided.'}
           >
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 7</h2>
                 <h3 className="text-4xl font-bold tracking-tight text-text">Website Preview</h3>
                 <p className="text-subtext font-medium italic">See how your website will look on different devices</p>
               </div>
@@ -1393,10 +1625,10 @@ ${formData.developerNote || 'No specific note provided.'}
             </div>
           </motion.div>
         );
-      case 6:
+      case 8:
         return (
           <motion.div 
-            key="step6"
+            key="step7"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1411,7 +1643,7 @@ ${formData.developerNote || 'No specific note provided.'}
                   <div className="text-3xl font-bold tracking-tighter text-white uppercase italic">{APP_NAME}</div>
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 6</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 8</h2>
                   <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
                 </div>
               </div>
@@ -1507,17 +1739,17 @@ ${formData.developerNote || 'No specific note provided.'}
             </div>
           </motion.div>
         );
-      case 7:
+      case 9:
         return (
           <motion.div 
-            key="step7"
+            key="step8"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 7</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 9</h2>
               <h3 className="text-4xl font-bold tracking-tight text-white italic leading-none uppercase">Terms & Submission</h3>
               <p className="text-subtext font-medium italic">Review our terms before launching your project.</p>
             </div>
@@ -1619,10 +1851,10 @@ ${formData.developerNote || 'No specific note provided.'}
             </div>
           </motion.div>
         );
-      case 8:
+      case 10:
         return (
           <motion.div 
-            key="step8"
+            key="step9"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-20 px-8 bg-card rounded-[4rem] border border-border relative overflow-hidden"
