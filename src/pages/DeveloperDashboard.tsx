@@ -2044,9 +2044,20 @@ Description: ${project.description || 'No description provided.'}
 
                   {/* AI BRIEF SECTION */}
                   <div className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4E157] border-b border-black/10 pb-2">AI Developer Brief</h3>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4E157] border-b border-black/10 pb-2">Mission Intelligence</h3>
                     <div className="bg-black/10 p-8 rounded-[2rem] space-y-6">
-                      <div className="space-y-2">
+                      {selectedProjectForDrawer.developerNote && (
+                        <div className="space-y-2">
+                          <label className="text-[8px] font-black uppercase text-red-400">Direct Note from Client</label>
+                          <div className="bg-red-400/10 border border-red-400/20 p-6 rounded-2xl">
+                             <p className="text-[11px] font-black italic uppercase leading-relaxed text-red-400">
+                               "{selectedProjectForDrawer.developerNote}"
+                             </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="space-y-2 pt-4 border-t border-black/5">
                         <label className="text-[8px] font-black uppercase text-black/40">Prompt Expert Instruction</label>
                         <p className="text-[10px] font-bold text-white leading-relaxed italic">
                           "You are a Prompt Engineering Expert. Your job is to take basic business details from me and turn them into a professional, high-level prompt for a Web Developer AI..."
@@ -2125,6 +2136,22 @@ Description: ${project.description || 'No description provided.'}
                         <p className="text-black/40 text-[8px] font-black uppercase mb-1">Last Update</p>
                         <p className="text-[10px] font-bold uppercase text-[#D4E157]">{formatDate(selectedProjectForDrawer.updatedAt)}</p>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Internal Notes */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Full Client Inputs</h3>
+                    <div className="bg-black/10 p-6 rounded-[2rem] space-y-4">
+                      {Object.entries((selectedProjectForDrawer as any).onboardingData || {}).map(([key, value]) => {
+                        if (typeof value === 'object' || !value || String(value).startsWith('http')) return null;
+                        return (
+                          <div key={key} className="flex justify-between items-center text-[10px] border-b border-black/5 pb-2">
+                             <span className="font-black uppercase text-black/40">{key.replace(/([A-Z])/g, ' $1')}</span>
+                             <span className="font-bold text-black uppercase italic truncate max-w-[200px]">{String(value)}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 

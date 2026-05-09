@@ -249,6 +249,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       requestedDomain: '',
       referralSource: '',
       salesCode: '',
+      developerNote: '',
     };
 
     if (saved) {
@@ -280,6 +281,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [error, setError] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
+
+  const shakeAnimation = {
+    shake: {
+      x: [0, -10, 10, -10, 10, 0],
+      transition: { duration: 0.4 }
+    }
+  };
   const [paymentOption, setPaymentOption] = useState<'full' | 'understanding'>('full');
 
   useEffect(() => {
@@ -441,7 +449,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           paymentStatus: 'pending',
           isDeleted: false,
           onboardingData: sanitizedOnboardingData,
-          status: 'Waiting for Review'
+          status: 'Waiting for Review',
+          developerNote: formData.developerNote || ''
         };
 
         console.log("WRITING PROJECT TO FIRESTORE...");
@@ -739,74 +748,106 @@ Please generate a professional role, design language expansion, conversion logic
                 <p className="text-[10px] font-bold text-subtext uppercase tracking-[0.2em]">Upload Profile Picture</p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Full Name <span className="text-error">*</span></label>
-                <input
-                  type="text"
-                  className={getInputClass('name')}
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Username <span className="text-error">*</span></label>
-                <input
-                  type="text"
-                  className={getInputClass('username')}
-                  value={formData.username}
-                  onChange={(e) => handleInputChange('username', e.target.value.toLowerCase().replace(/\s/g, '_'))}
-                  placeholder="rahul_123"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Phone Number <span className="text-error">*</span></label>
-                <input
-                  type="tel"
-                  className={getInputClass('phone')}
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="E.G. 9876543210"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Email Address <span className="text-error">*</span></label>
-                <input
-                  type="email"
-                  className={getInputClass('email')}
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="Enter your email address"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">How did you hear about us? <span className="text-error">*</span></label>
-                <select
-                  className={getInputClass('referralSource', "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-medium appearance-none")}
-                  value={formData.referralSource}
-                  onChange={(e) => handleInputChange('referralSource', e.target.value)}
-                >
-                  <option value="">Select an option</option>
-                  <option value="Google Search">Google Search</option>
-                  <option value="Social Media">Social Media</option>
-                  <option value="Friend/Colleague">Friend/Colleague</option>
-                  <option value="I got a call">I got a call</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {formData.referralSource === 'I got a call' && (
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Sales Code <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('salesCode')}
-                    value={formData.salesCode}
-                    onChange={(e) => handleInputChange('salesCode', e.target.value.toUpperCase())}
-                    placeholder="Enter Sales Code"
-                  />
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Full Name <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('name') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('name')}
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      placeholder="Enter your full name"
+                    />
+                  </motion.div>
                 </div>
-              )}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Username <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('username') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('username')}
+                      value={formData.username}
+                      onChange={(e) => handleInputChange('username', e.target.value.toLowerCase().replace(/\s/g, '_'))}
+                      placeholder="rahul_123"
+                    />
+                  </motion.div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Phone Number <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('phone') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="tel"
+                      className={getInputClass('phone')}
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      placeholder="E.G. 9876543210"
+                    />
+                  </motion.div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Email Address <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('email') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="email"
+                      className={getInputClass('email')}
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      placeholder="Enter your email address"
+                    />
+                  </motion.div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">How did you hear about us? <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('referralSource') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <select
+                      className={getInputClass('referralSource', "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-medium appearance-none")}
+                      value={formData.referralSource}
+                      onChange={(e) => handleInputChange('referralSource', e.target.value)}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="Google Search">Google Search</option>
+                      <option value="Social Media">Social Media</option>
+                      <option value="Friend/Colleague">Friend/Colleague</option>
+                      <option value="I got a call">I got a call</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </motion.div>
+                </div>
+
+                {formData.referralSource === 'I got a call' && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Sales Code <span className="text-error">*</span></label>
+                    <motion.div
+                      animate={invalidFields.includes('salesCode') ? "shake" : ""}
+                      variants={shakeAnimation}
+                    >
+                      <input
+                        type="text"
+                        className={getInputClass('salesCode')}
+                        value={formData.salesCode}
+                        onChange={(e) => handleInputChange('salesCode', e.target.value.toUpperCase())}
+                        placeholder="Enter Sales Code"
+                      />
+                    </motion.div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-4">
@@ -903,150 +944,195 @@ Please generate a professional role, design language expansion, conversion logic
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Name <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('businessName', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.businessName}
-                    onChange={(e) => handleInputChange('businessName', e.target.value)}
-                    placeholder="E.G. TITAN FORGE"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('businessName') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('businessName', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.businessName}
+                      onChange={(e) => handleInputChange('businessName', e.target.value)}
+                      placeholder="E.G. TITAN FORGE"
+                    />
+                  </motion.div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Phone <span className="text-error">*</span></label>
-                  <input
-                    type="tel"
-                    className={getInputClass('businessPhone', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.businessPhone}
-                    onChange={(e) => handleInputChange('businessPhone', e.target.value)}
-                    placeholder="E.G. 9876543210"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('businessPhone') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="tel"
+                      className={getInputClass('businessPhone', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.businessPhone}
+                      onChange={(e) => handleInputChange('businessPhone', e.target.value)}
+                      placeholder="E.G. 9876543210"
+                    />
+                  </motion.div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Email <span className="text-error">*</span></label>
-                  <input
-                    type="email"
-                    className={getInputClass('businessEmail', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter")}
-                    value={formData.businessEmail}
-                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                    placeholder="HELLO@BRAND.COM"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('businessEmail') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="email"
+                      className={getInputClass('businessEmail', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter")}
+                      value={formData.businessEmail}
+                      onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                      placeholder="HELLO@BRAND.COM"
+                    />
+                  </motion.div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Address Line <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('addressLine', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.addressLine}
-                    onChange={(e) => handleInputChange('addressLine', e.target.value)}
-                    placeholder="123 BUSINESS PARK"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('addressLine') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('addressLine', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.addressLine}
+                      onChange={(e) => handleInputChange('addressLine', e.target.value)}
+                      placeholder="123 BUSINESS PARK"
+                    />
+                  </motion.div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Pincode <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    className={getInputClass('pincode', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.pincode}
-                    onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('pincode') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      maxLength={6}
+                      className={getInputClass('pincode', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.pincode}
+                      onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
+                      placeholder="123456"
+                    />
+                  </motion.div>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Location Details <span className="text-error">*</span></label>
-                {formData.country === 'India' ? (
-                  <StateCityDropdown 
-                    onSelect={(state, city) => {
-                      handleInputChange('state', state);
-                      handleInputChange('city', city);
-                    }}
-                    error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
-                  />
-                ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      className={getInputClass('city', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                      value={formData.city}
-                      onChange={(e) => handleInputChange('city', e.target.value)}
-                      placeholder="ENTER CITY"
+                <motion.div
+                  animate={(invalidFields.includes('state') || invalidFields.includes('city')) ? "shake" : ""}
+                  variants={shakeAnimation}
+                >
+                  {formData.country === 'India' ? (
+                    <StateCityDropdown 
+                      onSelect={(state, city) => {
+                        handleInputChange('state', state);
+                        handleInputChange('city', city);
+                      }}
+                      error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
                     />
-                    <input
-                      type="text"
-                      className={getInputClass('state', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                      value={formData.state}
-                      onChange={(e) => handleInputChange('state', e.target.value)}
-                      placeholder={formData.country === 'US' ? "ENTER STATE (E.G. NY)" : "ENTER COUNTY/REGION"}
-                    />
-                  </div>
-                )}
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        className={getInputClass('city', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                        value={formData.city}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        placeholder="ENTER CITY"
+                      />
+                      <input
+                        type="text"
+                        className={getInputClass('state', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                        value={formData.state}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        placeholder={formData.country === 'US' ? "ENTER STATE (E.G. NY)" : "ENTER COUNTY/REGION"}
+                      />
+                    </div>
+                  )}
+                </motion.div>
               </div>
 
               <div className="space-y-4">
                 <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Category <span className="text-error">*</span></label>
                 <div className="relative">
-                  <select
-                    className={getInputClass('businessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase appearance-none cursor-pointer")}
-                    value={formData.businessType}
-                    onChange={(e) => handleInputChange('businessType', e.target.value)}
+                  <motion.div
+                    animate={invalidFields.includes('businessType') ? "shake" : ""}
+                    variants={shakeAnimation}
                   >
-                    <option value="">SELECT CATEGORY</option>
-                    <option value="Salon">SALON</option>
-                    <option value="Salon/Studio">SALON / STUDIO</option>
-                    <option value="Salon/Makeup">SALON / MAKEUP</option>
-                    <option value="Food/Cloud Kitchen">FOOD / CLOUD KITCHEN</option>
-                    <option value="Food/Restaurant">FOOD / RESTAURANT</option>
-                    <option value="Food/Retail">FOOD / RETAIL</option>
-                    <option value="Food Court">FOOD COURT</option>
-                    <option value="Service/Design">SERVICE / DESIGN</option>
-                    <option value="Professional Svc">PROFESSIONAL SVC</option>
-                    <option value="Coaching">COACHING</option>
-                    <option value="Healthcare">HEALTHCARE</option>
-                    <option value="Academy">ACADEMY</option>
-                    <option value="Local Decor">LOCAL DECOR</option>
-                    <option value="Agency">AGENCY</option>
-                    <option value="Tech Agency">TECH AGENCY</option>
-                    <option value="Interior">INTERIOR</option>
-                    <option value="Travel/Hotel">TRAVEL / HOTEL</option>
-                    <option value="Manufacturing">MANUFACTURING</option>
-                    <option value="Industrial">INDUSTRIAL</option>
-                    <option value="Automobiles">AUTOMOBILES</option>
-                    <option value="Clothing">CLOTHING</option>
-                    <option value="Gym">GYM & FITNESS</option>
-                    <option value="Resort & Hospitality">RESORT & HOSPITALITY</option>
-                    <option value="Logistics">LOGISTICS</option>
-                    <option value="Other">OTHER</option>
-                  </select>
-                  <ChevronDown className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+                    <select
+                      className={getInputClass('businessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase appearance-none cursor-pointer")}
+                      value={formData.businessType}
+                      onChange={(e) => handleInputChange('businessType', e.target.value)}
+                    >
+                      <option value="">SELECT CATEGORY</option>
+                      <option value="Salon">SALON</option>
+                      <option value="Salon/Studio">SALON / STUDIO</option>
+                      <option value="Salon/Makeup">SALON / MAKEUP</option>
+                      <option value="Food/Cloud Kitchen">FOOD / CLOUD KITCHEN</option>
+                      <option value="Food/Restaurant">FOOD / RESTAURANT</option>
+                      <option value="Food/Retail">FOOD / RETAIL</option>
+                      <option value="Food Court">FOOD COURT</option>
+                      <option value="Service/Design">SERVICE / DESIGN</option>
+                      <option value="Professional Svc">PROFESSIONAL SVC</option>
+                      <option value="Coaching">COACHING</option>
+                      <option value="Healthcare">HEALTHCARE</option>
+                      <option value="Academy">ACADEMY</option>
+                      <option value="Local Decor">LOCAL DECOR</option>
+                      <option value="Agency">AGENCY</option>
+                      <option value="Tech Agency">TECH AGENCY</option>
+                      <option value="Interior">INTERIOR</option>
+                      <option value="Travel/Hotel">TRAVEL / HOTEL</option>
+                      <option value="Manufacturing">MANUFACTURING</option>
+                      <option value="Industrial">INDUSTRIAL</option>
+                      <option value="Automobiles">AUTOMOBILES</option>
+                      <option value="Clothing">CLOTHING</option>
+                      <option value="Gym">GYM & FITNESS</option>
+                      <option value="Resort & Hospitality">RESORT & HOSPITALITY</option>
+                      <option value="Logistics">LOGISTICS</option>
+                      <option value="Other">OTHER</option>
+                    </select>
+                    <ChevronDown className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+                  </motion.div>
                 </div>
               </div>
 
               {formData.businessType === 'Other' && (
-                <input
-                  type="text"
-                  placeholder="ENTER YOUR BUSINESS TYPE"
-                  className={getInputClass('otherBusinessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                  value={formData.otherBusinessType}
-                  onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
-                />
+                <motion.div
+                  animate={invalidFields.includes('otherBusinessType') ? "shake" : ""}
+                  variants={shakeAnimation}
+                >
+                  <input
+                    type="text"
+                    placeholder="ENTER YOUR BUSINESS TYPE"
+                    className={getInputClass('otherBusinessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                    value={formData.otherBusinessType}
+                    onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
+                  />
+                </motion.div>
               )}
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Description <span className="text-error">*</span></label>
-                <textarea
-                  className={getInputClass('description', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-lg tracking-tighter uppercase h-40 resize-none")}
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="TELL US ABOUT YOUR BRAND..."
-                />
+                <motion.div
+                  animate={invalidFields.includes('description') ? "shake" : ""}
+                  variants={shakeAnimation}
+                >
+                  <textarea
+                    className={getInputClass('description', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-lg tracking-tighter uppercase h-40 resize-none")}
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="TELL US ABOUT YOUR BRAND..."
+                  />
+                </motion.div>
               </div>
 
               <div className="space-y-4">
@@ -1472,7 +1558,20 @@ Please generate a professional role, design language expansion, conversion logic
               </div>
             </div>
 
-            <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50 max-h-[30vh] overflow-y-auto scrollbar-hide relative group">
+            {/* Note to Developer */}
+            <div className="space-y-4">
+              <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">Note for Developer</h4>
+              <p className="text-[10px] font-medium text-white/40 uppercase tracking-widest italic">Anything special for our team? (e.g., Build carefully, specific font ideas, etc.)</p>
+              <textarea
+                className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/5 text-white focus:outline-none focus:border-primary font-black italic text-sm tracking-tighter uppercase h-32 resize-none"
+                value={formData.developerNote}
+                onChange={(e) => handleInputChange('developerNote', e.target.value)}
+                placeholder="WRITE YOUR NOTE HERE..."
+              />
+            </div>
+
+            <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">Terms & Conditions</h4>
+              <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50 max-h-[30vh] overflow-y-auto scrollbar-hide relative group">
               <div className="space-y-8 text-subtext font-medium leading-relaxed">
                 <section className="space-y-4">
                   <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">1. Services</h4>

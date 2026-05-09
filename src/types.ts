@@ -265,6 +265,7 @@ export interface Project {
   paymentLinkPremium?: string;
   aiDeveloperBrief?: string;
   promptEngineeringInstruction?: string;
+  developerNote?: string;
   lastMessage?: string;
   lastMessageAt?: string | Timestamp;
   lastSenderId?: string;
