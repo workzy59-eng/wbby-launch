@@ -454,33 +454,26 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         };
 
         console.log("WRITING PROJECT TO FIRESTORE...");
-        // Generate Optimized AI Prompt for the Developer using the Prompt Builder Instruction
-        try {
-          const aiPromptInstruction = `
-You are a Prompt Engineering Expert. Your job is to take basic business details and turn them into a professional, high-level prompt for a Web Developer AI.
-
+        
+        projectData.promptEngineeringInstruction = `You are a Prompt Engineering Expert. Your job is to take basic business details from me and turn them into a professional, high-level prompt for a Web Developer AI. When I give you a Name, Category, Contact, and Color, you will generate a structured prompt that includes: Professional Role: Assigning a Senior Developer persona. Design Language: Expanding the 'color' into a full UI theme. Conversion Logic: Adding sections like Hero, Services, and Lead Gen. Technical Stack: Formatting it for React and Tailwind CSS.`;
+        
+        projectData.aiDeveloperBrief = `
+MISSION BRIEF FOR DEVELOPER:
 Business Name: ${formData.businessName}
-Category: ${formData.category}
-Contact Number: ${formData.phone}
-Email: ${formData.email}
+Business Category: ${formData.businessType}
+Location: ${formData.city}, ${formData.state}, ${formData.country}
 Primary Color: ${formData.primaryColor}
-Description: ${formData.description}
-Features: ${formData.features.join(', ')}
+Secondary Color: ${formData.secondaryColor}
 
-Please generate a professional role, design language expansion, conversion logic, and technical stack instructions for a Senior Developer.
-          `.trim();
+DESCRIPTION:
+${formData.description}
 
-          const { GoogleGenerativeAI } = await import('@google/generative-ai');
-          const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
-          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          const result = await model.generateContent(aiPromptInstruction);
-          const generatedPrompt = result.response.text();
-          
-          projectData.aiDeveloperBrief = generatedPrompt;
-          projectData.promptEngineeringInstruction = `You are a Prompt Engineering Expert. Your job is to take basic business details from me and turn them into a professional, high-level prompt for a Web Developer AI. When I give you a Name, Category, Contact, and Color, you will generate a structured prompt that includes: Professional Role: Assigning a Senior Developer persona. Design Language: Expanding the 'color' into a full UI theme. Conversion Logic: Adding sections like Hero, Services, and Lead Gen. Technical Stack: Formatting it for React and Tailwind CSS.`;
-        } catch (aiErr) {
-          console.error("AI Generation failed, proceeding with manual data", aiErr);
-        }
+FEATURES REQUESTED:
+${formData.selectedFeatures?.join(', ') || 'Standard responsive design'}
+
+CLIENT NOTE:
+${formData.developerNote || 'No specific note provided.'}
+        `.trim();
 
         const projectId = await createProject(projectData);
         
