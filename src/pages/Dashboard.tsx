@@ -140,24 +140,32 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       return;
     }
 
-    // Prefer project-specific payment links if defined
-    if (project.paymentLinkPremium && (project.plan?.toLowerCase().includes('premium') || project.plan?.toLowerCase() === 'pro' || project.plan?.toLowerCase() === 'enterprise')) {
+    const plan = (project.plan || 'basic').toLowerCase();
+
+    // 1. Prefer broad project-specific paymentLink if defined
+    if (project.paymentLink) {
+      window.open(project.paymentLink, '_blank');
+      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
+      toast.success('Opening custom payment link...');
+      return;
+    }
+
+    // 2. Prefer tiered project-specific payment links if defined
+    if (project.paymentLinkPremium && (plan.includes('premium') || plan.includes('pro') || plan.includes('enterprise'))) {
       window.open(project.paymentLinkPremium, '_blank');
       if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
       toast.success('Opening Premium payment link...');
       return;
     }
 
-    if (project.paymentLinkBasic && (project.plan?.toLowerCase().includes('basic') || project.plan?.toLowerCase() === 'starter')) {
+    if (project.paymentLinkBasic && (plan.includes('basic') || plan.includes('starter') || plan.includes('standard'))) {
       window.open(project.paymentLinkBasic, '_blank');
       if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
-      toast.success('Opening Basic payment link...');
+      toast.success('Opening payment link...');
       return;
     }
 
-    const plan = (project.plan || 'basic').toLowerCase();
-    
-    // Redirect to direct Razorpay links
+    // 3. System Settings defaults
     let paymentUrl = '';
     
     if (settings?.paymentLinks) {
@@ -168,11 +176,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       } else {
         paymentUrl = settings.paymentLinks.basic;
       }
-    } else {
-      // Fallback
-      if (plan === 'standard') {
+    } 
+
+    // 4. Final Hardcoded Fallbacks (only if settings failed)
+    if (!paymentUrl) {
+      if (plan.includes('standard')) {
         paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
-      } else if (plan === 'pro') {
+      } else if (plan.includes('pro') || plan.includes('premium')) {
         paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
       } else {
         paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic

@@ -98,6 +98,29 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProjectForDrawer, setSelectedProjectForDrawer] = useState<Project | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const [systemSettings, setSystemSettings] = useState<any>(null);
+  const isAdmin = user?.email && [ADMIN_EMAIL, 'workzy59@gmail.com'].includes(user.email.toLowerCase());
+
+  useEffect(() => {
+    if (isAdmin) {
+      import('../services/database').then(m => m.getSystemSettings().then(setSystemSettings));
+    }
+  }, [isAdmin]);
+
+  const handleUpdateSystemSettings = async () => {
+    if (!systemSettings) return;
+    setIsSubmitting(true);
+    try {
+      const { updateSystemSettings } = await import('../services/database');
+      await updateSystemSettings(systemSettings);
+      toast.success('System infrastructure updated');
+    } catch (error) {
+      toast.error('Failed to update system settings');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [settingsData, setSettingsData] = useState({
@@ -1700,6 +1723,59 @@ Description: ${project.description || 'No description provided.'}
                           </div>
                        </div>
                     </div>
+
+                    {isAdmin && systemSettings && (
+                      <div className="pt-8 border-t border-white/5 space-y-6">
+                        <div className="flex items-center gap-3">
+                          <Settings2 size={16} className="text-[#c7c42a]" />
+                          <h5 className="text-xs font-black uppercase tracking-widest text-white italic">Global Infrastructure (Admin)</h5>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-[8px] font-black uppercase text-white/40 ml-2">Basic Link (₹7,500)</label>
+                            <input 
+                              type="text"
+                              value={systemSettings.paymentLinks?.basic || ''}
+                              onChange={(e) => setSystemSettings({
+                                ...systemSettings,
+                                paymentLinks: { ...systemSettings.paymentLinks, basic: e.target.value }
+                              })}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-bold text-white outline-none focus:border-[#c7c42a]"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[8px] font-black uppercase text-white/40 ml-2">Standard (₹15,000)</label>
+                            <input 
+                              type="text"
+                              value={systemSettings.paymentLinks?.standard || ''}
+                              onChange={(e) => setSystemSettings({
+                                ...systemSettings,
+                                paymentLinks: { ...systemSettings.paymentLinks, standard: e.target.value }
+                              })}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-bold text-white outline-none focus:border-[#c7c42a]"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[8px] font-black uppercase text-white/40 ml-2">Premium (₹30,000)</label>
+                            <input 
+                              type="text"
+                              value={systemSettings.paymentLinks?.premium || ''}
+                              onChange={(e) => setSystemSettings({
+                                ...systemSettings,
+                                paymentLinks: { ...systemSettings.paymentLinks, premium: e.target.value }
+                              })}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-bold text-white outline-none focus:border-[#c7c42a]"
+                            />
+                          </div>
+                        </div>
+                        <button 
+                          onClick={handleUpdateSystemSettings}
+                          className="w-full py-4 bg-[#c7c42a] text-black font-black uppercase italic text-[10px] tracking-widest rounded-xl hover:scale-[1.01] transition-all"
+                        >
+                          Sync Global Links
+                        </button>
+                      </div>
+                    )}
 
                     <button 
                       onClick={async () => {
