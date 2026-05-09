@@ -428,7 +428,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
         const sanitizedOnboardingData = { ...formData };
         
-        const projectData = {
+        const projectData: any = {
           userId: currentUser.uid,
           userName: formData.name || '',
           userEmail: formData.email || '',
@@ -440,10 +440,39 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           plan: formData.plan || 'basic',
           paymentStatus: 'pending',
           isDeleted: false,
-          onboardingData: sanitizedOnboardingData 
+          onboardingData: sanitizedOnboardingData,
+          status: 'Waiting for Review'
         };
 
         console.log("WRITING PROJECT TO FIRESTORE...");
+        // Generate Optimized AI Prompt for the Developer using the Prompt Builder Instruction
+        try {
+          const aiPromptInstruction = `
+You are a Prompt Engineering Expert. Your job is to take basic business details and turn them into a professional, high-level prompt for a Web Developer AI.
+
+Business Name: ${formData.businessName}
+Category: ${formData.category}
+Contact Number: ${formData.phone}
+Email: ${formData.email}
+Primary Color: ${formData.primaryColor}
+Description: ${formData.description}
+Features: ${formData.features.join(', ')}
+
+Please generate a professional role, design language expansion, conversion logic, and technical stack instructions for a Senior Developer.
+          `.trim();
+
+          const { GoogleGenerativeAI } = await import('@google/generative-ai');
+          const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+          const result = await model.generateContent(aiPromptInstruction);
+          const generatedPrompt = result.response.text();
+          
+          projectData.aiDeveloperBrief = generatedPrompt;
+          projectData.promptEngineeringInstruction = `You are a Prompt Engineering Expert. Your job is to take basic business details from me and turn them into a professional, high-level prompt for a Web Developer AI. When I give you a Name, Category, Contact, and Color, you will generate a structured prompt that includes: Professional Role: Assigning a Senior Developer persona. Design Language: Expanding the 'color' into a full UI theme. Conversion Logic: Adding sections like Hero, Services, and Lead Gen. Technical Stack: Formatting it for React and Tailwind CSS.`;
+        } catch (aiErr) {
+          console.error("AI Generation failed, proceeding with manual data", aiErr);
+        }
+
         const projectId = await createProject(projectData);
         
         console.log("WRITING USER PROFILE TO FIRESTORE...");
@@ -818,7 +847,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             <div className="space-y-2">
               <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
               <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Intelligence</h3>
-              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Define your operational footprint</p>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Define your operational footprint. <span className="text-primary underline">Note: these will be visible in your website.</span></p>
             </div>
 
             <div className="space-y-6">

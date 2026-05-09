@@ -2042,6 +2042,29 @@ Description: ${project.description || 'No description provided.'}
                     </div>
                   </div>
 
+                  {/* AI BRIEF SECTION */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4E157] border-b border-black/10 pb-2">AI Developer Brief</h3>
+                    <div className="bg-black/10 p-8 rounded-[2rem] space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-black uppercase text-black/40">Prompt Expert Instruction</label>
+                        <p className="text-[10px] font-bold text-white leading-relaxed italic">
+                          "You are a Prompt Engineering Expert. Your job is to take basic business details from me and turn them into a professional, high-level prompt for a Web Developer AI..."
+                        </p>
+                      </div>
+                      {selectedProjectForDrawer.aiDeveloperBrief && (
+                        <div className="space-y-2 pt-4 border-t border-black/5">
+                          <label className="text-[8px] font-black uppercase text-black/40">Generated Optimized Prompt</label>
+                          <div className="bg-black/20 p-6 rounded-2xl">
+                            <p className="text-[11px] font-black italic uppercase leading-relaxed text-[#D4E157] whitespace-pre-wrap">
+                              {selectedProjectForDrawer.aiDeveloperBrief}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-8">
                     {/* Domain Intelligence */}
                     <div className="space-y-4">

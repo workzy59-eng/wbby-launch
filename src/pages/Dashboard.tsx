@@ -617,10 +617,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <nav className="flex-1 flex flex-col gap-5">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            ...(hasProjects ? [
+            ...(hasAcceptedProject ? [
               { id: 'progress', icon: FolderKanban, label: 'Pulse' },
               { id: 'meetings', icon: Video, label: 'Meetings' },
-              ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
+              { id: 'messages', icon: MessageCircle, label: 'Chat' },
               { id: 'payments', icon: CreditCard, label: 'Plans' },
               { id: 'settings', icon: Settings, label: 'User' },
             ] : []),
@@ -717,9 +717,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            ...(hasProjects ? [
+            ...(hasAcceptedProject ? [
               { id: 'progress', icon: FolderKanban, label: 'Progress' },
-              ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
+              { id: 'messages', icon: MessageCircle, label: 'Chat' },
               { id: 'meetings', icon: Video, label: 'Meets' },
               { id: 'settings', icon: Settings, label: 'Settings' },
             ] : []),

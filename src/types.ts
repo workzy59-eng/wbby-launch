@@ -263,6 +263,8 @@ export interface Project {
   previewUrl?: string;
   paymentLinkBasic?: string;
   paymentLinkPremium?: string;
+  aiDeveloperBrief?: string;
+  promptEngineeringInstruction?: string;
   lastMessage?: string;
   lastMessageAt?: string | Timestamp;
   lastSenderId?: string;
