@@ -95,6 +95,17 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   }, [user, navigate]);
 
   const [projects, setProjects] = useState<Project[]>([]);
+  const hasProjects = projects.length > 0;
+  const hasAcceptedProject = projects.some(p => 
+    !['Waiting for Review', 'Rejected', 'Under Review', 'pending', 'assigned'].includes(p.status?.toLowerCase() || '')
+  );
+
+  useEffect(() => {
+    if (!hasProjects && activeTab !== 'dashboard') {
+      setActiveTab('dashboard');
+    }
+  }, [hasProjects, activeTab]);
+
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -268,10 +279,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       setAssignedDeveloper(null);
     }
   }, [selectedProject?.developerId, selectedProject?.assignedTo]);
-
-  const hasAcceptedProject = projects.some(p => 
-    !['Waiting for Review', 'Rejected', 'Under Review', 'pending', 'assigned'].includes(p.status?.toLowerCase() || '')
-  );
 
   const statusSteps = selectedProject?.status === 'Rejected' 
     ? ["Waiting for Review", "Under Review", "Declined"]
@@ -610,11 +617,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         <nav className="flex-1 flex flex-col gap-5">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'progress', icon: FolderKanban, label: 'Pulse' },
-            { id: 'meetings', icon: Video, label: 'Meetings' },
-            ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
-            { id: 'payments', icon: CreditCard, label: 'Plans' },
-            { id: 'settings', icon: Settings, label: 'User' },
+            ...(hasProjects ? [
+              { id: 'progress', icon: FolderKanban, label: 'Pulse' },
+              { id: 'meetings', icon: Video, label: 'Meetings' },
+              ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
+              { id: 'payments', icon: CreditCard, label: 'Plans' },
+              { id: 'settings', icon: Settings, label: 'User' },
+            ] : []),
           ].map((tab) => (
             <button 
               key={tab.id}
@@ -708,10 +717,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'progress', icon: FolderKanban, label: 'Progress' },
-            ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
-            { id: 'meetings', icon: Video, label: 'Meets' },
-            { id: 'settings', icon: Settings, label: 'Settings' },
+            ...(hasProjects ? [
+              { id: 'progress', icon: FolderKanban, label: 'Progress' },
+              ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
+              { id: 'meetings', icon: Video, label: 'Meets' },
+              { id: 'settings', icon: Settings, label: 'Settings' },
+            ] : []),
           ].map((tab) => (
               <button 
                 key={tab.id}
@@ -737,29 +748,29 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
           <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
             <div className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === 'messages' ? 'py-6' : 'py-12'} space-y-10`}>
-              {activeTab !== 'messages' && (
-                <>
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                  <div>
-                    <motion.div 
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-2 mb-4"
-                    >
-                      <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
-                    </motion.div>
-                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
-                      Status:<br />
-                      <span style={{ color: primaryColor }}>Operational</span>
-                    </h1>
+                {hasProjects && activeTab !== 'messages' && (
+                  <>
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                      <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center gap-2 mb-4"
+                      >
+                        <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
+                      </motion.div>
+                      <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
+                        Status:<br />
+                        <span style={{ color: primaryColor }}>Operational</span>
+                      </h1>
+                    </div>
+                    <div className="flex flex-col items-end gap-4">
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-4">
-                  </div>
-                </div>
 
-                </>
-              )}
+                  </>
+                )}
           
           <AnimatePresence mode="wait">
             <motion.div
@@ -770,7 +781,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               transition={{ duration: 0.3, ease: "circOut" }}
               className="relative"
             >
-              {!hasAcceptedProject && activeTab === 'dashboard' && (
+              {hasProjects && !hasAcceptedProject && activeTab === 'dashboard' && (
                 <div className="relative flex flex-col items-center justify-center min-h-[600px] py-20">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#FFFF00]/10 rounded-full animate-[spin_20s_linear_infinite]" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#FFFF00]/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
@@ -1557,7 +1568,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
             </motion.div>
           </AnimatePresence>
         </div>
-        <BottomNav userId={user!.uid} role="client" onOpenMessages={() => setActiveTab('messages')} />
       </main>
 
 
