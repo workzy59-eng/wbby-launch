@@ -259,69 +259,6 @@ async function startServer() {
     }
   });
 
-  apiRouter.post("/send-otp", async (req, res) => {
-    try {
-      const { email, name } = req.body;
-      if (!email) return res.status(400).json({ error: "Email is required" });
-
-      // Generate 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // Hash the OTP (SHA-256)
-      const hash = crypto.createHash('sha256').update(otp).digest('hex');
-
-      // Send via EmailJS REST API
-      const emailJsData = {
-        service_id: process.env.EMAILJS_SERVICE_ID,
-        template_id: process.env.EMAILJS_TEMPLATE_ID,
-        user_id: process.env.EMAILJS_PUBLIC_KEY,
-        accessToken: process.env.EMAILJS_PRIVATE_KEY,
-        template_params: {
-          to_email: email,
-          to_name: name || 'Valued Client',
-          otp: otp,
-          project_name: 'WebbyLaunch'
-        }
-      };
-
-      try {
-        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailJsData)
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("EmailJS Error:", errorText);
-          // If keys are missing or invalid, we'll return a demo result in dev mode
-          if (!process.env.EMAILJS_SERVICE_ID || process.env.EMAILJS_SERVICE_ID.includes('placeholder')) {
-             console.warn("Using DEMO MODE for OTP. OTP is:", otp);
-             return res.json({ hash, demo: true, otp });
-          }
-          throw new Error(`Email delivery failed: ${errorText}`);
-        }
-      } catch (fetchErr: any) {
-        console.error("Fetch Error during OTP send:", fetchErr);
-        // Fallback for environment without secrets
-        if (!process.env.EMAILJS_SERVICE_ID) {
-           return res.json({ hash, demo: true, otp });
-        }
-        throw fetchErr;
-      }
-
-      res.json({ hash });
-    } catch (error: any) {
-      console.error("OTP Send Error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  apiRouter.all("*", (req, res) => {
-    console.warn(`DEBUG: Unhandled API route: ${req.method} ${req.url}`);
-    res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
-  });
-
   app.use("/api", apiRouter);
 
   // Vite middleware for development
