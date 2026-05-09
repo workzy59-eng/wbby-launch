@@ -1517,6 +1517,11 @@ export const getSystemSettings = async () => {
       pro: 3499,
       enterprise: 9999
     },
+    paymentLinks: {
+      basic: 'https://rzp.io/rzp/N4YcMZq2',
+      standard: 'https://rzp.io/rzp/rDHFQw2',
+      premium: 'https://rzp.io/rzp/3H3lO1x'
+    },
     maintenanceMode: false,
     allowNewRegistrations: true,
     baseWebsiteCost: 1499,

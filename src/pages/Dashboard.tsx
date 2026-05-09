@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, FirebaseUser, logOut } from '../firebase';
 import { initiatePayment } from '../services/razorpay';
-import { UserProfile, Project } from '../types';
+import { UserProfile, Project, Meeting, SystemSettings } from '../types';
 import { 
   Bell,
   LogOut, 
@@ -62,8 +62,7 @@ import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
 import { subscribeToMeetings } from '../services/meetingService';
-import { Meeting } from '../types';
-import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead } from '../services/database';
+import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead, getSystemSettings } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { toast } from 'react-hot-toast';
 import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
@@ -101,6 +100,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
+
+  useEffect(() => {
+    getSystemSettings().then(setSettings);
+  }, []);
+
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
   }, []);
@@ -129,21 +134,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     };
     handlePaymentSuccess();
   }, [location.search, navigate]);
-  const handlePayment = async (project: Project) => {
+  const handlePayment = async (project: Project, shouldUpdateStatus: boolean = false) => {
     if (!user || !profile) {
       toast.error('Please login to continue');
       return;
     }
 
     // Prefer project-specific payment links if defined
-    if (project.paymentLinkPremium && project.plan?.toLowerCase().includes('premium')) {
+    if (project.paymentLinkPremium && (project.plan?.toLowerCase().includes('premium') || project.plan?.toLowerCase() === 'pro' || project.plan?.toLowerCase() === 'enterprise')) {
       window.open(project.paymentLinkPremium, '_blank');
+      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
       toast.success('Opening Premium payment link...');
       return;
     }
 
-    if (project.paymentLinkBasic && project.plan?.toLowerCase().includes('basic')) {
+    if (project.paymentLinkBasic && (project.plan?.toLowerCase().includes('basic') || project.plan?.toLowerCase() === 'starter')) {
       window.open(project.paymentLinkBasic, '_blank');
+      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
       toast.success('Opening Basic payment link...');
       return;
     }
@@ -152,15 +159,28 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     
     // Redirect to direct Razorpay links
     let paymentUrl = '';
-    if (plan === 'standard') {
-      paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
-    } else if (plan === 'pro') {
-      paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
+    
+    if (settings?.paymentLinks) {
+      if (plan.includes('premium') || plan.includes('enterprise') || plan.includes('pro')) {
+        paymentUrl = settings.paymentLinks.premium;
+      } else if (plan.includes('standard')) {
+        paymentUrl = settings.paymentLinks.standard;
+      } else {
+        paymentUrl = settings.paymentLinks.basic;
+      }
     } else {
-      paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic
+      // Fallback
+      if (plan === 'standard') {
+        paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
+      } else if (plan === 'pro') {
+        paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
+      } else {
+        paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic
+      }
     }
 
     window.open(paymentUrl, '_blank');
+    if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
     toast.success('Opening payment link... Please refresh page after payment.');
   };
 
@@ -1110,7 +1130,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                          onClick={() => handlePayment(selectedProject)}
                                          className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20"
                                        >
-                                         Generic Payment Link
+                                         Pay Now
                                        </button>
                                      )}
                                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-4">
@@ -1358,7 +1378,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                             await updateProject(selectedProject.id, { paymentStatus: 'verifying' });
                                             toast.success('Please complete payment. We will verify it.');
                                           } else {
-                                            toast.error('Payment link is being generated by your developer.');
+                                            handlePayment(selectedProject, true);
                                           }
                                         }}
                                         className="flex items-center gap-2 bg-[#c7c42a] border border-[#c7c42a] px-8 py-3 rounded-xl text-black hover:scale-105 transition-all group"

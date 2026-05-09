@@ -352,6 +352,11 @@ export interface SystemSettings {
     pro: number;
     enterprise: number;
   };
+  paymentLinks?: {
+    basic: string;
+    standard: string;
+    premium: string;
+  };
   contactEmail?: string;
   socialLinks?: {
     instagram?: string;
