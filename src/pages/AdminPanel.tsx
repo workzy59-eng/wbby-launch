@@ -161,7 +161,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers' | 'leaves' | 'domains'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'system' | 'meetings' | 'clients' | 'developers' | 'leaves' | 'domains'>('dashboard');
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -259,10 +259,9 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [devUnreadCounts, setDevUnreadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const directTotal = Object.values(userUnreadCounts).reduce((acc, count) => acc + count, 0);
     const projectTotal = Object.values(projectUnreadCounts).reduce((acc, count) => acc + count, 0);
-    setUnreadTotal(directTotal + projectTotal);
-  }, [userUnreadCounts, projectUnreadCounts]);
+    setUnreadTotal(unreadCount + projectTotal);
+  }, [unreadCount, projectUnreadCounts]);
 
 
   const updateUnreadCount = (userId: string, count: number) => {
@@ -342,7 +341,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     let unsubscribeUsers = () => {};
     let unsubscribeDevInvites = () => {};
 
-    if (activeTab === 'dashboard' || activeTab === 'projects' || activeTab === 'recycle' || activeTab === 'developers') {
+    if (activeTab === 'dashboard' || activeTab === 'projects' || activeTab === 'developers') {
       const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(100));
       unsubscribeProjects = onSnapshot(q, (snapshot) => {
         setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
@@ -668,14 +667,6 @@ Generated on: ${new Date().toLocaleString()}
       } catch (error) {
         console.error("Error rejecting project:", error);
       }
-    }
-  };
-
-  const handleRestore = async (projectId: string) => {
-    try {
-      await updateProject(projectId, { isDeleted: false });
-    } catch (error) {
-      console.error("Error restoring project:", error);
     }
   };
 
@@ -1420,13 +1411,6 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                         >
                           <Edit2 size={16} />
                         </button>
-                        <button 
-                          onClick={() => handleDeleteProject(p.id)}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-red-500 hover:text-white transition-all"
-                          title="Delete Project"
-                        >
-                          <Trash2 size={16} />
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1527,37 +1511,6 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       </div>
     );
   };
-
-  const renderRecycleBin = () => (
-    <div className="space-y-12">
-      <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Archive</span>
-        <h2 className="text-6xl font-bold tracking-tighter text-white">RECYCLE BIN</h2>
-      </div>
-
-      <div className="space-y-4">
-        {projects.filter(p => p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#c7c42a]/30 transition-all">
-            <div>
-              <h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.businessName}</h3>
-              <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deleted Project • {p.businessType}</div>
-            </div>
-            <button 
-              onClick={() => handleRestore(p.id)}
-              className="px-8 py-3 bg-white text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
-            >
-              Restore
-            </button>
-          </div>
-        ))}
-        {projects.filter(p => p.isDeleted).length === 0 && (
-          <div className="py-32 text-center">
-            <div className="text-white/20 text-sm font-bold uppercase tracking-[0.5em]">Recycle bin is empty</div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   const [userSearch, setUserSearch] = useState('');
   const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'favourites'>('all');
@@ -2201,7 +2154,6 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {activeTab === 'domains' && <DomainConnectivity />}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
-            {activeTab === 'recycle' && renderRecycleBin()}
             {activeTab === 'system' && renderSystem()}
             {activeTab === 'meetings' && (
               <div className="space-y-12">
@@ -3267,7 +3219,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenCha
           </div>
           
           {msgCount > 0 && (
-            <div className="bg-[#c7c42a] text-[transparent] text-xs font-bold min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full shrink-0 ml-2">
+            <div className="bg-[#c7c42a] text-black text-xs font-bold min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full shrink-0 ml-2">
               {msgCount}
             </div>
           )}

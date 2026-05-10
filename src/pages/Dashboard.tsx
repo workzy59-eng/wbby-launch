@@ -215,7 +215,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   }, [projects]);
 
   const [showChat, setShowChat] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const [showDirectChat, setShowDirectChat] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
@@ -394,16 +393,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     });
     return () => unsubscribe();
   }, [user.uid, profile?.role]);
-
-  const handleCancelProject = async () => {
-    if (selectedProject) {
-      await updateProject(selectedProject.id, { isDeleted: true });
-      setShowCancelModal(false);
-      setSelectedProject(null);
-    }
-  };
-
-  // Removed old statusSteps and currentStepIndex from here
 
   const primaryColor = '#FFFF00';
 
@@ -1507,12 +1496,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   <p className="text-red-400 font-black uppercase italic">Reason: {selectedProject.rejectionReason}</p>
                                 )}
                               </div>
-                              <button 
-                                onClick={() => setShowCancelModal(true)}
-                                className="text-white/30 hover:text-red-400 font-black text-xs uppercase tracking-widest transition-all"
-                              >
-                                Cancel Project
-                              </button>
                             </div>
                           </motion.div>
                         )}
@@ -1583,36 +1566,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       </AnimatePresence>
 
       {/* Cancel Modal */}
-      <AnimatePresence>
-        {showCancelModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
-              onClick={() => setShowCancelModal(false)} 
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#c7c42a]/10"
-            >
-              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">Cancel Project?</h3>
-              <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>
-              <div className="flex flex-col gap-4">
-                <button onClick={handleCancelProject} className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all">
-                  Yes, Cancel
-                </button>
-                <button onClick={() => setShowCancelModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-white/10 transition-all">
-                  No, Keep It
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

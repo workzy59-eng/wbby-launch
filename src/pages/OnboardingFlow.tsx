@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FirebaseUser, auth } from '../firebase';
+import { jsPDF } from 'jspdf';
+import { toast } from 'react-hot-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
-import { UserProfile } from '../types';
-import { Check, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
+import { Check, Image as ImageIcon, FileText, CreditCard, Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
+
+import { FirebaseUser, auth } from '../firebase';
+import { UserProfile, SystemSettings } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { APP_NAME, HYPHENATED_NAME } from '../constants';
+import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
+import StateCityDropdown from '../components/StateCityDropdown';
 
 const Loader = ({ color = "black" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -24,13 +31,6 @@ const Loader = ({ color = "black" }: { color?: string }) => (
     <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#c7c42a]'} animate-pulse italic`}>Processing...</span>
   </div>
 );
-import { jsPDF } from 'jspdf';
-import { toast } from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
-import { APP_NAME, HYPHENATED_NAME } from '../constants';
-import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
-import { SystemSettings } from '../types';
-import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
 
 const AVAILABLE_FEATURES = [
   'Google Login System',
@@ -44,8 +44,6 @@ const AVAILABLE_FEATURES = [
   'Payment Integration (Stripe)',
   'Fast Loading Performance'
 ];
-
-import StateCityDropdown from '../components/StateCityDropdown';
 
 const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
   const containerClasses = {
@@ -222,6 +220,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       businessEmail: '',
       businessPhone: '',
       storeType: 'online_store' as 'online_store' | 'local_store',
+      googleMapsLink: '',
       addressLine: '',
       city: '',
       state: '',
@@ -337,6 +336,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (formData.businessType === 'Other' && !formData.otherBusinessType) invalid.push('otherBusinessType');
         if (!formData.businessEmail || !validateEmail(formData.businessEmail)) invalid.push('businessEmail');
         if (!formData.businessPhone || !validatePhone(formData.businessPhone)) invalid.push('businessPhone');
+        if (formData.storeType === 'local_store' && !formData.googleMapsLink) invalid.push('googleMapsLink');
         if (!formData.addressLine) invalid.push('addressLine');
         if (!formData.city) invalid.push('city');
         if (formData.country === 'India' && !formData.state) invalid.push('state');
@@ -464,7 +464,7 @@ MISSION BRIEF FOR DEVELOPER:
 Business Name: ${formData.businessName}
 Business Category: ${formData.businessType}
 Location: ${formData.city}, ${formData.state}, ${formData.country}
-Primary Color: ${formData.primaryColor}
+${formData.storeType === 'local_store' ? `Google Maps Link: ${formData.googleMapsLink}\n` : ''}Primary Color: ${formData.primaryColor}
 Secondary Color: ${formData.secondaryColor}
 
 DESCRIPTION:
@@ -619,7 +619,7 @@ ${formData.developerNote || 'No specific note provided.'}
     }
 
     setDomainTaken(false);
-    setStep(5); // Moving to features step
+    setStep(4); // Moving to features step
     setIsCheckingDomain(false);
   };
 
@@ -910,6 +910,29 @@ ${formData.developerNote || 'No specific note provided.'}
                   ))}
                 </div>
               </div>
+
+              {formData.storeType === 'local_store' && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="space-y-4"
+                >
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Google Maps Link <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('googleMapsLink') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="url"
+                      className={getInputClass('googleMapsLink', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.googleMapsLink}
+                      onChange={(e) => handleInputChange('googleMapsLink', e.target.value)}
+                      placeholder="PASTE YOUR GOOGLE MAPS BUSINESS LINK"
+                    />
+                  </motion.div>
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest font-black ml-4">This will be used to embed your location on the website. <span className="text-primary italic">Essential for local stores.</span></p>
+                </motion.div>
+              )}
 
               {/* Country Selection */}
               <div className="space-y-4">
@@ -1263,7 +1286,7 @@ ${formData.developerNote || 'No specific note provided.'}
       case 4:
         return (
           <motion.div 
-            key="step3"
+            key="step4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
