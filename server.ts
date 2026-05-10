@@ -24,10 +24,12 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req: any, file: any) => {
+    // Dynamically set folder if provided in the body
+    const folder = req.body?.folder || 'webbylaunch';
     return {
-      folder: 'webbylaunch',
+      folder: folder,
       resource_type: 'auto',
-      allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt'],
+      allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt', 'mp3', 'wav', 'webm'],
       public_id: `${Date.now()}-${file.originalname.split('.')[0]}`
     };
   },
