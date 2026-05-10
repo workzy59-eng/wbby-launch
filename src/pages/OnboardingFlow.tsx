@@ -464,11 +464,15 @@ MISSION BRIEF FOR DEVELOPER:
 Business Name: ${formData.businessName}
 Business Category: ${formData.businessType}
 Location: ${formData.city}, ${formData.state}, ${formData.country}
-${formData.storeType === 'local_store' ? `Google Maps Link: ${formData.googleMapsLink}\n` : ''}Primary Color: ${formData.primaryColor}
-Secondary Color: ${formData.secondaryColor}
+${formData.storeType === 'local_store' ? `Storefront Access: ${formData.googleMapsLink}\n` : ''}Design Aesthetic: ${formData.primaryColor} on ${formData.secondaryColor}
 
-DESCRIPTION:
+THE VIBE:
 ${formData.description}
+
+MISSION PARAMETERS:
+- Build a ${formData.businessType} experience that feels ${formData.primaryColor === '#FFFF00' ? 'industrial, elite, and high-energy' : 'professional and polished'}.
+- Tone: ${formData.storeType === 'local_store' ? 'Community-focused' : 'Global efficiency'}.
+- No generic templates. No placeholders. Just raw function wrapped in the "${formData.businessName}" identity.
 
 FEATURES REQUESTED:
 ${formData.selectedFeatures?.join(', ') || 'Standard responsive design'}

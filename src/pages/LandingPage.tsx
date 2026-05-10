@@ -271,7 +271,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 1 }}
-            className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/40 leading-tight italic"
+            className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/60 leading-tight italic"
           >
             Scale your <span className="text-white">CLOTHING BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 52 hours.
           </motion.p>
@@ -350,9 +350,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-transparent z-10" />
                 <img 
                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" 
-                  alt="Live Demo" 
+                  alt="Interactive Dashboard UI showing real-time website analytics" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                   referrerPolicy="no-referrer"
+                  loading="lazy"
+                  width="1200"
+                  height="675"
                 />
                 <div className="absolute inset-0 flex items-center justify-center z-20">
                   <div className="w-20 h-20 bg-[#c7c42a] rounded-full flex items-center justify-center text-black shadow-[0_0_50px_rgba(199,196,42,0.4)] group-hover:scale-110 transition-transform cursor-pointer">
@@ -383,9 +386,9 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <span className="text-[#c7c42a]">Live Demos.</span>
                 </h3>
               </motion.div>
-              <p className="text-white/40 text-lg font-medium italic leading-relaxed">
-                Don't just take our word for it. Experience the speed, smoothness, and premium feel of our websites yourself. We build for the future.
-              </p>
+                <p className="text-white/60 text-lg font-medium italic leading-relaxed">
+                  Don't just take our word for it. Experience the speed, smoothness, and premium feel of our websites yourself. We build for the future.
+                </p>
               <div className="grid grid-cols-2 gap-6">
                 <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-2">
                   <h5 className="text-[#c7c42a] font-black italic tracking-tighter">99.9%</h5>
@@ -422,7 +425,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     <span className="text-[#c7c42a]">Meeting System.</span>
                   </h3>
                 </div>
-                <p className="text-white/40 text-lg font-medium italic leading-relaxed">
+                <p className="text-white/60 text-lg font-medium italic leading-relaxed">
                   Stay connected with our built-in scheduling system. Join Zoom/Google Meet sessions, and track project progress in real-time.
                 </p>
                 <div className="space-y-4">
@@ -500,7 +503,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               </h3>
             </div>
             <div className="max-w-md">
-              <p className="text-white/40 text-lg font-medium italic leading-relaxed">
+              <p className="text-white/60 text-lg font-medium italic leading-relaxed">
                 We believe in architectural honesty. Our builds are optimized for performance, conversion, and surgical precision.
               </p>
             </div>
@@ -516,12 +519,15 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 className="group relative bg-[#050505] p-px overflow-hidden"
               >
                 <div className="relative aspect-[4/5] overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700"
-                    referrerPolicy="no-referrer"
-                  />
+                    <img 
+                      src={item.image} 
+                      alt={`Portfolio item: ${item.title} - ${item.description}`} 
+                      className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      width="800"
+                      height="1000"
+                    />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
                   
                   <div className="absolute inset-0 p-12 flex flex-col justify-end transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500">
@@ -535,7 +541,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     >
                       {item.title}
                     </span>
-                    <p className="text-white/40 text-sm font-medium italic opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{item.description}</p>
+                    <p className="text-white/60 text-sm font-medium italic opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{item.description}</p>
                     
                     <Link 
                       to={item.link} 
@@ -658,7 +664,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 </div>
                 <div className="relative z-10 space-y-8">
                   <h4 className="text-4xl font-black uppercase italic tracking-tighter">{step.title}</h4>
-                  <p className="text-white/40 text-lg font-medium italic leading-relaxed">{step.description}</p>
+                  <p className="text-white/60 text-lg font-medium italic leading-relaxed">{step.description}</p>
                 </div>
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#c7c42a] to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
               </motion.div>
@@ -691,7 +697,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                     <div className="w-2 h-2 bg-[#c7c42a] animate-pulse" />
                     <h4 className="text-xl font-black uppercase italic tracking-tighter text-white">{feature.title}</h4>
                   </div>
-                  <p className="text-white/30 text-sm font-medium italic leading-relaxed">{feature.desc}</p>
+                  <p className="text-white/60 text-sm font-medium italic leading-relaxed">{feature.desc}</p>
                 </div>
               ))}
             </div>
@@ -703,9 +709,12 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               <div className="w-full h-full bg-black rounded-2xl overflow-hidden relative group">
                 <img 
                   src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200" 
-                  alt="Tech" 
+                  alt="High-performance server hardware" 
                   className="w-full h-full object-cover opacity-30 grayscale group-hover:scale-110 transition-transform duration-700"
                   referrerPolicy="no-referrer"
+                  loading="lazy"
+                  width="1200"
+                  height="1200"
                 />
                 <div className="absolute inset-0 flex items-center justify-center p-12">
                    <div className="w-full h-full border border-white/5 flex flex-col items-center justify-center space-y-6 bg-black/60 backdrop-blur-xl">
@@ -761,7 +770,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 Ready to be our <br />
                 <span className="text-[#c7c42a]">Next Success Story?</span>
               </h2>
-              <p className="text-xl text-white/40 font-medium italic max-w-2xl mx-auto">
+              <p className="text-xl text-white/60 font-medium italic max-w-2xl mx-auto">
                 Join hundreds of businesses that have transformed their digital presence with Webbylaunch.
               </p>
               <Link 
@@ -789,7 +798,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Only 5 project slots left this month</span>
                 </div>
-                <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">
+                <p className="text-white/60 text-[10px] font-black uppercase tracking-widest italic">
                   Launch Offer: Free Meeting + Free SEO Setup included in all plans
                 </p>
               </div>
@@ -800,7 +809,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Only 5 project slots left this month</span>
                </div>
-               <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic opacity-60">
+               <p className="text-white/60 text-[10px] font-black uppercase tracking-widest italic opacity-60">
                   Launch Offer: Free Meeting + Free SEO Setup included in all plans
                </p>
             </div>
@@ -857,7 +866,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
 
                   <ul className="space-y-4">
                     {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-3 text-sm font-medium text-white/40 italic uppercase tracking-tighter group-hover:text-white/60 transition-colors">
+                      <li key={i} className="flex items-center gap-3 text-sm font-medium text-white/60 italic uppercase tracking-tighter group-hover:text-white transition-colors">
                         <div className="w-1 h-1 bg-[#c7c42a]" />
                         {feature}
                       </li>
@@ -889,10 +898,10 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="py-8 px-6 text-[10px] font-black uppercase tracking-widest text-white/40">Feature</th>
-                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/40">Basic</th>
+                  <th className="py-8 px-6 text-[10px] font-black uppercase tracking-widest text-white/60">Feature</th>
+                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/60">Basic</th>
                   <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Standard</th>
-                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/40">Pro</th>
+                  <th className="py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest text-white/60">Pro</th>
                 </tr>
               </thead>
               <tbody>
@@ -911,13 +920,13 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="py-6 px-6 text-sm font-bold text-white/60 italic">{row.name}</td>
                     <td className="py-6 px-6 text-center">
-                      {typeof row.basic === 'boolean' ? (row.basic ? <CheckCircle2 size={16} className="mx-auto text-[#c7c42a]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.basic}</span>}
+                      {typeof row.basic === 'boolean' ? (row.basic ? <CheckCircle2 size={16} className="mx-auto text-[#c7c42a]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/60">{row.basic}</span>}
                     </td>
                     <td className="py-6 px-6 text-center bg-[#c7c42a]/5">
                       {typeof row.standard === 'boolean' ? (row.standard ? <CheckCircle2 size={16} className="mx-auto text-[#c7c42a]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-[#c7c42a]">{row.standard}</span>}
                     </td>
                     <td className="py-6 px-6 text-center">
-                      {typeof row.pro === 'boolean' ? (row.pro ? <CheckCircle2 size={16} className="mx-auto text-[#c7c42a]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/40">{row.pro}</span>}
+                      {typeof row.pro === 'boolean' ? (row.pro ? <CheckCircle2 size={16} className="mx-auto text-[#c7c42a]" /> : <X size={16} className="mx-auto text-white/10" />) : <span className="text-xs font-black uppercase text-white/60">{row.pro}</span>}
                     </td>
                   </tr>
                 ))}
@@ -942,7 +951,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             <h3 className="text-[10vw] md:text-[12vw] font-black tracking-tighter uppercase leading-[0.75] italic text-white animate-slam-in">
               Ready <span className="text-[#c7c42a]">to Build?</span>
             </h3>
-            <p className="text-white/30 text-2xl max-w-2xl mx-auto font-medium italic leading-tight">
+            <p className="text-white/60 text-2xl max-w-2xl mx-auto font-medium italic leading-tight">
               We are currently accepting <span className="text-white"> 3 new project slots </span> for this week. Guaranteed 52-hour turnaround.
             </p>
             <div className="pt-12">
@@ -988,7 +997,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 bg-[#c7c42a]" />
-                  <h4 className="text-lg font-black uppercase italic tracking-tighter text-white/40 group-hover:text-white transition-colors">{item.title}</h4>
+                  <h4 className="text-lg font-black uppercase italic tracking-tighter text-white/60 group-hover:text-white transition-colors">{item.title}</h4>
                 </div>
                 <p className="text-3xl font-black text-[#c7c42a] tracking-tighter uppercase italic leading-none">{item.value}</p>
                 <p className="text-white/20 text-xs font-medium italic leading-relaxed">{item.desc}</p>

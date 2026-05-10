@@ -894,12 +894,6 @@ Generated on: ${new Date().toLocaleString()}
               >
                 Assign Developer
               </button>
-              <button 
-                onClick={() => { setSelectedProject(p); setShowRejectModal(true); }}
-                className="flex-1 border border-white/10 text-white py-4 rounded-full font-bold hover:bg-white/5 transition-all text-xs uppercase tracking-widest"
-              >
-                Reject
-              </button>
             </div>
           </div>
         ))}
@@ -987,12 +981,6 @@ Generated on: ${new Date().toLocaleString()}
                 className="flex-1 bg-white text-black py-4 rounded-full font-black hover:scale-[1.02] active:scale-[0.98] transition-all text-[10px] uppercase tracking-widest shadow-xl"
               >
                 Update Progress
-              </button>
-              <button 
-                onClick={() => { setSelectedProject(p); setShowRejectModal(true); }}
-                className="px-6 border border-red-500/30 text-red-400 py-4 rounded-full font-black hover:bg-red-500 hover:text-white transition-all text-[10px] uppercase tracking-widest"
-              >
-                Terminate
               </button>
             </div>
           </div>

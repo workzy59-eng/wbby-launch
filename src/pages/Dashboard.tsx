@@ -59,6 +59,7 @@ import {
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
+import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
 import { subscribeToMeetings } from '../services/meetingService';
@@ -84,7 +85,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'vault'>('dashboard');
   
   // Whitelisted developers should be on the Developer Dashboard
   useEffect(() => {
@@ -605,14 +606,15 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col gap-5">
           {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            ...(hasAcceptedProject ? [
-              { id: 'progress', icon: FolderKanban, label: 'Pulse' },
-              { id: 'meetings', icon: Video, label: 'Meetings' },
-              { id: 'messages', icon: MessageCircle, label: 'Chat' },
-              { id: 'payments', icon: CreditCard, label: 'Plans' },
-              { id: 'settings', icon: Settings, label: 'User' },
-            ] : []),
+              { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+              ...(hasAcceptedProject ? [
+                { id: 'progress', icon: FolderKanban, label: 'Pulse' },
+                { id: 'meetings', icon: Video, label: 'Meetings' },
+                { id: 'messages', icon: MessageCircle, label: 'Chat' },
+                { id: 'vault', icon: Zap, label: 'Vault' },
+                { id: 'payments', icon: CreditCard, label: 'Plans' },
+                { id: 'settings', icon: Settings, label: 'User' },
+              ] : []),
           ].map((tab) => (
             <button 
               key={tab.id}
@@ -705,13 +707,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           {/* Mobile Navigation */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            ...(hasAcceptedProject ? [
-              { id: 'progress', icon: FolderKanban, label: 'Progress' },
-              { id: 'messages', icon: MessageCircle, label: 'Chat' },
-              { id: 'meetings', icon: Video, label: 'Meets' },
-              { id: 'settings', icon: Settings, label: 'Settings' },
-            ] : []),
+              { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+              ...(hasAcceptedProject ? [
+                { id: 'progress', icon: FolderKanban, label: 'Progress' },
+                { id: 'messages', icon: MessageCircle, label: 'Chat' },
+                { id: 'meetings', icon: Video, label: 'Meets' },
+                { id: 'vault', icon: Zap, label: 'Vault' },
+                { id: 'settings', icon: Settings, label: 'Settings' },
+              ] : []),
           ].map((tab) => (
               <button 
                 key={tab.id}
@@ -823,6 +826,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   projects={projects}
                   initialRecipientId={assignedDeveloper?.uid || adminProfile?.uid}
                 />
+              ) : activeTab === 'vault' ? (
+                <MediaVault currentUser={user} profile={profile} />
               ) : activeTab === 'progress' ? (
                 <div className="space-y-12">
                    <div className="flex flex-col gap-2">

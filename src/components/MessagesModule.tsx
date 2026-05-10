@@ -372,13 +372,17 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (!activeConversation) return;
 
     // Mark as seen when opening
-    if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin' && activeConversation.id !== 'new_dev') {
-      if (activeConversation.isProject) {
-        markProjectAsSeen(activeConversation.id, currentUser.uid);
-      } else {
-        markConversationAsSeen(activeConversation.id, currentUser.uid);
+    const markAsSeen = async () => {
+      if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin' && activeConversation.id !== 'new_dev') {
+        if (activeConversation.isProject) {
+          await markProjectAsSeen(activeConversation.id, currentUser.uid);
+        } else {
+          await markConversationAsSeen(activeConversation.id, currentUser.uid);
+        }
       }
-    }
+    };
+    
+    markAsSeen();
 
     let unsub: () => void;
     let unsubTyping: () => void;
@@ -741,15 +745,26 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
     if (m.type === 'image' || isUrlImage) {
       return (
-        <div 
-          className="relative group/media mb-2 rounded-xl overflow-hidden border border-[#FFFF00]/10 cursor-pointer bg-[#2a3942]" 
-          onClick={() => setSelectedImage(effectiveUrl)}
-        >
-          <img src={effectiveUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center">
-            <Maximize2 size={24} className="text-white drop-shadow-lg" />
+        <div className="space-y-2">
+          <div 
+            className="relative group/media rounded-xl overflow-hidden border border-[#FFFF00]/10 cursor-pointer bg-[#2a3942]" 
+            onClick={() => setSelectedImage(effectiveUrl)}
+          >
+            <img src={effectiveUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center">
+              <Maximize2 size={24} className="text-white drop-shadow-lg" />
+            </div>
+            <p className="absolute bottom-2 left-2 text-[8px] font-black uppercase text-[#FFFF00] bg-black/60 px-2 py-0.5 rounded-full tracking-widest backdrop-blur-sm opacity-0 group-hover/media:opacity-100 transition-opacity">Visual Intel Attached</p>
           </div>
-          <p className="absolute bottom-2 left-2 text-[8px] font-black uppercase text-[#FFFF00] bg-black/60 px-2 py-0.5 rounded-full tracking-widest backdrop-blur-sm opacity-0 group-hover/media:opacity-100 transition-opacity">Visual Intel Attached</p>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleForceDownload(effectiveUrl, `intel_${m.id}.jpg`);
+            }}
+            className="w-full flex items-center justify-center gap-2 py-2 bg-[#FFFF00] text-black rounded-xl text-[10px] font-black uppercase italic hover:bg-white transition-all shadow-lg"
+          >
+            <Download size={12} /> Force Download
+          </button>
         </div>
       );
     }
@@ -774,7 +789,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             </div>
           </div>
           <button 
-            onClick={() => window.open(effectiveUrl, '_blank')}
+            onClick={() => handleForceDownload(effectiveUrl, fileName)}
             className="w-full py-4 bg-[#FFFF00] text-black rounded-2xl font-black uppercase italic text-xs hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#FFFF00]/20"
           >
             <Download size={16} />
