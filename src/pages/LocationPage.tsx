@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { MapPin, ArrowRight, CheckCircle2, Zap, Smartphone, Search } from 'lucide-react';
+import { MapPin, ArrowRight, CheckCircle2, Zap as ZapIcon, Smartphone, Search } from 'lucide-react';
 import SEO from '../components/SEO';
 import { ADMIN_EMAIL } from '../constants';
 
@@ -10,7 +10,7 @@ export default function LocationPage() {
   const cityName = city ? city.charAt(0).toUpperCase() + city.slice(1) : '';
 
   const features = [
-    { icon: Zap, title: 'Fast Delivery', desc: 'Get your site in 52 hours.' },
+    { icon: ZapIcon, title: 'Fast Delivery', desc: 'Get your site in 52 hours.' },
     { icon: Smartphone, title: 'Responsive', desc: 'Perfect on every device.' },
     { icon: Search, title: 'SEO Ready', desc: 'Rank higher on Google.' }
   ];
