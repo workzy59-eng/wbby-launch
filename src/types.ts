@@ -9,9 +9,9 @@ export interface UserProfile {
   phone?: string;
   username?: string;
   status: 'online' | 'offline' | 'away' | 'active' | 'inactive' | 'suspended' | RequestStatus;
-  lastSeen?: string | Timestamp;
-  createdAt: string | Timestamp;
-  updatedAt?: string | Timestamp;
+  lastSeen?: any;
+  createdAt: any;
+  updatedAt?: any;
   isApproved?: boolean;
   commissionEarned?: number;
   salesCode?: string; // For sales users
@@ -164,18 +164,18 @@ export interface Payment {
   type: 'one-time';
   status: 'pending' | 'completed';
   stripeSessionId?: string;
-  createdAt: Timestamp;
+  createdAt: any;
 }
 
 export interface LeaveRequest {
   id: string;
   userId: string;
   userName: string;
-  startDate: string | Timestamp;
-  endDate: string | Timestamp;
+  startDate: any;
+  endDate: any;
   reason: string;
   status: RequestStatus;
-  createdAt: string | Timestamp;
+  createdAt: any;
 }
 
 export interface Attendance {
@@ -255,8 +255,8 @@ export interface Project {
   deadline?: string | Timestamp;
   internalNotes?: string;
   estimatedCompletion: string | Timestamp | null;
-  createdAt: string | Timestamp;
-  updatedAt: string | Timestamp;
+  createdAt: any;
+  updatedAt: any;
   rejectionReason?: string;
   isDeleted?: boolean;
   isLocked: boolean; // For the lock system
@@ -273,6 +273,7 @@ export interface Project {
   assignedTo?: string; // New field for assigned developer UID
   unreadCount?: Record<string, number>;
   websiteUrl?: string;
+  googleMapsLink?: string;
   acceptedAt?: string | Timestamp;
   urlSubmittedAt?: string | Timestamp;
   aiPrompt?: string;
@@ -377,7 +378,7 @@ export interface BlogPost {
   content: string;
   excerpt: string;
   author: string;
-  date: string | Timestamp;
+  date: any;
   image: string;
   tags: string[];
   category: string;
@@ -403,8 +404,8 @@ export interface Meeting {
   rescheduleMessage?: string;
   preferredDate?: string;
   preferredTime?: string;
-  createdAt: string | Timestamp;
-  updatedAt: string | Timestamp;
+  createdAt: any;
+  updatedAt: any;
 }
 
 export interface MeetingRequest {
@@ -418,8 +419,8 @@ export interface MeetingRequest {
   adminResponse?: string;
   suggestedDate?: string;
   suggestedTime?: string;
-  createdAt: string | Timestamp;
-  updatedAt: string | Timestamp;
+  createdAt: any;
+  updatedAt: any;
 }
 
 export interface Notification {
@@ -428,6 +429,6 @@ export interface Notification {
   title: string;
   description: string;
   type: 'progress' | 'welcome' | 'system' | 'admin';
-  createdAt: string | Timestamp;
+  createdAt: any;
   read: boolean;
 }

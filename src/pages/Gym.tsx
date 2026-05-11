@@ -4,7 +4,6 @@ import {
   Trophy, 
   Flame, 
   Zap, 
-  Activity, 
   ArrowRight, 
   Check, 
   Instagram, 

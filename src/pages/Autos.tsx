@@ -11,7 +11,7 @@ import {
   Wind,
   Settings,
   Users,
-  Activity,
+  Activity as ActivityIcon,
   Compass,
   Crosshair,
   Wifi,
@@ -164,7 +164,7 @@ export default function Autos() {
                     <div className="flex items-center gap-6">
                        <div className="w-px h-24 bg-white/10" />
                        <div className="space-y-2">
-                          <Activity className="text-[#c7c42a] animate-pulse" size={20} />
+                          <ActivityIcon className="text-[#c7c42a] animate-pulse" size={20} />
                           <p className="text-[10px] font-black uppercase tracking-widest text-white/30 italic">Biometric link established</p>
                        </div>
                     </div>

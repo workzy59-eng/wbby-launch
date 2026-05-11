@@ -23,7 +23,7 @@ import {
   FileText,
   Plus,
   Shield,
-  Activity,
+  Activity as ActivityIcon,
   Award
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
@@ -674,7 +674,7 @@ Generated on: ${new Date().toLocaleString()}
 
                     <div className="flex gap-2 pt-2 relative z-10">
                       <button className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                        <Activity size={14} /> Analytics
+                        <ActivityIcon size={14} /> Analytics
                       </button>
                       <button 
                         onClick={() => setSelectedChatUser(dev)}
@@ -827,7 +827,7 @@ Generated on: ${new Date().toLocaleString()}
 
                     <div className="flex gap-2 pt-2 relative z-10">
                       <button className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white/60 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                        <Activity size={14} /> Analytics
+                        <ActivityIcon size={14} /> Analytics
                       </button>
                       <button 
                         onClick={() => setSelectedChatUser(dev)}

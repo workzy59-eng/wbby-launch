@@ -15,6 +15,7 @@ import {
   Globe,
   ChevronRight,
   TrendingUp,
+  Zap,
   AlertCircle,
   Menu,
   X,

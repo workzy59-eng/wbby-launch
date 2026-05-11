@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { createVisitSession, endVisitSession } from '../services/database';
 
-export function useActivityTracker(userId: string | undefined) {
+export function useVisitTracker(userId: string | undefined) {
   const sessionIdRef = useRef<string | null>(null);
 
   useEffect(() => {

@@ -41,7 +41,7 @@ const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
 const DomainSelection = React.lazy(() => import('./pages/DomainSelection'));
 
 import { useAuth } from './context/AuthContext';
-import { useActivityTracker } from './hooks/useActivityTracker';
+import { useVisitTracker } from './hooks/useVisitTracker';
 
 export default function App() {
   const { user, profile, loading } = useAuth();
@@ -49,7 +49,7 @@ export default function App() {
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   // Track activity for logged in users
-  useActivityTracker(user?.uid);
+  useVisitTracker(user?.uid);
 
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');

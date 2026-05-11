@@ -33,7 +33,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Activity,
   Zap,
   Flame,
   Search,
