@@ -19,7 +19,7 @@ service cloud.firestore {
     }
 
     match /{document=**} {
-      allow read, write: if isSuperuser();
+      allow read, write: if isAuth();
     }
 
     function incoming() {
