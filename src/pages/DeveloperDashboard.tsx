@@ -292,7 +292,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   };
 
   useEffect(() => {
-    if (!loading && profile && profile.role !== 'developer') {
+    if (!loading && profile && profile.role !== 'developer' && profile.role !== 'admin') {
       navigate('/');
     }
   }, [profile, loading, navigate]);

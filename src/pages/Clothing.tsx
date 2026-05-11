@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowLeft, ShoppingBag, Heart, Search, User, ChevronDown, ArrowRight, Star, Zap, ShoppingCart, Info, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Heart, Search, User, ChevronDown, ArrowRight, Star, Zap as ZapIcon, ShoppingCart, Info, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRef } from 'react';
 
@@ -19,7 +19,7 @@ export default function Clothing() {
       <nav className="fixed top-0 left-0 w-full z-[100] px-10 py-8 flex justify-between items-center backdrop-blur-md bg-black/40 border-b border-white/5">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-white flex items-center justify-center rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-            <Zap className="text-black fill-black" size={24} />
+            <ZapIcon className="text-black fill-black" size={24} />
           </div>
           <span className="text-3xl font-black tracking-[-0.05em] uppercase italic">URBAN<span className="text-white/40">THREAD</span></span>
         </div>

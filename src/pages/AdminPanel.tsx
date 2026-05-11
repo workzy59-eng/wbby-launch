@@ -65,7 +65,7 @@ import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import { MeetingList } from '../components/meetings/MeetingList';
 import Papa from 'papaparse';
-import { Monitor, Smartphone, Tablet, ExternalLink, Zap, Mail, MessageSquare } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, ExternalLink, Zap as ZapIcon, Mail, MessageSquare } from 'lucide-react';
 
 import BottomNav from '../components/BottomNav';
 import { getUnreadMessageCount } from '../services/database';
@@ -134,7 +134,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
             {(data.selectedFeatures || []).slice(0, 4).map((f: any, i: number) => (
                 <div key={i} className="p-2 bg-gray-50 rounded-lg border border-gray-100 text-center flex flex-col items-center justify-center gap-1">
                    <div className="w-4 h-4 rounded bg-white border border-gray-100 flex items-center justify-center">
-                     <Zap size={8} style={{ color: data.primaryColor }} />
+                     <ZapIcon size={8} style={{ color: data.primaryColor }} />
                    </div>
                    <div className="text-[6px] font-black uppercase truncate max-w-full">{f}</div>
                 </div>
@@ -713,7 +713,7 @@ Generated on: ${new Date().toLocaleString()}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: 'Platform Speed', value: `${platformEfficiency}%`, icon: Zap, color: 'text-[#c7c42a]' },
+            { label: 'Platform Speed', value: `${platformEfficiency}%`, icon: ZapIcon, color: 'text-[#c7c42a]' },
             { label: 'Network Signal', value: messageCount, icon: MessageCircle, color: 'text-[#00F2FF]' },
             { label: 'Pending Jobs', value: pendingJobs, icon: Bell, color: 'text-red-500' },
             { label: 'Total Volume', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ChevronRight, Gauge, Zap, Wind } from 'lucide-react';
+import { ChevronRight, Gauge, Zap as ZapIcon, Wind } from 'lucide-react';
 
 interface CarCardProps {
   car: {
@@ -109,7 +109,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car, index }) => {
             <p className="text-[8px] font-bold uppercase text-white/30 tracking-widest">TOP SPEED</p>
           </div>
           <div className="space-y-1">
-            <Zap size={14} className="text-orange-400" />
+            <ZapIcon size={14} className="text-orange-400" />
             <p className="text-xs font-bold uppercase tracking-tighter">{car.specs.hp}</p>
             <p className="text-[8px] font-bold uppercase text-white/30 tracking-widest">HORSEPOWER</p>
           </div>

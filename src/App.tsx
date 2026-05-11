@@ -122,7 +122,7 @@ export default function App() {
                       (profile?.role === 'admin' || 
                        user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                         <Navigate to="/admin" />
-                      ) : (['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                      ) : (['aither2029@gmail.com', 'sain17296174@gmail.com', ADMIN_EMAIL.toLowerCase()].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
                         <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
@@ -199,7 +199,7 @@ export default function App() {
                   element={
                     user ? (
                       profile ? (
-                        (profile.role === 'developer' || ['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                        (profile.role === 'developer' || ['aither2029@gmail.com', 'sain17296174@gmail.com', ADMIN_EMAIL.toLowerCase()].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : (
                           <Navigate to="/dashboard" />
