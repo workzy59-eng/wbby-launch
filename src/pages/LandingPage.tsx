@@ -9,7 +9,7 @@ import {
   CheckCircle2, 
   Users, 
   Shield, 
-  Zap, 
+  Zap as ZapIcon, 
   Smartphone, 
   Search, 
   Layout as LayoutIcon,
@@ -307,7 +307,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-12 px-12">
                 <span className="text-2xl font-black italic tracking-tighter uppercase text-white/20 flex items-center gap-4">
-                  High Performance <Zap size={20} className="text-[#c7c42a]" />
+                  High Performance <ZapIcon size={20} className="text-[#c7c42a]" />
                 </span>
                 <span className="text-2xl font-black italic tracking-tighter uppercase text-white/20 flex items-center gap-4">
                   Mobile Optimized <Smartphone size={20} className="text-[#c7c42a]" />
@@ -359,7 +359,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 />
                 <div className="absolute inset-0 flex items-center justify-center z-20">
                   <div className="w-20 h-20 bg-[#c7c42a] rounded-full flex items-center justify-center text-black shadow-[0_0_50px_rgba(199,196,42,0.4)] group-hover:scale-110 transition-transform cursor-pointer">
-                    <Zap size={32} fill="currentColor" />
+                    <ZapIcon size={32} fill="currentColor" />
                   </div>
                 </div>
                 <div className="absolute bottom-8 left-8 z-20 space-y-2">
@@ -687,7 +687,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-16">
               {[
-                { icon: Zap, title: '52h Delivery', desc: 'Surgical deployment in hours, not months.' },
+                { icon: ZapIcon, title: '52h Delivery', desc: 'Surgical deployment in hours, not months.' },
                 { icon: Smartphone, title: 'Ultra-Fluid', desc: 'Psychologically optimized mobile UX.' },
                 { icon: Search, title: 'SEO Engine', desc: 'Engineered for search visibility.' },
                 { icon: LayoutIcon, title: 'Custom DNA', desc: 'Every build coded from the ground up.' }

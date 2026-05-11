@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion } from 'motion/react';
-import { Download, Share2, CheckCircle2, CreditCard, FileText, Smartphone, Globe, ShieldCheck, Zap } from 'lucide-react';
+import { Download, Share2, CheckCircle2, CreditCard, FileText, Smartphone, Globe, ShieldCheck, Zap as ZapIcon } from 'lucide-react';
 import { Project, UserProfile } from '../types';
 import { formatDate } from '../lib/utils';
 import jsPDF from 'jspdf';
@@ -176,7 +176,7 @@ export default function InvoiceSystem({ project, profile, onClose }: InvoiceSyst
                   <span className="text-xs font-black uppercase tracking-widest text-white/70">Secure SSL Included</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Zap size={14} className="text-white/40" />
+                  <ZapIcon size={14} className="text-white/40" />
                   <span className="text-xs font-black uppercase tracking-widest text-white/70">High Performance Hosting</span>
                 </div>
               </div>

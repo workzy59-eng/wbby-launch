@@ -22,6 +22,10 @@ service cloud.firestore {
       allow read, write: if isAuth();
     }
 
+    match /_system_/{any} {
+      allow read: if true;
+    }
+
     function incoming() {
       return request.resource.data;
     }
@@ -49,11 +53,6 @@ service cloud.firestore {
          request.auth.token.email.lower() == 'sain17296174@gmail.com'
         ))
       );
-    }
-
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
     }
 
     // =========================
@@ -161,24 +160,7 @@ service cloud.firestore {
     // NOTIFICATIONS
     // =========================
     match /notifications/{notificationId} {
-      allow get: if isAuth() && (
-        isAdmin() || 
-        isWhitelistedDeveloper() || 
-        resource.data.userId == request.auth.uid || 
-        resource.data.get('role', '') == 'admin'
-      );
-      allow list: if isAuth() && (
-        isAdmin() || 
-        isWhitelistedDeveloper() || 
-        (resource.data.userId == request.auth.uid) || 
-        (resource.data.get('role', '') == 'admin')
-      );
-      allow create: if isAuth();
-      allow update, delete: if isAuth() && (
-        isAdmin() || 
-        isWhitelistedDeveloper() || 
-        resource.data.userId == request.auth.uid
-      );
+      allow read, write: if isAuth();
     }
 
     // =========================
