@@ -15,7 +15,7 @@ import {
   Globe,
   ChevronRight,
   TrendingUp,
-  Zap as ZapIcon,
+  Zap,
   AlertCircle,
   Menu,
   X,
@@ -163,7 +163,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       });
       toast.success('Leave request sent for verification');
       
-      // Update local state to show it immediately
       const lDate = new Date(leaveDate).toISOString().split('T')[0];
       setLeaveRequests(prev => [...prev, {
         id: 'temp-' + Date.now(),
@@ -189,28 +188,23 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     if (!user?.uid) return;
     const unsub = getUnreadMessageCount(user.uid, (count) => {
       if (count > unreadCount && document.hidden) {
-        // Play notification sound
         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3');
         audio.play().catch(e => console.log('Audio play failed:', e));
       }
       setUnreadCount(count);
     });
     
-    // Real-time attendance status
     const unsubAttendance = getDeveloperAttendanceStatus(user.uid, (data) => {
       setIsPunchedIn(data.isPunchedIn);
       setPunchInTime(data.punchIn);
     });
     getDeveloperStats(user.uid).then(setDevStats);
     
-    // Fetch detailed attendance for calendar
     getAttendance(user.uid).then(data => {
       setAttendance(data as Attendance[]);
-      // Calculate total hours from attendance
       const total = (data as Attendance[]).reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
       setTotalHours(total);
 
-      // Check for consecutive absences
       const today = new Date();
       const oneDay = 24 * 60 * 60 * 1000;
       let consecutiveAbsences = 0;
@@ -303,7 +297,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     const unsubProjects = getProjects(async (projs) => {
       setProjects(projs);
       
-      // Fetch associated client profiles
       const uniqueUserIds = Array.from(new Set(projs.map(p => p.userId).filter(Boolean)));
       if (uniqueUserIds.length > 0) {
         const profiles = await Promise.all(uniqueUserIds.map(uid => getUserProfile(uid!)));
@@ -330,10 +323,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       });
     }
 
-    if (activeTab === 'analytics') {
-      // Analytics data fetch logic could go here
-    }
-
     return () => {
       unsubProjects();
       unsubNotifications();
@@ -341,7 +330,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     };
   }, [user?.uid, activeTab, notifications.length]);
 
-  // Sync settings when profile updates
   useEffect(() => {
     if (profile) {
       setSettingsData({
@@ -357,7 +345,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     }
   }, [profile]);
 
-  // Timer logic for 3h deadline
   const [timeLeft, setTimeLeft] = useState<Record<string, string>>({});
   
   useEffect(() => {
@@ -368,7 +355,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       projects.forEach(p => {
         const currentStatus = p.status?.toLowerCase();
         if (currentStatus === 'pending' || currentStatus === 'assigned') {
-          // Robust timestamp conversion
           let startTimeMs = 0;
             if (p.createdAt && typeof p.createdAt === 'object') {
                 if ('toDate' in p.createdAt) {
@@ -387,7 +373,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           
           if (diff <= 0) {
             newTimeLeft[p.id] = 'DELAYED';
-            // Update status in DB if needed (to keep it persistent)
             if ((currentStatus === 'assigned' || currentStatus === 'pending') && p.status !== 'delayed') {
               updateProject(p.id, { status: 'delayed' });
             }
@@ -405,7 +390,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     return () => clearInterval(timer);
   }, [projects]);
 
-  // Financial Intelligence State
   const [tempDomainPrice, setTempDomainPrice] = useState<number>(0);
   const [tempPaymentLink, setTempPaymentLink] = useState('');
   const [isFinancialIntelSaved, setIsFinancialIntelSaved] = useState(false);
@@ -421,7 +405,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         updatedAt: new Date().toISOString()
       });
 
-      // Send notification to client if domain price is set/updated
       if (project && tempDomainPrice > 0) {
         await createNotification({
           userId: project.userId,
@@ -510,8 +493,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
       await acceptProject(projectId);
       
-      // Values are already saved via handleSaveFinancialIntel, 
-      // but we ensure status is correct and links matches current plan if not already set
       await updateProject(projectId, {
         status: 'in-progress'
       });
@@ -640,7 +621,7 @@ Description: ${project.description || 'No description provided.'}
   };
 
   const calculateAttendancePayout = () => {
-    const salary = (profile as any)?.salary || 70000; // Default Salary
+    const salary = (profile as any)?.salary || 70000;
     const activeDaysInMonth = 22; 
     const presentDays = attendance.length;
     return (salary / activeDaysInMonth) * presentDays;
@@ -805,7 +786,7 @@ Description: ${project.description || 'No description provided.'}
           <NavItem tab="pool" icon={Plus} label="Pool" />
           <NavItem tab="meetings" icon={Video} label="Meetings" />
           <NavItem tab="chat" icon={MessageSquare} label="Messages" />
-          <NavItem tab="vault" icon={ZapIcon} label="Media Vault" />
+          <NavItem tab="vault" icon={Zap} label="Media Vault" />
           <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
           <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
           <NavItem tab="earnings" icon={Wallet} label="Payments" />
@@ -885,7 +866,7 @@ Description: ${project.description || 'No description provided.'}
                         ))
                       ) : (
                         <div className="p-10 text-center text-[#FFFF00]/20">
-                          <p className="text-xs font-bold uppercase italic italic">No new signals</p>
+                          <p className="text-xs font-bold uppercase italic">No new signals</p>
                         </div>
                       )}
                     </div>
@@ -1034,13 +1015,12 @@ Description: ${project.description || 'No description provided.'}
                   </div>
                 </div>
 
-                {/* Important Projects (Assignments) */}
+                {/* Active Projects */}
                 <div className="space-y-6">
                   <h3 className="text-lg font-black italic uppercase tracking-widest text-[#c7c42a]">Active Projects</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {projects.map(p => (
                       <div key={p.id} className="bg-white/5 border border-white/10 rounded-[4rem] p-10 space-y-6 relative overflow-hidden group">
-                        {/* Background Decoration */}
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl group-hover:bg-[#c7c42a]/10 transition-all" />
                         
                         <div className="flex justify-between items-start">
@@ -1076,7 +1056,6 @@ Description: ${project.description || 'No description provided.'}
                           </button>
                         </div>
 
-                        {/* Progress Bar */}
                         <div className="space-y-3">
                           <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
                             <span className="text-white/40">Mission Progress</span>
@@ -1091,7 +1070,6 @@ Description: ${project.description || 'No description provided.'}
                           </div>
                         </div>
 
-                        {/* Pricing & Payout Display */}
                         <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 flex items-center justify-between">
                           <div>
                             <p className="text-[8px] font-black uppercase text-white/40 tracking-widest">Project Value</p>
@@ -1103,7 +1081,6 @@ Description: ${project.description || 'No description provided.'}
                           </div>
                         </div>
 
-                        {/* Deadline Timer */}
                         {(p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned') && (
                           <div className="flex items-center gap-3 p-4 bg-black/40 rounded-2xl border border-white/5">
                             <Clock size={16} className={timeLeft[p.id] === 'DELAYED' ? 'text-red-500' : 'text-[#c7c42a]'} />
@@ -1136,7 +1113,6 @@ Description: ${project.description || 'No description provided.'}
                            </button>
                         </div>
 
-                        {/* Actions */}
                         <div className="pt-2 flex gap-3">
                           {(p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId) ? (
                             <button 
@@ -1246,7 +1222,6 @@ Description: ${project.description || 'No description provided.'}
                       <div className="absolute top-0 right-0 w-64 h-64 bg-[#c7c42a]/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-[#c7c42a]/10 transition-all duration-700" />
                       
                       <div className="flex flex-col lg:flex-row gap-12 relative z-10">
-                        {/* Primary Info */}
                         <div className="flex-1 space-y-8">
                           <div className="flex items-center gap-6">
                             <div className="w-24 h-24 bg-[#c7c42a] rounded-full flex items-center justify-center text-black font-black text-4xl italic shadow-2xl shadow-[#c7c42a]/20">
@@ -1319,7 +1294,6 @@ Description: ${project.description || 'No description provided.'}
                           </div>
                         </div>
 
-                        {/* Control Center */}
                         <div className="w-full lg:w-96 space-y-4 flex flex-col justify-center">
                            <div className="bg-white/[0.03] border border-white/5 rounded-[3rem] p-10 space-y-6">
                               <div className="space-y-4">
@@ -1343,10 +1317,7 @@ Description: ${project.description || 'No description provided.'}
                                   Update Intel <Settings2 size={16} />
                                 </button>
                                 <button 
-                                  onClick={() => {
-                                    setActiveTab('chat');
-                                    // You might want to pre-select the project in chat
-                                  }}
+                                  onClick={() => setActiveTab('chat')}
                                   className="w-full py-5 bg-blue-500 text-white rounded-full font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3"
                                 >
                                   Direct Link <MessageSquare size={16} />
@@ -1548,11 +1519,10 @@ Description: ${project.description || 'No description provided.'}
 
                                       {isFuture && !isLeave && (
                                          <div className="mt-2 text-[8px] font-black uppercase text-[#FFFF00]/40 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                                            Ref Leave
+                                            Req Leave
                                          </div>
                                       )}
                                       
-                                      {/* Info Overlay */}
                                       {!isFuture && (
                                         <div className="absolute inset-0 bg-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-center p-3 z-20 rounded-full">
                                           <p className="text-[8px] font-black uppercase tracking-[0.4em] text-[#FFFF00] italic mb-2">Protocol Intel</p>
@@ -1592,7 +1562,6 @@ Description: ${project.description || 'No description provided.'}
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-10"
               >
-                {/* Earnings Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-[#c7c42a] rounded-[2.5rem] p-10 text-black shadow-[0_0_50px_rgba(199,196,42,0.2)]">
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 italic mb-2">Total Earned</p>
@@ -1626,7 +1595,6 @@ Description: ${project.description || 'No description provided.'}
                   </div>
                 </div>
 
-                {/* Detailed Earnings Log */}
                 <div className="bg-[#0A0A0A] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl">
                    <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/5">
                       <div>
@@ -1857,7 +1825,7 @@ Description: ${project.description || 'No description provided.'}
               <div className="flex flex-col h-full p-10">
                 <div className="flex justify-between items-center mb-16">
                    <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black font-black text-xl italic italic">W</div>
+                    <div className="w-10 h-10 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black font-black text-xl italic">W</div>
                     <h1 className="text-xl font-black italic uppercase tracking-tighter">WebbyLaunch</h1>
                   </div>
                   <button className="p-3 bg-white/5 rounded-2xl text-white/40" onClick={() => setIsSidebarOpen(false)}>
@@ -1889,7 +1857,7 @@ Description: ${project.description || 'No description provided.'}
           )}
         </AnimatePresence>
 
-        {/* Global Floating Sticky Note (Module 4) */}
+        {/* Global Floating Sticky Note */}
         <div className="fixed bottom-10 right-10 z-[2000] flex flex-col items-end gap-4 pointer-events-none">
            <AnimatePresence>
               {isStickyOpen && (
@@ -1915,7 +1883,6 @@ Description: ${project.description || 'No description provided.'}
                         onChange={(e) => {
                           const val = e.target.value;
                           setStickyNotes(val);
-                          // Sync to DB (debounced would be better but let's try direct for now)
                           if (user?.uid) {
                              updateUserProfile(user.uid, { notes: val });
                           }
@@ -1959,7 +1926,6 @@ Description: ${project.description || 'No description provided.'}
                 exit={{ x: '100%' }}
                 className="fixed top-0 right-0 h-full w-full max-w-2xl z-[301] bg-[#5B6D5E] border-l border-black shadow-2xl flex flex-col font-mono overflow-hidden"
               >
-                {/* Header - TITAN Design */}
                 <div className="p-10 border-b border-black/10 flex items-center justify-between">
                   <div className="space-y-1">
                     <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white leading-none">
@@ -1989,7 +1955,6 @@ Description: ${project.description || 'No description provided.'}
                   </div>
                 </div>
 
-                {/* Tabs */}
                 <div className="px-10 flex gap-4 mt-6">
                   <button className="bg-[#D4E157] text-black px-8 py-2 text-[10px] font-black uppercase">Overview</button>
                   <button className="bg-transparent text-black/40 px-8 py-2 text-[10px] font-black uppercase hover:text-black">Preview</button>
@@ -1997,7 +1962,6 @@ Description: ${project.description || 'No description provided.'}
 
                 <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar text-black">
                   <div className="grid grid-cols-2 gap-8">
-                    {/* Client Information */}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Client Information</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
@@ -2015,7 +1979,6 @@ Description: ${project.description || 'No description provided.'}
                       </div>
                     </div>
 
-                    {/* Business Details */}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Business Details</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
@@ -2032,7 +1995,6 @@ Description: ${project.description || 'No description provided.'}
                   </div>
 
                   <div className="grid grid-cols-2 gap-8">
-                    {/* Project Overview */}
                     <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-full">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Project Overview</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
@@ -2047,7 +2009,6 @@ Description: ${project.description || 'No description provided.'}
                       </div>
                     </div>
 
-                    {/* Description */}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Description</h3>
                       <div className="bg-black/10 p-6 h-32 overflow-y-auto custom-scrollbar-slim rounded-3xl">
@@ -2058,7 +2019,6 @@ Description: ${project.description || 'No description provided.'}
                     </div>
                   </div>
 
-                  {/* AI BRIEF SECTION */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4E157] border-b border-black/10 pb-2">Mission Intelligence</h3>
                     <div className="bg-black/10 p-8 rounded-[2rem] space-y-6">
@@ -2093,16 +2053,13 @@ Description: ${project.description || 'No description provided.'}
                   </div>
 
                   <div className="grid grid-cols-2 gap-8">
-                    {/* Domain Intelligence */}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Intelligence</h3>
                       <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
                         <span className="text-black/40 uppercase">Requested Domain</span>
                         <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.requestedDomain || selectedProjectForDrawer.domain || 'N/A'}</span>
-                        
                         <span className="text-black/40 uppercase">Owns Domain?</span>
                         <span className="text-right uppercase">{selectedProjectForDrawer.ownsDomain ? 'YES' : 'NO'}</span>
-
                         {selectedProjectForDrawer.ownsDomain ? (
                           <>
                             <span className="text-black/40 uppercase">Registrar</span>
@@ -2121,7 +2078,6 @@ Description: ${project.description || 'No description provided.'}
                       </div>
                     </div>
 
-                    {/* Selected Features */}
                     <div className="space-y-4">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Selected Features</h3>
                       <div className="flex flex-wrap gap-2 pt-2">
@@ -2136,7 +2092,6 @@ Description: ${project.description || 'No description provided.'}
                     </div>
                   </div>
 
-                  {/* Timeline */}
                   <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-full">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Timeline</h3>
                     <div className="grid grid-cols-4 gap-4 text-center">
@@ -2155,7 +2110,6 @@ Description: ${project.description || 'No description provided.'}
                     </div>
                   </div>
 
-                  {/* Internal Notes */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Full Client Inputs</h3>
                     <div className="bg-black/10 p-6 rounded-[2rem] space-y-4">
@@ -2171,7 +2125,6 @@ Description: ${project.description || 'No description provided.'}
                     </div>
                   </div>
 
-                  {/* Internal Notes */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Internal Notes</h3>
                     <div className="bg-[#D4E157]/5 p-6 border border-[#D4E157]/20 rounded-full">
@@ -2181,7 +2134,6 @@ Description: ${project.description || 'No description provided.'}
                     </div>
                   </div>
 
-                  {/* Files & Assets */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Files & Assets</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2219,7 +2171,6 @@ Description: ${project.description || 'No description provided.'}
                   </div>
                 </div>
 
-                {/* Footer Actions */}
                 <div className="p-10 border-t border-black/10 grid grid-cols-2 gap-4">
                   <button 
                     onClick={() => {
@@ -2241,6 +2192,7 @@ Description: ${project.description || 'No description provided.'}
             </>
           )}
         </AnimatePresence>
+
         {/* Leave Request Popup */}
         <AnimatePresence>
           {isLeavePopupOpen && (
@@ -2384,6 +2336,12 @@ Description: ${project.description || 'No description provided.'}
                 >
                   {isSubmitting ? 'Processing...' : 'Accept Mission'}
                 </button>
+                <button
+                  onClick={() => setShowAcceptPopup(null)}
+                  className="px-6 py-4 rounded-2xl border border-white/10 text-white/40 font-black uppercase italic text-xs tracking-widest hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -2466,7 +2424,7 @@ Description: ${project.description || 'No description provided.'}
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="max-w-md w-full bg-[#111] border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl relative overflow-hidden"
+              className="max-w-md w-full bg-[#111] border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-[#c7c42a]" />
               
@@ -2499,7 +2457,7 @@ Description: ${project.description || 'No description provided.'}
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic ml-4">Direct Payment link (Specific for this project)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic ml-4">Direct Payment Link</label>
                   <input 
                     type="text"
                     value={editingProject.paymentLink || ''}
@@ -2570,7 +2528,7 @@ Description: ${project.description || 'No description provided.'}
 
                 {editingProject.paymentStatus === 'verifying' && (
                   <div className="p-6 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic text-center">Client claims payment is completed. confirm?</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic text-center">Client claims payment is completed. Confirm?</p>
                     <div className="flex gap-2">
                       <button 
                         onClick={async () => {
