@@ -11,7 +11,7 @@ import {
   Image as ImageIcon,
   Loader2,
   ShieldAlert,
-  Zap as ZapIcon
+  Zap
 } from 'lucide-react';
 import { 
   uploadFile, 
@@ -100,7 +100,7 @@ export default function MediaVault({ currentUser, profile, projectId }: MediaVau
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <ZapIcon className="text-[#FFFF00]" size={16} />
+            <Zap className="text-[#FFFF00]" size={16} />
             <span className="text-[10px] font-black text-[#FFFF00] uppercase tracking-[0.4em]">Proprietary Storage</span>
           </div>
           <h2 className="text-6xl font-black tracking-tighter text-white uppercase italic">Media Vault</h2>

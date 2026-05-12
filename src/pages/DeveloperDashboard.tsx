@@ -15,7 +15,7 @@ import {
   Globe,
   ChevronRight,
   TrendingUp,
-  Zap as ZapIcon,
+  Zap,
   AlertCircle,
   Menu,
   X,
@@ -28,7 +28,9 @@ import {
   Download,
   User as UserIcon,
   FileText,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Bell, 
+  Info
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project, Attendance, LeaveRequest } from '../types';
@@ -60,7 +62,6 @@ import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
 import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
-import { Bell, Info } from 'lucide-react';
 import { ADMIN_EMAIL } from '../constants';
 
 import BottomNav from '../components/BottomNav';
@@ -786,7 +787,7 @@ Description: ${project.description || 'No description provided.'}
           <NavItem tab="pool" icon={Plus} label="Pool" />
           <NavItem tab="meetings" icon={Video} label="Meetings" />
           <NavItem tab="chat" icon={MessageSquare} label="Messages" />
-          <NavItem tab="vault" icon={ZapIcon} label="Media Vault" />
+          <NavItem tab="vault" icon={Zap} label="Media Vault" />
           <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
           <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
           <NavItem tab="earnings" icon={Wallet} label="Payments" />
