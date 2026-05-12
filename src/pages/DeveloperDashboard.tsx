@@ -15,7 +15,7 @@ import {
   Globe,
   ChevronRight,
   TrendingUp,
-  Zap,
+  Zap as ZapIcon,
   AlertCircle,
   Menu,
   X,
@@ -786,7 +786,7 @@ Description: ${project.description || 'No description provided.'}
           <NavItem tab="pool" icon={Plus} label="Pool" />
           <NavItem tab="meetings" icon={Video} label="Meetings" />
           <NavItem tab="chat" icon={MessageSquare} label="Messages" />
-          <NavItem tab="vault" icon={Zap} label="Media Vault" />
+          <NavItem tab="vault" icon={ZapIcon} label="Media Vault" />
           <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
           <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
           <NavItem tab="earnings" icon={Wallet} label="Payments" />
