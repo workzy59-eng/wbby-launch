@@ -32,6 +32,15 @@ import {
   Bell, 
   Info
 } from 'lucide-react';
+
+const ZapSafety = (props: any) => {
+  try {
+    return Zap ? <Zap {...props} /> : null;
+  } catch (e) {
+    return null;
+  }
+};
+const ZapComponent = Zap || ZapSafety;
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project, Attendance, LeaveRequest } from '../types';
 import { 
@@ -787,7 +796,7 @@ Description: ${project.description || 'No description provided.'}
           <NavItem tab="pool" icon={Plus} label="Pool" />
           <NavItem tab="meetings" icon={Video} label="Meetings" />
           <NavItem tab="chat" icon={MessageSquare} label="Messages" />
-          <NavItem tab="vault" icon={Zap} label="Media Vault" />
+          <NavItem tab="vault" icon={ZapComponent} label="Media Vault" />
           <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
           <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
           <NavItem tab="earnings" icon={Wallet} label="Payments" />
@@ -829,9 +838,9 @@ Description: ${project.description || 'No description provided.'}
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all"
               >
-                <Bell size={18} className={notifications.some(n => !n.read) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                <Bell size={18} className={notifications.some(n => !n.read) ? 'text-[#FFFF00] animate-pulse' : 'text-white/60'} />
                 {notifications.some(n => !n.read) && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#FFFF00] rounded-full shadow-[0_0_10px_#FFFF00]" />
                 )}
               </button>
 
