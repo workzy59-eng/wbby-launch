@@ -3,6 +3,14 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =========================
+    // 0. GLOBAL SAFETY NET
+    // =========================
+    // Default-deny all resources.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================
     // HELPER FUNCTIONS
     // =========================
     
@@ -19,99 +27,204 @@ service cloud.firestore {
       );
     }
 
-    function isWhitelistedDeveloper() {
-      return isAuth() && (
-        isAdmin() ||
-        (request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'aither2029@gmail.com' ||
-          request.auth.token.email.lower() == 'sain17296174@gmail.com'
-        ))
-      );
+    function isRole(userId, role) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role == role;
     }
 
-    // Default: Authenticated users can read/write everything to unblock development
-    // This addresses the "Missing or insufficient permissions" error for the dashboard
-    match /{document=**} {
-      allow read, write: if isAuth();
+    function isDeveloper() {
+      return isAuth() && (isAdmin() || isRole(request.auth.uid, 'developer'));
+    }
+
+    function isSales() {
+      return isAuth() && (isAdmin() || isRole(request.auth.uid, 'sales'));
+    }
+
+    function isProjectOwner(projectId) {
+      return isAuth() && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid;
+    }
+
+    function isAssignedDeveloper(projectId) {
+      let data = get(/databases/$(database)/documents/projects/$(projectId)).data;
+      return isAuth() && (data.developerId == request.auth.uid || data.assignedTo == request.auth.uid);
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
     }
 
     // =========================
-    // USERS & PROFILES
+    // ENTITY VALIDATION HELPERS
+    // =========================
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid == request.auth.uid &&
+             data.role in ['client', 'developer', 'sales', 'admin'] &&
+             data.email is string && data.email.size() <= 256;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['userId', 'businessName', 'status']) &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.businessName is string && data.businessName.size() <= 100 &&
+             data.status is string && data.status.size() <= 50;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['projectId', 'senderId', 'text', 'createdAt']) &&
+             data.senderId == request.auth.uid &&
+             data.text is string && data.text.size() <= 5000;
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['businessName', 'phone', 'status', 'createdAt']) &&
+             data.businessName is string && data.businessName.size() <= 100 &&
+             data.phone is string && data.phone.size() <= 20;
+    }
+
+    // =========================
+    // USERS
     // =========================
     match /users/{userId} {
-      allow read: if isAuth();
-      allow write: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow read: if isAuth(); 
+      allow create: if isAuth() && userId == request.auth.uid && isValidUser(incoming());
+      allow update: if isAuth() && (userId == request.auth.uid || isAdmin()) && (
+        (userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'phone', 'address', 'state', 'city', 'pincode', 'theme', 'notificationPreferences', 'status', 'lastSeen', 'referralCode'])) ||
+        isAdmin()
+      );
     }
 
     // =========================
     // PROJECTS
     // =========================
     match /projects/{projectId} {
-      allow read, write: if isAuth();
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.developerId == request.auth.uid || 
+        resource.data.assignedTo == request.auth.uid ||
+        isAdmin()
+      );
       
+      allow create: if isAuth() && incoming().userId == request.auth.uid && isValidProject(incoming());
+      
+      allow update: if isAuth() && (
+        isAdmin() || 
+        (existing().userId == request.auth.uid && incoming().userId == request.auth.uid) ||
+        (existing().developerId == request.auth.uid || existing().assignedTo == request.auth.uid)
+      ) && (
+        isAdmin() ||
+        (existing().userId == request.auth.uid && !incoming().diff(existing()).affectedKeys().hasAny(['status', 'developerId', 'assignedTo', 'progress', 'userId'])) ||
+        ((existing().developerId == request.auth.uid || existing().assignedTo == request.auth.uid) && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['progress', 'status', 'updatedAt', 'internalNotes', 'developerNote']))
+      );
+
       match /messages/{messageId} {
-        allow read, write: if isAuth();
+        allow read: if isAuth() && (
+          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
+          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
+          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid ||
+          isAdmin()
+        );
+        allow create: if isAuth() && (
+          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
+          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
+          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid ||
+          isAdmin()
+        ) && isValidMessage(incoming());
       }
     }
 
     // =========================
-    // NOTIFICATIONS
+    // LEADS & APPLICATIONS
     // =========================
-    match /notifications/{notificationId} {
-      allow read, write: if isAuth();
+    match /leads/{leadId} {
+      allow read: if isSales() || isAdmin();
+      allow write: if isSales() || isAdmin();
     }
 
-    // =========================
-    // CONVERSATIONS
-    // =========================
-    match /conversations/{conversationId} {
-      allow read, write: if isAuth();
-      
-      match /messages/{messageId} {
-        allow read, write: if isAuth();
-      }
-      
-      match /typing/{userId} {
-        allow read, write: if isAuth();
-      }
+    match /developer_requests/{requestId} {
+      allow read: if isAdmin();
+      allow create: if true; 
+      allow update, delete: if isAdmin();
+    }
+
+    match /sales_applications/{applicationId} {
+      allow read: if isAdmin();
+      allow create: if true; 
+      allow update, delete: if isAdmin();
     }
 
     // =========================
     // SYSTEM COLLECTIONS
     // =========================
     match /system_settings/{id} {
-      allow read: if true;
-      allow write: if isAuth();
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
 
     match /blog_posts/{id} {
-      allow read: if true;
-      allow write: if isAuth();
+      // Publicly readable for SEO and landing page content
+      allow read: if true; 
+      allow write: if isAdmin();
     }
 
     match /developer_invites/{id} {
-      allow read, write: if isAuth();
+      // Only the intended recipient or an admin can read the invite
+      allow read: if isAuth() && (
+        resource.data.email.lower() == request.auth.token.email.lower() || 
+        isAdmin()
+      );
+      allow write: if isAdmin();
     }
 
+    match /attendance/{id} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAuth() && (request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /leave_requests/{id} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow update: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /meetings/{id} {
+      allow read: if isAuth() && (resource.data.clientId == request.auth.uid || resource.data.adminId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin());
+      allow write: if isAuth(); 
+    }
+
+    match /payments/{id} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow update: if isAdmin();
+    }
+    
     match /visit_sessions/{id} {
-      allow read, write: if isAuth();
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow update: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
     }
-
-    match /meetings/{meetingId} {
-      allow read, write: if isAuth();
+    
+    match /notifications/{id} {
+      allow read, write: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
     }
-
-    match /meeting_requests/{requestId} {
-      allow read, write: if isAuth();
+    
+    match /conversations/{conversationId} {
+      allow read: if isAuth() && (request.auth.uid in resource.data.participants || isAdmin());
+      allow write: if isAuth() && (request.auth.uid in resource.data.participants || isAdmin());
+      
+      match /messages/{messageId} {
+        allow read: if isAuth() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin());
+        allow create: if isAuth() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants || isAdmin()) && isValidMessage(incoming());
+      }
     }
-
-    match /attendance/{attendanceId} {
-      allow read, write: if isAuth();
-    }
-
-    match /leave_requests/{requestId} {
-      allow read, write: if isAuth();
-    }
-
   }
 }

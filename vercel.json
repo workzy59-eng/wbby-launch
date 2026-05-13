@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://res.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.gstatic.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: https://res.cloudinary.com https://*.mixkit.co https://*.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com wss://*.firebaseio.com https://*.mixkit.co https://res.cloudinary.com; frame-src 'self' https://checkout.razorpay.com https://*.firebaseapp.com; media-src 'self' https://assets.mixkit.co https://res.cloudinary.com; object-src 'none'; upgrade-insecure-requests;"
+          "value": "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://res.cloudinary.com; connect-src 'self' https: wss: https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://assets.mixkit.co https://res.cloudinary.com; img-src 'self' data: blob: https: https://res.cloudinary.com https://*.googleapis.com; media-src 'self' data: blob: https: https://assets.mixkit.co https://res.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; frame-src 'self' https://checkout.razorpay.com https://*.firebaseapp.com; object-src 'none'; upgrade-insecure-requests; base-uri 'self';"
         },
         {
           "key": "X-Frame-Options",
@@ -17,7 +17,7 @@
         },
         {
           "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
+          "value": "camera=(), microphone=(), geolocation=(), payment=(self 'https://checkout.razorpay.com')"
         },
         {
           "key": "Referrer-Policy",
@@ -26,6 +26,24 @@
         {
           "key": "Strict-Transport-Security",
           "value": "max-age=31536000; includeSubDomains; preload"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/favicon.ico",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
         }
       ]
     }

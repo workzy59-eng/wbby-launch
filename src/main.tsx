@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App.tsx';
 import './index.css';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Global fallbacks for potential ReferenceErrors in production chunks
 // These prevent app crashes if certain variables are undefined in async chunks
@@ -19,7 +20,9 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <NotificationProvider>
           <Router>
-            <App />
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
           </Router>
         </NotificationProvider>
       </AuthProvider>
