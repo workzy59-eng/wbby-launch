@@ -1,2 +1,0 @@
-18:  Zap as ZapIcon,
-808:          <NavItem tab="vault" icon={ZapIcon} label="Media Vault" />

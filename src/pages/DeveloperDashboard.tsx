@@ -38,7 +38,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 
 const ZapSafety = (props: any) => {
   try {
-    const Component = ZapIcon || (window as any).Zap;
+    const Component = ZapIcon;
     return Component ? <Component {...props} /> : null;
   } catch (e) {
     return null;
@@ -1197,6 +1197,79 @@ Description: ${project.description || 'No description provided.'}
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Mission Status / Deployment Pipeline */}
+                <div className="bg-[#111] border border-[#c7c42a]/10 rounded-[4rem] p-12 space-y-12 mb-10">
+                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div>
+                        <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">System Deployment Pipe</h3>
+                        <p className="text-[#c7c42a]/60 text-[10px] font-black uppercase tracking-[0.3em] mt-1 italic">Real-time infrastructure visualization</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] font-black uppercase text-white/20 tracking-[0.4em] bg-black px-6 py-3 rounded-full border border-white/5">
+                        <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]" /> Node: Asia-South-1 (Stable)
+                      </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+                      <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-white/5 -translate-y-1/2 z-0" />
+                      
+                      {[
+                        { step: '01', title: 'Intelligence', desc: 'Scan & Requirements', status: 'done' as const, icon: Search },
+                        { step: '02', title: 'Initialization', desc: 'Stack Generation', status: 'active' as const, icon: Code },
+                        { step: '03', title: 'Deployment', desc: 'Global Propagating', status: 'waiting' as const, icon: ZapIcon },
+                        { step: '04', title: 'Validation', desc: 'Final Integrity', status: 'waiting' as const, icon: CheckCircle2 }
+                      ].map((s, idx) => (
+                        <div key={idx} className="relative z-10 bg-black border border-white/5 rounded-[2.5rem] p-8 group hover:border-[#c7c42a]/40 transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                           <div className={`w-14 h-14 rounded-2xl mb-6 flex items-center justify-center transition-all ${
+                             s.status === 'done' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 
+                             s.status === 'active' ? 'bg-[#c7c42a] text-black shadow-[0_0_30px_rgba(199,196,42,0.4)] animate-pulse' : 
+                             'bg-white/5 text-white/10 border border-white/5'
+                           }`}>
+                             <s.icon size={24} />
+                           </div>
+                           <p className="text-[10px] font-black italic text-[#c7c42a] mb-2 tracking-widest">{s.step} // MISSION_STEP</p>
+                           <h4 className="text-lg font-black uppercase tracking-tighter text-white mb-2">{s.title}</h4>
+                           <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] leading-relaxed">{s.desc}</p>
+                           
+                           {s.status === 'active' && (
+                              <div className="mt-6 pt-6 border-t border-white/5">
+                                 <div className="flex justify-between items-center text-[8px] font-black uppercase text-[#c7c42a] mb-2">
+                                    <span>Processing...</span>
+                                    <span>84%</span>
+                                 </div>
+                                 <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-full bg-[#c7c42a] w-[84%] relative" />
+                                 </div>
+                              </div>
+                           )}
+                        </div>
+                      ))}
+                   </div>
+                </div>
+
+                {/* System Activity Terminal */}
+                <div className="bg-black border border-white/10 rounded-[3rem] p-10 font-mono">
+                   <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center gap-3">
+                         <div className="w-3 h-3 rounded-full bg-red-500" />
+                         <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                         <div className="w-3 h-3 rounded-full bg-green-500" />
+                         <span className="ml-4 text-[10px] font-black uppercase text-white/40 tracking-widest">system_activity_log // root@webbylaunch</span>
+                      </div>
+                      <div className="text-[10px] font-black uppercase text-[#c7c42a]/40 tracking-widest animate-pulse">Live Signal: Active</div>
+                   </div>
+
+                   <div className="space-y-3 text-[10px] leading-relaxed">
+                      <p className="text-[#c7c42a]"><span className="opacity-40">[{new Date().toLocaleTimeString()}]</span> <span className="font-black">SYSTEM:</span> Authentication handshake successful. Developer recognized.</p>
+                      <p className="text-white/60"><span className="opacity-40">[{new Date().toLocaleTimeString()}]</span> <span className="font-black text-blue-400">NETWORK:</span> Latency verified at 24ms. Node Asia-South-1 is stable.</p>
+                      <p className="text-white/60"><span className="opacity-40">[{new Date().toLocaleTimeString()}]</span> <span className="font-black text-green-400">DATABASE:</span> Firestore connection established. 0.4s response time.</p>
+                      <p className="text-white/60"><span className="opacity-40">[{new Date().toLocaleTimeString()}]</span> <span className="font-black text-purple-400">ASSETS:</span> Cloudinary CDN synced. Media Vault integrated.</p>
+                      <div className="flex gap-2">
+                         <span className="text-[#c7c42a] animate-pulse">_</span>
+                         <span className="text-white/20 italic italic">Ready for next command...</span>
+                      </div>
+                   </div>
                 </div>
               </motion.div>
             )}
