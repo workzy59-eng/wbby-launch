@@ -15,3 +15,7 @@ export const COMMISSION_SPLIT = {
   DEVELOPER: 0.40,
   PLATFORM: 0.40
 };
+
+// Fallback profiles to prevent runtime crashes if data fails to fetch
+export const default_profiles = [];
+export const defaultProfiles = [];

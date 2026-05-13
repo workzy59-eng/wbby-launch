@@ -15,7 +15,7 @@ import {
   Globe,
   ChevronRight,
   TrendingUp,
-  Zap,
+  Zap as ZapIcon,
   AlertCircle,
   Menu,
   X,
@@ -33,14 +33,17 @@ import {
   Info
 } from 'lucide-react';
 
+import { ErrorBoundary } from '../components/ErrorBoundary';
+
 const ZapSafety = (props: any) => {
   try {
-    return Zap ? <Zap {...props} /> : null;
+    const Component = ZapIcon || (window as any).Zap;
+    return Component ? <Component {...props} /> : null;
   } catch (e) {
     return null;
   }
 };
-const ZapComponent = Zap || ZapSafety;
+const ZapComponent = ZapIcon || ZapSafety;
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, Project, Attendance, LeaveRequest } from '../types';
 import { 
@@ -83,6 +86,14 @@ interface DeveloperDashboardProps {
 type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance' | 'meetings' | 'vault';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
+  return (
+    <ErrorBoundary>
+      <DeveloperDashboardContent user={user} profile={profile} />
+    </ErrorBoundary>
+  );
+}
+
+function DeveloperDashboardContent({ user, profile }: DeveloperDashboardProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);

@@ -7,6 +7,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
 import { Check, Image as ImageIcon, FileText, CreditCard, Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap as ZapIcon, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
 
+import { ErrorBoundary } from '../components/ErrorBoundary';
+
 import { FirebaseUser, auth } from '../firebase';
 import { UserProfile, SystemSettings } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -198,6 +200,14 @@ interface OnboardingFlowProps {
 }
 
 export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
+  return (
+    <ErrorBoundary>
+      <OnboardingFlowContent user={user} profile={profile} />
+    </ErrorBoundary>
+  );
+}
+
+function OnboardingFlowContent({ user, profile }: OnboardingFlowProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { signInWithGoogle } = useAuth();

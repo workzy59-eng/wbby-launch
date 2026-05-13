@@ -33,7 +33,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Zap,
+  Zap as ZapIcon,
   Flame,
   Search,
   MoreVertical,
@@ -58,6 +58,7 @@ import {
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
@@ -78,6 +79,14 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, profile }: DashboardProps) {
+  return (
+    <ErrorBoundary>
+      <DashboardContent user={user} profile={profile} />
+    </ErrorBoundary>
+  );
+}
+
+function DashboardContent({ user, profile }: DashboardProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -610,7 +619,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 { id: 'progress', icon: FolderKanban, label: 'Pulse' },
                 { id: 'meetings', icon: Video, label: 'Meetings' },
                 { id: 'messages', icon: MessageCircle, label: 'Chat' },
-                { id: 'vault', icon: Zap, label: 'Vault' },
+                { id: 'vault', icon: ZapIcon, label: 'Vault' },
                 { id: 'payments', icon: CreditCard, label: 'Plans' },
                 { id: 'settings', icon: Settings, label: 'User' },
               ] : []),
@@ -711,7 +720,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 { id: 'progress', icon: FolderKanban, label: 'Progress' },
                 { id: 'messages', icon: MessageCircle, label: 'Chat' },
                 { id: 'meetings', icon: Video, label: 'Meets' },
-                { id: 'vault', icon: Zap, label: 'Vault' },
+                { id: 'vault', icon: ZapIcon, label: 'Vault' },
                 { id: 'settings', icon: Settings, label: 'Settings' },
               ] : []),
           ].map((tab) => (
