@@ -9,7 +9,6 @@ import './index.css';
 // These prevent app crashes if certain variables are undefined in async chunks
 (window as any).default_profiles = (window as any).default_profiles || [];
 (window as any).defaultProfiles = (window as any).defaultProfiles || [];
-(window as any).Zap = (window as any).Zap || null;
 
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';

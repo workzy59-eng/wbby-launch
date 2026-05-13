@@ -9,7 +9,7 @@ import {
   CheckCircle2, 
   Users, 
   Shield, 
-  Zap as ZapIcon, 
+  Activity as ZapIcon, 
   Smartphone, 
   Search, 
   Layout as LayoutIcon,

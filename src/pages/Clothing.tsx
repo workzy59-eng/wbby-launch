@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowLeft, ShoppingBag, Heart, Search, User, ChevronDown, ArrowRight, Star, Zap as ZapIcon, ShoppingCart, Info, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Heart, Search, User, ChevronDown, ArrowRight, Star, Activity as ZapIcon, ShoppingCart, Info, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRef } from 'react';
 

@@ -5,7 +5,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createUserProfile, getUserProfile, updateUserStatus, seedSampleBlogPosts } from './services/database';
-import { ADMIN_EMAIL, DEVELOPER_EMAILS } from './constants';
+import { ADMIN_EMAIL } from './constants';
 import { Smartphone } from 'lucide-react';
 import { Loader } from './components/ui/loader';
 
@@ -14,7 +14,6 @@ const AuthPage = React.lazy(() => import('./pages/AuthPage'));
 const OnboardingFlow = React.lazy(() => import('./pages/OnboardingFlow'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
-const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
 const SalesDashboard = React.lazy(() => import('./pages/SalesDashboard'));
 const Gym = React.lazy(() => import('./pages/Gym'));
 const Resort = React.lazy(() => import('./pages/Resort'));
@@ -122,8 +121,6 @@ export default function App() {
                       (profile?.role === 'admin' || 
                        user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                         <Navigate to="/admin" />
-                      ) : (DEVELOPER_EMAILS.includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
-                        <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
                       )
@@ -172,9 +169,6 @@ export default function App() {
                         (profile.role === 'admin' || 
                          user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                           <AdminPanel user={user} profile={profile} />
-                        ) : (profile.role === 'developer' || 
-                             DEVELOPER_EMAILS.includes(user.email?.toLowerCase() || '')) ? (
-                          <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
                         ) : (
@@ -193,26 +187,6 @@ export default function App() {
                 <Route 
                   path="/domain-selection/:projectId" 
                   element={user ? <DomainSelection /> : <Navigate to="/auth" />} 
-                />
-                <Route 
-                  path="/developer-dashboard" 
-                  element={
-                    user ? (
-                      profile ? (
-                        (profile.role === 'developer' || DEVELOPER_EMAILS.includes(user.email?.toLowerCase() || '')) ? (
-                          <DeveloperDashboard user={user} profile={profile} />
-                        ) : (
-                          <Navigate to="/dashboard" />
-                        )
-                      ) : (
-                        <div className="min-h-screen bg-black flex items-center justify-center">
-                          <Loader />
-                        </div>
-                      )
-                    ) : (
-                      <Navigate to="/auth" />
-                    )
-                  } 
                 />
                 <Route 
                   path="/admin" 

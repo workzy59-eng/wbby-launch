@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Users, Zap as ZapIcon, Globe } from 'lucide-react';
+import { Shield, Users, Activity as ZapIcon, Globe } from 'lucide-react';
 import SEO from '../components/SEO';
 
 export default function About() {

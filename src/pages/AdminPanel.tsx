@@ -47,7 +47,7 @@ import {
   Smartphone, 
   Tablet, 
   ExternalLink, 
-  Zap as ZapIcon, 
+  Activity as ZapIcon, 
   Mail
 } from 'lucide-react';
 import { ErrorBoundary } from '../components/ErrorBoundary';

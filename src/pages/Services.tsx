@@ -11,7 +11,7 @@ import {
   Rocket, 
   User, 
   GraduationCap, 
-  Zap as ZapIcon, 
+  Activity as ZapIcon, 
   IndianRupee, 
   MessageSquare, 
   ArrowRight,

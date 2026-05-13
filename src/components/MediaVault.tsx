@@ -11,7 +11,7 @@ import {
   Image as ImageIcon,
   Loader2,
   ShieldAlert,
-  Zap as ZapIcon
+  Activity as ZapIcon
 } from 'lucide-react';
 import { 
   uploadFile, 

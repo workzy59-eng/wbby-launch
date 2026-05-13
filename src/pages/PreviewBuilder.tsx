@@ -19,7 +19,7 @@ import {
   Check,
   Upload,
   MousePointer2,
-  Zap as ZapIcon
+  Activity as ZapIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

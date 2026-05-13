@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion } from 'motion/react';
-import { Download, Share2, CheckCircle2, CreditCard, FileText, Smartphone, Globe, ShieldCheck, Zap as ZapIcon } from 'lucide-react';
+import { Download, Share2, CheckCircle2, CreditCard, FileText, Smartphone, Globe, ShieldCheck, Activity as ZapIcon } from 'lucide-react';
 import { Project, UserProfile } from '../types';
 import { formatDate } from '../lib/utils';
 import jsPDF from 'jspdf';

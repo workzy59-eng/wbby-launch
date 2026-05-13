@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ChevronRight, Gauge, Zap as ZapIcon, Wind } from 'lucide-react';
+import { ChevronRight, Gauge, Activity as ZapIcon, Wind } from 'lucide-react';
 
 interface CarCardProps {
   car: {

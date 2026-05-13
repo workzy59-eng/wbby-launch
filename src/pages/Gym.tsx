@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, 
   Flame, 
-  Zap as ZapIcon, 
+  Activity as ZapIcon, 
   ArrowRight, 
   Check, 
   Instagram, 

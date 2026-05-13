@@ -5,7 +5,7 @@ import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
-import { Check, Image as ImageIcon, FileText, CreditCard, Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap as ZapIcon, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
+import { Check, Image as ImageIcon, FileText, CreditCard, Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Activity as ZapIcon, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
 

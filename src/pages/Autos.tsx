@@ -5,7 +5,7 @@ import {
   ChevronRight, 
   Star, 
   Shield, 
-  Zap as ZapIcon, 
+  Activity as ZapIcon, 
   Cpu,
   Gauge,
   Wind,

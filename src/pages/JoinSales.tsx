@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, CheckCircle2, AlertCircle, Send, Globe, Phone, Clock, MessageSquare, Target, Zap as ZapIcon, ShieldCheck, ArrowRight } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle2, AlertCircle, Send, Globe, Phone, Clock, MessageSquare, Target, Activity as ZapIcon, ShieldCheck, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import SEO from '../components/SEO';
 

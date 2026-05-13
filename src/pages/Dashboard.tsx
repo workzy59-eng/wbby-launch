@@ -33,7 +33,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Zap as ZapIcon,
+  Activity as ZapIcon,
   Flame,
   Search,
   MoreVertical,
