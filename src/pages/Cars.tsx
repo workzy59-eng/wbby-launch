@@ -10,7 +10,7 @@ import {
   Menu, 
   X,
   Wind,
-  Activity as ZapIcon,
+  Activity,
   Gauge,
   ArrowUpRight
 } from 'lucide-react';

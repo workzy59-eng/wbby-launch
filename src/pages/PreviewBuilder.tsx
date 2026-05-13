@@ -19,7 +19,7 @@ import {
   Check,
   Upload,
   MousePointer2,
-  Activity as ZapIcon
+  Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,7 +63,7 @@ export default function PreviewBuilder() {
         <div className="p-8 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black shadow-[0_0_20px_rgba(199, 196, 42,0.3)]">
-              <ZapIcon size={24} />
+              <Activity size={24} />
             </div>
             <h1 className="text-xl font-black uppercase italic tracking-tighter">Preview <span className="text-[#c7c42a]">Builder</span></h1>
           </div>
@@ -282,7 +282,7 @@ export default function PreviewBuilder() {
                         {[1, 2, 3].map(i => (
                           <div key={i} className="p-8 rounded-3xl border border-black/5 bg-[#F9F9F9] space-y-4 group hover:scale-[1.02] transition-all">
                             <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
-                              <ZapIcon size={24} />
+                              <Activity size={24} />
                             </div>
                             <h3 className="text-xl font-black uppercase italic tracking-tighter">Feature {i}</h3>
                             <p className="text-black/40 text-sm italic">High-performance solutions designed for your growth.</p>
@@ -343,7 +343,7 @@ export default function PreviewBuilder() {
                           >
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity" style={{ backgroundColor: primaryColor }} />
                             <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform" style={{ backgroundColor: primaryColor }}>
-                              <ZapIcon size={28} />
+                              <Activity size={28} />
                             </div>
                             <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-4 group-hover:translate-x-2 transition-transform">{s.title}</h3>
                             <p className="text-black/40 text-sm italic leading-relaxed">{s.desc}</p>

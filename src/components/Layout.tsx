@@ -18,7 +18,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard') || 
     location.pathname.startsWith('/admin') || 
-    location.pathname.startsWith('/developer-dashboard') ||
     location.pathname.startsWith('/sales-dashboard') ||
     location.pathname.startsWith('/onboarding') ||
     location.pathname.startsWith('/messages');

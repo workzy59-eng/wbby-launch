@@ -33,7 +33,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Activity as ZapIcon,
+  Activity,
   Flame,
   Search,
   MoreVertical,
@@ -95,14 +95,6 @@ function DashboardContent({ user, profile }: DashboardProps) {
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'vault'>('dashboard');
   
-  // Whitelisted developers should be on the Developer Dashboard
-  useEffect(() => {
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
-    if (user?.email && devEmails.includes(user.email.toLowerCase())) {
-      navigate('/developer-dashboard', { replace: true });
-    }
-  }, [user, navigate]);
-
   const [projects, setProjects] = useState<Project[]>([]);
   const hasProjects = projects.length > 0;
   const hasAcceptedProject = projects.some(p => 
@@ -253,16 +245,12 @@ function DashboardContent({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     if (!profile || !user.email) return;
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
     const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-    const isDeveloper = devEmails.includes(user.email.toLowerCase());
     
-    const hasSeenDevWelcome = localStorage.getItem(`dev_welcome_seen_${user.uid}`);
+    // const hasSeenDevWelcome = localStorage.getItem(`dev_welcome_seen_${user.uid}`);
     const hasSeenAdminWelcome = localStorage.getItem(`admin_welcome_seen_${user.uid}`);
     
-    if (isDeveloper && !hasSeenDevWelcome) {
-      setShowDeveloperWelcome(true);
-    } else if (isAdmin && !hasSeenAdminWelcome) {
+    if (isAdmin && !hasSeenAdminWelcome) {
       setShowAdminWelcome(true);
     }
   }, [profile, user.email, user.uid]);
@@ -408,65 +396,6 @@ function DashboardContent({ user, profile }: DashboardProps) {
   return (
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black">
       <AnimatePresence>
-        {showDeveloperWelcome && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-6"
-          >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="w-full max-w-2xl relative overflow-hidden"
-            >
-              {/* Background Glow */}
-              <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-20" />
-              <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-10" />
-              
-              <div className="relative bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-12 md:p-20 text-center shadow-2xl">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="inline-block px-4 py-1 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full mb-8 text-[#c7c42a] text-[10px] font-black uppercase tracking-[0.4em]"
-                >
-                  Developer Access Granted
-                </motion.div>
-                
-                <motion.h2 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] mb-10"
-                >
-                  Welcome<br />
-                  <span style={{ color: '#c7c42a' }}>Developer 🚀</span>
-                </motion.h2>
-                
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-white/40 text-sm font-medium leading-relaxed max-w-md mx-auto mb-12"
-                >
-                  You've been authorized with a developer-tier profile. Welcome to the engine room of {APP_NAME}. Everything is ready for you.
-                </motion.p>
-                
-                <motion.button 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  onClick={handleCloseWelcome}
-                  className="group relative px-12 py-5 bg-[#c7c42a] text-black rounded-full font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(199,196,42,0.3)]"
-                >
-                  Start Development
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
         {showAdminWelcome && (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -619,7 +548,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                 { id: 'progress', icon: FolderKanban, label: 'Pulse' },
                 { id: 'meetings', icon: Video, label: 'Meetings' },
                 { id: 'messages', icon: MessageCircle, label: 'Chat' },
-                { id: 'vault', icon: ZapIcon, label: 'Vault' },
+                { id: 'vault', icon: Activity, label: 'Vault' },
                 { id: 'payments', icon: CreditCard, label: 'Plans' },
                 { id: 'settings', icon: Settings, label: 'User' },
               ] : []),
@@ -720,7 +649,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                 { id: 'progress', icon: FolderKanban, label: 'Progress' },
                 { id: 'messages', icon: MessageCircle, label: 'Chat' },
                 { id: 'meetings', icon: Video, label: 'Meets' },
-                { id: 'vault', icon: ZapIcon, label: 'Vault' },
+                { id: 'vault', icon: Activity, label: 'Vault' },
                 { id: 'settings', icon: Settings, label: 'Settings' },
               ] : []),
           ].map((tab) => (

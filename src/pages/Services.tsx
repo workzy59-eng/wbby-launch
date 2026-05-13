@@ -11,7 +11,7 @@ import {
   Rocket, 
   User, 
   GraduationCap, 
-  Activity as ZapIcon, 
+  Activity, 
   IndianRupee, 
   MessageSquare, 
   ArrowRight,
@@ -73,7 +73,7 @@ export default function Services() {
   ];
 
   const whyChooseUs = [
-    { icon: ZapIcon, title: 'Fast Delivery', desc: '3–10 days' },
+    { icon: Activity, title: 'Fast Delivery', desc: '3–10 days' },
     { icon: IndianRupee, title: 'Affordable Pricing', desc: 'Starting ₹1,499' },
     { icon: MessageSquare, title: 'Direct Communication', desc: '24/7 Support' },
     { icon: LayoutDashboard, title: 'Smart Dashboard Systems', desc: 'Built-in' }

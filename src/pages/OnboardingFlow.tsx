@@ -5,7 +5,7 @@ import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
-import { Check, Image as ImageIcon, FileText, CreditCard, Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Activity as ZapIcon, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
+import { Check, Image as ImageIcon, FileText, CreditCard, Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Activity, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
@@ -153,7 +153,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
                   className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transform group-hover:rotate-12 transition-transform" 
                   style={{ backgroundColor: data.primaryColor || '#c7c42a', border: `2px solid ${data.secondaryColor || '#000000'}` }}
                 >
-                  <ZapIcon size={20} className="text-white" />
+                  <Activity size={20} className="text-white" />
                 </div>
                 <span className="text-[8px] font-black uppercase tracking-widest text-gray-900 leading-tight">{feature}</span>
               </div>

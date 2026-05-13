@@ -5,13 +5,12 @@ import {
   ChevronRight, 
   Star, 
   Shield, 
-  Activity as ZapIcon, 
+  Activity, 
   Cpu,
   Gauge,
   Wind,
   Settings,
   Users,
-  Activity as ActivityIcon,
   Compass,
   Crosshair,
   Wifi,
@@ -164,7 +163,7 @@ export default function Autos() {
                     <div className="flex items-center gap-6">
                        <div className="w-px h-24 bg-white/10" />
                        <div className="space-y-2">
-                          <ActivityIcon className="text-[#c7c42a] animate-pulse" size={20} />
+                          <Activity className="text-[#c7c42a] animate-pulse" size={20} />
                           <p className="text-[10px] font-black uppercase tracking-widest text-white/30 italic">Biometric link established</p>
                        </div>
                     </div>
@@ -175,7 +174,7 @@ export default function Autos() {
                  <div className="space-y-16 border-l border-white/5 pl-12">
                     {[
                       { label: 'VELOCITY', value: CARS[currentCar].stats.topSpeed, icon: Gauge },
-                      { label: 'THRUST', value: CARS[currentCar].stats.torque, icon: ZapIcon },
+                      { label: 'THRUST', value: CARS[currentCar].stats.torque, icon: Activity },
                       { label: 'FORCE', value: CARS[currentCar].stats.horsepower, icon: Shield }
                     ].map((stat, i) => (
                       <motion.div 

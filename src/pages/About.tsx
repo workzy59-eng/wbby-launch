@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Users, Activity as ZapIcon, Globe } from 'lucide-react';
+import { Shield, Users, Activity, Globe } from 'lucide-react';
 import SEO from '../components/SEO';
 
 export default function About() {
@@ -63,7 +63,7 @@ export default function About() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
-            { icon: ZapIcon, title: 'Speed', desc: '52 hour delivery for standard projects.' },
+            { icon: Activity, title: 'Speed', desc: '52 hour delivery for standard projects.' },
             { icon: Shield, title: 'Trust', desc: 'Secure, reliable, and professional service.' },
             { icon: Users, title: 'Community', desc: 'Trusted by 50+ businesses across India.' },
             { icon: Globe, title: 'Reach', desc: 'SEO optimized to help you reach more clients.' }
