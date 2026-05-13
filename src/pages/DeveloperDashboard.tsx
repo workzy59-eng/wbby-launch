@@ -30,7 +30,8 @@ import {
   FileText,
   Image as ImageIcon,
   Bell, 
-  Info
+  Info,
+  Code
 } from 'lucide-react';
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -74,7 +75,7 @@ import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
 import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
-import { ADMIN_EMAIL } from '../constants';
+import { ADMIN_EMAIL, DEVELOPER_EMAILS } from '../constants';
 
 import BottomNav from '../components/BottomNav';
 
@@ -123,7 +124,7 @@ function DeveloperDashboardContent({ user, profile }: DeveloperDashboardProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [systemSettings, setSystemSettings] = useState<any>(null);
-  const isAdmin = user?.email && [ADMIN_EMAIL, 'workzy59@gmail.com'].includes(user.email.toLowerCase());
+  const isAdmin = user?.email && [ADMIN_EMAIL, 'workzy59@gmail.com', ...DEVELOPER_EMAILS].includes(user.email.toLowerCase());
 
   useEffect(() => {
     if (isAdmin) {
@@ -261,9 +262,7 @@ function DeveloperDashboardContent({ user, profile }: DeveloperDashboardProps) {
   }, [user?.uid]);
 
   useEffect(() => {
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
-    const adminEmails = [ADMIN_EMAIL];
-    if (user?.email && (devEmails.includes(user.email.toLowerCase()) || adminEmails.includes(user.email.toLowerCase()))) {
+    if (user?.email && (DEVELOPER_EMAILS.includes(user.email.toLowerCase()) || user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase())) {
       const hasSeen = localStorage.getItem(`dev_welcome_${user.uid}`);
       if (!hasSeen) {
         setShowDeveloperWelcome(true);
@@ -956,6 +955,34 @@ Description: ${project.description || 'No description provided.'}
               >
                 {/* Attendance & Stats Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Developer Terminal Card */}
+                  <div className="lg:col-span-1 bg-black border-2 border-[#c7c42a]/20 rounded-[4rem] p-10 space-y-6 relative overflow-hidden group shadow-[0_0_50px_rgba(199,196,42,0.05)]">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <Code size={20} className="text-[#c7c42a]" />
+                        <h3 className="text-sm font-black uppercase tracking-widest text-[#c7c42a] italic">Secure Terminal</h3>
+                      </div>
+                      <div className="w-3 h-3 rounded-full bg-[#c7c42a] animate-ping" />
+                    </div>
+                    
+                    <div className="space-y-3 font-mono text-[10px] text-[#c7c42a]/60">
+                      <p className="flex justify-between"><span>&gt; SYSTEM_STABLE:</span> <span className="text-green-500">TRUE</span></p>
+                      <p className="flex justify-between"><span>&gt; AUTH_LEVEL:</span> <span>DEVELOPER_L1</span></p>
+                      <p className="flex justify-between"><span>&gt; ENCRYPTION:</span> <span>AES_256_GCM</span></p>
+                      <p className="flex justify-between"><span>&gt; REGION:</span> <span>ASIA-SOUTH</span></p>
+                      <p className="flex justify-between"><span>&gt; LATENCY:</span> <span>24MS</span></p>
+                    </div>
+
+                    <div className="pt-6 border-t border-[#c7c42a]/10">
+                      <button 
+                        onClick={() => toast.success('Running System Diagnosis... All systems normal.')}
+                        className="w-full py-4 bg-[#c7c42a]/5 hover:bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-2xl text-[10px] font-black uppercase tracking-widest text-[#c7c42a] transition-all"
+                      >
+                        Run Health Check
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Attendance Card */}
                   <div className="lg:col-span-1 bg-[#111] border border-white/5 rounded-[4rem] p-10 space-y-8 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl" />

@@ -5,7 +5,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createUserProfile, getUserProfile, updateUserStatus, seedSampleBlogPosts } from './services/database';
-import { ADMIN_EMAIL } from './constants';
+import { ADMIN_EMAIL, DEVELOPER_EMAILS } from './constants';
 import { Smartphone } from 'lucide-react';
 import { Loader } from './components/ui/loader';
 
@@ -122,7 +122,7 @@ export default function App() {
                       (profile?.role === 'admin' || 
                        user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                         <Navigate to="/admin" />
-                      ) : (['aither2029@gmail.com', 'sain17296174@gmail.com', ADMIN_EMAIL.toLowerCase()].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                      ) : (DEVELOPER_EMAILS.includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
                         <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
@@ -173,7 +173,7 @@ export default function App() {
                          user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                           <AdminPanel user={user} profile={profile} />
                         ) : (profile.role === 'developer' || 
-                             ['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                             DEVELOPER_EMAILS.includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
@@ -199,7 +199,7 @@ export default function App() {
                   element={
                     user ? (
                       profile ? (
-                        (profile.role === 'developer' || ['aither2029@gmail.com', 'sain17296174@gmail.com', ADMIN_EMAIL.toLowerCase()].includes(user.email?.toLowerCase() || '')) ? (
+                        (profile.role === 'developer' || DEVELOPER_EMAILS.includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : (
                           <Navigate to="/dashboard" />
