@@ -176,6 +176,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /test/{id} {
+      // Allow connectivity tests
+      allow read: if true;
+    }
+
     match /developer_invites/{id} {
       // Only the intended recipient or an admin can read the invite
       allow read: if isAuth() && (

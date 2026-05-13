@@ -16,7 +16,6 @@ const OnboardingFlow = React.lazy(() => import('./pages/OnboardingFlow'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 const SalesDashboard = React.lazy(() => import('./pages/SalesDashboard'));
-const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
 const Gym = React.lazy(() => import('./pages/Gym'));
 const Resort = React.lazy(() => import('./pages/Resort'));
 const Autos = React.lazy(() => import('./pages/Autos'));
@@ -174,8 +173,6 @@ export default function App() {
                           <AdminPanel user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
-                        ) : profile.role === 'developer' ? (
-                          <DeveloperDashboard user={user} profile={profile} />
                         ) : (
                           <Dashboard user={user} profile={profile} />
                         )
