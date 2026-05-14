@@ -176,7 +176,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    match /test/{document=**} {
+    match /test/connectivity {
       // Allow connectivity tests
       allow read: if true;
     }

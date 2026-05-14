@@ -24,12 +24,14 @@ export const googleProvider = new GoogleAuthProvider();
 // Connection test as per system instructions
 async function testFirestoreConnection() {
   try {
-    // Try to get a non-existent doc from a 'test' collection to verify connectivity
-    await getDocFromServer(doc(db, 'test', 'connectivity'));
+    // Try to get a doc from 'blog_posts' to verify connectivity
+    await getDocFromServer(doc(db, 'blog_posts', 'initial-post'));
     console.log("✅ Firestore connection verified");
   } catch (error: any) {
     if (error?.message?.includes('the client offline')) {
-      console.error("❌ Firestore Error: The client is offline. Check your Firebase configuration and authorized domains.");
+      console.error("❌ Firestore Error: The client is offline.");
+    } else if (error?.code === 'permission-denied') {
+      console.log("✅ Firestore connection verified (Authorized response received)");
     } else {
       console.warn("ℹ️ Firestore connectivity test note:", error?.message || error);
     }
