@@ -25,7 +25,7 @@ export const googleProvider = new GoogleAuthProvider();
 async function testFirestoreConnection() {
   try {
     // Try to get a non-existent doc from a 'test' collection to verify connectivity
-    await getDocFromServer(doc(db, '_system_', 'connectivity_test'));
+    await getDocFromServer(doc(db, 'test', 'connectivity'));
     console.log("✅ Firestore connection verified");
   } catch (error: any) {
     if (error?.message?.includes('the client offline')) {

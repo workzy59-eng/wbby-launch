@@ -124,7 +124,7 @@ async function startServer() {
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com", "https://*.mixkit.co", "https://*.googleapis.com"],
         connectSrc: ["'self'", "https://*.googleapis.com", "https://*.firebaseio.com", "https://*.firebaseapp.com", "wss://*.firebaseio.com", "https://*.mixkit.co", "https://res.cloudinary.com"],
-        frameSrc: ["'self'", "https://checkout.razorpay.com", "https://*.firebaseapp.com"],
+        frameSrc: ["'self'", "https://checkout.razorpay.com", "https://*.firebaseapp.com", "https://apis.google.com"],
         mediaSrc: ["'self'", "https://assets.mixkit.co", "https://*.mixkit.co", "https://res.cloudinary.com", "data:", "blob:"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
