@@ -59,20 +59,6 @@ const DOCS_CONTENT = {
       }
     ]
   },
-  'for-developers': {
-    title: 'For Developers',
-    icon: Code,
-    sections: [
-      {
-        subtitle: 'Project Assignment',
-        content: 'Developers are assigned projects based on their skills and availability. You will receive notifications for new assignments in your developer dashboard.'
-      },
-      {
-        subtitle: 'Rules & Expectations',
-        content: 'Maintain professionalism at all times. Deliver work on time and follow the project requirements strictly. Do not contact clients outside the platform.'
-      }
-    ]
-  },
   'for-sales': {
     title: 'For Sales Team',
     icon: TrendingUp,

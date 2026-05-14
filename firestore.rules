@@ -32,7 +32,7 @@ service cloud.firestore {
     }
 
     function isDeveloper() {
-      return isAuth() && (isAdmin() || isRole(request.auth.uid, 'developer'));
+      return isAuth() && (isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer');
     }
 
     function isSales() {
@@ -176,7 +176,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    match /test/{id} {
+    match /test/{document=**} {
       // Allow connectivity tests
       allow read: if true;
     }

@@ -7,13 +7,6 @@ import SEO from '../components/SEO';
 export default function Careers() {
   const roles = [
     {
-      title: 'Developer',
-      icon: Code2,
-      desc: 'Build high-performance websites for startups and small businesses. Work with React, TypeScript, and modern stacks.',
-      path: '/join-developer',
-      perks: ['Remote Work', 'Project-based Pay', 'Flexible Hours']
-    },
-    {
       title: 'Sales / CS',
       icon: TrendingUp,
       desc: 'Help businesses grow by connecting them with professional web solutions. Handle client inquiries and close deals.',
@@ -26,7 +19,7 @@ export default function Careers() {
     <div className="min-h-screen bg-black text-white selection:bg-[#c7c42a] selection:text-black">
       <SEO 
         title="Join WebbyLaunch Team | Careers" 
-        description="Work with WebbyLaunch as a Developer or Sales Executive. Build the future of the web with us."
+        description="Work with WebbyLaunch Sales Executive. Build the future of the web with us."
       />
 
       <section className="relative pt-40 pb-20 px-10 overflow-hidden">
@@ -57,7 +50,7 @@ export default function Careers() {
             transition={{ delay: 0.2 }}
             className="text-xl text-white/60 max-w-2xl mx-auto font-medium italic"
           >
-            Work with us as a Developer or Sales Executive and help us build the future of the web for small businesses.
+            Work with us as a Sales Executive and help us build the future of the web for small businesses.
           </motion.p>
         </div>
       </section>
