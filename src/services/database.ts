@@ -239,7 +239,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   try {
     let role = 'client';
     const adminEmails = [ADMIN_EMAIL.toLowerCase()];
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com', 'workzy59@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
@@ -718,7 +718,7 @@ export const getDeveloperAttendanceStatus = (uid: string, callback: (data: { isP
   });
 };
 
-export const punchIn = async (userId: string) => {
+export const punchIn = async (userId: string, userName?: string) => {
   if (!currentUser || userId !== currentUser.uid) {
     toast.error("Identity verification failed.");
     return;
@@ -737,6 +737,7 @@ export const punchIn = async (userId: string) => {
 
     await setDoc(attendanceRef, {
       userId: currentUser.uid,
+      userName: userName || currentUser.displayName || 'Developer',
       date: dateStr,
       punchIn: serverTimestamp(),
       punchOut: null,
@@ -809,6 +810,10 @@ export const getAttendance = async (userId: string) => {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
   }
+};
+
+export const getDeveloperProjects = async (developerId: string) => {
+  return getProjectsAsync(undefined, developerId);
 };
 
 export const getAllAttendance = async () => {

@@ -33,6 +33,7 @@ const Privacy = React.lazy(() => import('./pages/Privacy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const MessagesModule = React.lazy(() => import('./components/MessagesModule'));
 const Settings = React.lazy(() => import('./pages/Settings'));
+const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
 const ComponentShowcase = React.lazy(() => import('./pages/ComponentShowcase'));
 const Layout = React.lazy(() => import('./components/Layout'));
 const LocationPage = React.lazy(() => import('./pages/LocationPage'));
@@ -171,6 +172,8 @@ export default function App() {
                         (profile.role === 'admin' || 
                          user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                           <AdminPanel user={user} profile={profile} />
+                        ) : profile.role === 'developer' ? (
+                          <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
                         ) : (

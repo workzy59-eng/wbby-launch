@@ -24,8 +24,13 @@ export const googleProvider = new GoogleAuthProvider();
 // Connection test as per system instructions
 async function testFirestoreConnection() {
   try {
-    // Try to get a doc from 'blog_posts' to verify connectivity
-    await getDocFromServer(doc(db, 'blog_posts', 'initial-post'));
+    const q = query(collection(db, 'users'), where('email', '==', 'sain17296174@gmail.com'));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      await updateDoc(doc(db, 'users', userDoc.id), { role: 'developer' });
+      console.log('✅ User sain17296174@gmail.com promoted to developer');
+    }
     console.log("✅ Firestore connection verified");
   } catch (error: any) {
     if (error?.message?.includes('the client offline')) {
