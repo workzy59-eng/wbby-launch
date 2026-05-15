@@ -1348,7 +1348,7 @@ export const getNotifications = (userId: string, callback: (notifications: any[]
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {
-    handleFirestoreError(error, OperationType.GET, path);
+    handleFirestoreError(error, OperationType.LIST, path);
   });
 };
 
