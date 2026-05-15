@@ -184,6 +184,27 @@ function AdminPanelContent({ user, profile }: AdminPanelProps) {
     return () => unsub?.();
   }, [user?.uid]);
 
+  useEffect(() => {
+    // Auto-promote target user to developer if found as client
+    const promoteTarget = async () => {
+      const targetEmail = 'sain17296174@gmail.com';
+      const targetUser = users.find(u => u.email?.toLowerCase() === targetEmail && u.role === 'client');
+      
+      if (targetUser) {
+        try {
+          await updateDoc(doc(db, 'users', targetUser.uid), { 
+            role: 'developer',
+            updatedAt: serverTimestamp()
+          });
+          toast.success(`${targetEmail} promoted to developer.`);
+        } catch (err) {
+          console.error("Promotion failed:", err);
+        }
+      }
+    };
+    if (users.length > 0) promoteTarget();
+  }, [users]);
+
   const [developerInvites, setDeveloperInvites] = useState<any[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 
@@ -706,7 +727,7 @@ Generated on: ${new Date().toLocaleString()}
 
   const projectStatusData = [
     { name: 'Pending', value: stats.pendingRequests, color: '#c7c42a' },
-    { name: 'Active', value: stats.activeProjects, color: '#00F2FF' },
+    { name: 'Active', value: stats.activeProjects, color: '#c7c42a' },
     { name: 'Completed', value: stats.completedProjects, color: '#22c55e' },
     { name: 'Rejected', value: projects.filter(p => p.status === 'Rejected').length, color: '#ef4444' },
   ].filter(d => d.value > 0);
@@ -728,17 +749,17 @@ Generated on: ${new Date().toLocaleString()}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { label: 'Platform Speed', value: `${platformEfficiency}%`, icon: Activity, color: 'text-[#c7c42a]' },
-            { label: 'Network Signal', value: messageCount, icon: MessageCircle, color: 'text-[#00F2FF]' },
+            { label: 'Network Signal', value: messageCount, icon: MessageCircle, color: 'text-white/80' },
             { label: 'Pending Jobs', value: pendingJobs, icon: Bell, color: 'text-red-500' },
             { label: 'Total Volume', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },
           ].map((stat, i) => (
-            <div key={i} className="bg-[#111] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
+            <div key={i} className="bg-[#0a0a0a] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
               <div className="flex justify-between items-start mb-6">
-                <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl`}>
                   <stat.icon size={24} className={stat.color} />
                 </div>
               </div>
-              <div className="text-4xl font-bold mb-1 text-white tabular-nums tracking-tighter italic">{stat.value}</div>
+              <div className="text-4xl font-bold mb-1 text-white tabular-nums tracking-tighter italic whitespace-nowrap">{stat.value}</div>
               <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</div>
             </div>
           ))}
@@ -778,7 +799,7 @@ Generated on: ${new Date().toLocaleString()}
                   <Pie
                     data={[
                       { name: 'Clients', value: stats.clients, color: '#c7c42a' },
-                      { name: 'Devs', value: stats.developers, color: '#00F2FF' }
+                      { name: 'Devs', value: stats.developers, color: '#c7c42a' }
                     ]}
                     innerRadius={60}
                     outerRadius={80}
@@ -800,7 +821,7 @@ Generated on: ${new Date().toLocaleString()}
             <div className="mt-8 space-y-4">
                <div className="flex justify-between items-center text-[10px] font-black uppercase italic tracking-widest">
                   <span className="text-white/40">Partner Devs</span>
-                  <span className="text-[#00F2FF]">{stats.developers}</span>
+                  <span className="text-[#c7c42a]">{stats.developers}</span>
                </div>
                <div className="flex justify-between items-center text-[10px] font-black uppercase italic tracking-widest">
                   <span className="text-white/40">Verified Clients</span>
@@ -845,7 +866,7 @@ Generated on: ${new Date().toLocaleString()}
                       className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${
                         p.paymentStatus === 'paid' 
                           ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                          : 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
+                          : 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30'
                       }`}
                     >
                       Payment: {p.paymentStatus || 'pending'}
@@ -1180,7 +1201,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
                       req.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
                       req.status === 'declined' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                      'bg-[#FFFF00]/10 text-[#FFFF00] border border-[#FFFF00]/20'
+                      'bg-[#c7c42a]/10 text-[#c7c42a] border border-[#c7c42a]/20'
                     }`}>
                       {req.status?.toUpperCase() || 'PENDING'}
                     </span>
@@ -1197,7 +1218,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           setLeaveRequests(prev => prev.map(l => l.id === req.id ? {...l, status: 'approved'} : l));
                           toast.success('Absence Authorized');
                         }}
-                        className="px-8 py-4 bg-green-500 text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                        className="px-8 py-4 bg-[#c7c42a] text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
                       >
                         Authorize
                       </button>
@@ -2105,8 +2126,8 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           {isPunchedIn ? 'Punched In' : 'Punched Out'}
                         </div>
                         {devUnreadCounts[dev.uid] > 0 && (
-                          <div className="px-4 py-2 bg-[#00F2FF]/10 text-[#00F2FF] border border-[#00F2FF]/20 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2">
-                             <div className="w-1.5 h-1.5 rounded-full bg-[#00F2FF] animate-pulse" />
+                          <div className="px-4 py-2 bg-[#c7c42a]/10 text-[#c7c42a] border border-[#c7c42a]/20 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 rounded-full bg-[#c7c42a] animate-pulse" />
                              Signal: {devUnreadCounts[dev.uid]}
                           </div>
                         )}
@@ -2503,7 +2524,7 @@ Description: ${viewingProject.description || 'No description provided.'}
                       link.click();
                       toast.success('AI Prompt downloaded');
                     }}
-                    className="p-4 bg-[#00F2FF] text-black rounded-full hover:scale-110 transition-all flex items-center gap-2"
+                    className="p-4 bg-white/5 border border-white/10 text-white rounded-full hover:scale-110 transition-all flex items-center gap-2"
                     title="Download AI Prompt"
                   >
                     <ExternalLink size={20} />

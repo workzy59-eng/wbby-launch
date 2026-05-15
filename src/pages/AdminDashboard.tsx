@@ -391,17 +391,17 @@ Generated on: ${new Date().toLocaleString()}
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[
-                { label: 'Total Clients', value: profiles.filter(p => p.role === 'client').length, icon: User, color: 'text-blue-400', bg: 'bg-blue-500/10', onPlus: () => setActiveTab('clients') },
-                { label: 'Total Developers', value: profiles.filter(p => p.role === 'developer').length, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10', onPlus: () => { setActiveTab('developers'); setIsInviteModalOpen(true); } },
-                { label: 'Active Projects', value: projects.length, icon: Briefcase, color: 'text-[#00F2FF]', bg: 'bg-[#00F2FF]/10' },
-                { label: 'Pending Leaves', value: leaveRequests.filter(r => r.status === 'pending').length, icon: Clock, color: 'text-#c7c42a', bg: 'bg-#c7c42a/10' },
+                { label: 'Total Clients', value: clients.length, icon: User, color: 'text-white/80', bg: 'bg-white/10', onPlus: () => setActiveTab('clients') },
+                { label: 'Total Developers', value: profiles.filter(p => p.role === 'developer').length, icon: Users, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', onPlus: () => { setActiveTab('developers'); setIsInviteModalOpen(true); } },
+                { label: 'Active Projects', value: projects.length, icon: Briefcase, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10' },
+                { label: 'Pending Leaves', value: leaveRequests.filter(r => r.status === 'pending').length, icon: Clock, color: 'text-white/60', bg: 'bg-white/5' },
               ].map((stat, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-slate-900/40 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-[#00F2FF]/30 transition-all group backdrop-blur-xl relative"
+                  className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 space-y-4 hover:border-[#c7c42a]/30 transition-all group backdrop-blur-xl relative"
                 >
                   <div className="flex justify-between items-start">
                     <div className={`p-3 ${stat.bg} rounded-2xl ${stat.color} group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,0,0,0.2)]`}>
@@ -414,17 +414,17 @@ Generated on: ${new Date().toLocaleString()}
                             e.stopPropagation();
                             stat.onPlus?.();
                           }}
-                          className="p-1.5 bg-white/5 rounded-lg hover:bg-[#00F2FF] hover:text-black transition-all text-white/20"
+                          className="p-1.5 bg-white/5 rounded-lg hover:bg-[#c7c42a] hover:text-black transition-all text-white/20"
                         >
                           <Plus size={14} />
                         </button>
                       )}
-                      <ArrowUpRight size={16} className="text-slate-500 group-hover:text-[#00F2FF] transition-colors" />
+                      <ArrowUpRight size={16} className="text-white/20 group-hover:text-[#c7c42a] transition-colors" />
                     </div>
                   </div>
                   <div>
-                    <div className="text-4xl font-black text-white tracking-tighter">{stat.value}</div>
-                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</div>
+                    <div className="text-4xl font-black text-white tracking-tighter italic">{stat.value}</div>
+                    <div className="text-xs font-bold text-white/30 uppercase tracking-widest">{stat.label}</div>
                   </div>
                 </motion.div>
               ))}
@@ -505,18 +505,18 @@ Generated on: ${new Date().toLocaleString()}
         return (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#00F2FF]">Client Network</h2>
-              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Client Network</h2>
+              <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">
                 {clients.length} Registered Users
               </div>
             </div>
-            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-xl">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {clients.map((client, idx) => (
-                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#00F2FF]/40 transition-all relative overflow-hidden">
-                    <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#00F2FF]/5 rounded-full blur-2xl group-hover:bg-[#00F2FF]/10 transition-all" />
+                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#c7c42a]/40 transition-all relative overflow-hidden">
+                    <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#c7c42a]/5 rounded-full blur-2xl group-hover:bg-[#c7c42a]/10 transition-all" />
                     <div className="flex justify-between items-start relative z-10">
-                      <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 font-black text-xl italic shadow-xl">
+                      <div className="w-14 h-14 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center text-white font-black text-xl italic shadow-xl group-hover:border-[#c7c42a]/40 transition-colors">
                         {client.displayName?.[0] || 'U'}
                       </div>
                       <div className="px-4 py-1 bg-green-500/20 text-green-400 rounded-full text-[10px] font-black uppercase tracking-widest">
@@ -525,16 +525,16 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
                     <div className="relative z-10">
                       <h4 className="text-xl font-black text-white uppercase italic tracking-tighter truncate">{client.displayName || 'Unnamed User'}</h4>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate">{client.email}</p>
+                      <p className="text-xs font-bold text-white/30 uppercase tracking-widest truncate">{client.email}</p>
                     </div>
                     <div className="pt-6 border-t border-white/5 flex justify-between items-center relative z-10">
-                      <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-white/30 uppercase tracking-widest">
                         <MapPin size={12} />
                         <span>{client.businessLocation || 'Remote'}</span>
                       </div>
                       <button 
                         onClick={() => setSelectedChatUser(client)}
-                        className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all"
+                        className="text-[#c7c42a] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all"
                       >
                         Portal <ChevronRight size={14} />
                       </button>
@@ -554,26 +554,26 @@ Generated on: ${new Date().toLocaleString()}
       case 'leaves':
         return (
           <div className="space-y-8">
-            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-xl">
               <h3 className="text-2xl font-black text-white uppercase italic mb-8">All Leave Requests</h3>
               <div className="space-y-4">
                 {leaveRequests.map((req, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-8 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 transition-all">
+                  <div key={idx} className="flex items-center justify-between p-8 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 transition-all hover:border-[#c7c42a]/30">
                     <div className="flex items-center gap-6">
-                      <div className="w-14 h-14 bg-#c7c42a/10 rounded-2xl flex items-center justify-center text-#c7c42a">
+                      <div className="w-14 h-14 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a]">
                         <Clock size={28} />
                       </div>
                       <div>
                         <div className="text-lg font-black text-white uppercase italic">{req.userName}</div>
-                        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{formatDate(req.startDate)} to {formatDate(req.endDate)}</div>
-                        <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-1">Reason: {req.reason}</div>
+                        <div className="text-xs font-bold text-white/30 uppercase tracking-widest">{formatDate(req.startDate)} to {formatDate(req.endDate)}</div>
+                        <div className="text-[10px] font-black text-white/20 uppercase tracking-widest mt-1 italic">Reason: {req.reason}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                         req.status === 'approved' ? 'bg-green-500/20 text-green-400' :
                         req.status === 'declined' ? 'bg-red-500/20 text-red-400' :
-                        'bg-#c7c42a/20 text-#c7c42a'
+                        'bg-[#c7c42a]/20 text-[#c7c42a]'
                       }`}>
                         {req.status}
                       </div>
@@ -607,7 +607,7 @@ Generated on: ${new Date().toLocaleString()}
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Active Developers</h2>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">Our Engineering Elite</p>
+                <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mt-1">Our Engineering Elite</p>
               </div>
               <button 
                 onClick={() => setIsInviteModalOpen(true)}
@@ -626,7 +626,7 @@ Generated on: ${new Date().toLocaleString()}
                   placeholder="Search crew members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent pl-12 pr-4 py-2 text-white font-bold uppercase tracking-widest outline-none placeholder:text-slate-600"
+                  className="w-full bg-transparent pl-12 pr-4 py-2 text-white font-bold uppercase tracking-widest outline-none placeholder:text-white/20"
                 />
               </div>
             </div>
@@ -638,7 +638,7 @@ Generated on: ${new Date().toLocaleString()}
               ).map((dev, idx) => {
                 const stats = getDevStats(dev.uid);
                 return (
-                  <div key={idx} className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-8 space-y-6 group hover:border-[#c7c42a]/40 transition-all backdrop-blur-xl relative overflow-hidden">
+                  <div key={idx} className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-8 space-y-6 group hover:border-[#c7c42a]/40 transition-all backdrop-blur-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                       <Shield size={80} className="text-[#c7c42a]" />
                     </div>
@@ -654,20 +654,20 @@ Generated on: ${new Date().toLocaleString()}
 
                     <div className="relative z-10">
                       <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{dev.displayName}</h4>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{dev.devRole}</p>
+                      <p className="text-xs font-bold text-white/30 uppercase tracking-widest">{dev.devRole}</p>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4 py-4 border-y border-white/5 relative z-10">
                       <div className="text-center">
-                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Projects</div>
+                        <div className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Projects</div>
                         <div className="text-lg font-black text-white italic">{stats.total}</div>
                       </div>
                       <div className="text-center border-x border-white/5">
-                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Efficiency</div>
+                        <div className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Efficiency</div>
                         <div className="text-lg font-black text-[#c7c42a] italic">{stats.efficiency}%</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Hours</div>
+                        <div className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Hours</div>
                         <div className="text-lg font-black text-white italic">{stats.activeHours}h</div>
                       </div>
                     </div>
@@ -959,33 +959,33 @@ Generated on: ${new Date().toLocaleString()}
         return (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">All Projects</h2>
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter text-[#c7c42a]">Operational Matrix</h2>
             </div>
-            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
-              <h3 className="text-2xl font-black text-white uppercase italic mb-8">All Projects</h3>
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-xl">
+              <h3 className="text-2xl font-black text-white uppercase italic mb-8">All Infrastructure</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {projects.map((project, idx) => (
-                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#00F2FF]/40 transition-all">
+                  <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#c7c42a]/40 transition-all">
                     <div className="flex justify-between items-start">
-                      <div className="w-14 h-14 bg-[#00F2FF] rounded-2xl flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_20px_rgba(0,242,255,0.2)]">
+                      <div className="w-14 h-14 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_20px_rgba(199,196,42,0.2)]">
                         {project.businessName?.[0]}
                       </div>
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                         project.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                        project.status === 'in-progress' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-#c7c42a/20 text-#c7c42a'
+                        project.status === 'in-progress' ? 'bg-white/10 text-white/30' :
+                        'bg-[#c7c42a]/20 text-[#c7c42a]'
                       }`}>
                         {project.status}
                       </div>
                     </div>
                     <div>
                       <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">{project.businessName}</h4>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{project.businessType} • {project.userEmail}</p>
+                      <p className="text-xs font-bold text-white/30 uppercase tracking-widest">{project.businessType} • {project.userEmail}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest italic">
                           {project.businessPhone || project.businessNumber}
                         </div>
-                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest italic">
                           {project.city}, {project.state} • {project.pincode}
                         </div>
                       </div>
@@ -996,7 +996,7 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
 
                       <div className="pt-6 flex flex-wrap gap-4 justify-between items-center">
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progress: {project.progress || 0}%</div>
+                        <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">Efficiency Index: {project.progress || 0}%</div>
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setViewingDescription(project)}
@@ -1007,9 +1007,9 @@ Generated on: ${new Date().toLocaleString()}
                           </button>
                           <button 
                             onClick={() => setEditingProject(project)}
-                            className="text-[#00F2FF] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 hover:gap-4 transition-all"
+                            className="text-[#c7c42a] font-black uppercase italic text-xs tracking-widest flex items-center gap-2 hover:gap-4 transition-all"
                           >
-                            Manage <ChevronRight size={14} />
+                            Calibrate <ChevronRight size={14} />
                           </button>
                         </div>
                       </div>
@@ -1033,7 +1033,7 @@ Generated on: ${new Date().toLocaleString()}
                     exit={{ scale: 0.9, opacity: 0 }}
                     className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
                   >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F2FF] via-[#c7c42a] to-[#00F2FF]" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#c7c42a] via-white to-[#c7c42a]" />
                     
                     <div className="flex justify-between items-center">
                       <div className="space-y-1">
@@ -1066,7 +1066,7 @@ Requirements:
                             navigator.clipboard.writeText(prompt);
                             toast.success('Prompt copied to clipboard!');
                           }}
-                          className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-[#00F2FF] transition-all"
+                          className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-[#c7c42a] transition-all"
                         >
                           <RefreshCcw size={14} />
                         </button>
@@ -1313,9 +1313,9 @@ Requirements:
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] font-sans selection:bg-[#c7c42a] selection:text-black text-slate-200">
+    <div className="min-h-screen bg-black font-sans selection:bg-[#c7c42a] selection:text-black text-white/90">
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-full w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
+      <aside className="fixed top-0 left-0 h-full w-80 bg-[#0a0a0a] border-r border-white/5 z-40 p-10 flex flex-col hidden lg:flex">
         <div className="text-2xl font-black tracking-tighter text-white uppercase italic mb-12 flex items-center gap-3">
           <div className="w-8 h-8 bg-[#c7c42a] rounded-lg rotate-12 shadow-[0_0_20px_rgba(199,196,42,0.3)]" />
           Webby<span className="text-[#c7c42a]">Admin</span>
@@ -1341,8 +1341,8 @@ Requirements:
                   onClick={() => setActiveTab(item.id as Tab)}
                   className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all relative group ${
                     activeTab === item.id 
-                      ? 'bg-[#00F2FF] text-black shadow-[0_0_20px_rgba(0,242,255,0.3)]' 
-                      : 'text-slate-500 hover:text-white hover:bg-white/5'
+                      ? 'bg-[#c7c42a] text-black shadow-[0_0_20px_rgba(199,196,42,0.3)]' 
+                      : 'text-white/30 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <item.icon size={20} className="shrink-0" />
@@ -1376,7 +1376,7 @@ Requirements:
                   className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all relative group ${
                     activeTab === item.id 
                       ? 'bg-[#c7c42a] text-black shadow-[0_0_20px_rgba(199,196,42,0.3)]' 
-                      : 'text-slate-500 hover:text-white hover:bg-white/5'
+                      : 'text-white/30 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <item.icon size={20} className="shrink-0" />
@@ -1402,7 +1402,7 @@ Requirements:
                   className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all relative group ${
                     activeTab === item.id 
                       ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]' 
-                      : 'text-slate-500 hover:text-white hover:bg-white/5'
+                      : 'text-white/30 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <item.icon size={20} className="shrink-0" />
@@ -1418,7 +1418,7 @@ Requirements:
       </aside>
 
       {/* Mobile Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-white/5 px-6 py-4 flex justify-around items-center z-40">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-white/5 px-6 py-4 flex justify-around items-center z-40">
         {[
           { id: 'overview', icon: LayoutDashboard },
           { id: 'clients', icon: User },
@@ -1431,7 +1431,7 @@ Requirements:
             className={`p-3 rounded-xl transition-all ${
               activeTab === tab.id 
                 ? 'bg-[#c7c42a] text-black shadow-[0_0_20px_rgba(199,196,42,0.2)]' 
-                : 'text-slate-500'
+                : 'text-white/30'
             }`}
           >
             <tab.icon size={20} />
@@ -1441,12 +1441,12 @@ Requirements:
 
       {/* Main Content */}
       <main className="pl-0 lg:pl-80 min-h-screen pb-24 lg:pb-0">
-        <header className="px-12 py-10 flex justify-between items-center border-b border-white/5 bg-slate-900/20 backdrop-blur-md sticky top-0 z-30">
+        <header className="px-12 py-10 flex justify-between items-center border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-30">
           <div className="space-y-1">
             <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">
               {activeTab.replace('-', ' ')}
             </h2>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
               Admin Control Center / {profile?.displayName}
             </p>
           </div>
@@ -1457,7 +1457,7 @@ Requirements:
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all"
               >
-                <Bell size={20} className={notifications.some(n => !n.read) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                <Bell size={20} className={notifications.some(n => !n.read) ? 'text-[#c7c42a] animate-pulse' : 'text-white/40'} />
                 {notifications.some(n => !n.read) && (
                   <span className="absolute top-2 right-2 w-2 h-2 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
                 )}
@@ -1469,13 +1469,13 @@ Requirements:
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-4 w-96 bg-slate-900 border border-white/10 rounded-3xl shadow-2xl z-50 overflow-hidden"
+                    className="absolute right-0 mt-4 w-96 bg-[#0a0a0a] border border-white/10 rounded-3xl shadow-2xl z-50 overflow-hidden"
                   >
-                    <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
+                    <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/50">
                       <h3 className="text-sm font-black italic uppercase tracking-widest text-[#c7c42a]">System Intelligence</h3>
                       <button 
                         onClick={() => notifications.forEach(n => !n.read && markNotificationAsRead(n.id))}
-                        className="text-[10px] font-black uppercase text-white/40 hover:text-white transition-colors"
+                        className="text-[10px] font-black uppercase text-white/30 hover:text-white transition-colors"
                       >
                         Clear All
                       </button>
@@ -1510,7 +1510,7 @@ Requirements:
               <div className="text-sm font-black text-white uppercase italic">System Admin</div>
               <div className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">Online</div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#c7c42a] to-#c7c42a flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-[#c7c42a] flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_30px_rgba(199,196,42,0.2)]">
               A
             </div>
           </div>
