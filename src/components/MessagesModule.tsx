@@ -122,6 +122,30 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const handleForceDownload = async (url: string, filename: string) => {
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'intel_document';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.download = filename;
+      link.click();
+    }
+  };
   
   const getEffectiveSenderName = () => {
     if (profile?.role === 'developer' && activeConversation?.recipientProfile?.role === 'client') {
@@ -197,7 +221,6 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [showMentions, setShowMentions] = useState(false);
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentions, setMentions] = useState<string[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'favorites'>('all');
   

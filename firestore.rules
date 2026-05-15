@@ -38,6 +38,8 @@ service cloud.firestore {
       return isAuth() && (
         isSuperuser() ||
         request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
+        request.auth.uid == 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73' ||
+        request.auth.uid == 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2' ||
         (request.auth.token.email != null && 
          request.auth.token.email.lower() == 'workzy59@gmail.com')
       );
@@ -53,9 +55,9 @@ service cloud.firestore {
       );
     }
 
-    // Default deny
+    // Default deny (Safety net)
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if isSuperuser();
     }
 
     // =========================
@@ -64,7 +66,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow create: if isAuth() && request.auth.uid == userId;
       allow get: if isAuth();
-      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.uid == request.auth.uid);
+      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.get('uid', '') == request.auth.uid);
       allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
@@ -77,29 +79,29 @@ service cloud.firestore {
         return isAdmin() || 
                isWhitelistedDeveloper() ||
                (resource != null && (
-                 resource.data.userId == request.auth.uid || 
-                 resource.data.developerId == request.auth.uid ||
-                 resource.data.assignedTo == request.auth.uid
+                 resource.data.get('userId', '') == request.auth.uid || 
+                 resource.data.get('developerId', '') == request.auth.uid ||
+                 resource.data.get('assignedTo', '') == request.auth.uid
                ));
       }
 
-      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow create: if isAuth() && incoming().get('userId', '') == request.auth.uid;
       allow get: if isAuth() && canAccessProject();
       allow list: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() ||
-        resource.data.userId == request.auth.uid || 
-        resource.data.developerId == request.auth.uid ||
-        resource.data.assignedTo == request.auth.uid
+        resource.data.get('userId', '') == request.auth.uid || 
+        resource.data.get('developerId', '') == request.auth.uid ||
+        resource.data.get('assignedTo', '') == request.auth.uid
       );
 
       allow update: if isAuth() && (
         isAdmin() ||
-        existing().userId == request.auth.uid ||
-        existing().developerId == request.auth.uid ||
-        existing().assignedTo == request.auth.uid ||
+        existing().get('userId', '') == request.auth.uid ||
+        existing().get('developerId', '') == request.auth.uid ||
+        existing().get('assignedTo', '') == request.auth.uid ||
         (isWhitelistedDeveloper() && (
-          incoming().developerId == request.auth.uid ||
+          incoming().get('developerId', '') == request.auth.uid ||
           incoming().diff(existing()).affectedKeys().hasAny(['domainPrice', 'paymentLink', 'paymentLinkBasic', 'paymentLinkPremium', 'websiteUrl', 'progress', 'status'])
         ))
       );
@@ -109,7 +111,7 @@ service cloud.firestore {
       // Project Messages
       match /messages/{messageId} {
         allow read: if isAuth() && canAccessProject();
-        allow create: if isAuth() && incoming().senderId == request.auth.uid && canAccessProject();
+        allow create: if isAuth() && incoming().get('senderId', '') == request.auth.uid && canAccessProject();
         allow update: if isAuth();
       }
     }
@@ -127,7 +129,7 @@ service cloud.firestore {
       function isParticipant() {
         return isAuth() && (
           isAdmin() || 
-          request.auth.uid in resource.data.participants
+          request.auth.uid in resource.data.get('participants', [])
         );
       }
 
@@ -145,14 +147,14 @@ service cloud.firestore {
         );
       }
 
-      allow get: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
-      allow list: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
-      allow update: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
-      allow create: if isAuth() && request.auth.uid in incoming().participants;
+      allow get: if isAuth() && (isAdmin() || request.auth.uid in resource.data.get('participants', []));
+      allow list: if isAuth() && (isAdmin() || request.auth.uid in resource.data.get('participants', []));
+      allow update: if isAuth() && (isAdmin() || request.auth.uid in resource.data.get('participants', []));
+      allow create: if isAuth() && request.auth.uid in incoming().get('participants', []);
 
       match /messages/{messageId} {
         allow read: if isAuth() && isParticipantAfter();
-        allow create: if isAuth() && incoming().senderId == request.auth.uid && isParticipantAfter();
+        allow create: if isAuth() && incoming().get('senderId', '') == request.auth.uid && isParticipantAfter();
         allow update: if isAuth() && (
           isAdmin() || 
           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'seen', 'seenTime'])
@@ -173,20 +175,20 @@ service cloud.firestore {
       allow get: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() || 
-        resource.data.userId == request.auth.uid || 
+        resource.data.get('userId', '') == request.auth.uid || 
         resource.data.get('role', '') == 'admin'
       );
       allow list: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() || 
-        (resource.data.userId == request.auth.uid) || 
+        (resource.data.get('userId', '') == request.auth.uid) || 
         (resource.data.get('role', '') == 'admin')
       );
       allow create: if isAuth();
       allow update, delete: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() || 
-        resource.data.userId == request.auth.uid
+        resource.data.get('userId', '') == request.auth.uid
       );
     }
 

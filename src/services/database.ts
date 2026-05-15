@@ -1048,41 +1048,41 @@ export const getBlogPostBySlug = async (slug: string) => {
 };
 
 export const seedSampleBlogPosts = async () => {
-  const samplePosts: Partial<BlogPost>[] = [
-    {
-      title: "How to Design a High-Converting Gym Website in 2026",
-      slug: "gym-website-design-guide-2026",
-      excerpt: "Transform your fitness business with a website engineered for conversions and member retention.",
-      content: "A gym website needs to be as high-performance as the athletes it serves. This guide covers speed, mobile-first design, and conversion hooks for fitness centers...",
-      author: "Aditya Soni",
-      date: serverTimestamp(),
-      image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200",
-      category: "Business",
-      tags: ["Gym", "Design", "Featured"]
-    },
-    {
-      title: "The Ultimate Guide to Digital Growth for NGOs",
-      slug: "ngo-digital-growth-strategy",
-      excerpt: "Unlock more donations and reach a wider audience with our proven NGO digital infrastructure.",
-      content: "NGOs often struggle with outdated technology. We show you how modern infrastructure can amplify your impact and simplify donor management...",
-      author: "Aditya Soni",
-      date: serverTimestamp(),
-      image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200",
-      category: "SEO",
-      tags: ["NGO", "Strategy"]
-    },
-    {
-      title: "Why SEO is Critical for Clothing Brands in the Indian Market",
-      slug: "seo-for-clothing-brands-india",
-      excerpt: "Stop being invisible. Learn how to rank your clothing brand on the first page of Google India.",
-      content: "The clothing market in India is hyper-competitive. Without a surgical SEO strategy, your brand is invisible. Here is how we build SEO-first websites...",
-      author: "Aditya Soni",
-      date: serverTimestamp(),
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200",
-      category: "SEO",
-      tags: ["Clothing", "Business"]
-    }
-  ];
+      const samplePosts: Partial<BlogPost>[] = [
+        {
+          title: "How to Design a High-Converting Gym Website in 2026",
+          slug: "gym-website-design-guide-2026",
+          excerpt: "Transform your fitness business with a website engineered for conversions and member retention.",
+          content: "A gym website needs to be as high-performance as the athletes it serves. This guide covers speed, mobile-first design, and conversion hooks for fitness centers...",
+          author: "Aditya Soni",
+          date: serverTimestamp() as any,
+          image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200",
+          category: "Business",
+          tags: ["Gym", "Design", "Featured"]
+        },
+        {
+          title: "The Ultimate Guide to Digital Growth for NGOs",
+          slug: "ngo-digital-growth-strategy",
+          excerpt: "Unlock more donations and reach a wider audience with our proven NGO digital infrastructure.",
+          content: "NGOs often struggle with outdated technology. We show you how modern infrastructure can amplify your impact and simplify donor management...",
+          author: "Aditya Soni",
+          date: serverTimestamp() as any,
+          image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200",
+          category: "SEO",
+          tags: ["NGO", "Strategy"]
+        },
+        {
+          title: "Why SEO is Critical for Clothing Brands in the Indian Market",
+          slug: "seo-for-clothing-brands-india",
+          excerpt: "Stop being invisible. Learn how to rank your clothing brand on the first page of Google India.",
+          content: "The clothing market in India is hyper-competitive. Without a surgical SEO strategy, your brand is invisible. Here is how we build SEO-first websites...",
+          author: "Aditya Soni",
+          date: serverTimestamp() as any,
+          image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200",
+          category: "SEO",
+          tags: ["Clothing", "Business"]
+        }
+      ];
 
   try {
     const existingSnapshot = await getDocs(collection(db, 'blog_posts'));

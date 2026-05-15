@@ -261,6 +261,7 @@ export interface Project {
   isDeleted?: boolean;
   isLocked: boolean; // For the lock system
   previewUrl?: string;
+  googleMapsLink?: string;
   paymentLinkBasic?: string;
   paymentLinkPremium?: string;
   aiDeveloperBrief?: string;

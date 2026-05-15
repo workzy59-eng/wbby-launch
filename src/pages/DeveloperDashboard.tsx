@@ -25,6 +25,7 @@ import {
   Settings2,
   XCircle,
   Download,
+  Zap,
   User as UserIcon,
   FileText,
   Image as ImageIcon
