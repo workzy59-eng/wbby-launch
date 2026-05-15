@@ -463,7 +463,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                   <p className="text-[10px] font-mono text-white/20 uppercase tracking-tighter">{m.date} | {m.time}</p>
                 </div>
                 <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${
-                  m.status === 'completed' ? 'bg-green-500/10 text-green-500' : 
+                  m.status === 'completed' ? 'bg-[#c7c42a]/10 text-[#c7c42a]' : 
                   m.status === 'declined' ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/20'
                 }`}>
                   {m.status}

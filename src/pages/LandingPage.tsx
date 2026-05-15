@@ -364,7 +364,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                 </div>
                 <div className="absolute bottom-8 left-8 z-20 space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <div className="w-2 h-2 bg-[#c7c42a] rounded-full animate-pulse" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-white">Live Experience</span>
                   </div>
                   <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white">Interactive Dashboard UI</h4>

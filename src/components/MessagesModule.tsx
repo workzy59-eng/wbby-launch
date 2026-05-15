@@ -1357,7 +1357,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                         {conv.isProject ? <Briefcase size={28} /> : (isAdminConv ? 'WL' : (isDevConv ? 'DEV' : (conv.recipientProfile?.displayName?.[0] || 'U')))}
                       </div>
                       {!conv.isProject && conv.recipientProfile?.status === 'online' && (
-                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-4 border-black rounded-full" />
+                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#c7c42a] border-4 border-black rounded-full" />
                       )}
                     </div>
 
@@ -1447,7 +1447,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                       <p className="text-[10px] text-[#3b82f6] font-black uppercase tracking-widest animate-pulse">Analyzing Typing Data...</p>
                     ) : (
                       <div className="flex items-center gap-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${activeConversation.recipientProfile?.status === 'online' ? 'bg-green-500' : 'bg-white/20'}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full ${activeConversation.recipientProfile?.status === 'online' ? 'bg-[#c7c42a]' : 'bg-white/20'}`} />
                         <p className="text-[10px] text-white/20 font-black uppercase tracking-widest">
                           {activeConversation.recipientProfile?.status === 'online' ? 'Active Intel' : 'Station Offline'}
                         </p>

@@ -183,14 +183,14 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   placeholder="https://meet.google.com/xyz-abc-123"
                   className={`w-full bg-white/5 border rounded-2xl px-6 py-4 text-sm text-white outline-none transition-all pr-32 ${
                     formData.meetingLink 
-                      ? validation.isValid ? 'border-green-500/30 focus:border-green-500/50' : 'border-red-500/30 focus:border-red-500/50'
+                      ? validation.isValid ? 'border-[#c7c42a]/30 focus:border-[#c7c42a]/50' : 'border-red-500/30 focus:border-red-500/50'
                       : 'border-white/10 focus:border-[#c7c42a]/50'
                   }`}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                   {platform && (
                     <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                      platform === 'Google Meet' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'
+                      platform === 'Google Meet' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' : 'bg-blue-500/20 text-blue-400'
                     }`}>
                       {platform}
                     </span>

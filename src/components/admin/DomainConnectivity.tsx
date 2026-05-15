@@ -87,12 +87,12 @@ export const DomainConnectivity: React.FC = () => {
             <div className="flex justify-between items-center">
               <h3 className="text-2xl font-black uppercase italic tracking-tighter">DNS Configuration</h3>
               <div className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
-                status === 'connected' ? 'bg-green-500/10 text-green-500' :
+                status === 'connected' ? 'bg-[#c7c42a]/10 text-[#c7c42a]' :
                 status === 'pending' ? 'bg-[#FFFF00]/10 text-[#FFFF00]' :
                 'bg-white/5 text-white/20'
               }`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${
-                  status === 'connected' ? 'bg-green-500 animate-pulse' :
+                  status === 'connected' ? 'bg-[#c7c42a] animate-pulse' :
                   status === 'pending' ? 'bg-[#FFFF00] animate-bounce' :
                   'bg-white/20'
                 }`} />
@@ -159,7 +159,7 @@ export const DomainConnectivity: React.FC = () => {
                 <div key={i} className="flex items-center justify-between group">
                   <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white/60 group-hover:text-white transition-colors">{check.label}</span>
                   {check.status === 'pass' ? (
-                    <CheckCircle2 size={18} className="text-green-500" />
+                    <CheckCircle2 size={18} className="text-[#c7c42a]" />
                   ) : check.status === 'wait' ? (
                     <RefreshCw size={18} className="text-[#FFFF00] animate-spin" />
                   ) : (

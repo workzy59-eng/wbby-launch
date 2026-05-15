@@ -523,8 +523,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             </div>
             {isDirect && (
               <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-5 md:h-5 border-2 md:border-4 border-black rounded-full ${
-                recipientProfile?.status === 'online' ? 'bg-green-500' : 
-                recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
+                recipientProfile?.status === 'online' ? 'bg-[#c7c42a]' : 
+                recipientProfile?.status === 'away' ? 'bg-[#c7c42a]' : 'bg-gray-500'
               }`}></div>
             )}
           </div>
@@ -536,7 +536,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
               ) : (
                 <>
                   <div className={`w-2 h-2 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)] ${
-                    isDirect ? (recipientProfile?.status === 'online' ? 'bg-green-500' : 'bg-gray-500') : 'bg-green-500'
+                    isDirect ? (recipientProfile?.status === 'online' ? 'bg-[#c7c42a]' : 'bg-gray-500') : 'bg-[#c7c42a]'
                   }`}></div>
                   <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
                     {isDirect ? (recipientProfile?.status === 'online' ? 'Active Now' : `Last seen ${recipientProfile?.lastSeen ? formatDate(recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`) : 'Active Channel'}

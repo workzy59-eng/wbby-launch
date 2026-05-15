@@ -5,7 +5,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createUserProfile, getUserProfile, updateUserStatus, seedSampleBlogPosts } from './services/database';
-import { ADMIN_EMAIL } from './constants';
+import { ADMIN_EMAIL, DEVELOPER_EMAILS } from './constants';
 import { Smartphone } from 'lucide-react';
 import { Loader } from './components/ui/loader';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -172,7 +172,7 @@ export default function App() {
                         (profile.role === 'admin' || 
                          user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                           <AdminPanel user={user} profile={profile} />
-                        ) : profile.role === 'developer' ? (
+                        ) : (profile.role === 'developer' || (user.email && DEVELOPER_EMAILS.includes(user.email.toLowerCase()))) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />

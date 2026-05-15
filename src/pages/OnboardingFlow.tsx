@@ -75,7 +75,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
           <div className="flex gap-1.5">
              <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
              <div className="w-2.5 h-2.5 rounded-full bg-[#c7c42a]" />
-             <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+             <div className="w-2.5 h-2.5 rounded-full bg-[#c7c42a]" />
           </div>
           <div className="flex-1 bg-white rounded-full h-6 flex items-center px-4 text-[10px] text-gray-400 font-mono italic shadow-inner">
              {data.domain ? `https://${data.domain}` : `https://${data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.webbylaunch.com`}
@@ -1281,7 +1281,7 @@ ${formData.developerNote || 'No specific note provided.'}
                       <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Option {i + 1}</span>
                       <span className={`text-sm font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white'}`}>{d.name}</span>
                       {d.status === 'loading' && <div className="absolute top-2 right-2"><Loader color={formData.primaryColor} /></div>}
-                      {d.status === 'available' && <div className="absolute top-2 right-2 text-green-400 text-[8px] font-black uppercase">Available</div>}
+                      {d.status === 'available' && <div className="absolute top-2 right-2 text-[#c7c42a] text-[8px] font-black uppercase">Available</div>}
                       {d.status === 'taken' && <div className="absolute top-2 right-2 text-red-400 text-[8px] font-black uppercase">Taken</div>}
                     </button>
                   ))}

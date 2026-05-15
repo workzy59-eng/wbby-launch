@@ -155,7 +155,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 space-y-4 hover:border-[#c7c42a]/30 transition-all group backdrop-blur-xl"
         >
           <div className="flex justify-between items-start">
-            <div className={`p-3 bg-${isPunchedIn ? 'green' : 'white'}-500/10 rounded-2xl text-${isPunchedIn ? 'green' : 'white'}-400 group-hover:scale-110 transition-transform`}>
+            <div className={`p-3 bg-${isPunchedIn ? '[#c7c42a]' : 'white'}-500/10 rounded-2xl text-${isPunchedIn ? '[#c7c42a]' : 'white'}-400 group-hover:scale-110 transition-transform`}>
               <Clock size={24} />
             </div>
             <button 
@@ -221,7 +221,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
           className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 space-y-4 hover:border-[#c7c42a]/30 transition-all group backdrop-blur-xl"
         >
           <div className="flex justify-between items-start">
-            <div className="p-3 bg-green-500/10 rounded-2xl text-green-400 group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-[#c7c42a]/10 rounded-2xl text-[#c7c42a] group-hover:scale-110 transition-transform">
               <CheckCircle2 size={24} />
             </div>
             <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">Lifetime</div>
@@ -306,7 +306,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 {project.businessName?.[0]}
               </div>
               <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                project.status === 'completed' ? 'bg-green-500/20 text-green-400' : 'bg-[#c7c42a]/20 text-[#c7c42a]'
+                project.status === 'completed' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' : 'bg-[#c7c42a]/20 text-[#c7c42a]'
               }`}>
                 {project.status}
               </div>
@@ -316,7 +316,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                 <h4 className="text-2xl font-black text-white uppercase italic tracking-tighter">{project.businessName}</h4>
                 <p className="text-xs font-bold text-white/30 uppercase tracking-widest">{project.businessType}</p>
               </div>
-              <div className="py-6 border-y border-white/5">
+              <div className="py-6 border-y border-white/5 space-y-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Progress</span>
                   <span className="text-sm font-black text-[#c7c42a] italic">{project.progress}%</span>
@@ -327,6 +327,29 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                     style={{ width: `${project.progress}%` }}
                   />
                 </div>
+                {(project.domainPrice || project.paymentLinkBasic || project.paymentLinkPremium) && (
+                  <div className="pt-4 space-y-3">
+                    {project.domainPrice && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Domain Cost</span>
+                        <span className="text-xs font-bold text-white italic">₹{project.domainPrice}</span>
+                      </div>
+                    )}
+                    {(project.paymentLinkBasic || project.paymentLinkPremium) && (
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Payment Links</span>
+                        <div className="flex flex-wrap gap-2">
+                          {project.paymentLinkBasic && (
+                            <a href={project.paymentLinkBasic} target="_blank" rel="noreferrer" className="text-[9px] font-black text-black bg-[#c7c42a] px-3 py-1 rounded-full uppercase tracking-tighter hover:scale-105 transition-all">Standard Link</a>
+                          )}
+                          {project.paymentLinkPremium && (
+                            <a href={project.paymentLinkPremium} target="_blank" rel="noreferrer" className="text-[9px] font-black text-black bg-[#c7c42a] px-3 py-1 rounded-full uppercase tracking-tighter hover:scale-105 transition-all">Premium Link</a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex gap-4">
                 <button className="flex-1 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-black uppercase italic text-xs tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2">
@@ -367,7 +390,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
                   <td className="py-6 text-sm font-bold text-white uppercase italic">{formatDate(record.date)}</td>
                   <td className="py-6">
                     <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                      record.status === 'present' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                      record.status === 'present' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' : 'bg-red-500/20 text-red-400'
                     }`}>
                       {record.status}
                     </span>
@@ -408,17 +431,17 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between group hover:border-[#c7c42a]/30 transition-all">
               <div className="flex items-center gap-6">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white ${
-                  req.status === 'approved' ? 'bg-green-500/20' : req.status === 'declined' ? 'bg-red-500/20' : 'bg-[#c7c42a]/20'
+                  req.status === 'approved' ? 'bg-[#c7c42a]/20' : req.status === 'declined' ? 'bg-red-500/20' : 'bg-[#c7c42a]/20'
                 }`}>
                   <Calendar size={24} className={
-                    req.status === 'approved' ? 'text-green-400' : req.status === 'declined' ? 'text-red-400' : 'text-[#c7c42a]'
+                    req.status === 'approved' ? 'text-[#c7c42a]' : req.status === 'declined' ? 'text-red-400' : 'text-[#c7c42a]'
                   } />
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
                     <span className="text-lg font-black text-white uppercase italic">{req.type || 'Leave Request'}</span>
                     <span className={`px-3 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                      req.status === 'approved' ? 'bg-green-500/20 text-green-400' : 
+                      req.status === 'approved' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' : 
                       req.status === 'declined' ? 'bg-red-500/20 text-red-400' : 
                       'bg-[#c7c42a]/20 text-[#c7c42a]'
                     }`}>
@@ -543,7 +566,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
             <h3 className="text-2xl font-black text-white uppercase italic">{profile?.displayName}</h3>
             <p className="text-xs font-bold text-white/30 uppercase tracking-widest">{profile?.devRole || 'Professional Developer'}</p>
             <div className="flex gap-2 mt-2">
-              <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-[8px] font-black uppercase tracking-widest">Verified</span>
+              <span className="px-3 py-1 bg-[#c7c42a]/20 text-[#c7c42a] rounded-full text-[8px] font-black uppercase tracking-widest">Verified</span>
               <span className="px-3 py-1 bg-[#c7c42a]/20 text-[#c7c42a] rounded-full text-[8px] font-black uppercase tracking-widest">Top Tier</span>
             </div>
           </div>
@@ -615,7 +638,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
         <div className="mt-auto p-8 rounded-3xl bg-white/5 border border-white/5 space-y-4">
           <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">Active Session</div>
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isPunchedIn ? 'bg-green-500 shadow-[0_0_10px_green]' : 'bg-white/10'} animate-pulse`} />
+            <div className={`w-3 h-3 rounded-full ${isPunchedIn ? 'bg-[#c7c42a] shadow-[0_0_10px_#c7c42a]' : 'bg-white/10'} animate-pulse`} />
             <span className="text-xs font-bold text-white/50 uppercase italic">{isPunchedIn ? 'Logged In for 4h 12m' : 'Session Ready'}</span>
           </div>
         </div>

@@ -912,7 +912,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                                    )}
                                 </div>
                              </div>
-                             <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-[#0a0a0a]"></div>
+                             <div className="absolute bottom-2 right-2 w-6 h-6 bg-[#c7c42a] rounded-full border-4 border-[#0a0a0a]"></div>
                           </div>
                           <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">{profile?.displayName}</h3>
                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{profile?.role} Account</p>
@@ -963,7 +963,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                        <div className="bg-[#c7c42a]/5 rounded-[3rem] p-12 border border-[#c7c42a]/10">
                           <h4 className="text-xl font-black uppercase italic tracking-tighter mb-4 text-[#c7c42a]">Security Status</h4>
                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">Two-factor authentication is recommended for all client accounts.</p>
-                          <div className="flex items-center gap-4 text-green-400">
+                          <div className="flex items-center gap-4 text-[#c7c42a]">
                              <ShieldCheck size={20} />
                              <span className="text-[10px] font-black uppercase tracking-widest">End-to-End Encrypted Sessions</span>
                           </div>
@@ -1034,7 +1034,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                              <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 flex flex-col justify-center text-center">
                                {selectedProject.paymentStatus === 'paid' ? (
                                  <>
-                                   <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto">
+                                   <div className="w-20 h-20 bg-[#c7c42a]/10 rounded-full flex items-center justify-center text-[#c7c42a] mx-auto">
                                      <ShieldCheck size={40} />
                                    </div>
                                    <div className="space-y-2">
@@ -1119,7 +1119,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                               <td className="px-8 py-6 text-xs font-black uppercase italic tracking-tighter">{tx.desc}</td>
                               <td className="px-8 py-6 text-xs font-black text-[#c7c42a] italic">{tx.amount}</td>
                               <td className="px-8 py-6">
-                                <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-500/20">
+                                <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] rounded-full text-[8px] font-black uppercase tracking-widest border border-[#c7c42a]/20">
                                   {tx.status}
                                 </span>
                               </td>
@@ -1261,9 +1261,9 @@ function DashboardContent({ user, profile }: DashboardProps) {
                                 <h3 className="font-black text-2xl uppercase italic tracking-tighter">{p.businessName}</h3>
                                 <div className={`w-2 h-2 rounded-full ${
                                   p.status === 'active' ? 'bg-[#c7c42a]' :
-                                  p.status === 'completed' ? 'bg-green-500' :
+                                  p.status === 'completed' ? 'bg-[#c7c42a]' :
                                   p.status === 'rejected' ? 'bg-red-500' :
-                                  'bg-#c7c42a'
+                                  'bg-[#c7c42a]'
                                 }`} />
                               </div>
                               <p className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? 'text-black/70' : 'text-white/50'}`}>{p.businessType}</p>

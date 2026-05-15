@@ -125,7 +125,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
     { label: 'Total Leads', value: leads.length, icon: Users, color: 'text-white' },
     { label: 'Closed Deals', value: leads.filter(l => l.status === 'Closed').length, icon: CheckCircle2, color: 'text-[#c7c42a]' },
     { label: 'Conversion Rate', value: leads.length ? `${Math.round((leads.filter(l => l.status === 'Closed').length / leads.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-[#c7c42a]' },
-    { label: 'Total Commission', value: `₹${commissions.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}`, icon: DollarSign, color: 'text-green-500' },
+    { label: 'Total Commission', value: `₹${commissions.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}`, icon: DollarSign, color: 'text-[#c7c42a]' },
   ];
 
   return (
@@ -303,7 +303,7 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
                       <td className="p-6 text-lg font-black text-[#c7c42a]">₹{comm.amount.toLocaleString()}</td>
                       <td className="p-6">
                         <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
-                          comm.status === 'paid' ? 'bg-green-500/20 text-green-500' : 'bg-orange-500/20 text-orange-500'
+                          comm.status === 'paid' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' : 'bg-orange-500/20 text-orange-500'
                         }`}>
                           {comm.status}
                         </span>

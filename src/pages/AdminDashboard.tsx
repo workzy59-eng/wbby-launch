@@ -454,7 +454,7 @@ Generated on: ${new Date().toLocaleString()}
                         </button>
                         <button 
                           onClick={() => handleApproveDeveloper(dev.uid)}
-                          className="p-3 bg-green-500/10 text-green-400 rounded-xl hover:bg-green-500 hover:text-white transition-all"
+                          className="p-3 bg-[#c7c42a]/10 text-[#c7c42a] rounded-xl hover:bg-[#c7c42a] hover:text-black transition-all"
                         >
                           <CheckCircle2 size={18} />
                         </button>
@@ -485,7 +485,7 @@ Generated on: ${new Date().toLocaleString()}
                         </button>
                         <button 
                           onClick={() => handleLeaveAction(req.id!, 'approved')}
-                          className="p-3 bg-green-500/10 text-green-400 rounded-xl hover:bg-green-500 hover:text-white transition-all"
+                          className="p-3 bg-[#c7c42a]/10 text-[#c7c42a] rounded-xl hover:bg-[#c7c42a] hover:text-black transition-all"
                         >
                           <CheckCircle2 size={18} />
                         </button>
@@ -519,7 +519,7 @@ Generated on: ${new Date().toLocaleString()}
                       <div className="w-14 h-14 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center text-white font-black text-xl italic shadow-xl group-hover:border-[#c7c42a]/40 transition-colors">
                         {client.displayName?.[0] || 'U'}
                       </div>
-                      <div className="px-4 py-1 bg-green-500/20 text-green-400 rounded-full text-[10px] font-black uppercase tracking-widest">
+                      <div className="px-4 py-1 bg-[#c7c42a]/20 text-[#c7c42a] rounded-full text-[10px] font-black uppercase tracking-widest">
                         Active
                       </div>
                     </div>
@@ -571,7 +571,7 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
                     <div className="flex items-center gap-4">
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                        req.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                        req.status === 'approved' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' :
                         req.status === 'declined' ? 'bg-red-500/20 text-red-400' :
                         'bg-[#c7c42a]/20 text-[#c7c42a]'
                       }`}>
@@ -587,7 +587,7 @@ Generated on: ${new Date().toLocaleString()}
                           </button>
                           <button 
                             onClick={() => handleLeaveAction(req.id!, 'approved')}
-                            className="p-3 bg-green-500/10 text-green-400 rounded-xl hover:bg-green-500 hover:text-white transition-all"
+                            className="p-3 bg-[#c7c42a]/10 text-[#c7c42a] rounded-xl hover:bg-[#c7c42a] hover:text-black transition-all"
                           >
                             <CheckCircle2 size={18} />
                           </button>
@@ -647,7 +647,7 @@ Generated on: ${new Date().toLocaleString()}
                       <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic shadow-[0_0_20px_rgba(199,196,42,0.2)]">
                         {dev.displayName?.[0]}
                       </div>
-                      <div className="px-4 py-1 bg-green-500/20 text-green-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
+                      <div className="px-4 py-1 bg-[#c7c42a]/20 text-[#c7c42a] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#c7c42a]/20">
                         TRUSTED
                       </div>
                     </div>
@@ -736,7 +736,7 @@ Generated on: ${new Date().toLocaleString()}
                         </button>
                         <button 
                           onClick={() => handleApproveDeveloper(dev.uid)}
-                          className="p-3 bg-green-500/10 text-green-400 rounded-xl hover:bg-green-500 hover:text-white transition-all"
+                          className="p-3 bg-[#c7c42a]/10 text-[#c7c42a] rounded-xl hover:bg-[#c7c42a] hover:text-black transition-all"
                         >
                           <CheckCircle2 size={18} />
                         </button>
@@ -797,7 +797,7 @@ Generated on: ${new Date().toLocaleString()}
                         {dev.displayName?.[0]}
                       </div>
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                        dev.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                        dev.status === 'approved' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' :
                         dev.status === 'declined' ? 'bg-red-500/20 text-red-400' :
                         'bg-[#c7c42a]/20 text-[#c7c42a]'
                       }`}>
@@ -971,7 +971,7 @@ Generated on: ${new Date().toLocaleString()}
                         {project.businessName?.[0]}
                       </div>
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                        project.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                        project.status === 'completed' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' :
                         project.status === 'in-progress' ? 'bg-white/10 text-white/30' :
                         'bg-[#c7c42a]/20 text-[#c7c42a]'
                       }`}>
@@ -1201,6 +1201,28 @@ Requirements:
                         />
                       </div>
 
+                      <div>
+                        <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Standard Payment Link (Razorpay)</label>
+                        <input 
+                          type="text"
+                          placeholder="https://rzp.io/l/..."
+                          value={editingProject.paymentLinkBasic || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, paymentLinkBasic: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#c7c42a]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Premium Payment Link (Razorpay)</label>
+                        <input 
+                          type="text"
+                          placeholder="https://rzp.io/l/..."
+                          value={editingProject.paymentLinkPremium || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, paymentLinkPremium: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#c7c42a]"
+                        />
+                      </div>
+
                       {editingProject.status === 'rejected' && (
                         <div>
                           <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Rejection Reason</label>
@@ -1227,7 +1249,9 @@ Requirements:
                           progress: editingProject.progress,
                           rejectionReason: editingProject.rejectionReason,
                           developerId: editingProject.developerId,
-                          domainPrice: editingProject.domainPrice
+                          domainPrice: editingProject.domainPrice,
+                          paymentLinkBasic: editingProject.paymentLinkBasic,
+                          paymentLinkPremium: editingProject.paymentLinkPremium
                         })}
                         className="flex-1 py-4 rounded-xl bg-[#c7c42a] text-black font-black uppercase italic hover:scale-105 transition-all shadow-[0_0_20px_rgba(199,196,42,0.2)]"
                       >
@@ -1277,9 +1301,9 @@ Requirements:
                         <td className="py-6 text-xs font-bold text-slate-400">{formatDate(record.date)}</td>
                         <td className="py-6">
                           <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                            record.status === 'present' ? 'bg-green-500/20 text-green-400' :
+                            record.status === 'present' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' :
                             record.status === 'absent' ? 'bg-red-500/20 text-red-400' :
-                            'bg-#c7c42a/20 text-#c7c42a'
+                            'bg-[#c7c42a]/20 text-[#c7c42a]'
                           }`}>
                             {record.status}
                           </span>

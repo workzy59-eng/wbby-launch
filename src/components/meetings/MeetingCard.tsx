@@ -73,8 +73,8 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
 
   const getStatusColor = (status: MeetingStatus) => {
     switch (status) {
-      case 'pending': return 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30';
-      case 'accepted': return 'bg-green-500/20 text-green-500 border-green-500/30';
+      case 'pending': return 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30';
+      case 'accepted': return 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30';
       case 'declined': return 'bg-red-500/20 text-red-500 border-red-500/30';
       case 'completed': return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
       case 'missed': return 'bg-gray-500/20 text-gray-500 border-gray-500/30';
@@ -82,7 +82,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
     }
   };
 
-  const platformColor = meeting.platform === 'Google Meet' ? 'text-green-400 bg-green-400/10' : 'text-blue-400 bg-blue-400/10';
+  const platformColor = meeting.platform === 'Google Meet' ? 'text-[#c7c42a] bg-[#c7c42a]/10' : 'text-blue-400 bg-blue-400/10';
 
   return (
     <motion.div 
@@ -176,7 +176,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
               <>
                 <button 
                   onClick={() => onStatusUpdate?.(meeting.id, 'accepted')}
-                  className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                  className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
                 >
                   <CheckCircle2 size={14} />
                   Accept

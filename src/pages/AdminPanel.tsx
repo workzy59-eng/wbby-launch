@@ -89,8 +89,8 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
     <div className={`bg-white rounded-t-2xl border-x-4 border-t-4 border-gray-800 transition-all duration-500 overflow-hidden shadow-2xl relative ${containerClasses[device]}`}>
       <div className="h-4 bg-gray-800 flex items-center justify-center gap-1 sticky top-0 z-20">
         <div className="w-1 h-1 rounded-full bg-red-500" />
-        <div className="w-1 h-1 rounded-full bg-#c7c42a" />
-        <div className="w-1 h-1 rounded-full bg-green-500" />
+        <div className="w-1 h-1 rounded-full bg-[#c7c42a]" />
+        <div className="w-1 h-1 rounded-full bg-[#c7c42a]" />
       </div>
       <div className="h-full overflow-y-auto bg-white text-black font-sans no-scrollbar">
         <nav className="p-3 border-b flex justify-between items-center bg-white/90 backdrop-blur-md sticky top-0 z-10">
@@ -751,7 +751,7 @@ Generated on: ${new Date().toLocaleString()}
             { label: 'Platform Speed', value: `${platformEfficiency}%`, icon: Activity, color: 'text-[#c7c42a]' },
             { label: 'Network Signal', value: messageCount, icon: MessageCircle, color: 'text-white/80' },
             { label: 'Pending Jobs', value: pendingJobs, icon: Bell, color: 'text-red-500' },
-            { label: 'Total Volume', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },
+            { label: 'Total Volume', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-[#c7c42a]' },
           ].map((stat, i) => (
             <div key={i} className="bg-[#0a0a0a] p-8 rounded-[2rem] border border-white/10 group hover:border-[#c7c42a]/30 transition-all relative overflow-hidden">
               <div className="flex justify-between items-start mb-6">
@@ -770,7 +770,7 @@ Generated on: ${new Date().toLocaleString()}
             <div className="flex justify-between items-center mb-10">
               <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">Active Pulse</h3>
               <div className="flex gap-2">
-                <div className="px-4 py-1.5 bg-green-500/10 text-green-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">Systems Nominal</div>
+                <div className="px-4 py-1.5 bg-[#c7c42a]/10 text-[#c7c42a] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#c7c42a]/20 shadow-[0_0_20px_rgba(199,196,42,0.1)]">Systems Nominal</div>
               </div>
             </div>
             <div className="h-80 w-full">
@@ -865,7 +865,7 @@ Generated on: ${new Date().toLocaleString()}
                       onClick={() => handleUpdatePaymentStatus(p.id, p.paymentStatus || 'pending')}
                       className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${
                         p.paymentStatus === 'paid' 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                          ? 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30' 
                           : 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30'
                       }`}
                     >
@@ -877,7 +877,7 @@ Generated on: ${new Date().toLocaleString()}
                     <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
                       p.status === 'Rejected' 
                         ? 'bg-red-500/20 text-red-400 border-red-500/30' 
-                        : 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
+                        : 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30'
                     }`}>
                       Status: {p.status}
                     </div>
@@ -962,8 +962,8 @@ Generated on: ${new Date().toLocaleString()}
                     onClick={() => handleUpdatePaymentStatus(p.id, p.paymentStatus || 'pending')}
                     className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${
                       p.paymentStatus === 'paid' 
-                        ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                        : 'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
+                        ? 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30' 
+                        : 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30'
                     }`}
                   >
                     {p.paymentStatus || 'pending'}
@@ -1069,7 +1069,7 @@ Generated on: ${new Date().toLocaleString()}
           </button>
         </div>
 
-        <div className="bg-[#5E7162]/30 backdrop-blur-md rounded-[3rem] border border-white/10 overflow-hidden">
+        <div className="bg-[#0a0a0a]/30 backdrop-blur-md rounded-[3rem] border border-white/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -1106,7 +1106,7 @@ Generated on: ${new Date().toLocaleString()}
                       </div>
                     </td>
                     <td className="p-8">
-                      <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[8px] font-black uppercase tracking-widest">
+                      <span className="px-3 py-1 bg-[#c7c42a]/20 text-[#c7c42a] border border-[#c7c42a]/30 rounded-full text-[8px] font-black uppercase tracking-widest">
                         Active
                       </span>
                     </td>
@@ -1199,7 +1199,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   <div>
                     <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Authorization Status</p>
                     <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                      req.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                      req.status === 'approved' ? 'bg-[#c7c42a]/10 text-[#c7c42a] border border-[#c7c42a]/20' :
                       req.status === 'declined' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                       'bg-[#c7c42a]/10 text-[#c7c42a] border border-[#c7c42a]/20'
                     }`}>
@@ -1364,10 +1364,10 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     </td>
                     <td className="p-8">
                       <div className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
-                        p.status === 'Completed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                        p.status === 'Completed' ? 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30' :
                         p.status === 'Development Started' ? 'bg-white/10 text-white/40 border-white/20' :
                         p.status === 'Rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                        'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
+                        'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30'
                       }`}>
                         {p.status}
                       </div>
@@ -1472,7 +1472,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                   <div className="flex items-center gap-2">
                     <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{p.userName}</div>
                     <div className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${
-                      p.paymentStatus === 'paid' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'
+                      p.paymentStatus === 'paid' ? 'bg-[#c7c42a]/20 text-[#c7c42a] border-[#c7c42a]/30' : 'bg-red-500/20 text-red-400 border-red-500/30'
                     }`}>
                       {p.paymentStatus || 'pending'}
                     </div>
@@ -1967,7 +1967,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                  {activeTab.replace('-', ' ').toUpperCase()}
                </h2>
                <div className="flex items-center gap-2 mt-1">
-                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                 <div className="w-2 h-2 rounded-full bg-[#c7c42a] animate-pulse" />
                  <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic">Secure Connection Active</span>
                </div>
              </div>
@@ -2121,8 +2121,8 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                             dev.displayName?.[0] || 'D'
                           )}
                         </div>
-                        <div className={`px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 ${isPunchedIn ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-white/5 text-white/30 border border-white/5'}`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? 'bg-green-500 animate-pulse' : 'bg-white/20'}`} />
+                        <div className={`px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 ${isPunchedIn ? 'bg-[#c7c42a]/10 text-[#c7c42a] border border-[#c7c42a]/20' : 'bg-white/5 text-white/30 border border-white/5'}`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${isPunchedIn ? 'bg-[#c7c42a] animate-pulse' : 'bg-white/20'}`} />
                           {isPunchedIn ? 'Punched In' : 'Punched Out'}
                         </div>
                         {devUnreadCounts[dev.uid] > 0 && (
@@ -2145,7 +2145,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                         </div>
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                           <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Weekly Payout</p>
-                          <p className="text-xl font-black italic text-green-500">₹{stats.totalPayout.toLocaleString()}</p>
+                          <p className="text-xl font-black italic text-[#c7c42a]">₹{stats.totalPayout.toLocaleString()}</p>
                         </div>
                       </div>
 
@@ -2394,12 +2394,12 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                       {selectedUser.displayName?.[0] || 'U'}
                     </div>
                     <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-[#0F172A] rounded-full ${
-                      selectedUser.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
+                      selectedUser.status === 'online' ? 'bg-[#c7c42a]' : 'bg-gray-500'
                     }`}></div>
                   </div>
                   <div>
                     <h3 className="font-black text-white uppercase tracking-tight">{selectedUser.displayName}</h3>
-                    <p className={`text-[10px] font-black uppercase tracking-widest ${selectedUser.status === 'online' ? 'text-green-400' : 'text-white/30'}`}>
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${selectedUser.status === 'online' ? 'text-[#c7c42a]' : 'text-white/30'}`}>
                       {selectedUser.status === 'online' ? 'Active Now' : 'Offline'}
                     </p>
                   </div>
@@ -2437,7 +2437,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
+              className="relative bg-[#0a0a0a] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
             >
               <div className="flex justify-between items-start mb-10">
                 <div>
@@ -2620,7 +2620,7 @@ Description: ${viewingProject.description || 'No description provided.'}
                             Domain Status
                           </span>
                           <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${
-                             viewingProject.domainStatus === 'owned' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                             viewingProject.domainStatus === 'owned' ? 'bg-[#c7c42a]/10 text-[#c7c42a]' : 'bg-red-500/10 text-red-500'
                           }`}>
                             {viewingProject.domainStatus === 'owned' ? 'Already Owned' : 'Need to Buy'}
                           </span>
@@ -2786,7 +2786,7 @@ Description: ${viewingProject.description || 'No description provided.'}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-[#5E7162] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
+              className="relative bg-[#0a0a0a] rounded-[3rem] p-12 max-w-4xl w-full shadow-2xl border border-white/10 overflow-y-auto max-h-[90vh]"
             >
               <div className="flex justify-between items-start mb-10">
                 <div>
