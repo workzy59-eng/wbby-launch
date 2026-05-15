@@ -166,7 +166,7 @@ export const compressImageIfNeeded = (file: File, maxWidth = 800, maxHeight = 80
 
 import axios from 'axios';
 
-// Corrected upload helper using Backend API (proxied to Cloudinary)
+// Corrected upload helper using Cloudinary (Client-side)
 export const uploadFile = async (file: File, folder: string = 'uploads', onProgress?: (percent: number) => void): Promise<string> => {
   let processedFile = file;
   if (file.type.startsWith('image/')) {
@@ -177,15 +177,25 @@ export const uploadFile = async (file: File, folder: string = 'uploads', onProgr
     }
   }
 
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    console.warn('Cloudinary credentials missing, falling back to Base64');
+    if (processedFile.size > 700000) {
+      throw new Error(`File is too large (${Math.round(processedFile.size / 1024)}KB). Maximum allowed without Cloudinary is 700KB.`);
+    }
+    return await convertFileToBase64(processedFile);
+  }
+
   try {
     const formData = new FormData();
-    formData.append('folder', folder);
     formData.append('file', processedFile);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', folder);
 
-    // Using our own backend API to handle the upload
-    // This avoids exposing Cloudinary secrets on client and bypasses direct Cloudinary CSP restrictions
     const response = await axios.post(
-      '/api/upload',
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
       formData,
       {
         onUploadProgress: (progressEvent) => {
@@ -197,20 +207,12 @@ export const uploadFile = async (file: File, folder: string = 'uploads', onProgr
       }
     );
 
-    if (response.data && response.data.url) {
-      return response.data.url;
-    }
-    throw new Error('Invalid response from upload server');
-  } catch (error: any) {
-    console.error('Upload error:', error);
-    
-    // If backend upload fails, we check if we can fallback to Base64 (only for small files)
+    return response.data.secure_url;
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
     if (processedFile.size > 700000) {
-      const errorMessage = error.response?.data?.error || error.message || 'Upload failed';
-      throw new Error(`Upload failed: ${errorMessage}. File is too large (${Math.round(processedFile.size / 1024)}KB) to fallback.`);
+      throw new Error(`Cloudinary failed & file is too large (${Math.round(processedFile.size / 1024)}KB) to fallback to local database.`);
     }
-    
-    console.warn('Backend upload failed, falling back to Base64');
     return await convertFileToBase64(processedFile);
   }
 };
