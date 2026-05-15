@@ -36,8 +36,10 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuth() && (
-        request.auth.token.email != null && 
-        request.auth.token.email.lower() == 'workzy59@gmail.com'
+        isSuperuser() ||
+        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
+        (request.auth.token.email != null && 
+         request.auth.token.email.lower() == 'workzy59@gmail.com')
       );
     }
 
@@ -132,7 +134,14 @@ service cloud.firestore {
       function isParticipantAfter() {
         return isAuth() && (
           isAdmin() || 
-          request.auth.uid in getConversation().data.participants
+          isWhitelistedDeveloper() ||
+          (exists(/databases/$(database)/documents/conversations/$(conversationId)) && 
+           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('participants', [])) ||
+          conversationId.contains(request.auth.uid) ||
+          (exists(/databases/$(database)/documents/projects/$(conversationId)) && (
+            get(/databases/$(database)/documents/projects/$(conversationId)).data.get('userId', '') == request.auth.uid ||
+            get(/databases/$(database)/documents/projects/$(conversationId)).data.get('developerId', '') == request.auth.uid
+          ))
         );
       }
 
@@ -152,7 +161,7 @@ service cloud.firestore {
       }
 
       match /typing/{userId} {
-        allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || conversationId.contains(request.auth.uid));
+        allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || conversationId.contains(request.auth.uid) || isParticipantAfter());
         allow write: if isAuth() && (userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
       }
     }
