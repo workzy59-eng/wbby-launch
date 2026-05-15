@@ -63,10 +63,10 @@ import {
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { HYPHENATED_NAME } from '../constants';
+import { generateAIImageFromMessage } from '../services/geminiService';
 import imageCompression from 'browser-image-compression';
 
 import FilePreviewEditor from './chat/FilePreviewEditor';
-import FileDropZone from './chat/FileDropZone';
 
 interface ChatSystemProps {
   projectId?: string;
@@ -86,6 +86,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -101,8 +102,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentions, setMentions] = useState<string[]>([]);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  
-  const [isHoveringDrop, setIsHoveringDrop] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -404,12 +403,10 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           continue;
         }
 
-        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const url = await uploadFile(file, 'uploads', (percent) => {
-            setUploadProgress(prev => ({ ...prev, [file.name]: percent }));
-          });
+          const url = await uploadFile(file);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
           const messageData = {
@@ -449,12 +446,10 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
         } catch (e) { console.error(e); }
 
-        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const url = await uploadFile(file, 'uploads', (percent) => {
-            setUploadProgress(prev => ({ ...prev, [file.name]: percent }));
-          });
+          const url = await uploadFile(file);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
           const messageData = {
@@ -496,6 +491,35 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     }
   };
 
+  const handleGenerateAI = async (message: Message) => {
+    if (isGenerating) return;
+    setIsGenerating(message.id);
+    try {
+      const imageUrl = await generateAIImageFromMessage(message.text);
+      if (imageUrl) {
+        if (isDirect && recipientUser) {
+          await sendDirectMessage(recipientUser.uid, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: `AI Visualization for: "${message.text}"`,
+            imageUrl
+          });
+        } else if (projectId) {
+          await sendMessage(projectId, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || profile?.displayName || 'User',
+            text: `AI Visualization for: "${message.text}"`,
+            imageUrl
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate AI image:', error);
+    } finally {
+      setIsGenerating(null);
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -523,8 +547,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             </div>
             {isDirect && (
               <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-5 md:h-5 border-2 md:border-4 border-black rounded-full ${
-                recipientProfile?.status === 'online' ? 'bg-[#c7c42a]' : 
-                recipientProfile?.status === 'away' ? 'bg-[#c7c42a]' : 'bg-gray-500'
+                recipientProfile?.status === 'online' ? 'bg-green-500' : 
+                recipientProfile?.status === 'away' ? 'bg-#c7c42a' : 'bg-gray-500'
               }`}></div>
             )}
           </div>
@@ -536,7 +560,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
               ) : (
                 <>
                   <div className={`w-2 h-2 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)] ${
-                    isDirect ? (recipientProfile?.status === 'online' ? 'bg-[#c7c42a]' : 'bg-gray-500') : 'bg-[#c7c42a]'
+                    isDirect ? (recipientProfile?.status === 'online' ? 'bg-green-500' : 'bg-gray-500') : 'bg-green-500'
                   }`}></div>
                   <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
                     {isDirect ? (recipientProfile?.status === 'online' ? 'Active Now' : `Last seen ${recipientProfile?.lastSeen ? formatDate(recipientProfile.lastSeen, 'MMM d, h:mm a') : 'recently'}`) : 'Active Channel'}
@@ -563,7 +587,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       {/* Messages Area */}
       <div 
         ref={scrollRef}
-        onDragOver={(e) => { e.preventDefault(); setIsHoveringDrop(true); }}
         className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8 space-y-4 md:space-y-6 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
         style={{
           backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
@@ -747,39 +770,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             Someone is typing...
           </div>
         )}
-
-        <AnimatePresence>
-          {isHoveringDrop && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 bg-black/80 backdrop-blur-3xl p-10 flex flex-col items-center justify-center"
-              onDragLeave={() => setIsHoveringDrop(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setIsHoveringDrop(false);
-                const files = e.dataTransfer.files;
-                if (files.length > 0) handleFileUpload(files);
-              }}
-            >
-              <FileDropZone 
-                onUpload={(files) => {
-                  setIsHoveringDrop(false);
-                  const dt = new DataTransfer();
-                  files.forEach(f => dt.items.add(f));
-                  handleFileUpload(dt.files);
-                }} 
-              />
-              <button 
-                onClick={() => setIsHoveringDrop(false)}
-                className="mt-6 text-[10px] font-black uppercase tracking-[0.5em] text-white/40 hover:text-white transition-colors"
-              >
-                Abort Upload
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Upload Progress Overlay */}
@@ -796,25 +786,18 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Uploading Files...</h4>
                 <Loader color="white" />
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {Object.entries(uploadProgress).map(([name, progress]) => (
-                  <div key={name} className="space-y-2">
-                    <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-[0.2em]">
-                      <span className="text-white/40 truncate max-w-[200px] italic">{name}</span>
-                      <span className="text-[#FFFF00]">{progress.toFixed(0)}%</span>
+                  <div key={name} className="space-y-1">
+                    <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase tracking-widest">
+                      <span className="truncate max-w-[200px]">{name}</span>
+                      <span>{progress.toFixed(0)}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-white/5 border border-white/10 overflow-hidden relative">
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                       <motion.div 
                          initial={{ width: 0 }}
                          animate={{ width: `${progress}%` }}
-                         className="h-full bg-[#FFFF00] shadow-[0_0_15px_rgba(255,255,0,0.5)]"
-                         transition={{ type: 'spring', damping: 20 }}
-                       />
-                       {/* Scanning line effect */}
-                       <motion.div 
-                         animate={{ x: ['-100%', '200%'] }}
-                         transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                         className="absolute top-0 bottom-0 w-20 bg-gradient-to-r from-transparent via-[#FFFF00]/30 to-transparent"
+                         className="h-full bg-[#c7c42a]"
                        />
                     </div>
                   </div>

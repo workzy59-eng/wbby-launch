@@ -145,8 +145,8 @@ export const UsersManagement: React.FC = () => {
             <h4 className="text-3xl font-black text-white italic tracking-tighter">
               {users.filter(u => u.status === 'active' || u.status === 'online').length}
             </h4>
-            <div className="w-8 h-8 rounded-full bg-[#c7c42a]/20 flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#c7c42a] rounded-full animate-pulse" />
+            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
             </div>
           </div>
         </div>
@@ -254,7 +254,7 @@ export const UsersManagement: React.FC = () => {
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${user.status === 'inactive' ? 'bg-red-500' : 'bg-[#c7c42a]'}`} />
+                      <div className={`w-2 h-2 rounded-full ${user.status === 'inactive' ? 'bg-red-500' : 'bg-green-500'}`} />
                       <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
                         {user.status === 'inactive' ? 'Inactive' : 'Active'}
                       </span>
@@ -325,7 +325,7 @@ export const UsersManagement: React.FC = () => {
                         ID: {selectedUser.uid.slice(0, 8)}...
                       </span>
                       <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                        selectedUser.status === 'inactive' ? 'bg-red-500/10 text-red-500' : 'bg-[#c7c42a]/10 text-[#c7c42a]'
+                        selectedUser.status === 'inactive' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'
                       }`}>
                         {selectedUser.status}
                       </span>
@@ -519,7 +519,7 @@ export const UsersManagement: React.FC = () => {
                           <button 
                             onClick={() => toggleUserStatus(selectedUser)}
                             className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                              selectedUser.status === 'inactive' ? 'bg-[#c7c42a]/10 text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black' : 'bg-[#c7c42a]/10 text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black'
+                              selectedUser.status === 'inactive' ? 'bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white' : 'bg-[#c7c42a]/10 text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black'
                             }`}
                           >
                             {selectedUser.status === 'inactive' ? <UserPlus className="inline mr-2" size={14} /> : <UserMinus className="inline mr-2" size={14} />}

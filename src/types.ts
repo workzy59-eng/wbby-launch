@@ -9,9 +9,9 @@ export interface UserProfile {
   phone?: string;
   username?: string;
   status: 'online' | 'offline' | 'away' | 'active' | 'inactive' | 'suspended' | RequestStatus;
-  lastSeen?: any;
-  createdAt: any;
-  updatedAt?: any;
+  lastSeen?: string | Timestamp;
+  createdAt: string | Timestamp;
+  updatedAt?: string | Timestamp;
   isApproved?: boolean;
   commissionEarned?: number;
   salesCode?: string; // For sales users
@@ -164,18 +164,18 @@ export interface Payment {
   type: 'one-time';
   status: 'pending' | 'completed';
   stripeSessionId?: string;
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 export interface LeaveRequest {
   id: string;
   userId: string;
   userName: string;
-  startDate: any;
-  endDate: any;
+  startDate: string | Timestamp;
+  endDate: string | Timestamp;
   reason: string;
   status: RequestStatus;
-  createdAt: any;
+  createdAt: string | Timestamp;
 }
 
 export interface Attendance {
@@ -227,12 +227,6 @@ export interface Project {
   state: string;
   pincode: string;
   country: string;
-  storeType: 'online_store' | 'local_store';
-  locationState?: string;
-  preferredColors?: string[];
-  requestedDomain?: string;
-  domainStatus?: 'owned' | 'buy';
-  domainPreferences?: string;
   description: string;
   websiteName: string;
   primaryColor: string;
@@ -244,6 +238,7 @@ export interface Project {
   selectedFeatures?: string[];
   templateId: string;
   domain?: string;
+  domainPreferences?: string[];
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Standard' | 'Premium' | 'Pro';
   paymentStatus?: 'pending' | 'paid' | 'verifying' | 'unpaid';
@@ -255,17 +250,13 @@ export interface Project {
   deadline?: string | Timestamp;
   internalNotes?: string;
   estimatedCompletion: string | Timestamp | null;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: string | Timestamp;
   rejectionReason?: string;
   isDeleted?: boolean;
   isLocked: boolean; // For the lock system
   previewUrl?: string;
   paymentLinkBasic?: string;
   paymentLinkPremium?: string;
-  aiDeveloperBrief?: string;
-  promptEngineeringInstruction?: string;
-  developerNote?: string;
   lastMessage?: string;
   lastMessageAt?: string | Timestamp;
   lastSenderId?: string;
@@ -273,17 +264,12 @@ export interface Project {
   assignedTo?: string; // New field for assigned developer UID
   unreadCount?: Record<string, number>;
   websiteUrl?: string;
-  googleMapsLink?: string;
   acceptedAt?: string | Timestamp;
   urlSubmittedAt?: string | Timestamp;
   aiPrompt?: string;
   startedAt?: string | Timestamp;
   payout?: number;
   domainPrice?: number;
-  ownsDomain?: boolean;
-  domainRegistrar?: string;
-  domainTransferAuth?: string;
-  domainChoices?: string[];
 }
 
 export interface Attachment {
@@ -356,11 +342,6 @@ export interface SystemSettings {
     pro: number;
     enterprise: number;
   };
-  paymentLinks?: {
-    basic: string;
-    standard: string;
-    premium: string;
-  };
   contactEmail?: string;
   socialLinks?: {
     instagram?: string;
@@ -378,7 +359,7 @@ export interface BlogPost {
   content: string;
   excerpt: string;
   author: string;
-  date: any;
+  date: string | Timestamp;
   image: string;
   tags: string[];
   category: string;
@@ -404,8 +385,8 @@ export interface Meeting {
   rescheduleMessage?: string;
   preferredDate?: string;
   preferredTime?: string;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
 }
 
 export interface MeetingRequest {
@@ -419,8 +400,8 @@ export interface MeetingRequest {
   adminResponse?: string;
   suggestedDate?: string;
   suggestedTime?: string;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
 }
 
 export interface Notification {
@@ -429,6 +410,6 @@ export interface Notification {
   title: string;
   description: string;
   type: 'progress' | 'welcome' | 'system' | 'admin';
-  createdAt: any;
+  createdAt: string | Timestamp;
   read: boolean;
 }

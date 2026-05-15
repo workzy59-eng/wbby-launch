@@ -147,15 +147,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
     }
   };
 
-  const [tickerNow, setTickerNow] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTickerNow(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const now = tickerNow;
+  const now = new Date();
   
   // High contrast countdown logic
   const upcomingMeeting = meetings.find(m => 
@@ -282,88 +274,49 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         <div className="space-y-6">
           <h3 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">Active Sync Windows</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {meetings.filter(m => m.status === 'accepted' && (isAfter(new Date(`${m.date}T${m.time}`), now) || (new Date().getTime() - new Date(`${m.date}T${m.time}`).getTime() < 3600000))).map(m => {
-              const meetTime = new Date(`${m.date}T${m.time}`);
-              const diffMs = meetTime.getTime() - tickerNow.getTime();
-              const diffMin = diffMs / 60000;
-              const isGlowActive = diffMin <= 10 && diffMin >= -60;
-              
-              let countdownText = '';
-              if (diffMs > 0) {
-                const totalSecs = Math.floor(diffMs / 1000);
-                const hours = Math.floor(totalSecs / 3600);
-                const mins = Math.floor((totalSecs % 3600) / 60);
-                const secs = totalSecs % 60;
-                if (hours > 0) {
-                  countdownText = `${hours}H ${mins}M LEFT`;
-                } else {
-                  countdownText = `${mins}M ${secs}S LEFT`;
-                }
-              } else if (diffMin >= -60) {
-                countdownText = 'SESSION LIVE';
-              } else {
-                countdownText = 'CONCLUDED';
-              }
-
-              return (
-                <motion.div 
-                  key={m.id}
-                  layout
-                  className={`p-6 rounded-3xl border transition-all ${
-                    isGlowActive 
-                      ? 'bg-[#FFFF00]/10 border-[#FFFF00] shadow-[0_0_30px_rgba(255,255,0,0.15)] animate-pulse' 
-                      : upcomingMeeting?.id === m.id
-                        ? 'bg-[#c7c42a]/10 border-[#c7c42a] shadow-[0_0_30px_rgba(199,196,42,0.1)]' 
-                        : 'bg-[#111] border-white/5 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="text-lg font-black italic uppercase text-white tracking-tight">{m.title}</h4>
-                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">
-                        {m.clientId === user.uid ? 'Organized with Platform' : 'Client Sync Session'}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-[#c7c42a] italic">{format(new Date(`${m.date}T${m.time}`), 'MMM dd')}</p>
-                      <p className="text-[10px] font-mono text-white/40">{m.time}</p>
-                    </div>
+            {meetings.filter(m => m.status === 'accepted' && isAfter(new Date(`${m.date}T${m.time}`), now)).map(m => (
+              <motion.div 
+                key={m.id}
+                layout
+                className={`p-6 rounded-3xl border transition-all ${
+                  upcomingMeeting?.id === m.id 
+                    ? 'bg-[#c7c42a]/10 border-[#c7c42a] shadow-[0_0_30px_rgba(199,196,42,0.1)]' 
+                    : 'bg-[#111] border-white/5 hover:border-white/20'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h4 className="text-lg font-black italic uppercase text-white tracking-tight">{m.title}</h4>
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">
+                      {m.clientId === user.uid ? 'Organized with Platform' : 'Client Sync Session'}
+                    </p>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <a 
-                        href={m.meetingLink} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className={`flex-1 py-3 rounded-xl text-center text-[10px] font-black uppercase tracking-widest transition-all ${
-                          isGlowActive 
-                            ? 'bg-[#FFFF00] text-black font-black animate-pulse shadow-[0_0_20px_rgba(255,255,0,0.8)] border border-black hover:scale-[1.02]'
-                            : 'bg-white/5 hover:bg-white/10 text-white hover:scale-[1.02]'
-                        }`}
-                      >
-                        {isGlowActive ? '⚡ JOIN ACTIVE SESSION ⚡' : 'Join Signal'}
-                      </a>
-                      {isAdmin && (
-                        <button 
-                          onClick={() => handleDecline(m.id)}
-                          className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all cursor-pointer"
-                        >
-                          <XCircle size={16} />
-                        </button>
-                      )}
-                    </div>
-                    <div className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-center border rounded-lg ${
-                      isGlowActive
-                        ? 'bg-[#FFFF00]/10 border-[#FFFF00] text-[#FFFF00] animate-bounce'
-                        : 'bg-black/30 border-white/5 text-white/40'
-                    }`}>
-                      {countdownText}
-                    </div>
+                  <div className="text-right">
+                    <p className="text-sm font-black text-[#c7c42a] italic">{format(new Date(`${m.date}T${m.time}`), 'MMM dd')}</p>
+                    <p className="text-[10px] font-mono text-white/40">{m.time}</p>
                   </div>
-                </motion.div>
-              );
-            })}
-            {meetings.filter(m => m.status === 'accepted' && (isAfter(new Date(`${m.date}T${m.time}`), now) || (new Date().getTime() - new Date(`${m.date}T${m.time}`).getTime() < 3600000))).length === 0 && (
+                </div>
+                <div className="flex items-center gap-2">
+                  <a 
+                    href={m.meetingLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl text-center text-[10px] font-black uppercase tracking-widest transition-all"
+                  >
+                    Join Signal
+                  </a>
+                  {isAdmin && (
+                    <button 
+                      onClick={() => handleDecline(m.id)}
+                      className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                    >
+                      <XCircle size={16} />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+            {meetings.filter(m => m.status === 'accepted' && isAfter(new Date(`${m.date}T${m.time}`), now)).length === 0 && (
               <div className="col-span-2 py-10 border border-dashed border-white/5 rounded-3xl flex items-center justify-center">
                 <p className="text-[10px] font-bold uppercase text-white/10 tracking-widest italic">No confirmed windows</p>
               </div>
@@ -463,7 +416,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                   <p className="text-[10px] font-mono text-white/20 uppercase tracking-tighter">{m.date} | {m.time}</p>
                 </div>
                 <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${
-                  m.status === 'completed' ? 'bg-[#c7c42a]/10 text-[#c7c42a]' : 
+                  m.status === 'completed' ? 'bg-green-500/10 text-green-500' : 
                   m.status === 'declined' ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/20'
                 }`}>
                   {m.status}

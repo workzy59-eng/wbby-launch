@@ -17,8 +17,6 @@ import {
   Copy
 } from 'lucide-react';
 
-import { ADMIN_EMAIL } from '../constants';
-
 const Loader = ({ color = "white" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
     <motion.div
@@ -259,7 +257,7 @@ export default function BlogPost() {
                   View Pricing
                 </Link>
                 <a 
-                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${ADMIN_EMAIL}`}
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=workzy59@gmail.com`}
                   target="_blank"
                   rel="noreferrer"
                   className="px-16 py-7 border-2 border-black text-black rounded-full font-black uppercase italic tracking-[0.2em] text-sm hover:bg-black hover:text-white transition-all"

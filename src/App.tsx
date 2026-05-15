@@ -4,17 +4,17 @@ import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc
 import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createUserProfile, getUserProfile, updateUserStatus, seedSampleBlogPosts } from './services/database';
-import { ADMIN_EMAIL, DEVELOPER_EMAILS } from './constants';
+import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
+import { ADMIN_EMAIL } from './constants';
 import { Smartphone } from 'lucide-react';
 import { Loader } from './components/ui/loader';
-import { ErrorBoundary } from './components/ErrorBoundary';
 
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const AuthPage = React.lazy(() => import('./pages/AuthPage'));
 const OnboardingFlow = React.lazy(() => import('./pages/OnboardingFlow'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
+const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
 const SalesDashboard = React.lazy(() => import('./pages/SalesDashboard'));
 const Gym = React.lazy(() => import('./pages/Gym'));
 const Resort = React.lazy(() => import('./pages/Resort'));
@@ -33,7 +33,6 @@ const Privacy = React.lazy(() => import('./pages/Privacy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const MessagesModule = React.lazy(() => import('./components/MessagesModule'));
 const Settings = React.lazy(() => import('./pages/Settings'));
-const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
 const ComponentShowcase = React.lazy(() => import('./pages/ComponentShowcase'));
 const Layout = React.lazy(() => import('./components/Layout'));
 const LocationPage = React.lazy(() => import('./pages/LocationPage'));
@@ -42,7 +41,7 @@ const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
 const DomainSelection = React.lazy(() => import('./pages/DomainSelection'));
 
 import { useAuth } from './context/AuthContext';
-import { useVisitTracker } from './hooks/useVisitTracker';
+import { useActivityTracker } from './hooks/useActivityTracker';
 
 export default function App() {
   const { user, profile, loading } = useAuth();
@@ -50,7 +49,7 @@ export default function App() {
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   // Track activity for logged in users
-  useVisitTracker(user?.uid);
+  useActivityTracker(user?.uid);
 
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
@@ -58,9 +57,6 @@ export default function App() {
 
   useEffect(() => {
     if (user) {
-      // Seed blog posts if empty - helpful for SEO and initial content
-      seedSampleBlogPosts();
-
       // Set online status
       updateUserStatus(user.uid, 'online');
       
@@ -97,7 +93,6 @@ export default function App() {
 
   return (
     <React.Suspense fallback={<div className="flex items-center justify-center h-screen bg-black"><Loader size={48} /></div>}>
-      <ErrorBoundary>
         <Layout user={user} profile={profile}>
             <Toaster 
               position="top-right"
@@ -122,8 +117,10 @@ export default function App() {
                   element={
                     user ? (
                       (profile?.role === 'admin' || 
-                       user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
+                       [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                         <Navigate to="/admin" />
+                      ) : (['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                        <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
                       )
@@ -170,9 +167,10 @@ export default function App() {
                     user ? (
                       profile ? (
                         (profile.role === 'admin' || 
-                         user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
+                         [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <AdminPanel user={user} profile={profile} />
-                        ) : (profile.role === 'developer' || (user.email && DEVELOPER_EMAILS.includes(user.email.toLowerCase()))) ? (
+                        ) : (profile.role === 'developer' || 
+                             ['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
@@ -194,8 +192,28 @@ export default function App() {
                   element={user ? <DomainSelection /> : <Navigate to="/auth" />} 
                 />
                 <Route 
+                  path="/developer-dashboard" 
+                  element={
+                    user ? (
+                      profile ? (
+                        profile.role === 'developer' ? (
+                          <DeveloperDashboard user={user} profile={profile} />
+                        ) : (
+                          <Navigate to="/dashboard" />
+                        )
+                      ) : (
+                        <div className="min-h-screen bg-black flex items-center justify-center">
+                          <Loader />
+                        </div>
+                      )
+                    ) : (
+                      <Navigate to="/auth" />
+                    )
+                  } 
+                />
+                <Route 
                   path="/admin" 
-                  element={user && (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                  element={user && (profile?.role === 'admin' || [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
                 />
                 <Route 
                   path="/portfolio/gym" 
@@ -221,7 +239,6 @@ export default function App() {
               </Routes>
             </AnimatePresence>
           </Layout>
-      </ErrorBoundary>
-    </React.Suspense>
+      </React.Suspense>
   );
 }

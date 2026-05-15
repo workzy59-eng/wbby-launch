@@ -6,7 +6,6 @@ import {defineConfig, loadEnv} from 'vite';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    base: '/',
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
@@ -21,13 +20,12 @@ export default defineConfig(({mode}) => {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+            'vendor-framer': ['motion/react'],
             'vendor-lucide': ['lucide-react'],
-            'vendor-ui': ['framer-motion', 'recharts', 'jspdf'],
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           },
         },
       },
-      chunkSizeWarningLimit: 1000,
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

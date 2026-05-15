@@ -1,33 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main Pages -->
   <url>
-    <loc>https://webbylaunch.vercel.app/</loc>
-    <lastmod>2026-05-10</lastmod>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/</loc>
+    <lastmod>2026-04-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://webbylaunch.vercel.app/blog</loc>
-    <lastmod>2026-05-10</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/about</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webbylaunch.vercel.app/pricing</loc>
-    <lastmod>2026-05-10</lastmod>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/services</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/pricing</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/contact</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/blog</loc>
+    <lastmod>2026-04-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Blog Posts -->
+  <url>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/blog/how-to-create-business-website-india</loc>
+    <lastmod>2026-04-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://webbylaunch.vercel.app/contact</loc>
-    <lastmod>2026-05-10</lastmod>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/blog/best-website-small-business-2026</loc>
+    <lastmod>2026-04-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-   <url>
-    <loc>https://webbylaunch.vercel.app/about</loc>
-    <lastmod>2026-05-10</lastmod>
+  <url>
+    <loc>https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/blog/affordable-website-design-everyone</loc>
+    <lastmod>2026-04-11</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>

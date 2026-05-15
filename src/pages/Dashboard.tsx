@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, FirebaseUser, logOut } from '../firebase';
 import { initiatePayment } from '../services/razorpay';
-import { UserProfile, Project, Meeting, SystemSettings } from '../types';
+import { UserProfile, Project } from '../types';
 import { 
   Bell,
   LogOut, 
@@ -33,6 +33,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Activity,
+  Zap,
   Flame,
   Search,
   MoreVertical,
@@ -57,12 +59,11 @@ import {
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
 import { subscribeToMeetings } from '../services/meetingService';
-import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead, getSystemSettings } from '../services/database';
+import { Meeting } from '../types';
+import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { toast } from 'react-hot-toast';
 import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
@@ -78,48 +79,17 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, profile }: DashboardProps) {
-  return (
-    <ErrorBoundary>
-      <DashboardContent user={user} profile={profile} />
-    </ErrorBoundary>
-  );
-}
-
-function DashboardContent({ user, profile }: DashboardProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'vault'>('dashboard');
-  
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'analytics'>('dashboard');
   const [projects, setProjects] = useState<Project[]>([]);
-  const hasProjects = projects.length > 0;
-  const hasAcceptedProject = projects.some(p => 
-    !['Waiting for Review', 'Rejected', 'Under Review', 'pending', 'assigned'].includes(p.status?.toLowerCase() || '')
-  );
-
-  useEffect(() => {
-    if (!hasProjects && activeTab !== 'dashboard') {
-      setActiveTab('dashboard');
-    }
-  }, [hasProjects, activeTab]);
-
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const notificationSound = useRef<HTMLAudioElement | null>(null);
-
-  const [settings, setSettings] = useState<SystemSettings | null>(null);
-
-  useEffect(() => {
-    getSystemSettings().then(setSettings);
-  }, []);
-
-  useEffect(() => {
-    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
-  }, []);
   
   // Handle Payment Success
   useEffect(() => {
@@ -145,63 +115,38 @@ function DashboardContent({ user, profile }: DashboardProps) {
     };
     handlePaymentSuccess();
   }, [location.search, navigate]);
-  const handlePayment = async (project: Project, shouldUpdateStatus: boolean = false) => {
+  const handlePayment = async (project: Project) => {
     if (!user || !profile) {
       toast.error('Please login to continue');
       return;
     }
 
-    const plan = (project.plan || 'basic').toLowerCase();
-
-    // 1. Prefer broad project-specific paymentLink if defined
-    if (project.paymentLink) {
-      window.open(project.paymentLink, '_blank');
-      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
-      toast.success('Opening custom payment link...');
-      return;
-    }
-
-    // 2. Prefer tiered project-specific payment links if defined
-    if (project.paymentLinkPremium && (plan.includes('premium') || plan.includes('pro') || plan.includes('enterprise'))) {
+    // Prefer project-specific payment links if defined
+    if (project.paymentLinkPremium && project.plan?.toLowerCase().includes('premium')) {
       window.open(project.paymentLinkPremium, '_blank');
-      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
       toast.success('Opening Premium payment link...');
       return;
     }
 
-    if (project.paymentLinkBasic && (plan.includes('basic') || plan.includes('starter') || plan.includes('standard'))) {
+    if (project.paymentLinkBasic && project.plan?.toLowerCase().includes('basic')) {
       window.open(project.paymentLinkBasic, '_blank');
-      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
-      toast.success('Opening payment link...');
+      toast.success('Opening Basic payment link...');
       return;
     }
 
-    // 3. System Settings defaults
-    let paymentUrl = '';
+    const plan = (project.plan || 'basic').toLowerCase();
     
-    if (settings?.paymentLinks) {
-      if (plan.includes('premium') || plan.includes('enterprise') || plan.includes('pro')) {
-        paymentUrl = settings.paymentLinks.premium;
-      } else if (plan.includes('standard')) {
-        paymentUrl = settings.paymentLinks.standard;
-      } else {
-        paymentUrl = settings.paymentLinks.basic;
-      }
-    } 
-
-    // 4. Final Hardcoded Fallbacks (only if settings failed)
-    if (!paymentUrl) {
-      if (plan.includes('standard')) {
-        paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
-      } else if (plan.includes('pro') || plan.includes('premium')) {
-        paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
-      } else {
-        paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic
-      }
+    // Redirect to direct Razorpay links
+    let paymentUrl = '';
+    if (plan === 'standard') {
+      paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
+    } else if (plan === 'pro') {
+      paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
+    } else {
+      paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic
     }
 
     window.open(paymentUrl, '_blank');
-    if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
     toast.success('Opening payment link... Please refresh page after payment.');
   };
 
@@ -215,6 +160,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
   }, [projects]);
 
   const [showChat, setShowChat] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const [showDirectChat, setShowDirectChat] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
@@ -224,14 +170,6 @@ function DashboardContent({ user, profile }: DashboardProps) {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [nowTime, setNowTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNowTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
   const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [showAdminWelcome, setShowAdminWelcome] = useState(false);
@@ -244,12 +182,16 @@ function DashboardContent({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     if (!profile || !user.email) return;
+    const devEmails = ['sain17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'];
     const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const isDeveloper = devEmails.includes(user.email.toLowerCase());
     
-    // const hasSeenDevWelcome = localStorage.getItem(`dev_welcome_seen_${user.uid}`);
+    const hasSeenDevWelcome = localStorage.getItem(`dev_welcome_seen_${user.uid}`);
     const hasSeenAdminWelcome = localStorage.getItem(`admin_welcome_seen_${user.uid}`);
     
-    if (isAdmin && !hasSeenAdminWelcome) {
+    if (isDeveloper && !hasSeenDevWelcome) {
+      setShowDeveloperWelcome(true);
+    } else if (isAdmin && !hasSeenAdminWelcome) {
       setShowAdminWelcome(true);
     }
   }, [profile, user.email, user.uid]);
@@ -275,6 +217,10 @@ function DashboardContent({ user, profile }: DashboardProps) {
     }
   }, [selectedProject?.developerId, selectedProject?.assignedTo]);
 
+  const hasAcceptedProject = projects.some(p => 
+    !['Waiting for Review', 'Rejected', 'Under Review', 'pending', 'assigned'].includes(p.status?.toLowerCase() || '')
+  );
+
   const statusSteps = selectedProject?.status === 'Rejected' 
     ? ["Waiting for Review", "Under Review", "Declined"]
     : ["Waiting for Review", "Under Review", "Accepted", "Development Started", "Completed"];
@@ -286,17 +232,11 @@ function DashboardContent({ user, profile }: DashboardProps) {
   useEffect(() => {
     if (user?.uid) {
       const unsubscribe = getNotifications(user.uid, (data) => {
-        const prevUnread = notifications.filter(n => !n.read).length;
-        const newUnread = data.filter((n: any) => !n.read).length;
-        
-        if (newUnread > prevUnread) {
-          notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
-        }
         setNotifications(data);
       });
       return () => unsubscribe();
     }
-  }, [user?.uid, notifications.length]);
+  }, [user?.uid]);
 
   useEffect(() => {
     const fetchStatsOrAdmin = async () => {
@@ -310,6 +250,12 @@ function DashboardContent({ user, profile }: DashboardProps) {
           const admins = await getAdmins();
           const primaryAdmin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
           setAdminProfile(primaryAdmin);
+          
+          // Only fetch full list if explicitly requested or on analytics
+          if (activeTab === 'analytics') {
+             const { getUserCount } = await import('../services/database');
+             getUserCount().then(count => setTotalUsersCount(count));
+          }
         } else {
           // Clients need to find an admin to chat with
           const admins = await getAdmins();
@@ -390,11 +336,80 @@ function DashboardContent({ user, profile }: DashboardProps) {
     return () => unsubscribe();
   }, [user.uid, profile?.role]);
 
+  const handleCancelProject = async () => {
+    if (selectedProject) {
+      await updateProject(selectedProject.id, { isDeleted: true });
+      setShowCancelModal(false);
+      setSelectedProject(null);
+    }
+  };
+
+  // Removed old statusSteps and currentStepIndex from here
+
   const primaryColor = '#FFFF00';
 
   return (
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black">
       <AnimatePresence>
+        {showDeveloperWelcome && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="w-full max-w-2xl relative overflow-hidden"
+            >
+              {/* Background Glow */}
+              <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-20" />
+              <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-10" />
+              
+              <div className="relative bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-12 md:p-20 text-center shadow-2xl">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-block px-4 py-1 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full mb-8 text-[#c7c42a] text-[10px] font-black uppercase tracking-[0.4em]"
+                >
+                  Developer Access Granted
+                </motion.div>
+                
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] mb-10"
+                >
+                  Welcome<br />
+                  <span style={{ color: '#c7c42a' }}>Developer 🚀</span>
+                </motion.h2>
+                
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-white/40 text-sm font-medium leading-relaxed max-w-md mx-auto mb-12"
+                >
+                  You've been authorized with a developer-tier profile. Welcome to the engine room of {APP_NAME}. Everything is ready for you.
+                </motion.p>
+                
+                <motion.button 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  onClick={handleCloseWelcome}
+                  className="group relative px-12 py-5 bg-[#c7c42a] text-black rounded-full font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(199,196,42,0.3)]"
+                >
+                  Start Development
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
         {showAdminWelcome && (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -542,15 +557,11 @@ function DashboardContent({ user, profile }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col gap-5">
           {[
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-              ...(hasAcceptedProject ? [
-                { id: 'progress', icon: FolderKanban, label: 'Pulse' },
-                { id: 'meetings', icon: Video, label: 'Meetings' },
-                { id: 'messages', icon: MessageCircle, label: 'Chat' },
-                { id: 'vault', icon: Flame, label: 'Vault' },
-                { id: 'payments', icon: CreditCard, label: 'Plans' },
-                { id: 'settings', icon: Settings, label: 'User' },
-              ] : []),
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            { id: 'analytics', icon: TrendingUp, label: 'Pulse' },
+            ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
+            { id: 'payments', icon: CreditCard, label: 'Plans' },
+            { id: 'settings', icon: Settings, label: 'User' },
           ].map((tab) => (
             <button 
               key={tab.id}
@@ -643,14 +654,12 @@ function DashboardContent({ user, profile }: DashboardProps) {
           {/* Mobile Navigation */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-              ...(hasAcceptedProject ? [
-                { id: 'progress', icon: FolderKanban, label: 'Progress' },
-                { id: 'messages', icon: MessageCircle, label: 'Chat' },
-                { id: 'meetings', icon: Video, label: 'Meets' },
-                { id: 'vault', icon: Flame, label: 'Vault' },
-                { id: 'settings', icon: Settings, label: 'Settings' },
-              ] : []),
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            { id: 'analytics', icon: TrendingUp, label: 'Stats' },
+            { id: 'progress', icon: FolderKanban, label: 'Progress' },
+            ...(hasAcceptedProject ? [{ id: 'messages', icon: MessageCircle, label: 'Chat' }] : []),
+            { id: 'meetings', icon: Video, label: 'Meets' },
+            { id: 'settings', icon: Settings, label: 'Settings' },
           ].map((tab) => (
               <button 
                 key={tab.id}
@@ -676,29 +685,29 @@ function DashboardContent({ user, profile }: DashboardProps) {
 
           <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
             <div className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === 'messages' ? 'py-6' : 'py-12'} space-y-10`}>
-                {hasProjects && activeTab !== 'messages' && (
-                  <>
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                      <motion.div 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2 mb-4"
-                      >
-                        <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
-                      </motion.div>
-                      <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
-                        Status:<br />
-                        <span style={{ color: primaryColor }}>Operational</span>
-                      </h1>
-                    </div>
-                    <div className="flex flex-col items-end gap-4">
-                    </div>
+              {activeTab !== 'messages' && (
+                <>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div>
+                    <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-2 mb-4"
+                    >
+                      <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
+                    </motion.div>
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
+                      Status:<br />
+                      <span style={{ color: primaryColor }}>Operational</span>
+                    </h1>
                   </div>
+                  <div className="flex flex-col items-end gap-4">
+                  </div>
+                </div>
 
-                  </>
-                )}
+                </>
+              )}
           
           <AnimatePresence mode="wait">
             <motion.div
@@ -709,47 +718,30 @@ function DashboardContent({ user, profile }: DashboardProps) {
               transition={{ duration: 0.3, ease: "circOut" }}
               className="relative"
             >
-              {hasProjects && !hasAcceptedProject && activeTab === 'dashboard' && (
-                <div className="relative flex flex-col items-center justify-center min-h-[600px] py-20">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#FFFF00]/10 rounded-full animate-[spin_20s_linear_infinite]" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#FFFF00]/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FFFF00]/5 rounded-full blur-[120px]" />
-
-                  <div className="max-w-2xl w-full text-center space-y-10 relative z-10 p-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl flex flex-col items-center justify-center">
-                    <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-[10px] font-black uppercase tracking-[0.4em] rounded-lg">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00] animate-pulse" />
-                      Awaiting Biometric Validation
-                    </div>
-                    
-                    <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
-                      Mission<br/>
-                      <span className="text-[#FFFF00]">Queued.</span>
-                    </h2>
-
-                    <div className="space-y-4">
-                      <p className="text-sm font-bold text-[#FFFF00] uppercase tracking-[0.2em] italic">Deploying to Central Command</p>
-                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
-                        Your project protocol is being verified by our elite engineering unit. System features will activate as soon as a developer accepts the mission.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+              {!hasAcceptedProject && activeTab === 'dashboard' && (
+                <div className="absolute inset-0 z-50 bg-black flex items-center justify-center border-2 border-[#FFFF00]/10 overflow-hidden">
+                   <div className="absolute inset-0 bg-yellow-500/5 animate-pulse" />
+                   <div className="p-12 text-center space-y-10 relative z-10">
+                      <div className="inline-block px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-xs font-black uppercase tracking-[0.4em] animate-pulse">
+                        ACCESS_DENIED // SYSTEM_RESTRICTED
+                      </div>
+                      <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
+                        DASHBOARD<br/>
+                        <span className="text-[#FFFF00]">LOCKED.</span>
+                      </h2>
+                      <div className="p-6 bg-[#FFFF00]/5 border border-[#FFFF00]/10 space-y-4">
+                        <p className="text-sm font-bold text-[#FFFF00] uppercase tracking-[0.2em] italic">MISSION CRITICAL: BIO-SYNC PENDING</p>
+                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
+                          INTERNAL COMMUNICATION AND FINANCIAL TOOLS ARE OFFLINE UNTIL A DEVELOPER ACCEPTS THE MISSION.
+                        </p>
+                      </div>
                       <button 
                          onClick={() => setActiveTab('progress')}
-                         className="w-full md:w-auto px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
+                         className="px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
                       >
-                         Track Current Mission
+                         PROCEED TO PROGRESS_HUB
                       </button>
-                      <button 
-                         onClick={() => navigate('/onboarding')}
-                         className="w-16 h-16 md:w-20 md:h-20 bg-white/5 border-2 border-white/20 text-white rounded-full flex items-center justify-center hover:bg-[#FFFF00] hover:text-black hover:border-[#FFFF00] transition-all hover:scale-110 group relative"
-                         title="Start New Mission"
-                      >
-                         <Plus size={32} className="group-hover:rotate-90 transition-transform duration-500" />
-                         <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Start New Mission</span>
-                      </button>
-                    </div>
-                  </div>
+                   </div>
                 </div>
               )}
 
@@ -762,8 +754,125 @@ function DashboardContent({ user, profile }: DashboardProps) {
                   projects={projects}
                   initialRecipientId={assignedDeveloper?.uid || adminProfile?.uid}
                 />
-              ) : activeTab === 'vault' ? (
-                <MediaVault currentUser={user} profile={profile} />
+              ) : activeTab === 'analytics' ? (
+                <div className="space-y-12">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Real-time Pulse</span>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Intelligence</h2>
+                  </div>
+
+                  {/* Overview Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { label: 'Total Projects', value: stats.total, icon: FolderKanban, color: '#c7c42a' },
+                { label: 'Active Missions', value: stats.active, icon: Activity, color: '#c7c42a' },
+                { label: 'In Review', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: ShieldCheck, color: '#c7c42a' },
+                { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: '#c7c42a' },
+              ].map((stat, i) => (
+                      <div key={i} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-[#c7c42a]/20 transition-all">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
+                            <stat.icon size={24} style={{ color: stat.color }} />
+                          </div>
+                        </div>
+                        <div className="text-3xl font-black text-white">{stat.value}</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">{stat.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Charts Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Performance History */}
+                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 min-h-[400px]">
+                      <div className="flex justify-between items-center mb-10">
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter">System Performance</h3>
+                        <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] text-[8px] font-black uppercase rounded-full border border-[#c7c42a]/20">24h History</span>
+                      </div>
+                      <div className="h-[250px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={[
+                            { time: '00:00', load: 30 },
+                            { time: '04:00', load: 45 },
+                            { time: '08:00', load: 32 },
+                            { time: '12:00', load: 60 },
+                            { time: '16:00', load: 48 },
+                            { time: '20:00', load: 55 },
+                            { time: '23:59', load: 40 },
+                          ]}>
+                            <defs>
+                              <linearGradient id="colorLoad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#c7c42a" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#c7c42a" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <XAxis 
+                              dataKey="time" 
+                              stroke="#ffffff20" 
+                              fontSize={10} 
+                              tickLine={false} 
+                              axisLine={false}
+                            />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                              itemStyle={{ color: '#c7c42a' }}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="load" 
+                              stroke="#c7c42a" 
+                              strokeWidth={3}
+                              fillOpacity={1} 
+                              fill="url(#colorLoad)" 
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Resource Allocation */}
+                    <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 min-h-[400px]">
+                      <div className="flex justify-between items-center mb-10">
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter">Resource Pulse</h3>
+                        <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] text-[8px] font-black uppercase rounded-full border border-[#c7c42a]/20">Live Sync</span>
+                      </div>
+                      <div className="h-[250px] w-full flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: 'Development', value: 45 },
+                                { name: 'Compute', value: 25 },
+                                { name: 'Storage', value: 20 },
+                                { name: 'Bandwidth', value: 10 },
+                              ]}
+                              innerRadius={60}
+                              outerRadius={80}
+                              paddingAngle={5}
+                              dataKey="value"
+                            >
+                              {[
+                                '#c7c42a',
+                                '#c7c42a80',
+                                '#c7c42a40',
+                                '#c7c42a10',
+                              ].map((color, index) => (
+                                <Cell key={`cell-${index}`} fill={color} stroke="none" />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute flex flex-col items-center">
+                          <span className="text-2xl font-black text-white">92%</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest text-white/20">Efficiency</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : activeTab === 'progress' ? (
                 <div className="space-y-12">
                    <div className="flex flex-col gap-2">
@@ -912,7 +1021,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                                    )}
                                 </div>
                              </div>
-                             <div className="absolute bottom-2 right-2 w-6 h-6 bg-[#c7c42a] rounded-full border-4 border-[#0a0a0a]"></div>
+                             <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-[#0a0a0a]"></div>
                           </div>
                           <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">{profile?.displayName}</h3>
                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{profile?.role} Account</p>
@@ -963,7 +1072,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                        <div className="bg-[#c7c42a]/5 rounded-[3rem] p-12 border border-[#c7c42a]/10">
                           <h4 className="text-xl font-black uppercase italic tracking-tighter mb-4 text-[#c7c42a]">Security Status</h4>
                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">Two-factor authentication is recommended for all client accounts.</p>
-                          <div className="flex items-center gap-4 text-[#c7c42a]">
+                          <div className="flex items-center gap-4 text-green-400">
                              <ShieldCheck size={20} />
                              <span className="text-[10px] font-black uppercase tracking-widest">End-to-End Encrypted Sessions</span>
                           </div>
@@ -1034,7 +1143,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                              <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 flex flex-col justify-center text-center">
                                {selectedProject.paymentStatus === 'paid' ? (
                                  <>
-                                   <div className="w-20 h-20 bg-[#c7c42a]/10 rounded-full flex items-center justify-center text-[#c7c42a] mx-auto">
+                                   <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto">
                                      <ShieldCheck size={40} />
                                    </div>
                                    <div className="space-y-2">
@@ -1081,7 +1190,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                                          onClick={() => handlePayment(selectedProject)}
                                          className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20"
                                        >
-                                         Pay Now
+                                         Generic Payment Link
                                        </button>
                                      )}
                                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-4">
@@ -1119,7 +1228,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                               <td className="px-8 py-6 text-xs font-black uppercase italic tracking-tighter">{tx.desc}</td>
                               <td className="px-8 py-6 text-xs font-black text-[#c7c42a] italic">{tx.amount}</td>
                               <td className="px-8 py-6">
-                                <span className="px-3 py-1 bg-[#c7c42a]/10 text-[#c7c42a] rounded-full text-[8px] font-black uppercase tracking-widest border border-[#c7c42a]/20">
+                                <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-500/20">
                                   {tx.status}
                                 </span>
                               </td>
@@ -1137,87 +1246,93 @@ function DashboardContent({ user, profile }: DashboardProps) {
                 </div>
               ) : (
                 <div className="space-y-10">
-                  {/* Stats Grid removed by user request */}
-                  
+                  {/* Stats Grid - 4 Boxes */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[
+                      { id: 'projects', label: 'Active Project', value: projects.filter(p => p.status === 'Development Started').length, icon: FolderKanban, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Development Started').map(p => p.businessName) },
+                      { id: 'pending', label: 'Pending Requests', value: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').length, icon: Clock, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Waiting for Review' || p.status === 'Under Review').map(p => p.businessName) },
+                      { id: 'completed', label: 'Completed Projects', value: projects.filter(p => p.status === 'Completed').length, icon: CheckCircle2, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: projects.filter(p => p.status === 'Completed').map(p => p.businessName) },
+                      { id: 'price', label: 'Plan Price', value: '1499/month', icon: PartyPopper, color: 'text-[#c7c42a]', bg: 'bg-[#c7c42a]/10', items: ['Basic Plan'] },
+                    ].map((stat, i) => (
+                      <div key={stat.id} className="relative">
+                        <motion.button 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          onClick={() => setExpandedBox(expandedBox === stat.id ? null : stat.id)}
+                          className={`w-full bg-[#0a0a0a] p-8 rounded-[2.5rem] border border-white/5 shadow-xl group hover:border-[#c7c42a]/30 transition-all text-left ${expandedBox === stat.id ? 'ring-2 ring-[#c7c42a]/50' : ''}`}
+                        >
+                          <div className="flex justify-between items-start mb-6">
+                            <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
+                              <stat.icon size={24} />
+                            </div>
+                            <div className="text-4xl font-black italic tracking-tighter">{stat.value}</div>
+                          </div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{stat.label}</div>
+                        </motion.button>
+
+                        <AnimatePresence>
+                          {expandedBox === stat.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              className="absolute top-full left-0 right-0 mt-4 z-30 bg-[#rgba(255,255,255,0.05)] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden"
+                            >
+                              <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                {stat.items.length > 0 ? stat.items.map((item, idx) => (
+                                  <div key={idx} className="p-3 bg-white/5 rounded-xl border border-white/5 text-[10px] font-bold uppercase tracking-widest text-white/70 truncate">
+                                    {item}
+                                  </div>
+                                )) : (
+                                  <div className="text-center py-4 text-[10px] font-bold uppercase tracking-widest text-white/20">
+                                    No items found
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ))}
+                  </div>
+
                   {/* Today's Meetings Highlight */}
                   {meetings.filter(m => {
                     const today = new Date().toDateString();
                     const mDate = new Date(m.date).toDateString();
                     return today === mDate && m.status === 'accepted';
                   }).length > 0 && (
-                    <div className="bg-[#FFFF00] p-10 rounded-[3rem] text-black relative overflow-hidden group border-2 border-black">
+                    <div className="bg-[#c7c42a] p-10 rounded-[3rem] text-black relative overflow-hidden group">
                       <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:scale-110 transition-transform">
                         <Video size={120} />
                       </div>
                       <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-6">
-                          <div className="px-3 py-1 bg-black text-[#FFFF00] text-[8px] font-black uppercase rounded-full">Happening Today</div>
+                          <div className="px-3 py-1 bg-black text-[#c7c42a] text-[8px] font-black uppercase rounded-full">Happening Today</div>
                         </div>
-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-8 leading-none text-black">Upcoming<br />Briefings.</h3>
+                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-8 leading-none">Upcoming<br />Briefings.</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           {meetings.filter(m => {
                             const today = new Date().toDateString();
                             const mDate = new Date(m.date).toDateString();
                             return today === mDate && m.status === 'accepted';
-                          }).map((meeting, idx) => {
-                            const meetTime = new Date(`${meeting.date}T${meeting.time}`);
-                            const diffMs = meetTime.getTime() - nowTime.getTime();
-                            const diffMin = diffMs / 60000;
-                            const isGlowActive = diffMin <= 10 && diffMin >= -60;
-                            
-                            let countdownText = '';
-                            if (diffMs > 0) {
-                              const totalSecs = Math.floor(diffMs / 1000);
-                              const hours = Math.floor(totalSecs / 3600);
-                              const mins = Math.floor((totalSecs % 3600) / 60);
-                              const secs = totalSecs % 60;
-                              if (hours > 0) {
-                                countdownText = `${hours}H ${mins}M LEFT`;
-                              } else {
-                                countdownText = `${mins}M ${secs}S LEFT`;
-                              }
-                            } else if (diffMin >= -60) {
-                              countdownText = 'SESSION LIVE NOW';
-                            } else {
-                              countdownText = 'CONCLUDED';
-                            }
-
-                            return (
-                              <div key={idx} className="bg-black text-white border border-white/10 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                                <div className="mb-6">
-                                  <div className="flex justify-between items-start mb-4">
-                                    <div className="text-xl font-black uppercase italic tracking-tight text-white leading-none">{meeting.title}</div>
-                                    <div className="px-3 py-1 bg-white/10 border border-white/10 rounded-full text-[8px] font-black uppercase font-mono text-[#FFFF00]">
-                                      {meeting.time}
-                                    </div>
-                                  </div>
-                                  {meeting.notes && (
-                                    <p className="text-white/60 text-xs mt-2 italic font-medium">"{meeting.notes}"</p>
-                                  )}
-                                </div>
-                                <div className="space-y-3">
-                                  <button 
-                                    onClick={() => meeting.meetingLink && window.open(meeting.meetingLink, '_blank')}
-                                    className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                                      isGlowActive
-                                        ? 'bg-[#FFFF00] text-black animate-pulse shadow-[0_0_20px_rgba(255,255,0,0.8)] border-2 border-black hover:scale-105'
-                                        : 'bg-white/10 text-white hover:bg-white/20 hover:scale-[1.03]'
-                                    }`}
-                                  >
-                                    {isGlowActive ? '⚡ JOIN ACTIVE SESSION ⚡' : 'Join Session'} <ArrowRight size={14} />
-                                  </button>
-                                  
-                                  <div className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest text-center rounded-lg border ${
-                                    isGlowActive
-                                      ? 'bg-[#FFFF00]/10 border-[#FFFF00] text-[#FFFF00] animate-bounce'
-                                      : 'bg-white/5 border-white/10 text-white/40'
-                                  }`}>
-                                    {countdownText}
-                                  </div>
+                          }).map((meeting, idx) => (
+                            <div key={idx} className="bg-black/10 border border-black/10 rounded-2xl p-6 backdrop-blur-md">
+                              <div className="flex justify-between items-start mb-4">
+                                <div className="text-xl font-black uppercase italic tracking-tight">{meeting.title}</div>
+                                <div className="px-3 py-1 border border-black/20 rounded-full text-[8px] font-black uppercase">
+                                  {meeting.time}
                                 </div>
                               </div>
-                            );
-                          })}
+                              <button 
+                                onClick={() => meeting.meetingLink && window.open(meeting.meetingLink, '_blank')}
+                                className="w-full py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2"
+                              >
+                                Join Session <ArrowRight size={14} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -1260,10 +1375,10 @@ function DashboardContent({ user, profile }: DashboardProps) {
                               <div className="flex items-center justify-between mb-2">
                                 <h3 className="font-black text-2xl uppercase italic tracking-tighter">{p.businessName}</h3>
                                 <div className={`w-2 h-2 rounded-full ${
-                                  p.status === 'active' ? 'bg-[#c7c42a]' :
-                                  p.status === 'completed' ? 'bg-[#c7c42a]' :
+                                  p.status === 'active' ? 'bg-blue-500' :
+                                  p.status === 'completed' ? 'bg-green-500' :
                                   p.status === 'rejected' ? 'bg-red-500' :
-                                  'bg-[#c7c42a]'
+                                  'bg-#c7c42a'
                                 }`} />
                               </div>
                               <p className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? 'text-black/70' : 'text-white/50'}`}>{p.businessType}</p>
@@ -1329,7 +1444,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                                             await updateProject(selectedProject.id, { paymentStatus: 'verifying' });
                                             toast.success('Please complete payment. We will verify it.');
                                           } else {
-                                            handlePayment(selectedProject, true);
+                                            toast.error('Payment link is being generated by your developer.');
                                           }
                                         }}
                                         className="flex items-center gap-2 bg-[#c7c42a] border border-[#c7c42a] px-8 py-3 rounded-xl text-black hover:scale-105 transition-all group"
@@ -1375,20 +1490,9 @@ function DashboardContent({ user, profile }: DashboardProps) {
                                 </div>
                               </div>
                               <div className="space-y-6">
-                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Project Intel</h3>
-                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-3">
-                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-white/20">Store Type</span>
-                                    <span className="text-[#c7c42a]">{selectedProject.storeType === 'online_store' ? 'Online / Shipping' : 'Local / Walk-in'}</span>
-                                  </div>
-                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-white/20">Region</span>
-                                    <span className="text-white/70 italic">{selectedProject.country || 'India'} ({selectedProject.locationState || 'N/A'})</span>
-                                  </div>
-                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-white/20">Identity</span>
-                                    <span className="text-white/70">{selectedProject.businessName?.substring(0, 15)}...</span>
-                                  </div>
+                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Project Details</h3>
+                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 text-center">
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Project information is being processed</p>
                                 </div>
                               </div>
                             </div>
@@ -1437,6 +1541,12 @@ function DashboardContent({ user, profile }: DashboardProps) {
                                   <p className="text-red-400 font-black uppercase italic">Reason: {selectedProject.rejectionReason}</p>
                                 )}
                               </div>
+                              <button 
+                                onClick={() => setShowCancelModal(true)}
+                                className="text-white/30 hover:text-red-400 font-black text-xs uppercase tracking-widest transition-all"
+                              >
+                                Cancel Project
+                              </button>
                             </div>
                           </motion.div>
                         )}
@@ -1492,6 +1602,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
             </motion.div>
           </AnimatePresence>
         </div>
+        <BottomNav userId={user!.uid} role="client" onOpenMessages={() => setActiveTab('messages')} />
       </main>
 
 
@@ -1507,6 +1618,36 @@ function DashboardContent({ user, profile }: DashboardProps) {
       </AnimatePresence>
 
       {/* Cancel Modal */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+              onClick={() => setShowCancelModal(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#c7c42a]/10"
+            >
+              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">Cancel Project?</h3>
+              <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>
+              <div className="flex flex-col gap-4">
+                <button onClick={handleCancelProject} className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all">
+                  Yes, Cancel
+                </button>
+                <button onClick={() => setShowCancelModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-white/10 transition-all">
+                  No, Keep It
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

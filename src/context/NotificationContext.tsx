@@ -14,14 +14,14 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.uid) return;
 
-    const role = profile?.role || 'client';
+    const role = (user as any).role || 'client';
     const unsub = getNotifications(user.uid, (newNotifications) => {
       // Find new unread notifications that we haven't toasted yet
       const unread = newNotifications.filter(n => !n.read);

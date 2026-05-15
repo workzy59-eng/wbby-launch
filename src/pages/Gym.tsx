@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, 
   Flame, 
+  Zap, 
   Activity, 
   ArrowRight, 
   Check, 
@@ -155,7 +156,7 @@ export default function Gym() {
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 px-6 py-2 glass-morphism rounded-full border border-white/10"
             >
-              <Activity size={14} className="text-neon-red" />
+              <Zap size={14} className="text-neon-red" />
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">NO LIMITS. ONLY RESULTS.</span>
             </motion.div>
 

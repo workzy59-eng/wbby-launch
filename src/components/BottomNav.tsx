@@ -28,8 +28,8 @@ export default function BottomNav({ userId, role, onOpenMessages }: BottomNavPro
   }, [userId]);
 
   const navItems = [
-    { icon: Home, label: 'Home', path: role === 'admin' ? '/admin' : '/dashboard' },
-    { icon: Grid, label: 'Projects', path: role === 'admin' ? '/admin/projects' : '/dashboard' },
+    { icon: Home, label: 'Home', path: role === 'admin' ? '/admin' : role === 'developer' ? '/developer' : '/dashboard' },
+    { icon: Grid, label: 'Projects', path: role === 'admin' ? '/admin/projects' : role === 'developer' ? '/developer' : '/dashboard' },
     { icon: MessageSquare, label: 'Chat', onClick: onOpenMessages, badge: unreadCount },
     { icon: role === 'developer' ? Calendar : User, label: role === 'developer' ? 'Schedule' : 'Profile', path: '/settings' },
   ];

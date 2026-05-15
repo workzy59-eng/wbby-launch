@@ -5,12 +5,13 @@ import {
   ChevronRight, 
   Star, 
   Shield, 
-  Activity, 
+  Zap, 
   Cpu,
   Gauge,
   Wind,
   Settings,
   Users,
+  Activity,
   Compass,
   Crosshair,
   Wifi,
@@ -174,7 +175,7 @@ export default function Autos() {
                  <div className="space-y-16 border-l border-white/5 pl-12">
                     {[
                       { label: 'VELOCITY', value: CARS[currentCar].stats.topSpeed, icon: Gauge },
-                      { label: 'THRUST', value: CARS[currentCar].stats.torque, icon: Activity },
+                      { label: 'THRUST', value: CARS[currentCar].stats.torque, icon: Zap },
                       { label: 'FORCE', value: CARS[currentCar].stats.horsepower, icon: Shield }
                     ].map((stat, i) => (
                       <motion.div 

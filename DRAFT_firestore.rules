@@ -3,53 +3,14 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =========================
-    // 0. GLOBAL SAFETY NET
-    // =========================
-    // Default-deny all resources.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // =========================
     // HELPER FUNCTIONS
     // =========================
-    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     function isAuth() {
-      return request.auth != null && request.auth.uid != null;
-    }
-
-    function isAdmin() {
-      return isAuth() && (
-        request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'workzy59@gmail.com' ||
-          request.auth.token.email.lower() == 'sain17296174@gmail.com'
-        )
-      );
-    }
-
-    function isRole(userId, role) {
-      return get(/databases/$(database)/documents/users/$(userId)).data.role == role;
-    }
-
-    function isDeveloper() {
-      return isAuth() && (isAdmin() || isRole(request.auth.uid, 'developer'));
-    }
-
-    function isSales() {
-      return isAuth() && (isAdmin() || isRole(request.auth.uid, 'sales'));
-    }
-
-    function isProjectOwner(projectId) {
-      return isAuth() && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid;
-    }
-
-    function isAssignedDeveloper(projectId) {
-      let data = get(/databases/$(database)/documents/projects/$(projectId)).data;
-      return isAuth() && (data.developerId == request.auth.uid || data.assignedTo == request.auth.uid);
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return isSignedIn();
     }
 
     function incoming() {
@@ -60,157 +21,157 @@ service cloud.firestore {
       return resource.data;
     }
 
-    // =========================
-    // ENTITY VALIDATION HELPERS
-    // =========================
-
-    function isValidUser(data) {
-      return data.keys().hasAll(['uid', 'email', 'role']) &&
-             data.uid == request.auth.uid &&
-             data.role in ['client', 'developer', 'sales', 'admin'] &&
-             data.email is string && data.email.size() <= 256;
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    function isValidProject(data) {
-      return data.keys().hasAll(['userId', 'businessName', 'status']) &&
-             data.userId is string && data.userId.size() <= 128 &&
-             data.businessName is string && data.businessName.size() <= 100 &&
-             data.status is string && data.status.size() <= 50;
+    // Safely checks for admin role with email fallback
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'workzy59@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
     }
 
-    function isValidMessage(data) {
-      return data.keys().hasAll(['projectId', 'senderId', 'text', 'createdAt']) &&
-             data.senderId == request.auth.uid &&
-             data.text is string && data.text.size() <= 5000;
-    }
-
-    function isValidLead(data) {
-      return data.keys().hasAll(['businessName', 'phone', 'status', 'createdAt']) &&
-             data.businessName is string && data.businessName.size() <= 100 &&
-             data.phone is string && data.phone.size() <= 20;
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
     // =========================
     // USERS
     // =========================
     match /users/{userId} {
-      allow read: if isAuth(); // Allow reading other profiles for chat/mentions
-      allow create: if isAuth() && userId == request.auth.uid && isValidUser(incoming());
-      allow update: if isAuth() && (userId == request.auth.uid || isAdmin()) && (
-        // Action: Profile Update (non-role)
-        (userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'phone', 'address', 'state', 'city', 'pincode', 'theme', 'notificationPreferences', 'status', 'lastSeen'])) ||
-        // Action: Admin Role Management
-        isAdmin()
-      );
+      allow create: if isAuth() && request.auth.uid == userId;
+      allow get: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
     }
 
     // =========================
     // PROJECTS
     // =========================
     match /projects/{projectId} {
+      
+      // FIX: Ensures the document being created belongs to the person creating it
+      allow create: if isAuth() && 
+        incoming().userId == request.auth.uid;
+
+      // Users can only read projects they are a part of
       allow read: if isAuth() && (
-        resource.data.userId == request.auth.uid || 
-        resource.data.developerId == request.auth.uid || 
-        resource.data.assignedTo == request.auth.uid ||
+        existing().userId == request.auth.uid || 
+        (existing().developerId != null && existing().developerId == request.auth.uid) || 
         isAdmin()
       );
-      
-      allow create: if isAuth() && incoming().userId == request.auth.uid && isValidProject(incoming());
-      
+
+      // Only the owner, assigned developer, or admin can update
       allow update: if isAuth() && (
-        isAdmin() || 
-        (existing().userId == request.auth.uid && incoming().userId == request.auth.uid) ||
-        (existing().developerId == request.auth.uid || existing().assignedTo == request.auth.uid)
-      ) && (
-        // Admin: Full control
-        isAdmin() ||
-        // Action: Owner Update (Restricted keys)
-        (existing().userId == request.auth.uid && !incoming().diff(existing()).affectedKeys().hasAny(['status', 'developerId', 'assignedTo', 'progress', 'userId'])) ||
-        // Action: Developer Progress/Status Update
-        ((existing().developerId == request.auth.uid || existing().assignedTo == request.auth.uid) && 
-         incoming().diff(existing()).affectedKeys().hasOnly(['progress', 'status', 'updatedAt', 'internalNotes', 'developerNote']))
+        existing().userId == request.auth.uid ||
+        (existing().developerId != null && existing().developerId == request.auth.uid) ||
+        isAdmin()
       );
 
+      allow delete: if isAdmin();
+
+      // Project Messages (Subcollection)
       match /messages/{messageId} {
         allow read: if isAuth() && (
           get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
           get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid ||
           isAdmin()
         );
-        allow create: if isAuth() && (
+        allow create: if isAuth() && 
+          incoming().senderId == request.auth.uid && (
           get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
           get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid ||
           isAdmin()
-        ) && isValidMessage(incoming());
+        );
       }
     }
 
     // =========================
-    // LEADS & APPLICATIONS
+    // CONVERSATIONS & MESSAGES
     // =========================
-    match /leads/{leadId} {
-      allow read: if isSales() || isAdmin();
-      allow write: if isSales() || isAdmin();
+    match /conversations/{conversationId} {
+      allow read, update: if isAuth() && request.auth.uid in resource.data.participants;
+      allow create: if isAuth() && request.auth.uid in incoming().participants;
+
+      match /messages/{messageId} {
+        allow read: if isAuth() && 
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+
+        allow create: if isAuth() && 
+          incoming().senderId == request.auth.uid &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+
+        allow update, delete: if false; 
+      }
     }
 
-    match /developer_requests/{requestId} {
-      allow read: if isAdmin();
-      allow create: if true; // Public application
-      allow update, delete: if isAdmin();
+    // =========================
+    // ADMIN & SYSTEM COLLECTIONS
+    // =========================
+    match /payments/{id} { allow read, write: if isAdmin(); }
+    match /commissions/{id} { allow read, write: if isAdmin(); }
+    match /leads/{id} { allow read, write: if isAdmin(); }
+
+    match /developer_requests/{id} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
     }
 
-    match /sales_applications/{applicationId} {
-      allow read: if isAdmin();
-      allow create: if true; 
-      allow update, delete: if isAdmin();
+    match /sales_applications/{id} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
     }
 
-    // =========================
-    // SYSTEM COLLECTIONS
-    // =========================
     match /system_settings/{id} {
-      allow read: if isAuth();
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     match /blog_posts/{id} {
-      allow read: if true; // Blogs remain public for SEO
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     match /developer_invites/{id} {
-      allow read: if isAuth(); 
+      allow read: if isAuth();
       allow write: if isAdmin();
     }
 
-    match /attendance/{id} {
-      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if isAuth() && (request.resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /leave_requests/{id} {
-      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+    match /visit_sessions/{id} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow update: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
+      allow read: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
     }
 
-    match /meetings/{id} {
-      allow read: if isAuth() && (resource.data.clientId == request.auth.uid || resource.data.adminId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin());
-      allow write: if isAuth(); 
+    // --- Meetings ---
+    match /meetings/{meetingId} {
+      allow get: if isAuth() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow list: if isAuth() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow write: if isAdmin() || (isAuth() && incoming().clientId == request.auth.uid);
     }
-
-    match /payments/{id} {
-      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+    
+    // --- Leave Requests & Attendance ---
+    match /leave_requests/{requestId} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow read: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
       allow update: if isAdmin();
     }
     
-    match /visit_sessions/{id} {
-      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+    match /attendance/{attendanceId} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow update: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin();
+    }
+
+    // =========================
+    // GLOBAL DENY (Safety Net)
+    // =========================
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

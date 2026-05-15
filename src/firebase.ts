@@ -1,15 +1,13 @@
-import { getApps, initializeApp } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { initializeFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, serverTimestamp, Timestamp, limit, getDocFromServer, or, memoryLocalCache, arrayUnion, arrayRemove, runTransaction, getCountFromServer } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Log initialization for debugging
-console.log("🔥 Firebase Environment Check:", firebaseConfig.projectId);
+console.log("🔥 Initialized Firebase for Project:", firebaseConfig.projectId);
 
-// Singleton pattern for Firebase initialization
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-
+const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 // Use memory cache to avoid "ID: ca9" assertion errors in restricted iframe environments
@@ -24,19 +22,12 @@ export const googleProvider = new GoogleAuthProvider();
 // Connection test as per system instructions
 async function testFirestoreConnection() {
   try {
-    const q = query(collection(db, 'users'), where('email', '==', 'sain17296174@gmail.com'));
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      const userDoc = snapshot.docs[0];
-      await updateDoc(doc(db, 'users', userDoc.id), { role: 'developer' });
-      console.log('✅ User sain17296174@gmail.com promoted to developer');
-    }
+    // Try to get a non-existent doc from a 'test' collection to verify connectivity
+    await getDocFromServer(doc(db, '_system_', 'connectivity_test'));
     console.log("✅ Firestore connection verified");
   } catch (error: any) {
     if (error?.message?.includes('the client offline')) {
-      console.error("❌ Firestore Error: The client is offline.");
-    } else if (error?.code === 'permission-denied') {
-      console.log("✅ Firestore connection verified (Authorized response received)");
+      console.error("❌ Firestore Error: The client is offline. Check your Firebase configuration and authorized domains.");
     } else {
       console.warn("ℹ️ Firestore connectivity test note:", error?.message || error);
     }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, CheckCircle2, AlertCircle, Send, Globe, Phone, Clock, MessageSquare, Target, Activity, ShieldCheck, ArrowRight } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle2, AlertCircle, Send, Globe, Phone, Clock, MessageSquare, Target, Zap, ShieldCheck, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import SEO from '../components/SEO';
 
@@ -186,7 +186,7 @@ export default function JoinSales() {
               <section className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 space-y-8">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
                   <div className="w-8 h-8 bg-[#c7c42a] rounded-lg flex items-center justify-center text-black">
-                    <Activity size={18} />
+                    <Zap size={18} />
                   </div>
                   Test Questions *
                 </h3>

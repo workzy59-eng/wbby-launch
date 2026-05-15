@@ -1,16 +1,15 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { MapPin, ArrowRight, CheckCircle2, Activity, Smartphone, Search } from 'lucide-react';
+import { MapPin, ArrowRight, CheckCircle2, Zap, Smartphone, Search } from 'lucide-react';
 import SEO from '../components/SEO';
-import { ADMIN_EMAIL } from '../constants';
 
 export default function LocationPage() {
   const { city } = useParams<{ city: string }>();
   const cityName = city ? city.charAt(0).toUpperCase() + city.slice(1) : '';
 
   const features = [
-    { icon: Activity, title: 'Fast Delivery', desc: 'Get your site in 52 hours.' },
+    { icon: Zap, title: 'Fast Delivery', desc: 'Get your site in 52 hours.' },
     { icon: Smartphone, title: 'Responsive', desc: 'Perfect on every device.' },
     { icon: Search, title: 'SEO Ready', desc: 'Rank higher on Google.' }
   ];
@@ -116,7 +115,7 @@ export default function LocationPage() {
             Ready to grow your <br /> business in {cityName}?
           </h2>
           <a 
-            href={`https://mail.google.com/mail/?view=cm&fs=1&to=${ADMIN_EMAIL}`}
+            href={`https://mail.google.com/mail/?view=cm&fs=1&to=workzy59@gmail.com`}
             target="_blank"
             rel="noreferrer"
             className="inline-block bg-black text-white px-12 py-6 rounded-2xl font-black uppercase italic tracking-widest hover:scale-105 transition-all shadow-2xl"
