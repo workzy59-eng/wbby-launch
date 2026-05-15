@@ -122,9 +122,9 @@ export default function SalesDashboard({ user, profile }: SalesDashboardProps) {
   });
 
   const stats = [
-    { label: 'Total Leads', value: leads.length, icon: Users, color: 'text-blue-500' },
+    { label: 'Total Leads', value: leads.length, icon: Users, color: 'text-white' },
     { label: 'Closed Deals', value: leads.filter(l => l.status === 'Closed').length, icon: CheckCircle2, color: 'text-[#c7c42a]' },
-    { label: 'Conversion Rate', value: leads.length ? `${Math.round((leads.filter(l => l.status === 'Closed').length / leads.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-purple-500' },
+    { label: 'Conversion Rate', value: leads.length ? `${Math.round((leads.filter(l => l.status === 'Closed').length / leads.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-[#c7c42a]' },
     { label: 'Total Commission', value: `₹${commissions.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}`, icon: DollarSign, color: 'text-green-500' },
   ];
 

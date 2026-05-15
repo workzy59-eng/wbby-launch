@@ -431,13 +431,13 @@ Generated on: ${new Date().toLocaleString()}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+              <div className="bg-[#0a0a0a]/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
                 <h3 className="text-2xl font-black text-white uppercase italic mb-8">Pending Developer Requests</h3>
                 <div className="space-y-4">
                   {profiles.filter(p => p.role === 'developer' && p.status === 'pending').map((dev, idx) => (
                     <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#00F2FF] rounded-xl flex items-center justify-center text-black font-black italic shadow-[0_0_15px_rgba(0,242,255,0.1)]">
+                        <div className="w-12 h-12 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black font-black italic shadow-[0_0_15px_rgba(199,196,42,0.1)]">
                           {dev.displayName?.[0]}
                         </div>
                         <div>
@@ -467,7 +467,7 @@ Generated on: ${new Date().toLocaleString()}
                 </div>
               </div>
 
-              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+              <div className="bg-[#0a0a0a]/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
                 <h3 className="text-2xl font-black text-white uppercase italic mb-8">Pending Leave Requests</h3>
                 <div className="space-y-4">
                   {leaveRequests.filter(r => r.status === 'pending').map((req, idx) => (
@@ -713,13 +713,13 @@ Generated on: ${new Date().toLocaleString()}
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+              <div className="bg-[#0a0a0a]/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
                 <h3 className="text-2xl font-black text-white uppercase italic mb-8">Pending Developer Requests</h3>
                 <div className="space-y-4">
                   {profiles.filter(p => p.role === 'developer' && p.status === 'pending').map((dev, idx) => (
                     <div key={idx} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#00F2FF] rounded-xl flex items-center justify-center text-black font-black italic shadow-[0_0_15px_rgba(0,242,255,0.1)]">
+                        <div className="w-12 h-12 bg-[#c7c42a] rounded-xl flex items-center justify-center text-black font-black italic shadow-[0_0_15px_rgba(199,196,42,0.1)]">
                           {dev.displayName?.[0]}
                         </div>
                         <div>
@@ -749,7 +749,7 @@ Generated on: ${new Date().toLocaleString()}
                 </div>
               </div>
 
-              <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+              <div className="bg-[#0a0a0a]/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
                 <h3 className="text-2xl font-black text-white uppercase italic mb-8">Active Invites</h3>
                 <div className="space-y-4">
                   {invites.filter(i => !i.used).map((invite, idx) => (
@@ -787,7 +787,7 @@ Generated on: ${new Date().toLocaleString()}
               {filteredDevelopers.map((dev, idx) => {
                 const stats = getDevStats(dev.uid);
                 return (
-                  <div key={idx} className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-8 space-y-6 group hover:border-[#c7c42a]/40 transition-all backdrop-blur-xl relative overflow-hidden">
+                  <div key={idx} className="bg-[#0a0a0a]/40 border border-white/5 rounded-[2rem] p-8 space-y-6 group hover:border-[#c7c42a]/40 transition-all backdrop-blur-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                       <Shield size={80} className="text-[#c7c42a]" />
                     </div>
@@ -1031,9 +1031,9 @@ Generated on: ${new Date().toLocaleString()}
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
+                    className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 shadow-2xl relative overflow-hidden"
                   >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#c7c42a] via-white to-[#c7c42a]" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#c7c42a] via-[#c7c42a]/50 to-[#c7c42a]" />
                     
                     <div className="flex justify-between items-center">
                       <div className="space-y-1">
@@ -1076,13 +1076,13 @@ Requirements:
                         {"\n\n"}
                         The website should be designed based on the following details:
                         {"\n\n"}
-                        - Website Type / Description: <span className="text-slate-400">{viewingDescription.description || 'Not provided'}</span>
+                        - Website Type / Description: <span className="text-white/40">{viewingDescription.description || 'Not provided'}</span>
                         {"\n"}
-                        - Primary Color: <span className="text-[#00F2FF]">{viewingDescription.primaryColor}</span>
+                        - Primary Color: <span className="text-[#c7c42a]">{viewingDescription.primaryColor}</span>
                         {"\n"}
-                        - Secondary Color: <span className="text-[#00F2FF]">{viewingDescription.secondaryColor}</span>
+                        - Secondary Color: <span className="text-[#c7c42a]">{viewingDescription.secondaryColor}</span>
                         {"\n"}
-                        - Business Phone: <span className="text-slate-400">{viewingDescription.businessPhone || viewingDescription.businessNumber || 'Not provided'}</span>
+                        - Business Phone: <span className="text-white/40">{viewingDescription.businessPhone || viewingDescription.businessNumber || 'Not provided'}</span>
                         {"\n"}
                         - Business Email: <span className="text-slate-400">{viewingDescription.businessEmail || viewingDescription.userEmail || 'Not provided'}</span>
                         {"\n\n"}
@@ -1137,7 +1137,7 @@ Requirements:
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-[#0f172a] border border-white/10 rounded-[2.5rem] w-full max-w-lg p-10 space-y-8 shadow-2xl"
+                    className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] w-full max-w-lg p-10 space-y-8 shadow-2xl"
                   >
                     <div className="flex justify-between items-center">
                       <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Update Project</h3>
@@ -1148,11 +1148,11 @@ Requirements:
 
                     <div className="space-y-6">
                       <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Status</label>
+                        <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Status</label>
                         <select 
                           value={editingProject.status}
                           onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value as any })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#00F2FF]"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#c7c42a]"
                         >
                           <option value="pending">Pending</option>
                           <option value="Under Review">Under Review</option>
@@ -1165,7 +1165,7 @@ Requirements:
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Progress ({editingProject.progress}%)</label>
+                        <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Progress ({editingProject.progress}%)</label>
                         <input 
                           type="range"
                           min="0"
@@ -1177,11 +1177,11 @@ Requirements:
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Assign Developer</label>
+                        <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Assign Developer</label>
                         <select 
                           value={editingProject.developerId || ''}
                           onChange={(e) => setEditingProject({ ...editingProject, developerId: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#00F2FF]"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#c7c42a]"
                         >
                           <option value="">Unassigned</option>
                           {profiles.filter(p => p.role === 'developer' && p.status === 'approved').map(dev => (
@@ -1191,19 +1191,19 @@ Requirements:
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Domain Price (₹)</label>
+                        <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Domain Price (₹)</label>
                         <input 
                           type="number"
                           placeholder="0"
                           value={editingProject.domainPrice || ''}
                           onChange={(e) => setEditingProject({ ...editingProject, domainPrice: parseInt(e.target.value) || 0 })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#00F2FF]"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-[#c7c42a]"
                         />
                       </div>
 
                       {editingProject.status === 'rejected' && (
                         <div>
-                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Rejection Reason</label>
+                          <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Rejection Reason</label>
                           <textarea 
                             value={editingProject.rejectionReason || ''}
                             onChange={(e) => setEditingProject({ ...editingProject, rejectionReason: e.target.value })}
@@ -1252,15 +1252,15 @@ Requirements:
                 Export CSV
               </button>
             </div>
-            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
+            <div className="bg-[#0a0a0a]/40 border border-white/5 rounded-[2.5rem] p-10 backdrop-blur-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-white/5">
-                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Developer</th>
-                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date</th>
-                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                      <th className="pb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Check In</th>
+                      <th className="pb-6 text-[10px] font-black text-white/40 uppercase tracking-widest">Developer</th>
+                      <th className="pb-6 text-[10px] font-black text-white/40 uppercase tracking-widest">Date</th>
+                      <th className="pb-6 text-[10px] font-black text-white/40 uppercase tracking-widest">Status</th>
+                      <th className="pb-6 text-[10px] font-black text-white/40 uppercase tracking-widest">Check In</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">

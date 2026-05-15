@@ -1260,7 +1260,7 @@ function DashboardContent({ user, profile }: DashboardProps) {
                               <div className="flex items-center justify-between mb-2">
                                 <h3 className="font-black text-2xl uppercase italic tracking-tighter">{p.businessName}</h3>
                                 <div className={`w-2 h-2 rounded-full ${
-                                  p.status === 'active' ? 'bg-blue-500' :
+                                  p.status === 'active' ? 'bg-[#c7c42a]' :
                                   p.status === 'completed' ? 'bg-green-500' :
                                   p.status === 'rejected' ? 'bg-red-500' :
                                   'bg-#c7c42a'

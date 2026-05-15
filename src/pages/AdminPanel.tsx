@@ -807,7 +807,7 @@ Generated on: ${new Date().toLocaleString()}
                     dataKey="value"
                   >
                     {[0, 1].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#c7c42a' : '#00F2FF'} />
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#c7c42a' : '#ffffff'} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -1365,7 +1365,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                     <td className="p-8">
                       <div className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
                         p.status === 'Completed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                        p.status === 'Development Started' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                        p.status === 'Development Started' ? 'bg-white/10 text-white/40 border-white/20' :
                         p.status === 'Rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
                         'bg-#c7c42a/20 text-#c7c42a border-#c7c42a/30'
                       }`}>
@@ -2026,7 +2026,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                                 notif.type === 'leave_requested' ? 'bg-orange-500/20 text-orange-500' : 
                                 notif.type === 'new_project' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' :
-                                'bg-blue-500/20 text-blue-500'
+                                'bg-[#c7c42a]/20 text-[#c7c42a]'
                               }`}>
                                 <Bell size={18} />
                               </div>
@@ -2154,7 +2154,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                           <div className="text-xl font-black text-white italic">{completed}</div>
                           <div className="text-[6px] font-black text-white/30 uppercase tracking-[0.2em]">Done</div>
                         </div>
-                        <div className="text-center p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-[#00F2FF]/30 transition-all">
+                        <div className="text-center p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-[#c7c42a]/30 transition-all">
                           <div className="text-xl font-black text-white italic">{active}</div>
                           <div className="text-[6px] font-black text-white/30 uppercase tracking-[0.2em]">Active</div>
                         </div>
@@ -2709,7 +2709,7 @@ Description: ${viewingProject.description || 'No description provided.'}
                         )}
                         {viewingProject.documentsUrl && (
                           <a href={viewingProject.documentsUrl} target="_blank" rel="noreferrer" className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-2 hover:bg-white/5 transition-all">
-                            <FileText size={24} className="text-[#00F2FF]" />
+                            <FileText size={24} className="text-[#c7c42a]" />
                             <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Documents</span>
                           </a>
                         )}
