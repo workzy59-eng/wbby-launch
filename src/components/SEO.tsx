@@ -11,15 +11,15 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({ 
-  title = "Premium Website Solutions | WebbyLaunch", 
+  title = "Premium Website solutions | WebbyLaunch", 
   description = "WebbyLaunch builds high-performance websites in 52 hours. Specializing in Gyms, Resorts, and Clothing brands with elite UI/UX.", 
-  keywords = "gym website design India, NGO digital strategy, premium web design services, clothing brand SEO India, 52 hour website delivery, hyper-speed website builder",
-  image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200",
-  url = "https://webbylaunch.vercel.app/",
+  keywords = "website development company in India, affordable web design services India, 52 hour website delivery, premium website solutions, startup website builder India",
+  image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200&h=630",
+  url = "https://ais-pre-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app/",
   canonical
 }) => {
   const seoUrl = url;
-  const seoCanonical = canonical || "https://webbylaunch.vercel.app/";
+  const seoCanonical = canonical || seoUrl;
 
   return (
     <Helmet>

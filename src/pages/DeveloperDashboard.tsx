@@ -663,6 +663,27 @@ Description: ${project.description || 'No description provided.'}
     );
   }
 
+  const NavItem = ({ tab, icon: Icon, label }: { tab: Tab, icon: any, label: string }) => (
+    <button
+      onClick={() => {
+        setActiveTab(tab);
+        setIsSidebarOpen(false);
+      }}
+      className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold uppercase italic text-xs tracking-widest transition-all ${
+        activeTab === tab 
+          ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' 
+          : 'text-white/40 hover:bg-white/5 hover:text-white'
+      }`}
+    >
+      <Icon size={18} />
+      <span>{label.includes('MESSAGES') && label.includes('(') ? (
+        <>
+          MESSAGES <span className="text-red-500">{label.split('MESSAGES ')[1]}</span>
+        </>
+      ) : label}</span>
+    </button>
+  );
+
   return (
     <>
       <AnimatePresence>
