@@ -49,3 +49,28 @@
   }
 }
 
+/* Industrial-Chic Error States & Inputs */
+@keyframes neonShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.input-error-neon {
+  border: 2px solid #ff0000 !important;
+  box-shadow: 0 0 15px #ff0000, inset 0 0 5px #ff0000;
+  animation: neonShake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+  animation-iteration-count: 2;
+}
+
+.industrial-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 2px solid #FFFF00 !important;
+  color: #FFFF00 !important;
+  font-family: 'Inter', sans-serif !important;
+  text-transform: uppercase !important;
+  transition: all 0.3s ease !important;
+}
+
+

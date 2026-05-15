@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FirebaseUser, auth } from '../firebase';
+import { jsPDF } from 'jspdf';
+import { toast } from 'react-hot-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
-import { UserProfile } from '../types';
-import { Check, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
+import { Check, Image as ImageIcon, FileText, CreditCard, Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown, Globe } from 'lucide-react';
+
+import { FirebaseUser, auth } from '../firebase';
+import { UserProfile, SystemSettings } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { APP_NAME, HYPHENATED_NAME } from '../constants';
+import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
+import StateCityDropdown from '../components/StateCityDropdown';
 
 const Loader = ({ color = "black" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -24,14 +31,6 @@ const Loader = ({ color = "black" }: { color?: string }) => (
     <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-${color === 'black' ? 'black' : '[#c7c42a]'} animate-pulse italic`}>Processing...</span>
   </div>
 );
-import { jsPDF } from 'jspdf';
-import { toast } from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
-import { APP_NAME, HYPHENATED_NAME } from '../constants';
-import { createProject, getSystemSettings, uploadFile, checkUsernameUnique, createUserProfile } from '../services/database';
-import { generateTemplateImage } from '../services/geminiService';
-import { SystemSettings } from '../types';
-import { Monitor, Smartphone, Tablet, ExternalLink, Code, Database, Layout, Search, Zap, Image, Mail, MessageSquare, ShieldCheck, UserCheck, ArrowRight, Activity, Ship, Edit, ChevronDown } from 'lucide-react';
 
 const AVAILABLE_FEATURES = [
   'Google Login System',
@@ -45,8 +44,6 @@ const AVAILABLE_FEATURES = [
   'Payment Integration (Stripe)',
   'Fast Loading Performance'
 ];
-
-import StateCityDropdown from '../components/StateCityDropdown';
 
 const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
   const containerClasses = {
@@ -85,7 +82,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
 
         <div className="flex-1 overflow-y-auto bg-white text-black font-sans no-scrollbar flex flex-col">
           {/* Navbar */}
-          <nav className="p-5 border-b flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-md z-30">
+          <nav className="p-5 border-b flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-md z-30" style={{ borderBottomColor: data.primaryColor + '40' }}>
             <div className="flex items-center gap-3">
               {data.logoUrl ? (
                 <img src={data.logoUrl} alt="Logo" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
@@ -99,7 +96,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
             <div className="flex gap-4 items-center">
                <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Home</span>
                <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Services</span>
-               <button className="px-4 py-2 rounded-full font-black text-[8px] uppercase tracking-widest shadow-lg text-white" style={{ backgroundColor: data.primaryColor || '#000000' }}>Contact</button>
+               <button className="px-4 py-2 rounded-full font-black text-[8px] uppercase tracking-widest shadow-lg text-white transition-all cursor-pointer hover:scale-105" style={{ backgroundColor: data.primaryColor || '#000000', border: `2.5px solid ${data.secondaryColor || '#000000'}` }}>Contact</button>
             </div>
           </nav>
 
@@ -137,8 +134,8 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
               </motion.p>
               <div className="pt-6">
                 <button 
-                  className="px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95 text-white" 
-                  style={{ backgroundColor: data.primaryColor || '#000000' }}
+                  className="px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95 text-white cursor-pointer" 
+                  style={{ backgroundColor: data.secondaryColor || '#000000', color: '#ffffff', border: `1.5px solid ${data.primaryColor || 'transparent'}` }}
                 >
                   Explore Features
                 </button>
@@ -152,9 +149,9 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
               <div key={i} className="p-6 rounded-[2rem] bg-white border border-gray-100 flex flex-col items-center gap-4 text-center group hover:shadow-2xl transition-all">
                 <div 
                   className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transform group-hover:rotate-12 transition-transform" 
-                  style={{ backgroundColor: data.primaryColor || '#c7c42a', color: '#FFFFFF' }}
+                  style={{ backgroundColor: data.primaryColor || '#c7c42a', border: `2px solid ${data.secondaryColor || '#000000'}` }}
                 >
-                  <Zap size={20} />
+                  <Zap size={20} className="text-white" />
                 </div>
                 <span className="text-[8px] font-black uppercase tracking-widest text-gray-900 leading-tight">{feature}</span>
               </div>
@@ -165,18 +162,18 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
           <section className="py-12 px-10 border-t border-gray-100 flex flex-col items-center gap-8 bg-gray-50">
              <div className="flex gap-10">
                 <div className="flex items-center gap-3">
-                  <Mail size={16} className="text-gray-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{data.businessEmail || 'hello@webbylaunch.com'}</span>
+                  <Mail size={16} style={{ color: data.primaryColor || '#c7c42a' }} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#111]">{data.businessEmail || 'hello@webbylaunch.com'}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Smartphone size={16} className="text-gray-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{data.businessPhone || '+91 88000 00000'}</span>
+                  <Smartphone size={16} style={{ color: data.primaryColor || '#c7c42a' }} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#111]">{data.businessPhone || '+91 88000 00000'}</span>
                 </div>
              </div>
           </section>
 
           {/* Footer */}
-          <footer className="p-10 bg-black text-white text-center">
+          <footer className="p-10 text-white text-center" style={{ backgroundColor: data.secondaryColor || '#000000' }}>
             <div className="text-xl font-black italic tracking-tighter uppercase mb-4">Webby<span style={{ color: data.primaryColor || '#c7c42a' }}>Launch</span></div>
             <p className="text-[8px] font-bold uppercase tracking-[0.3em] opacity-40">© 2026 {data.businessName || 'Business'}. Precision Built by WebbyLaunch.</p>
           </footer>
@@ -222,11 +219,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       businessNumber: '',
       businessEmail: '',
       businessPhone: '',
+      storeType: 'online_store' as 'online_store' | 'local_store',
+      googleMapsLink: '',
       addressLine: '',
       city: '',
       state: '',
       pincode: '',
-      country: 'India',
+      country: 'India' as 'India' | 'US' | 'UK',
       businessType: '',
       otherBusinessType: '',
       description: '',
@@ -246,9 +245,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       billingCycle: 'one-time' as 'one-time',
       referenceWebsite: '',
       templateId: '',
-      domainPreferences: ['', '', ''],
+      requestedDomain: '',
       referralSource: '',
       salesCode: '',
+      developerNote: '',
     };
 
     if (saved) {
@@ -280,6 +280,13 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const [error, setError] = useState<string | null>(null);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
+
+  const shakeAnimation = {
+    shake: {
+      x: [0, -10, 10, -10, 10, 0],
+      transition: { duration: 0.4 }
+    }
+  };
   const [paymentOption, setPaymentOption] = useState<'full' | 'understanding'>('full');
 
   useEffect(() => {
@@ -329,24 +336,25 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         if (formData.businessType === 'Other' && !formData.otherBusinessType) invalid.push('otherBusinessType');
         if (!formData.businessEmail || !validateEmail(formData.businessEmail)) invalid.push('businessEmail');
         if (!formData.businessPhone || !validatePhone(formData.businessPhone)) invalid.push('businessPhone');
+        if (formData.storeType === 'local_store' && !formData.googleMapsLink) invalid.push('googleMapsLink');
         if (!formData.addressLine) invalid.push('addressLine');
         if (!formData.city) invalid.push('city');
-        if (!formData.state) invalid.push('state');
+        if (formData.country === 'India' && !formData.state) invalid.push('state');
         if (!formData.pincode) invalid.push('pincode');
+        if (!formData.country) invalid.push('country');
         if (req.description && !formData.description) invalid.push('description');
         break;
-      case 3: // Features Select
-        if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
-        break;
-      case 4: // Domain Selection
+      case 3: // Domain Selection
         if (!formData.domain) invalid.push('domain');
+        break;
+      case 4: // Features Select
+        if (!formData.selectedFeatures || formData.selectedFeatures.length === 0) invalid.push('selectedFeatures');
         break;
       case 5: // Design
         if (!formData.primaryColor) invalid.push('primaryColor');
         if (!formData.secondaryColor) invalid.push('secondaryColor');
         break;
       case 6: // Preview
-        // No fields to validate for preview step itself
         break;
       case 7: // Choose Plan
         if (!formData.plan) invalid.push('plan');
@@ -363,7 +371,16 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'businessName') {
+        const sanitized = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+        updated.domain = sanitized ? `${sanitized}.com` : '';
+        updated.requestedDomain = sanitized ? `${sanitized}.com` : '';
+        updated.websiteName = value;
+      }
+      return updated;
+    });
     // Also clear individual domain preference errors if applicable
     if (field === 'domainPreferences') {
       setInvalidFields(prev => prev.filter(f => !f.startsWith('domainPreference')));
@@ -378,7 +395,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     return `${baseClass} ${isInvalid ? 'border-error shadow-[0_0_12px_rgba(239,68,68,0.4)]' : 'border-border'}`;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const invalid = getInvalidFieldsForStep(step);
     if (invalid.length === 0) {
       setStep(step + 1);
@@ -421,7 +438,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
         const sanitizedOnboardingData = { ...formData };
         
-        const projectData = {
+        const projectData: any = {
           userId: currentUser.uid,
           userName: formData.name || '',
           userEmail: formData.email || '',
@@ -433,10 +450,37 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           plan: formData.plan || 'basic',
           paymentStatus: 'pending',
           isDeleted: false,
-          onboardingData: sanitizedOnboardingData 
+          onboardingData: sanitizedOnboardingData,
+          status: 'Waiting for Review',
+          developerNote: formData.developerNote || ''
         };
 
         console.log("WRITING PROJECT TO FIRESTORE...");
+        
+        projectData.promptEngineeringInstruction = `You are a Prompt Engineering Expert. Your job is to take basic business details from me and turn them into a professional, high-level prompt for a Web Developer AI. When I give you a Name, Category, Contact, and Color, you will generate a structured prompt that includes: Professional Role: Assigning a Senior Developer persona. Design Language: Expanding the 'color' into a full UI theme. Conversion Logic: Adding sections like Hero, Services, and Lead Gen. Technical Stack: Formatting it for React and Tailwind CSS.`;
+        
+        projectData.aiDeveloperBrief = `
+MISSION BRIEF FOR DEVELOPER:
+Business Name: ${formData.businessName}
+Business Category: ${formData.businessType}
+Location: ${formData.city}, ${formData.state}, ${formData.country}
+${formData.storeType === 'local_store' ? `Storefront Access: ${formData.googleMapsLink}\n` : ''}Design Aesthetic: ${formData.primaryColor} on ${formData.secondaryColor}
+
+THE VIBE:
+${formData.description}
+
+MISSION PARAMETERS:
+- Build a ${formData.businessType} experience that feels ${formData.primaryColor === '#FFFF00' ? 'industrial, elite, and high-energy' : 'professional and polished'}.
+- Tone: ${formData.storeType === 'local_store' ? 'Community-focused' : 'Global efficiency'}.
+- No generic templates. No placeholders. Just raw function wrapped in the "${formData.businessName}" identity.
+
+FEATURES REQUESTED:
+${formData.selectedFeatures?.join(', ') || 'Standard responsive design'}
+
+CLIENT NOTE:
+${formData.developerNote || 'No specific note provided.'}
+        `.trim();
+
         const projectId = await createProject(projectData);
         
         console.log("WRITING USER PROFILE TO FIRESTORE...");
@@ -543,15 +587,44 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     setDomainData(prev => ({ ...prev, preferences: newPrefs }));
   };
 
-  const handleDomainNext = () => {
-    const domainPrefs = domainData.preferences.map(ext => `${domainData.businessName}${ext}`);
-    setFormData(prev => ({ 
-      ...prev, 
-      websiteName: domainPrefs[0], 
-      domain: domainPrefs[0],
-      domainPreferences: domainPrefs
-    }));
-    setStep(4);
+  const [isCheckingDomain, setIsCheckingDomain] = useState(false);
+  const [domainTaken, setDomainTaken] = useState(false);
+
+  const handleDomainNext = async () => {
+    if (!formData.domain) return;
+    
+    setIsCheckingDomain(true);
+    
+    const restrictedDomains = ['google.com', 'youtube.com', 'facebook.com', 'instagram.com', 'twitter.com', 'apple.com', 'amazon.com', 'microsoft.com', 'webbylaunch.com', 'admin.com', 'test.com'];
+    if (restrictedDomains.some(d => formData.domain?.toLowerCase().includes(d))) {
+      toast.error("SECURITY ALERT: This domain is restricted or system-reserved.");
+      setIsCheckingDomain(false);
+      return;
+    }
+
+    const { checkDomainInUse } = await import('../services/database');
+    
+    // Check locally first
+    const inUseLocally = await checkDomainInUse(formData.domain);
+    if (inUseLocally) {
+       setDomainTaken(true);
+       toast.error("MISSING SIGNAL: Domain is already registered in our local network.");
+       setIsCheckingDomain(false);
+       return;
+    }
+
+    // Check globally
+    const globalStatus = await checkDomain(formData.domain);
+    if (globalStatus === 'taken') {
+      setDomainTaken(true);
+      toast.error("COMMAND REJECTED: This domain is already registered to another owner globally.");
+      setIsCheckingDomain(false);
+      return;
+    }
+
+    setDomainTaken(false);
+    setStep(4); // Moving to features step
+    setIsCheckingDomain(false);
   };
 
   const toggleFeature = (feature: string) => {
@@ -569,10 +642,21 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
   const checkDomain = async (domain: string) => {
     try {
-      const res = await fetch(`https://dns.google/resolve?name=${domain}`);
+      const RESERVED_WORDS = ['google', 'youtube', 'admin', 'byjus', 'facebook', 'instagram', 'twitter', 'amazon', 'apple', 'microsoft', 'webbylaunch', 'test'];
+      const normalized = domain.toLowerCase().trim();
+      const domainNameOnly = normalized.split('.')[0];
+      
+      if (RESERVED_WORDS.some(word => normalized.includes(word) || domainNameOnly.includes(word))) {
+        return "taken";
+      }
+
+      const res = await fetch(`https://dns.google/resolve?name=${normalized}`);
       const data = await res.json();
-      // Google DNS Answer field exists if there are records (domain taken)
-      return data.Answer ? "taken" : "available";
+      // Google DNS: Status 0 is NOERROR (domain is registered/taken globally), Status 3 is NXDOMAIN (available)
+      if (data.Status === 0 || (data.Answer && data.Answer.length > 0)) {
+        return "taken";
+      }
+      return "available";
     } catch {
       return "error";
     }
@@ -616,12 +700,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     setIsCheckingCustom(false);
   };
 
-  useEffect(() => {
-    if (step === 4) {
-      const name = formData.websiteName || formData.businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
-      loadSuggestions(name);
-    }
-  }, [step]);
+
 
   const renderStep = () => {
     switch (step) {
@@ -668,74 +747,106 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                 <p className="text-[10px] font-bold text-subtext uppercase tracking-[0.2em]">Upload Profile Picture</p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Full Name <span className="text-error">*</span></label>
-                <input
-                  type="text"
-                  className={getInputClass('name')}
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Username <span className="text-error">*</span></label>
-                <input
-                  type="text"
-                  className={getInputClass('username')}
-                  value={formData.username}
-                  onChange={(e) => handleInputChange('username', e.target.value.toLowerCase().replace(/\s/g, '_'))}
-                  placeholder="rahul_123"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Phone Number <span className="text-error">*</span></label>
-                <input
-                  type="tel"
-                  className={getInputClass('phone')}
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="E.G. 9876543210"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Email Address <span className="text-error">*</span></label>
-                <input
-                  type="email"
-                  className={getInputClass('email')}
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="Enter your email address"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">How did you hear about us? <span className="text-error">*</span></label>
-                <select
-                  className={getInputClass('referralSource', "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-medium appearance-none")}
-                  value={formData.referralSource}
-                  onChange={(e) => handleInputChange('referralSource', e.target.value)}
-                >
-                  <option value="">Select an option</option>
-                  <option value="Google Search">Google Search</option>
-                  <option value="Social Media">Social Media</option>
-                  <option value="Friend/Colleague">Friend/Colleague</option>
-                  <option value="I got a call">I got a call</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {formData.referralSource === 'I got a call' && (
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Sales Code <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('salesCode')}
-                    value={formData.salesCode}
-                    onChange={(e) => handleInputChange('salesCode', e.target.value.toUpperCase())}
-                    placeholder="Enter Sales Code"
-                  />
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Full Name <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('name') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('name')}
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      placeholder="Enter your full name"
+                    />
+                  </motion.div>
                 </div>
-              )}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Username <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('username') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('username')}
+                      value={formData.username}
+                      onChange={(e) => handleInputChange('username', e.target.value.toLowerCase().replace(/\s/g, '_'))}
+                      placeholder="rahul_123"
+                    />
+                  </motion.div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Phone Number <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('phone') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="tel"
+                      className={getInputClass('phone')}
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      placeholder="E.G. 9876543210"
+                    />
+                  </motion.div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Email Address <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('email') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="email"
+                      className={getInputClass('email')}
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      placeholder="Enter your email address"
+                    />
+                  </motion.div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">How did you hear about us? <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('referralSource') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <select
+                      className={getInputClass('referralSource', "w-full p-6 rounded-2xl bg-card border text-text focus:outline-none focus:border-primary font-medium appearance-none")}
+                      value={formData.referralSource}
+                      onChange={(e) => handleInputChange('referralSource', e.target.value)}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="Google Search">Google Search</option>
+                      <option value="Social Media">Social Media</option>
+                      <option value="Friend/Colleague">Friend/Colleague</option>
+                      <option value="I got a call">I got a call</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </motion.div>
+                </div>
+
+                {formData.referralSource === 'I got a call' && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4">Sales Code <span className="text-error">*</span></label>
+                    <motion.div
+                      animate={invalidFields.includes('salesCode') ? "shake" : ""}
+                      variants={shakeAnimation}
+                    >
+                      <input
+                        type="text"
+                        className={getInputClass('salesCode')}
+                        value={formData.salesCode}
+                        onChange={(e) => handleInputChange('salesCode', e.target.value.toUpperCase())}
+                        placeholder="Enter Sales Code"
+                      />
+                    </motion.div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-4">
@@ -774,122 +885,276 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 2</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Details</h3>
-              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Help us understand your brand ecosystem</p>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 2</h2>
+              <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Intelligence</h3>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Define your operational footprint. <span className="text-primary underline">Note: these will be visible in your website.</span></p>
             </div>
 
             <div className="space-y-6">
+              {/* Store Type Selection */}
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Store Configuration <span className="text-error">*</span></label>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { id: 'online_store', label: 'Online Store', desc: 'Ships anywhere' },
+                    { id: 'local_store', label: 'Local Store', desc: 'Walk-in location' }
+                  ].map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => handleInputChange('storeType', type.id)}
+                      className={`p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-1 ${
+                        formData.storeType === type.id 
+                          ? 'bg-primary/10 border-primary' 
+                          : 'bg-white/5 border-white/5 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 hover:border-white/10'
+                      }`}
+                    >
+                      <span className={`text-lg font-black italic uppercase tracking-tighter ${formData.storeType === type.id ? 'text-primary' : 'text-white'}`}>{type.label}</span>
+                      <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">{type.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {formData.storeType === 'local_store' && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="space-y-4"
+                >
+                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Google Maps Link <span className="text-error">*</span></label>
+                  <motion.div
+                    animate={invalidFields.includes('googleMapsLink') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="url"
+                      className={getInputClass('googleMapsLink', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.googleMapsLink}
+                      onChange={(e) => handleInputChange('googleMapsLink', e.target.value)}
+                      placeholder="PASTE YOUR GOOGLE MAPS BUSINESS LINK"
+                    />
+                  </motion.div>
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest font-black ml-4">This will be used to embed your location on the website. <span className="text-primary italic">Essential for local stores.</span></p>
+                </motion.div>
+              )}
+
+              {/* Country Selection */}
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Operational Region <span className="text-error">*</span></label>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { id: 'India', label: 'India', flag: '🇮🇳' },
+                    { id: 'US', label: 'United States', flag: '🇺🇸' },
+                    { id: 'UK', label: 'United Kingdom', flag: '🇬🇧' }
+                  ].map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => handleInputChange('country', c.id)}
+                      className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center gap-2 ${
+                        formData.country === c.id 
+                          ? 'bg-primary/10 border-primary scale-[1.02]' 
+                          : 'bg-white/5 border-white/5 opacity-40 hover:opacity-100 hover:border-white/10'
+                      }`}
+                    >
+                      <span className="text-3xl">{c.flag}</span>
+                      <span className={`text-[10px] font-black italic uppercase tracking-tighter ${formData.country === c.id ? 'text-primary' : 'text-white'}`}>{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Name <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('businessName', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.businessName}
-                    onChange={(e) => handleInputChange('businessName', e.target.value)}
-                    placeholder="E.G. TITAN FORGE"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('businessName') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('businessName', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.businessName}
+                      onChange={(e) => handleInputChange('businessName', e.target.value)}
+                      placeholder="E.G. TITAN FORGE"
+                    />
+                  </motion.div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Phone <span className="text-error">*</span></label>
-                  <input
-                    type="tel"
-                    className={getInputClass('businessPhone', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.businessPhone}
-                    onChange={(e) => handleInputChange('businessPhone', e.target.value)}
-                    placeholder="E.G. 9876543210"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('businessPhone') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="tel"
+                      className={getInputClass('businessPhone', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.businessPhone}
+                      onChange={(e) => handleInputChange('businessPhone', e.target.value)}
+                      placeholder="E.G. 9876543210"
+                    />
+                  </motion.div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Email <span className="text-error">*</span></label>
-                  <input
-                    type="email"
-                    className={getInputClass('businessEmail', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter")}
-                    value={formData.businessEmail}
-                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                    placeholder="HELLO@BRAND.COM"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('businessEmail') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="email"
+                      className={getInputClass('businessEmail', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter")}
+                      value={formData.businessEmail}
+                      onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                      placeholder="HELLO@BRAND.COM"
+                    />
+                  </motion.div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Address Line <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    className={getInputClass('addressLine', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.addressLine}
-                    onChange={(e) => handleInputChange('addressLine', e.target.value)}
-                    placeholder="123 BUSINESS PARK"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('addressLine') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      className={getInputClass('addressLine', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.addressLine}
+                      onChange={(e) => handleInputChange('addressLine', e.target.value)}
+                      placeholder="123 BUSINESS PARK"
+                    />
+                  </motion.div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Pincode <span className="text-error">*</span></label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    className={getInputClass('pincode', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                    value={formData.pincode}
-                    onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
-                  />
+                  <motion.div
+                    animate={invalidFields.includes('pincode') ? "shake" : ""}
+                    variants={shakeAnimation}
+                  >
+                    <input
+                      type="text"
+                      maxLength={6}
+                      className={getInputClass('pincode', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      value={formData.pincode}
+                      onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
+                      placeholder="123456"
+                    />
+                  </motion.div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Location Selection <span className="text-error">*</span></label>
-                <StateCityDropdown 
-                  onSelect={(state, city) => {
-                    handleInputChange('state', state);
-                    handleInputChange('city', city);
-                  }}
-                  error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
-                />
+                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Location Details <span className="text-error">*</span></label>
+                <motion.div
+                  animate={(invalidFields.includes('state') || invalidFields.includes('city')) ? "shake" : ""}
+                  variants={shakeAnimation}
+                >
+                  {formData.country === 'India' ? (
+                    <StateCityDropdown 
+                      onSelect={(state, city) => {
+                        handleInputChange('state', state);
+                        handleInputChange('city', city);
+                      }}
+                      error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
+                    />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        className={getInputClass('city', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                        value={formData.city}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        placeholder="ENTER CITY"
+                      />
+                      <input
+                        type="text"
+                        className={getInputClass('state', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                        value={formData.state}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        placeholder={formData.country === 'US' ? "ENTER STATE (E.G. NY)" : "ENTER COUNTY/REGION"}
+                      />
+                    </div>
+                  )}
+                </motion.div>
               </div>
 
               <div className="space-y-4">
                 <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Category <span className="text-error">*</span></label>
                 <div className="relative">
-                  <select
-                    className={getInputClass('businessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase appearance-none cursor-pointer")}
-                    value={formData.businessType}
-                    onChange={(e) => handleInputChange('businessType', e.target.value)}
+                  <motion.div
+                    animate={invalidFields.includes('businessType') ? "shake" : ""}
+                    variants={shakeAnimation}
                   >
-                    <option value="">SELECT CATEGORY</option>
-                    <option value="Food Court">FOOD COURT</option>
-                    <option value="Automobiles">AUTOMOBILES</option>
-                    <option value="Clothing">CLOTHING</option>
-                    <option value="Gym">GYM & FITNESS</option>
-                    <option value="Resort & Hospitality">RESORT & HOSPITALITY</option>
-                    <option value="Logistics">LOGISTICS</option>
-                    <option value="Other">OTHER</option>
-                  </select>
-                  <ChevronDown className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+                    <select
+                      className={getInputClass('businessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase appearance-none cursor-pointer")}
+                      value={formData.businessType}
+                      onChange={(e) => handleInputChange('businessType', e.target.value)}
+                    >
+                      <option value="">SELECT CATEGORY</option>
+                      <option value="Salon">SALON</option>
+                      <option value="Salon/Studio">SALON / STUDIO</option>
+                      <option value="Salon/Makeup">SALON / MAKEUP</option>
+                      <option value="Food/Cloud Kitchen">FOOD / CLOUD KITCHEN</option>
+                      <option value="Food/Restaurant">FOOD / RESTAURANT</option>
+                      <option value="Food/Retail">FOOD / RETAIL</option>
+                      <option value="Food Court">FOOD COURT</option>
+                      <option value="Service/Design">SERVICE / DESIGN</option>
+                      <option value="Professional Svc">PROFESSIONAL SVC</option>
+                      <option value="Coaching">COACHING</option>
+                      <option value="Healthcare">HEALTHCARE</option>
+                      <option value="Academy">ACADEMY</option>
+                      <option value="Local Decor">LOCAL DECOR</option>
+                      <option value="Agency">AGENCY</option>
+                      <option value="Tech Agency">TECH AGENCY</option>
+                      <option value="Interior">INTERIOR</option>
+                      <option value="Travel/Hotel">TRAVEL / HOTEL</option>
+                      <option value="Manufacturing">MANUFACTURING</option>
+                      <option value="Industrial">INDUSTRIAL</option>
+                      <option value="Automobiles">AUTOMOBILES</option>
+                      <option value="Clothing">CLOTHING</option>
+                      <option value="Gym">GYM & FITNESS</option>
+                      <option value="Resort & Hospitality">RESORT & HOSPITALITY</option>
+                      <option value="Logistics">LOGISTICS</option>
+                      <option value="Other">OTHER</option>
+                    </select>
+                    <ChevronDown className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+                  </motion.div>
                 </div>
               </div>
 
               {formData.businessType === 'Other' && (
-                <input
-                  type="text"
-                  placeholder="ENTER YOUR BUSINESS TYPE"
-                  className={getInputClass('otherBusinessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
-                  value={formData.otherBusinessType}
-                  onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
-                />
+                <motion.div
+                  animate={invalidFields.includes('otherBusinessType') ? "shake" : ""}
+                  variants={shakeAnimation}
+                >
+                  <input
+                    type="text"
+                    placeholder="ENTER YOUR BUSINESS TYPE"
+                    className={getInputClass('otherBusinessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                    value={formData.otherBusinessType}
+                    onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
+                  />
+                </motion.div>
               )}
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Description <span className="text-error">*</span></label>
-                <textarea
-                  className={getInputClass('description', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-lg tracking-tighter uppercase h-40 resize-none")}
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="TELL US ABOUT YOUR BRAND..."
-                />
+                <motion.div
+                  animate={invalidFields.includes('description') ? "shake" : ""}
+                  variants={shakeAnimation}
+                >
+                  <textarea
+                    className={getInputClass('description', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-lg tracking-tighter uppercase h-40 resize-none")}
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="TELL US ABOUT YOUR BRAND..."
+                  />
+                </motion.div>
               </div>
 
               <div className="space-y-4">
@@ -946,14 +1211,93 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
       case 3:
         return (
           <motion.div 
-            key="step3"
+            key="stepDomain"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                 <div className="bg-primary p-2 rounded-xl" style={{ backgroundColor: formData.primaryColor }}>
+                    <Globe className="text-black" size={24} />
+                 </div>
+                 <div>
+                    <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 3</h2>
+                    <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Domain selection</h3>
+                 </div>
+              </div>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Secure your digital territory. Choose your primary URL.</p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-4">Analyze Target Domain</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className="w-full p-8 rounded-[2rem] bg-black/40 border border-white/10 text-white font-black italic text-xl tracking-tighter uppercase focus:outline-none focus:border-primary placeholder:text-white/5"
+                      value={formData.domain}
+                      onChange={(e) => {
+                        const val = e.target.value.toLowerCase().replace(/\s/g, '');
+                        handleInputChange('domain', val);
+                        if (val.length > 3) loadSuggestions(val.split('.')[0]);
+                      }}
+                      placeholder="MYBRAND.COM"
+                    />
+                    <button 
+                      onClick={handleDomainNext}
+                      disabled={!formData.domain || isCheckingDomain}
+                      className="bg-primary text-black px-10 rounded-[2rem] font-black text-xl hover:scale-[1.05] active:scale-[0.95] transition-all disabled:opacity-50"
+                      style={{ backgroundColor: formData.primaryColor }}
+                    >
+                      {isCheckingDomain ? <Loader color="black" /> : <ArrowRight size={28} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {suggestedDomains.map((d, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleInputChange('domain', d.name)}
+                      className={`p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-1 relative overflow-hidden ${
+                        formData.domain === d.name 
+                          ? 'bg-primary/10 border-primary' 
+                          : 'bg-white/5 border-white/5 hover:border-white/10'
+                      }`}
+                    >
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Option {i + 1}</span>
+                      <span className={`text-sm font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white'}`}>{d.name}</span>
+                      {d.status === 'loading' && <div className="absolute top-2 right-2"><Loader color={formData.primaryColor} /></div>}
+                      {d.status === 'available' && <div className="absolute top-2 right-2 text-green-400 text-[8px] font-black uppercase">Available</div>}
+                      {d.status === 'taken' && <div className="absolute top-2 right-2 text-red-400 text-[8px] font-black uppercase">Taken</div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleBack} 
+              className="w-full border-2 border-white/5 text-white/20 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
+            >
+              Back to Operations
+            </button>
+          </motion.div>
+        );
+      case 4:
+        return (
+          <motion.div 
+            key="step4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 3</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Select Features</h3>
               <p className="text-subtext font-medium italic">Customize your platform with premium features</p>
             </div>
@@ -971,10 +1315,10 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
                         : 'bg-card border-border text-subtext hover:border-primary/50'
                     }`}
                   >
-                    <div className={`mt-1 w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${
+                    <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${
                       isSelected ? 'bg-white border-white text-primary' : 'border-border text-transparent'
-                    }`}>
-                      <Check size={14} strokeWidth={4} />
+                    }`} style={{ backgroundColor: isSelected ? formData.primaryColor : 'transparent', borderColor: isSelected ? formData.primaryColor : '#cbd5e1' }}>
+                      <Check size={14} strokeWidth={4} className={isSelected ? 'text-white' : ''} />
                     </div>
                     <div>
                       <div className="text-sm font-bold uppercase tracking-widest">{feature}</div>
@@ -990,152 +1334,6 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             </div>
           </motion.div>
         );
-      case 4:
-        const bName = formData.businessName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'yourbusiness';
-        
-        return (
-          <motion.div 
-            key="step4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
-          >
-            <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-white italic uppercase leading-none">Best domains for your business</h3>
-              <p className="text-white/40 text-sm font-medium italic uppercase tracking-widest">Select your digital identity</p>
-            </div>
-
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 gap-3">
-                {suggestedDomains.length > 0 ? (
-                  suggestedDomains.map((d, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        handleInputChange('domain', d.name);
-                        handleInputChange('websiteName', d.name.split('.')[0]);
-                        handleInputChange('domainPreferences', [d.name, ...formData.domainPreferences.filter(p => p !== d.name)].slice(0, 3));
-                      }}
-                      className={`group flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
-                        formData.domain === d.name 
-                          ? 'bg-primary/10 border-primary' 
-                          : 'bg-white/5 border-white/5'
-                      }`}
-                    >
-                      <span className={`text-xl font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white/80'}`}>
-                        {d.name}
-                      </span>
-                      {formData.domain === d.name && <Check size={20} className="text-primary" strokeWidth={4} />}
-                    </button>
-                  ))
-                ) : (
-                  <div className="p-8 rounded-2xl bg-white/5 border border-dashed border-white/10 text-center">
-                    <p className="text-xs font-bold text-white/20 uppercase tracking-widest italic">Generating suggestions...</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
-                <p className="text-yellow-500 font-bold uppercase tracking-tight text-xs flex items-start gap-2">
-                  <span className="shrink-0">⚠️</span>
-                  Domain charges are NOT included in your plan. You will need to purchase the domain separately during checkout.
-                </p>
-              </div>
-
-              {/* Custom Domain Section */}
-              <div className="space-y-4 pt-4 border-t border-white/5">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-4 italic">Or enter your own domain</label>
-                <div className="relative group">
-                  <input 
-                    type="text"
-                    value={customDomain}
-                    onChange={(e) => {
-                      setCustomDomain(e.target.value.toLowerCase().trim());
-                      setCustomStatus('idle');
-                    }}
-                    placeholder="mycoolbrand.xyz"
-                    className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-primary font-black italic text-2xl tracking-tighter placeholder-white/10 uppercase pr-40"
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    <button 
-                      onClick={checkCustom}
-                      disabled={isCheckingCustom || !customDomain}
-                      className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black text-white uppercase italic transition-all disabled:opacity-50"
-                    >
-                      {isCheckingCustom ? 'Checking...' : 'Check Status'}
-                    </button>
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {customStatus !== 'idle' && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`ml-4 p-4 rounded-xl inline-flex items-center gap-3 ${
-                        customStatus === 'available' ? 'bg-green-400/10 border border-green-400/20' : 
-                        customStatus === 'taken' ? 'bg-red-400/10 border border-red-400/20' : 
-                        'bg-white/5'
-                      }`}
-                    >
-                      {customStatus === 'loading' ? (
-                        <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      ) : customStatus === 'available' ? (
-                        <>
-                          <div className="w-2 h-2 rounded-full bg-green-400" />
-                          <span className="text-[10px] font-black text-green-400 uppercase italic tracking-widest">Domain is available!</span>
-                          <button 
-                            onClick={() => {
-                              handleInputChange('domain', customDomain);
-                              handleInputChange('websiteName', customDomain.split('.')[0]);
-                              handleInputChange('domainPreferences', [customDomain, ...formData.domainPreferences.filter(p => p !== customDomain)].slice(0, 3));
-                            }}
-                            className="ml-4 px-4 py-1.5 bg-green-400 text-black rounded-lg text-[9px] font-black uppercase"
-                          >
-                            Use This
-                          </button>
-                        </>
-                      ) : customStatus === 'taken' ? (
-                        <>
-                          <div className="w-2 h-2 rounded-full bg-red-400" />
-                          <span className="text-[10px] font-black text-red-400 uppercase italic tracking-widest">Domain is already taken</span>
-                        </>
-                      ) : (
-                        <span className="text-[10px] font-black text-white/40 uppercase italic tracking-widest">Error checking domain</span>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
-                <ShieldCheck size={20} className="text-primary shrink-0 mt-1" />
-                <p className="text-[10px] font-medium text-primary leading-relaxed italic uppercase tracking-[0.05em]">
-                  ⚠️ Note: Domain availability is checked via live DNS records. Final availability and registration will be confirmed by our team during setup.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-6 pt-8">
-              <button 
-                onClick={handleBack} 
-                className="flex-[0.4] border-2 border-white/10 text-white/60 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
-              >
-                Back
-              </button>
-              <button 
-                onClick={handleNext} 
-                disabled={!formData.domain}
-                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: formData.primaryColor }}
-              >
-                Continue
-              </button>
-            </div>
-          </motion.div>
-        );
       case 5:
         return (
           <motion.div 
@@ -1146,7 +1344,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 5</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 5</h2>
               <h3 className="text-4xl font-bold tracking-tight text-text">Design for your website</h3>
             </div>
 
@@ -1257,7 +1455,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           >
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Step 6</h2>
+                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 6</h2>
                 <h3 className="text-4xl font-bold tracking-tight text-text">Website Preview</h3>
                 <p className="text-subtext font-medium italic">See how your website will look on different devices</p>
               </div>
@@ -1461,7 +1659,20 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
               </div>
             </div>
 
-            <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50 max-h-[30vh] overflow-y-auto scrollbar-hide relative group">
+            {/* Note to Developer */}
+            <div className="space-y-4">
+              <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">Note for Developer</h4>
+              <p className="text-[10px] font-medium text-white/40 uppercase tracking-widest italic">Anything special for our team? (e.g., Build carefully, specific font ideas, etc.)</p>
+              <textarea
+                className="w-full p-8 rounded-[2rem] bg-white/5 border border-white/5 text-white focus:outline-none focus:border-primary font-black italic text-sm tracking-tighter uppercase h-32 resize-none"
+                value={formData.developerNote}
+                onChange={(e) => handleInputChange('developerNote', e.target.value)}
+                placeholder="WRITE YOUR NOTE HERE..."
+              />
+            </div>
+
+            <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">Terms & Conditions</h4>
+              <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50 max-h-[30vh] overflow-y-auto scrollbar-hide relative group">
               <div className="space-y-8 text-subtext font-medium leading-relaxed">
                 <section className="space-y-4">
                   <h4 className="text-xl font-black text-text uppercase italic tracking-tighter">1. Services</h4>

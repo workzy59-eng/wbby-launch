@@ -227,6 +227,12 @@ export interface Project {
   state: string;
   pincode: string;
   country: string;
+  storeType: 'online_store' | 'local_store';
+  locationState?: string;
+  preferredColors?: string[];
+  requestedDomain?: string;
+  domainStatus?: 'owned' | 'buy';
+  domainPreferences?: string;
   description: string;
   websiteName: string;
   primaryColor: string;
@@ -238,7 +244,6 @@ export interface Project {
   selectedFeatures?: string[];
   templateId: string;
   domain?: string;
-  domainPreferences?: string[];
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Standard' | 'Premium' | 'Pro';
   paymentStatus?: 'pending' | 'paid' | 'verifying' | 'unpaid';
@@ -251,12 +256,16 @@ export interface Project {
   internalNotes?: string;
   estimatedCompletion: string | Timestamp | null;
   createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
   rejectionReason?: string;
   isDeleted?: boolean;
   isLocked: boolean; // For the lock system
   previewUrl?: string;
   paymentLinkBasic?: string;
   paymentLinkPremium?: string;
+  aiDeveloperBrief?: string;
+  promptEngineeringInstruction?: string;
+  developerNote?: string;
   lastMessage?: string;
   lastMessageAt?: string | Timestamp;
   lastSenderId?: string;
@@ -270,6 +279,10 @@ export interface Project {
   startedAt?: string | Timestamp;
   payout?: number;
   domainPrice?: number;
+  ownsDomain?: boolean;
+  domainRegistrar?: string;
+  domainTransferAuth?: string;
+  domainChoices?: string[];
 }
 
 export interface Attachment {
@@ -341,6 +354,11 @@ export interface SystemSettings {
     starter: number;
     pro: number;
     enterprise: number;
+  };
+  paymentLinks?: {
+    basic: string;
+    standard: string;
+    premium: string;
   };
   contactEmail?: string;
   socialLinks?: {

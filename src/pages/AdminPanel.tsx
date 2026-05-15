@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc, serverTimestamp, orderBy, limit } from '../firebase';
-import { UserProfile, Project, ProjectStatus } from '../types';
+import { UserProfile, Project, ProjectStatus, LeaveRequest } from '../types';
 import { Link } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { DomainSelect } from '../components/DomainSelect';
@@ -41,7 +41,8 @@ import {
   Download,
   Shield,
   Database,
-  Briefcase
+  Briefcase,
+  Globe
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { 
@@ -59,7 +60,7 @@ import {
   Bar
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications, getNotifications, markNotificationAsRead } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -68,6 +69,8 @@ import { Monitor, Smartphone, Tablet, ExternalLink, Zap, Mail, MessageSquare } f
 
 import BottomNav from '../components/BottomNav';
 import { getUnreadMessageCount } from '../services/database';
+
+import { DomainConnectivity } from '../components/admin/DomainConnectivity';
 
 const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tablet' | 'mobile' }) => {
   const containerClasses = {
@@ -147,6 +150,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
 };
 
 import { ADMIN_EMAIL } from '../constants';
+import { formatDate } from '../lib/utils';
 
 interface AdminPanelProps {
   user: FirebaseUser;
@@ -157,7 +161,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'recycle' | 'system' | 'meetings' | 'clients' | 'developers'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'active' | 'my-tasks' | 'projects' | 'analytics' | 'messages' | 'system' | 'meetings' | 'clients' | 'developers' | 'leaves' | 'domains'>('dashboard');
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -167,6 +171,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   }, [user?.uid]);
 
   const [developerInvites, setDeveloperInvites] = useState<any[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -183,6 +188,13 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [reasonToShow, setReasonToShow] = useState('');
   const [projectSearch, setProjectSearch] = useState('');
   const [unreadTotal, setUnreadTotal] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+  }, []);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState({
     name: '',
@@ -247,10 +259,9 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [devUnreadCounts, setDevUnreadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const directTotal = Object.values(userUnreadCounts).reduce((acc, count) => acc + count, 0);
     const projectTotal = Object.values(projectUnreadCounts).reduce((acc, count) => acc + count, 0);
-    setUnreadTotal(directTotal + projectTotal);
-  }, [userUnreadCounts, projectUnreadCounts]);
+    setUnreadTotal(unreadCount + projectTotal);
+  }, [unreadCount, projectUnreadCounts]);
 
 
   const updateUnreadCount = (userId: string, count: number) => {
@@ -301,6 +312,16 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       setConversations(convs);
     });
 
+    const unsubNotifs = getNotifications(user.uid, (data) => {
+      const prevUnreadCount = notifications.filter(n => !n.read).length;
+      const newUnreadCount = data.filter((n: any) => !n.read).length;
+      
+      if (newUnreadCount > prevUnreadCount) {
+        notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
+      }
+      setNotifications(data);
+    }, 'admin');
+
     getSystemSettings().then(settings => {
       if (settings) setSystemSettings(settings);
     });
@@ -308,8 +329,9 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     return () => {
       unsubUnread?.();
       unsubscribeConversations?.();
+      unsubNotifs?.();
     };
-  }, [user.uid, isUserAdmin]); // NOT dependent on activeTab
+  }, [user.uid, isUserAdmin, notifications.length]);
 
   useEffect(() => {
     // Tab-specific data loading
@@ -319,7 +341,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     let unsubscribeUsers = () => {};
     let unsubscribeDevInvites = () => {};
 
-    if (activeTab === 'dashboard' || activeTab === 'projects' || activeTab === 'recycle' || activeTab === 'developers') {
+    if (activeTab === 'dashboard' || activeTab === 'projects' || activeTab === 'developers') {
       const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(100));
       unsubscribeProjects = onSnapshot(q, (snapshot) => {
         setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
@@ -355,6 +377,19 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
         setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
       }, (error) => {
         if (!error.message.includes('Quota')) console.error("Admin Developers Snapshot Error:", error);
+      });
+    }
+
+    if (activeTab === 'leaves') {
+      import('../services/database').then(db => {
+        unsubscribeUsers = db.getAllLeaveRequestsSnap((leaves) => {
+          setLeaveRequests(leaves);
+        });
+      });
+      // Also need developers for display
+      const q = query(collection(db, 'users'), where('role', '==', 'developer'));
+      unsubscribeUsers = onSnapshot(q, (snapshot) => {
+        setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile)));
       });
     }
 
@@ -426,18 +461,31 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   };
 
   const handleDownloadPrompt = (project: Project) => {
-    if (!project.aiPrompt) {
-      toast.error('No AI prompt available for this project');
-      return;
-    }
+    const prompt = `
+Build me a website named ${project.businessName}, ${project.businessType}.
+Build me a ${project.businessType} website named ${project.businessName}.
+
+The contact details are these:
+Name: ${project.userName}
+Email: ${project.userEmail}
+Phone: ${project.userPhone || 'N/A'}
+Business Email: ${project.businessEmail || 'N/A'}
+Business Phone: ${project.businessPhone || 'N/A'}
+
+I needed it in the color of ${project.primaryColor || '#c7c42a'} and ${project.secondaryColor || '#000000'}.
+The chosen elements are ${project.selectedFeatures?.join(', ') || 'Standard responsive layout'}.
+
+Description: ${project.description || 'No description provided.'}
+`.trim();
+
     const element = document.createElement("a");
-    const file = new Blob([project.aiPrompt], {type: 'text/plain'});
+    const file = new Blob([prompt], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = `${project.businessName}_prompt.txt`;
+    element.download = `${project.businessName}_AI_Prompt.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-    toast.success('Prompt downloaded');
+    toast.success('AI Prompt downloaded');
   };
 
   const handleUpdateProgress = async () => {
@@ -622,14 +670,6 @@ Generated on: ${new Date().toLocaleString()}
     }
   };
 
-  const handleRestore = async (projectId: string) => {
-    try {
-      await updateProject(projectId, { isDeleted: false });
-    } catch (error) {
-      console.error("Error restoring project:", error);
-    }
-  };
-
   const handleUpdatePaymentStatus = async (projectId: string, currentStatus: string) => {
     try {
       const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
@@ -699,7 +739,7 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
             <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="99%" height="100%">
                 <AreaChart data={projects.slice(-7).map((p, i) => ({ name: `P${i}`, val: p.progress || 0 }))}>
                   <defs>
                     <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
@@ -719,7 +759,7 @@ Generated on: ${new Date().toLocaleString()}
           <div className="bg-white/5 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10">
             <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-8">Ecosystem</h3>
             <div className="h-64 relative">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="99%" height="100%">
                 <PieChart>
                   <Pie
                     data={[
@@ -854,12 +894,6 @@ Generated on: ${new Date().toLocaleString()}
               >
                 Assign Developer
               </button>
-              <button 
-                onClick={() => { setSelectedProject(p); setShowRejectModal(true); }}
-                className="flex-1 border border-white/10 text-white py-4 rounded-full font-bold hover:bg-white/5 transition-all text-xs uppercase tracking-widest"
-              >
-                Reject
-              </button>
             </div>
           </div>
         ))}
@@ -947,12 +981,6 @@ Generated on: ${new Date().toLocaleString()}
                 className="flex-1 bg-white text-black py-4 rounded-full font-black hover:scale-[1.02] active:scale-[0.98] transition-all text-[10px] uppercase tracking-widest shadow-xl"
               >
                 Update Progress
-              </button>
-              <button 
-                onClick={() => { setSelectedProject(p); setShowRejectModal(true); }}
-                className="px-6 border border-red-500/30 text-red-400 py-4 rounded-full font-black hover:bg-red-500 hover:text-white transition-all text-[10px] uppercase tracking-widest"
-              >
-                Terminate
               </button>
             </div>
           </div>
@@ -1100,6 +1128,90 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       </div>
     );
   };
+
+  const renderLeaves = () => (
+    <div className="space-y-12">
+      <div className="flex flex-col gap-2">
+        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Staff Management</span>
+        <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Absence Registry</h2>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {leaveRequests.length > 0 ? (
+          leaveRequests.map((req) => {
+            const dev = users.find(u => u.uid === req.userId);
+            return (
+              <div key={req.id} className="bg-white/5 border border-white/10 rounded-full p-8 px-12 flex flex-col md:flex-row justify-between items-center gap-8 group hover:border-[#c7c42a]/30 transition-all">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-xl italic shadow-xl">
+                    {dev?.displayName?.[0] || 'D'}
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-white uppercase italic tracking-tight">{dev?.displayName || 'Unknown Developer'}</h4>
+                    <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">{dev?.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-8 text-center pb-4 md:pb-0">
+                  <div>
+                    <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Mission Date</p>
+                    <p className="text-sm font-bold text-[#c7c42a] uppercase italic">{formatDate(req.startDate)}</p>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Clearance Reason</p>
+                    <p className="text-[10px] font-medium text-white/60 uppercase italic leading-relaxed line-clamp-2">{req.reason}</p>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Authorization Status</p>
+                    <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                      req.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                      req.status === 'declined' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                      'bg-[#FFFF00]/10 text-[#FFFF00] border border-[#FFFF00]/20'
+                    }`}>
+                      {req.status?.toUpperCase() || 'PENDING'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 shrink-0">
+                  {req.status === 'pending' && (
+                    <>
+                      <button 
+                        onClick={async () => {
+                          const { updateLeaveStatus } = await import('../services/database');
+                          await updateLeaveStatus(req.id, 'approved');
+                          setLeaveRequests(prev => prev.map(l => l.id === req.id ? {...l, status: 'approved'} : l));
+                          toast.success('Absence Authorized');
+                        }}
+                        className="px-8 py-4 bg-green-500 text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                      >
+                        Authorize
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          const { updateLeaveStatus } = await import('../services/database');
+                          await updateLeaveStatus(req.id, 'declined');
+                          setLeaveRequests(prev => prev.map(l => l.id === req.id ? {...l, status: 'declined'} : l));
+                          toast.success('Access Denied');
+                        }}
+                        className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
+                      >
+                        Decline
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-20 bg-white/5 border border-dashed border-white/10 rounded-full text-center aspect-[2/1] flex flex-col items-center justify-center">
+            <p className="text-[10px] font-black uppercase italic tracking-widest text-white/20">System Quiet. No leave requests detected.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   const renderAnalytics = () => (
     <div className="space-y-12">
@@ -1287,13 +1399,6 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                         >
                           <Edit2 size={16} />
                         </button>
-                        <button 
-                          onClick={() => handleDeleteProject(p.id)}
-                          className="p-3 bg-white/5 rounded-xl text-white/40 hover:bg-red-500 hover:text-white transition-all"
-                          title="Delete Project"
-                        >
-                          <Trash2 size={16} />
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1394,37 +1499,6 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       </div>
     );
   };
-
-  const renderRecycleBin = () => (
-    <div className="space-y-12">
-      <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.3em]">Archive</span>
-        <h2 className="text-6xl font-bold tracking-tighter text-white">RECYCLE BIN</h2>
-      </div>
-
-      <div className="space-y-4">
-        {projects.filter(p => p.isDeleted).map((p) => (
-          <div key={p.id} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:border-[#c7c42a]/30 transition-all">
-            <div>
-              <h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.businessName}</h3>
-              <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Deleted Project • {p.businessType}</div>
-            </div>
-            <button 
-              onClick={() => handleRestore(p.id)}
-              className="px-8 py-3 bg-white text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
-            >
-              Restore
-            </button>
-          </div>
-        ))}
-        {projects.filter(p => p.isDeleted).length === 0 && (
-          <div className="py-32 text-center">
-            <div className="text-white/20 text-sm font-bold uppercase tracking-[0.5em]">Recycle bin is empty</div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   const [userSearch, setUserSearch] = useState('');
   const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'favourites'>('all');
@@ -1799,19 +1873,21 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
               <div className="text-2xl font-bold tracking-tighter text-white">{APP_NAME}</div>
             </div>
             <div className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-[0.4em] mt-2">
-              {['workzy59@gmail.com', 'priyankapudi4u@gmail.com', 'sain17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '') ? 'Developer Dashboard' : 'Admin Panel'}
+              {user.email?.toLowerCase() === 'workzy59@gmail.com' ? 'Admin Panel' : 'Staff Portal'}
             </div>
           </div>
         </div>
         <nav className="flex-1 p-6 space-y-3 overflow-y-auto">
           {[
             {id: 'dashboard', label: 'Operations', icon: LayoutDashboard},
-            {id: 'my-tasks', label: 'My Projects', icon: Briefcase, hide: user.email?.toLowerCase() === 'workzy59@gmail.com'},
+            {id: 'my-tasks', label: 'My Projects', icon: Briefcase, hide: user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()},
             {id: 'requests', label: 'Job Pool', icon: FileText},
             { id: 'active', label: 'Active Projects', icon: Check },
             { id: 'projects', label: 'Project Details', icon: FolderKanban },
             { id: 'clients', label: 'Clients', icon: Users },
             { id: 'developers', label: 'Developers', icon: Shield },
+            { id: 'domains', label: 'Domain Sync', icon: Globe },
+            { id: 'leaves', label: 'Leave Requests', icon: Calendar },
             { id: 'messages', label: unreadTotal > 0 ? `Messages (${unreadTotal})` : 'Messages', icon: MessageCircle },
             { id: 'meetings', label: 'Meetings', icon: Video },
             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -1847,8 +1923,119 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 md:p-16 overflow-y-auto">
-        <AnimatePresence mode="wait">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <header className="p-8 md:p-10 border-b border-white/5 flex items-center justify-between bg-black/50 backdrop-blur-xl z-20 shrink-0">
+          <div className="flex items-center gap-4">
+             <div className="flex flex-col">
+               <h2 className="text-2xl font-black italic uppercase tracking-tighter">
+                 {activeTab.replace('-', ' ').toUpperCase()}
+               </h2>
+               <div className="flex items-center gap-2 mt-1">
+                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                 <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic">Secure Connection Active</span>
+               </div>
+             </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            {/* Notification Bell */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-3 bg-white/5 border border-white/10 rounded-xl relative hover:bg-white/10 transition-all group"
+              >
+                <Bell size={20} className={notifications.some(n => !n.read) ? 'text-[#c7c42a] animate-pulse' : 'text-white/60'} />
+                {notifications.some(n => !n.read) && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white border-2 border-black">
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-4 w-[400px] bg-[#111] border border-white/10 rounded-[2rem] shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#1a1a1a]">
+                      <h3 className="text-sm font-black uppercase tracking-tighter">Admin Alerts</h3>
+                      <button 
+                        onClick={async () => {
+                          const { markNotificationAsRead } = await import('../services/database');
+                          await Promise.all(notifications.filter(n => !n.read).map(n => markNotificationAsRead(n.id)));
+                        }}
+                        className="text-[10px] font-bold text-[#c7c42a] uppercase tracking-widest hover:underline"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+                      {notifications.length > 0 ? (
+                        notifications.map((notif) => (
+                          <div 
+                            key={notif.id}
+                            className={`p-6 border-b border-white/5 hover:bg-white/5 transition-colors relative cursor-pointer ${!notif.read ? 'bg-[#c7c42a]/5' : ''}`}
+                            onClick={async () => {
+                              const { markNotificationAsRead } = await import('../services/database');
+                              if (!notif.read) await markNotificationAsRead(notif.id);
+                              if (notif.projectId) setActiveTab('projects');
+                              if (notif.type === 'leave_requested') setActiveTab('leaves');
+                              setShowNotifications(false);
+                            }}
+                          >
+                            <div className="flex gap-4">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                notif.type === 'leave_requested' ? 'bg-orange-500/20 text-orange-500' : 
+                                notif.type === 'new_project' ? 'bg-[#c7c42a]/20 text-[#c7c42a]' :
+                                'bg-blue-500/20 text-blue-500'
+                              }`}>
+                                <Bell size={18} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start mb-1">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">{notif.title}</span>
+                                  <span className="text-[8px] font-bold text-white/20 uppercase">{formatDate(notif.createdAt)}</span>
+                                </div>
+                                <p className="text-xs font-bold text-white/70 leading-relaxed">{notif.message}</p>
+                              </div>
+                            </div>
+                            {!notif.read && (
+                              <div className="absolute top-1/2 right-4 -translate-y-1/2 w-1.5 h-1.5 bg-[#c7c42a] rounded-full shadow-[0_0_10px_#c7c42a]" />
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-20 text-center text-white/20 uppercase font-black text-xs tracking-widest">
+                          No alerts in the queue
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="h-10 w-px bg-white/5 mx-2" />
+            
+            <div className="flex items-center gap-4 bg-white/5 p-2 pr-6 rounded-2xl border border-white/10">
+              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
+                <User size={20} className="text-[#c7c42a]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-tighter leading-none italic">{profile?.displayName || 'Admin'}</span>
+                <span className="text-[8px] font-black text-[#c7c42a] uppercase tracking-widest mt-1">Status: Master</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic Content */}
+        <div className="flex-1 p-8 md:p-16 overflow-y-auto">
+          <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 20 }}
@@ -1951,9 +2138,10 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                 })}
               </div>
             </div>}
+            {activeTab === 'leaves' && renderLeaves()}
+            {activeTab === 'domains' && <DomainConnectivity />}
             {activeTab === 'analytics' && renderAnalytics()}
             {activeTab === 'messages' && renderMessages()}
-            {activeTab === 'recycle' && renderRecycleBin()}
             {activeTab === 'system' && renderSystem()}
             {activeTab === 'meetings' && (
               <div className="space-y-12">
@@ -1966,6 +2154,7 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             )}
           </motion.div>
         </AnimatePresence>
+        </div>
         <BottomNav userId={user!.uid} role="admin" onOpenMessages={() => setActiveTab('messages')} />
       </main>
 
@@ -2251,7 +2440,7 @@ DESIGN & FEATURES
 -----------------
 Primary Color: ${viewingProject.primaryColor}
 Secondary Color: ${viewingProject.secondaryColor}
-Domain Requested: ${viewingProject.domain || viewingProject.domainPreferences?.join(', ') || 'N/A'}
+Domain Requested: ${viewingProject.requestedDomain || viewingProject.domain || 'N/A'}
 
 SELECTED FEATURES:
 ${(viewingProject.selectedFeatures || []).map((f: string) => `- ${f}`).join('\n') || 'None selected'}
@@ -2277,40 +2466,26 @@ ${viewingProject.description}
                   <button 
                     onClick={() => {
                       const prompt = `
-Build me a fully responsive website for my ${viewingProject.businessType} business.
+Build me a website named ${viewingProject.businessName}, ${viewingProject.businessType}.
+Build me a ${viewingProject.businessType} website named ${viewingProject.businessName}.
 
-Business Name: ${viewingProject.businessName}
-Description: ${viewingProject.description}
+The contact details are these:
+Name: ${viewingProject.userName}
+Email: ${viewingProject.userEmail}
+Phone: ${viewingProject.userPhone || 'N/A'}
+Business Email: ${viewingProject.businessEmail || 'N/A'}
+Business Phone: ${viewingProject.businessPhone || 'N/A'}
 
-Design Aesthetic:
-- Primary Color: ${viewingProject.primaryColor}
-- Secondary Color: ${viewingProject.secondaryColor}
-- Style: ${viewingProject.businessType === 'Logistics' ? 'Industrial Corporate / Tech-Noir Hybrid' : 'Modern & Professional'}
+I needed it in the color of ${viewingProject.primaryColor || '#c7c42a'} and ${viewingProject.secondaryColor || '#000000'}.
+The chosen elements are ${viewingProject.selectedFeatures?.join(', ') || 'Standard responsive layout'}.
 
-Features required:
-${(viewingProject.selectedFeatures || []).map((f: string) => `- ${f}`).join('\n')}
-
-Technical Requirements:
-- Fully Responsive (Mobile/Tablet/Desktop)
-- Modern UI with sharp edges and premium typography
-- Fast loading speed
-- Basic SEO optimized
-${(viewingProject.selectedFeatures || []).includes('Booking System') ? '- Implement a high-end booking/scheduling system' : ''}
-${(viewingProject.selectedFeatures || []).includes('Google Login System') ? '- Secure Google Authentication' : ''}
-
-Contact Information for Footer:
-- Phone: ${viewingProject.businessPhone || viewingProject.userPhone}
-- Email: ${viewingProject.businessEmail || viewingProject.userEmail}
-- Location: ${viewingProject.city}, ${viewingProject.state}
-
-Specific Project Brief:
-${viewingProject.description}
-                      `;
+Description: ${viewingProject.description || 'No description provided.'}
+`.trim();
                       const blob = new Blob([prompt], { type: 'text/plain' });
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement('a');
                       link.href = url;
-                      link.download = `${viewingProject.businessName}_ai_prompt.txt`;
+                      link.download = `${viewingProject.businessName}_AI_Prompt.txt`;
                       link.click();
                       toast.success('AI Prompt downloaded');
                     }}
@@ -2395,18 +2570,36 @@ ${viewingProject.description}
                     </section>
 
                     <section>
-                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Preferences</h4>
-                      <div className="bg-[#c7c42a]/5 p-6 rounded-3xl border border-[#c7c42a]/10 space-y-3">
-                        {[0, 1, 2].map((idx) => (
-                          <div key={idx} className="flex justify-between items-center">
-                            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
-                              {idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'} Preference
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Domain Intelligence</h4>
+                      <div className="bg-[#c7c42a]/5 p-6 rounded-3xl border border-[#c7c42a]/10 space-y-4">
+                        <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                            Requested Domain
+                          </span>
+                          <span className="text-xs font-black uppercase italic text-[#c7c42a]">
+                            {viewingProject.requestedDomain || viewingProject.domain || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                            Domain Status
+                          </span>
+                          <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${
+                             viewingProject.domainStatus === 'owned' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                          }`}>
+                            {viewingProject.domainStatus === 'owned' ? 'Already Owned' : 'Need to Buy'}
+                          </span>
+                        </div>
+                        {viewingProject.domainPreferences && (
+                          <div>
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-1">
+                              Preferences
                             </span>
-                            <span className={`text-[10px] font-black uppercase italic ${idx === 0 ? 'text-[#c7c42a]' : 'text-white/60'}`}>
-                              {viewingProject.domainPreferences?.[idx] || (idx === 0 && viewingProject.domain ? viewingProject.domain : 'N/A')}
+                            <span className="text-xs font-bold text-white uppercase italic">
+                              {viewingProject.domainPreferences}
                             </span>
                           </div>
-                        ))}
+                        )}
                       </div>
                     </section>
 
@@ -3014,7 +3207,7 @@ const UserCard: React.FC<UserCardProps> = ({ u, adminId, conversation, onOpenCha
           </div>
           
           {msgCount > 0 && (
-            <div className="bg-[#c7c42a] text-[transparent] text-xs font-bold min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full shrink-0 ml-2">
+            <div className="bg-[#c7c42a] text-black text-xs font-bold min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full shrink-0 ml-2">
               {msgCount}
             </div>
           )}

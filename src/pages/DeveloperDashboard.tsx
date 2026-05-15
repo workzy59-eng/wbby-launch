@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -26,10 +26,11 @@ import {
   XCircle,
   Download,
   User as UserIcon,
-  FileText
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react';
 import { FirebaseUser, auth } from '../firebase';
-import { UserProfile, Project, Attendance } from '../types';
+import { UserProfile, Project, Attendance, LeaveRequest } from '../types';
 import { 
   getProjects, 
   updateProject, 
@@ -49,13 +50,17 @@ import {
   getDeveloperAttendanceStatus,
   getDeveloperStats,
   createNotification,
-  getAttendance
+  getAttendance,
+  getLeaveRequests,
+  requestLeave
 } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
+import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { Bell, Info } from 'lucide-react';
+import { ADMIN_EMAIL } from '../constants';
 
 import BottomNav from '../components/BottomNav';
 
@@ -64,18 +69,24 @@ interface DeveloperDashboardProps {
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance';
+type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance' | 'meetings' | 'vault';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [assignedClients, setAssignedClients] = useState<UserProfile[]>([]);
   const [unassignedProjects, setUnassignedProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+  }, []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAcceptPopup, setShowAcceptPopup] = useState<string | null>(null);
   const [showRejectPopup, setShowRejectPopup] = useState<string | null>(null);
@@ -88,6 +99,29 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProjectForDrawer, setSelectedProjectForDrawer] = useState<Project | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const [systemSettings, setSystemSettings] = useState<any>(null);
+  const isAdmin = user?.email && [ADMIN_EMAIL, 'workzy59@gmail.com'].includes(user.email.toLowerCase());
+
+  useEffect(() => {
+    if (isAdmin) {
+      import('../services/database').then(m => m.getSystemSettings().then(setSystemSettings));
+    }
+  }, [isAdmin]);
+
+  const handleUpdateSystemSettings = async () => {
+    if (!systemSettings) return;
+    setIsSubmitting(true);
+    try {
+      const { updateSystemSettings } = await import('../services/database');
+      await updateSystemSettings(systemSettings);
+      toast.success('System infrastructure updated');
+    } catch (error) {
+      toast.error('Failed to update system settings');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [settingsData, setSettingsData] = useState({
@@ -105,14 +139,61 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [punchOutTimer, setPunchOutTimer] = useState<string | null>(null);
   const [devStats, setDevStats] = useState({ completedCount: 0, activeCount: 0, totalHours: 0, totalPayout: 0 });
   const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [totalHours, setTotalHours] = useState(0);
   const [isSuspended, setIsSuspended] = useState(false);
   const [isStickyOpen, setIsStickyOpen] = useState(false);
   const [stickyNotes, setStickyNotes] = useState(profile?.notes || '');
+  const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
+  const [leaveDate, setLeaveDate] = useState<string>('');
+  const [leaveReason, setLeaveReason] = useState('');
+
+  const handleApplyLeave = async () => {
+    if (!user?.uid || !leaveDate || !leaveReason) return;
+    setIsSubmitting(true);
+    try {
+      await requestLeave({
+        userId: user.uid,
+        userName: profile?.displayName || 'Developer',
+        startDate: leaveDate,
+        endDate: leaveDate,
+        reason: leaveReason,
+        status: 'pending'
+      });
+      toast.success('Leave request sent for verification');
+      
+      // Update local state to show it immediately
+      const lDate = new Date(leaveDate).toISOString().split('T')[0];
+      setLeaveRequests(prev => [...prev, {
+        id: 'temp-' + Date.now(),
+        userId: user.uid,
+        userName: profile?.displayName || 'Developer',
+        startDate: leaveDate,
+        endDate: leaveDate,
+        reason: leaveReason,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      } as LeaveRequest]);
+
+      setIsLeavePopupOpen(false);
+      setLeaveReason('');
+    } catch (error) {
+      toast.error('Failed to submit leave');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (!user?.uid) return;
-    const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
+    const unsub = getUnreadMessageCount(user.uid, (count) => {
+      if (count > unreadCount && document.hidden) {
+        // Play notification sound
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3');
+        audio.play().catch(e => console.log('Audio play failed:', e));
+      }
+      setUnreadCount(count);
+    });
     
     // Real-time attendance status
     const unsubAttendance = getDeveloperAttendanceStatus(user.uid, (data) => {
@@ -149,6 +230,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       }
     });
 
+    getLeaveRequests(user.uid).then(data => {
+      setLeaveRequests(data as LeaveRequest[]);
+    });
+
     if (profile?.status === 'suspended') {
       setIsSuspended(true);
     }
@@ -160,8 +245,8 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   }, [user?.uid]);
 
   useEffect(() => {
-    const devEmails = ['sain17296174@gmail.com', 'workzy59@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'];
-    const adminEmails = ['priyankapudi4u@gmail.com', 'workzy59@gmail.com'];
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const adminEmails = [ADMIN_EMAIL];
     if (user?.email && (devEmails.includes(user.email.toLowerCase()) || adminEmails.includes(user.email.toLowerCase()))) {
       const hasSeen = localStorage.getItem(`dev_welcome_${user.uid}`);
       if (!hasSeen) {
@@ -214,12 +299,26 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   useEffect(() => {
     if (!user?.uid) return;
 
-    const unsubProjects = getProjects((projs) => {
+    const unsubProjects = getProjects(async (projs) => {
       setProjects(projs);
+      
+      // Fetch associated client profiles
+      const uniqueUserIds = Array.from(new Set(projs.map(p => p.userId).filter(Boolean)));
+      if (uniqueUserIds.length > 0) {
+        const profiles = await Promise.all(uniqueUserIds.map(uid => getUserProfile(uid!)));
+        setAssignedClients(profiles.filter(p => p !== null) as UserProfile[]);
+      }
+      
       setLoading(false);
     }, user.uid, 'developer');
 
     const unsubNotifications = getNotifications(user.uid, (notifs) => {
+      const prevUnread = notifications.filter(n => !n.read).length;
+      const newUnread = notifs.filter((n: any) => !n.read).length;
+      
+      if (newUnread > prevUnread) {
+        notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
+      }
       setNotifications(notifs);
     });
 
@@ -239,7 +338,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       unsubNotifications();
       unsubUnassigned();
     };
-  }, [user?.uid, activeTab]);
+  }, [user?.uid, activeTab, notifications.length]);
 
   // Sync settings when profile updates
   useEffect(() => {
@@ -350,6 +449,28 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     return 1125;
   };
 
+  const NavItem = ({ tab, icon: Icon, label }: { tab: Tab, icon: any, label: string }) => (
+    <button
+      onClick={() => {
+        setActiveTab(tab);
+        setIsSidebarOpen(false);
+      }}
+      className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold uppercase italic text-xs tracking-widest transition-all ${
+        activeTab === tab 
+          ? 'bg-[#FFFF00] text-black shadow-[0_0_20px_rgba(255,255,0,0.3)] scale-[1.02]' 
+          : 'text-white/40 hover:text-white hover:bg-white/5'
+      }`}
+    >
+      <Icon size={18} />
+      <span>{label}</span>
+      {tab === 'chat' && unreadCount > 0 && (
+        <span className="ml-auto w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black not-italic animate-pulse">
+          {unreadCount}
+        </span>
+      )}
+    </button>
+  );
+
   const getPlanPrice = (plan?: string) => {
     const p = plan?.toLowerCase() || 'basic';
     if (p === 'premium') return 30000;
@@ -410,14 +531,50 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
 
   const handleDownloadClientDetails = (project: Project) => {
     const details = `
-Project: ${project.businessName}
-Client: ${project.userName}
-Email: ${project.userEmail}
-Status: ${project.status}
-Business Type: ${project.businessType}
-Description: ${project.description}
-Created At: ${formatDate(project.createdAt)}
-    `.trim();
+WEBBYLAUNCH MISSION INTELLIGENCE REPORT
+=======================================
+
+CLIENT PROFILE
+--------------
+NAME: ${project.userName || 'N/A'}
+EMAIL: ${project.userEmail || 'N/A'}
+PHONE: ${project.userPhone || 'N/A'}
+COUNTRY: ${project.country || 'INDIA'}
+
+BUSINESS INTEL
+--------------
+BRAND: ${project.businessName || 'N/A'}
+CATEGORY: ${project.businessType || 'N/A'}
+CONFIG: ${project.storeType === 'online_store' ? 'ONLINE STORE / SHIPMENT' : 'LOCAL STORE / WALK-IN'}
+REGION: ${project.locationState || 'N/A'}
+CITY/LOCATION: ${project.city || 'N/A'}
+BIZ PHONE: ${project.businessPhone || 'N/A'}
+BIZ EMAIL: ${project.businessEmail || 'N/A'}
+
+TECHNICAL SPECIFICATIONS
+------------------------
+SYSTEM PLAN: ${project.plan?.toUpperCase() || 'BASIC'}
+PRIMARY COLOR: ${project.primaryColor || '#C7C42A'}
+SECONDARY COLOR: ${project.secondaryColor || '#000000'}
+SELECTED DOMAIN: ${project.domain || 'PENDING'}
+DOMAIN STATUS: ${project.ownsDomain ? 'HAS OWN DOMAIN' : 'NEEDS ONE REGISTERED'}
+DOMAIN PREFERENCES: ${project.domainPreferences || 'N/A'}
+REGISTRAR: ${project.domainRegistrar || 'N/A'}
+TRANSFER AUTH: ${project.domainTransferAuth || 'N/A'}
+FEATURES: ${project.selectedFeatures?.join(', ') || 'DEFAULT STACK'}
+
+MISSION PARAMETERS
+------------------
+ID: ${project.id}
+STATUS: ${project.status}
+PROGRESS: ${project.progress}%
+CREATED: ${formatDate(project.createdAt)}
+
+DESCRIPTION:
+${project.description || 'NO DESCRIPTION PROVIDED.'}
+=======================================
+PRECISION BUILT BY WEBBYLAUNCH
+`.trim();
 
     const element = document.createElement("a");
     const file = new Blob([details], {type: 'text/plain'});
@@ -454,17 +611,31 @@ Created At: ${formatDate(project.createdAt)}
   };
 
   const handleDownloadPrompt = (project: Project) => {
-    if (!project.aiPrompt) {
-      toast.error('No AI prompt available for this project');
-      return;
-    }
+    const prompt = `
+Build me a website named ${project.businessName}, ${project.businessType}.
+Build me a ${project.businessType} website named ${project.businessName}.
+
+The contact details are these:
+Name: ${project.userName}
+Email: ${project.userEmail}
+Phone: ${project.userPhone || 'N/A'}
+Business Email: ${project.businessEmail || 'N/A'}
+Business Phone: ${project.businessPhone || 'N/A'}
+
+I needed it in the color of ${project.primaryColor || '#c7c42a'} and ${project.secondaryColor || '#000000'}.
+The chosen elements are ${project.selectedFeatures?.join(', ') || 'Standard responsive layout'}.
+
+Description: ${project.description || 'No description provided.'}
+`.trim();
+
     const element = document.createElement("a");
-    const file = new Blob([project.aiPrompt], {type: 'text/plain'});
+    const file = new Blob([prompt], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = `${project.businessName}_prompt.txt`;
+    element.download = `${project.businessName}_AI_Prompt.txt`;
     document.body.appendChild(element);
     element.click();
-    toast.success('Prompt downloaded');
+    document.body.removeChild(element);
+    toast.success('AI Prompt downloaded');
   };
 
   const calculateAttendancePayout = () => {
@@ -491,27 +662,6 @@ Created At: ${formatDate(project.createdAt)}
       </div>
     );
   }
-
-  const NavItem = ({ tab, icon: Icon, label }: { tab: Tab, icon: any, label: string }) => (
-    <button
-      onClick={() => {
-        setActiveTab(tab);
-        setIsSidebarOpen(false);
-      }}
-      className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold uppercase italic text-xs tracking-widest transition-all ${
-        activeTab === tab 
-          ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' 
-          : 'text-white/40 hover:bg-white/5 hover:text-white'
-      }`}
-    >
-      <Icon size={18} />
-      <span>{label.includes('MESSAGES') && label.includes('(') ? (
-        <>
-          MESSAGES <span className="text-red-500">{label.split('MESSAGES ')[1]}</span>
-        </>
-      ) : label}</span>
-    </button>
-  );
 
   return (
     <>
@@ -652,7 +802,9 @@ Created At: ${formatDate(project.createdAt)}
           <NavItem tab="dashboard" icon={LayoutDashboard} label="Overview" />
           <NavItem tab="projects" icon={Briefcase} label="My Task" />
           <NavItem tab="pool" icon={Plus} label="Pool" />
-          <NavItem tab="chat" icon={MessageSquare} label={unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages'} />
+          <NavItem tab="meetings" icon={Video} label="Meetings" />
+          <NavItem tab="chat" icon={MessageSquare} label="Messages" />
+          <NavItem tab="vault" icon={Zap} label="Media Vault" />
           <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
           <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
           <NavItem tab="earnings" icon={Wallet} label="Payments" />
@@ -752,7 +904,7 @@ Created At: ${formatDate(project.createdAt)}
                   <p className="text-xs font-black uppercase italic text-white">{profile?.displayName}</p>
                   <p className="text-[10px] font-bold uppercase text-white/40">Level 1 Developer</p>
                </div>
-               <div className="w-12 h-12 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 flex items-center justify-center text-[#c7c42a]">
+               <div className="w-12 h-12 rounded-full bg-[#c7c42a]/10 border border-[#c7c42a]/20 flex items-center justify-center text-[#c7c42a]">
                   <TrendingUp size={20} />
                </div>
             </div>
@@ -762,6 +914,27 @@ Created At: ${formatDate(project.createdAt)}
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-32 md:pb-10 custom-scrollbar">
           <AnimatePresence mode="wait">
+            {activeTab === 'meetings' && (
+              <div className="p-8 space-y-10">
+                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                   <div>
+                     <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white">Project Syncs</h2>
+                     <p className="text-white/40 text-xs font-black uppercase tracking-widest mt-1">Meetings for your assigned missions</p>
+                   </div>
+                 </div>
+                 
+                 <div className="bg-[#0a0a0a] border border-white/5 rounded-[3rem] p-4 md:p-10">
+                    {user && profile && (
+                      <MeetingList 
+                        user={user} 
+                        profile={profile} 
+                        allClients={assignedClients}
+                      />
+                    )}
+                 </div>
+              </div>
+            )}
+
             {activeTab === 'chat' ? (
               <div className="h-full -m-6 md:-m-10">
                 <MessagesModule 
@@ -781,7 +954,7 @@ Created At: ${formatDate(project.createdAt)}
                 {/* Attendance & Stats Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Attendance Card */}
-                  <div className="lg:col-span-1 bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden group">
+                  <div className="lg:col-span-1 bg-[#111] border border-white/5 rounded-[4rem] p-10 space-y-8 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl" />
                     
                     <div className="flex items-center justify-between">
@@ -801,7 +974,7 @@ Created At: ${formatDate(project.createdAt)}
                           <button 
                             onClick={() => punchOut(user!.uid)}
                             disabled={!!punchOutTimer}
-                            className={`w-full py-6 rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl transition-all border-2 ${
+                            className={`w-full py-6 rounded-full font-black uppercase italic text-sm tracking-[0.2em] shadow-xl transition-all border-2 ${
                               punchOutTimer 
                                 ? 'bg-[#c7c42a]/10 text-[#c7c42a]/40 border-[#c7c42a]/10 cursor-not-allowed' 
                                 : 'bg-[#c7c42a] text-black border-[#c7c42a] shadow-[#c7c42a]/20 hover:scale-[1.02] active:scale-[0.98] animate-pulse'
@@ -810,7 +983,7 @@ Created At: ${formatDate(project.createdAt)}
                             {punchOutTimer ? 'MINIMUM SHIFT ACTIVE' : 'COMPLETE SHIFT / PUNCH OUT'}
                           </button>
                           {punchOutTimer && (
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                            <div className="bg-white/5 border border-white/10 rounded-full p-6 text-center">
                               <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Time Remaining until Punch Out</p>
                               <p className="text-xl font-black italic text-[#c7c42a] tabular-nums">{punchOutTimer}</p>
                             </div>
@@ -819,18 +992,18 @@ Created At: ${formatDate(project.createdAt)}
                       ) : (
                         <button 
                           onClick={() => punchIn(user!.uid)}
-                          className="w-full py-6 bg-black text-[#c7c42a] border-2 border-[#c7c42a] rounded-[1.5rem] font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/10 hover:bg-[#c7c42a] hover:text-black transition-all"
+                          className="w-full py-6 bg-black text-[#c7c42a] border-2 border-[#c7c42a] rounded-full font-black uppercase italic text-sm tracking-[0.2em] shadow-xl shadow-[#c7c42a]/10 hover:bg-[#c7c42a] hover:text-black transition-all"
                         >
                           PUNCH IN
                         </button>
                       )}
                       
                       <div className="grid grid-cols-2 gap-3 text-center">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="p-6 bg-white/5 rounded-full border border-white/5">
                           <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Total Hours</p>
                           <p className="text-lg font-black italic">{devStats.totalHours}h</p>
                         </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="p-6 bg-white/5 rounded-full border border-white/5">
                           <p className="text-[8px] font-black uppercase text-white/20 tracking-widest mb-1">Status</p>
                           <p className={`text-lg font-black italic ${isPunchedIn ? 'text-green-500' : 'text-red-500'}`}>{isPunchedIn ? 'Active' : 'Offline'}</p>
                         </div>
@@ -838,20 +1011,23 @@ Created At: ${formatDate(project.createdAt)}
                     </div>
                   </div>
 
-                  <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
+                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
                     {[
-                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500' },
-                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]' },
-                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', onClick: () => setActiveTab('pool') },
-                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]' }
+                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500', size: 'text-6xl md:text-[85px]' },
+                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]', size: 'text-6xl md:text-[85px]' },
+                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', size: 'text-5xl md:text-[78px]', onClick: () => setActiveTab('pool') },
+                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]', size: 'text-3xl md:text-[60px] xl:text-[78px]', onClick: () => setActiveTab('earnings') }
                     ].map((stat, i) => (
                       <div 
                         key={i} 
-                        className={`bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 space-y-2 ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
+                        className={`bg-white/5 border border-white/10 rounded-[4.5rem] p-10 flex flex-col justify-between min-h-[200px] ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
                         onClick={stat.onClick}
                       >
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
-                        <h3 className={`text-2xl md:text-4xl font-black italic ${stat.color}`}>{stat.value}</h3>
+                        <h3 className={`${stat.size} font-black italic ${stat.color} leading-none mt-4 overflow-hidden text-ellipsis`}>
+                          <span className="sr-only">{stat.label} value</span>
+                          <span>{stat.value}</span>
+                        </h3>
                       </div>
                     ))}
                   </div>
@@ -862,7 +1038,7 @@ Created At: ${formatDate(project.createdAt)}
                   <h3 className="text-lg font-black italic uppercase tracking-widest text-[#c7c42a]">Active Projects</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {projects.map(p => (
-                      <div key={p.id} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden group">
+                      <div key={p.id} className="bg-white/5 border border-white/10 rounded-[4rem] p-10 space-y-6 relative overflow-hidden group">
                         {/* Background Decoration */}
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl group-hover:bg-[#c7c42a]/10 transition-all" />
                         
@@ -870,6 +1046,16 @@ Created At: ${formatDate(project.createdAt)}
                           <div className="space-y-1">
                             <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
                             <p className="text-[10px] font-bold uppercase text-white/40">{p.userName || 'Private Client'}</p>
+                            {p.googleMapsLink && (
+                              <a 
+                                href={p.googleMapsLink} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-[9px] font-black text-[#FFFF00] uppercase tracking-widest flex items-center gap-1 hover:underline mt-1"
+                              >
+                                <Globe size={10} /> View Storefront
+                              </a>
+                            )}
                           </div>
                           <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
                             p.status?.toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-500' :
@@ -883,7 +1069,7 @@ Created At: ${formatDate(project.createdAt)}
                               setSelectedProjectForDrawer(p);
                               setIsDrawerOpen(true);
                             }}
-                            className="p-2 bg-[#FFFF00] text-black rounded hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,0,0.3)] ml-2"
+                            className="p-3 bg-[#FFFF00] text-black rounded-full hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,0,0.3)] ml-2"
                           >
                             <ChevronRight size={18} />
                           </button>
@@ -937,32 +1123,27 @@ Created At: ${formatDate(project.createdAt)}
                              AI Prompt <Download size={14} />
                            </button>
                            <button 
-                             onClick={() => handleContact(p)}
-                             className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+                             onClick={() => {
+                               if (p.logoUrl) window.open(p.logoUrl, '_blank');
+                               if (p.documentsUrl) window.open(p.documentsUrl, '_blank');
+                               if (!p.logoUrl && !p.documentsUrl) toast.error('No assets found');
+                               else toast.success('Opening client assets...');
+                             }}
+                             className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all"
                            >
-                             {/iPhone|Android/i.test(navigator.userAgent) ? 'Call' : 'Contact'} <Info size={14} />
+                             Assets <FileText size={14} />
                            </button>
                         </div>
 
                         {/* Actions */}
                         <div className="pt-2 flex gap-3">
-                          {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId ? (
-                            <>
-                              <button 
+                          {(p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId) ? (
+                            <button 
                                 onClick={() => openAcceptPopup(p.id)}
                                 className="flex-1 py-4 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/10"
                               >
                                 Accept Project
                               </button>
-                              {p.developerId && (
-                                <button 
-                                  onClick={() => setShowRejectPopup(p.id)}
-                                  className="px-6 py-4 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
-                                >
-                                  Reject
-                                </button>
-                              )}
-                            </>
                           ) : (
                             <div className="flex gap-2 w-full">
                               <button 
@@ -1009,27 +1190,28 @@ Created At: ${formatDate(project.createdAt)}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {unassignedProjects.map(p => (
-                    <div key={p.id} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 group">
-                      <div className="space-y-2">
-                        <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
-                        <div className="flex items-center gap-2">
-                           <span className="px-3 py-1 bg-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-white/40">{p.businessType}</span>
-                           <span className="px-3 py-1 bg-[#c7c42a]/10 rounded-lg text-[8px] font-black uppercase tracking-widest text-[#c7c42a]">{p.plan}</span>
+                    {unassignedProjects.map(p => (
+                      <div key={p.id} className="bg-white/5 border border-white/10 rounded-[4rem] p-10 space-y-6 group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl" />
+                        <div className="space-y-2">
+                          <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
+                          <div className="flex items-center gap-2">
+                             <span className="px-3 py-1 bg-white/5 rounded-full text-[8px] font-black uppercase tracking-widest text-white/40">{p.businessType}</span>
+                             <span className="px-3 py-1 bg-[#c7c42a]/10 rounded-full text-[8px] font-black uppercase tracking-widest text-[#c7c42a]">{p.plan}</span>
+                          </div>
                         </div>
+                        <p className="text-xs font-medium text-white/60 line-clamp-3 leading-relaxed italic">
+                          {p.description || 'No description provided.'}
+                        </p>
+                        
+                        <button 
+                          onClick={() => openAcceptPopup(p.id)}
+                          className="w-full py-5 bg-white text-black font-black uppercase italic text-xs tracking-widest rounded-full hover:bg-[#c7c42a] transition-all shadow-xl shadow-white/5"
+                        >
+                          Claim Project
+                        </button>
                       </div>
-                      <p className="text-xs font-medium text-white/60 line-clamp-3 leading-relaxed italic">
-                        {p.description || 'No description provided.'}
-                      </p>
-                      
-                      <button 
-                        onClick={() => openAcceptPopup(p.id)}
-                        className="w-full py-4 bg-white text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-[#c7c42a] transition-all"
-                      >
-                        Claim Project
-                      </button>
-                    </div>
-                  ))}
+                    ))}
                   {unassignedProjects.length === 0 && (
                      <div className="col-span-full py-20 flex flex-col items-center justify-center space-y-4 border-2 border-dashed border-white/5 rounded-[3rem]">
                         <p className="text-sm font-bold uppercase italic text-white/20 tracking-widest">No new projects available in the pool</p>
@@ -1059,14 +1241,14 @@ Created At: ${formatDate(project.createdAt)}
 
                 <div className="grid grid-cols-1 gap-8">
                   {projects.map(p => (
-                    <div key={p.id} className="bg-[#0A0A0A] border border-white/10 rounded-[3rem] p-10 relative overflow-hidden group">
+                    <div key={p.id} className="bg-[#0A0A0A] border border-white/10 rounded-[4rem] p-12 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 w-64 h-64 bg-[#c7c42a]/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-[#c7c42a]/10 transition-all duration-700" />
                       
                       <div className="flex flex-col lg:flex-row gap-12 relative z-10">
                         {/* Primary Info */}
                         <div className="flex-1 space-y-8">
                           <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 bg-[#c7c42a] rounded-[2rem] flex items-center justify-center text-black font-black text-4xl italic shadow-2xl shadow-[#c7c42a]/20">
+                            <div className="w-24 h-24 bg-[#c7c42a] rounded-full flex items-center justify-center text-black font-black text-4xl italic shadow-2xl shadow-[#c7c42a]/20">
                               {p.businessName?.[0]}
                             </div>
                             <div>
@@ -1078,14 +1260,14 @@ Created At: ${formatDate(project.createdAt)}
                                 setSelectedProjectForDrawer(p);
                                 setIsDrawerOpen(true);
                               }}
-                              className="ml-auto p-4 bg-[#FFFF00] text-black rounded hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,0,0.4)]"
+                              className="ml-auto w-14 h-14 bg-[#FFFF00] text-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,0,0.4)]"
                             >
                               <ChevronRight size={24} />
                             </button>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-6 space-y-4">
+                            <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 space-y-4">
                                <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[10px] tracking-widest">
                                  <UserIcon size={14} className="text-[#c7c42a]" />
                                  Client Intelligence
@@ -1095,7 +1277,7 @@ Created At: ${formatDate(project.createdAt)}
                                  <p className="text-xs font-bold text-white/20">{p.userEmail}</p>
                                </div>
                             </div>
-                            <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-6 space-y-4 relative overflow-hidden">
+                            <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden">
                                <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[10px] tracking-widest">
                                  <FileText size={14} className="text-[#c7c42a]" />
                                  AI Blueprints
@@ -1104,7 +1286,7 @@ Created At: ${formatDate(project.createdAt)}
                                  <span className="text-xs font-bold text-white/60">Configured Prompt</span>
                                  <button 
                                    onClick={() => handleDownloadPrompt(p)}
-                                   className="flex items-center gap-2 px-4 py-2 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all shadow-lg"
+                                   className="flex items-center gap-2 px-6 py-3 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full text-[10px] font-black uppercase italic tracking-widest text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all shadow-lg"
                                  >
                                    Download <Download size={12} />
                                  </button>
@@ -1112,7 +1294,7 @@ Created At: ${formatDate(project.createdAt)}
                             </div>
                           </div>
 
-                          <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 space-y-4">
+                          <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-10 space-y-4">
                             <div className="flex justify-between items-center bg-transparent">
                                <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[10px] tracking-widest">
                                  Mission Progress
@@ -1138,11 +1320,11 @@ Created At: ${formatDate(project.createdAt)}
 
                         {/* Control Center */}
                         <div className="w-full lg:w-96 space-y-4 flex flex-col justify-center">
-                           <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-8 space-y-6">
+                           <div className="bg-white/[0.03] border border-white/5 rounded-[3rem] p-10 space-y-6">
                               <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-white/40 italic ml-2">Quick Command Status</label>
                                 <div className="grid grid-cols-1 gap-3">
-                                   <div className={`px-6 py-4 rounded-2xl border text-center font-black uppercase italic text-xs tracking-widest ${
+                                   <div className={`px-6 py-4 rounded-full border text-center font-black uppercase italic text-xs tracking-widest ${
                                      p.status?.toLowerCase() === 'completed' 
                                        ? 'bg-green-500/10 border-green-500/20 text-green-500' 
                                        : 'bg-[#c7c42a]/5 border-[#c7c42a]/20 text-[#c7c42a]'
@@ -1155,7 +1337,7 @@ Created At: ${formatDate(project.createdAt)}
                               <div className="grid grid-cols-1 gap-3">
                                 <button 
                                   onClick={() => setEditingProject(p)}
-                                  className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-white/5 flex items-center justify-center gap-3"
+                                  className="w-full py-5 bg-white text-black rounded-full font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-white/5 flex items-center justify-center gap-3"
                                 >
                                   Update Intel <Settings2 size={16} />
                                 </button>
@@ -1164,7 +1346,7 @@ Created At: ${formatDate(project.createdAt)}
                                     setActiveTab('chat');
                                     // You might want to pre-select the project in chat
                                   }}
-                                  className="w-full py-5 bg-blue-500 text-white rounded-2xl font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3"
+                                  className="w-full py-5 bg-blue-500 text-white rounded-full font-black uppercase italic text-xs tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3"
                                 >
                                   Direct Link <MessageSquare size={16} />
                                 </button>
@@ -1173,7 +1355,7 @@ Created At: ${formatDate(project.createdAt)}
                                     href={p.websiteUrl} 
                                     target="_blank" 
                                     rel="noreferrer" 
-                                    className="w-full py-5 bg-white/5 border border-white/10 text-white/60 rounded-2xl font-black uppercase italic text-xs tracking-widest text-center hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+                                    className="w-full py-5 bg-white/5 border border-white/10 text-white/60 rounded-full font-black uppercase italic text-xs tracking-widest text-center hover:bg-white/10 transition-all flex items-center justify-center gap-3"
                                    >
                                       External Link <ExternalLink size={16} />
                                    </a>
@@ -1202,6 +1384,18 @@ Created At: ${formatDate(project.createdAt)}
                 className="h-[calc(100vh-250px)] bg-[#111] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl"
               >
                 {user && <MessagesModule currentUser={user} profile={profile} onClose={() => setActiveTab('dashboard')} />}
+              </motion.div>
+            )}
+
+            {activeTab === 'vault' && (
+              <motion.div 
+                key="vault"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="p-10"
+              >
+                {user && <MediaVault currentUser={user} profile={profile} />}
               </motion.div>
             )}
 
@@ -1298,46 +1492,81 @@ Created At: ${formatDate(project.createdAt)}
                                     <div className="w-2 h-2 rounded-full bg-red-500" />
                                     <span className="text-[8px] font-black uppercase text-white/40 tracking-widest italic">Absent</span>
                                  </div>
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-[#FFFF00]" />
+                                    <span className="text-[8px] font-black uppercase text-white/40 tracking-widest italic">Leave</span>
+                                 </div>
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-7 gap-4 relative z-10">
+                             <div className="grid grid-cols-7 gap-4 relative z-10">
                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                                  <div key={day} className="text-center text-[10px] font-black uppercase text-white/20 tracking-widest mb-4 italic">{day}</div>
                                ))}
                                {Array.from({ length: 31 }).map((_, i) => {
                                  const dayNum = i + 1;
-                                 const attendanceRecord = attendance.find(a => new Date(a.date).getDate() === dayNum);
+                                 const today = new Date();
+                                 const currentMonthDate = new Date(today.getFullYear(), today.getMonth(), dayNum);
+                                 const dateStr = currentMonthDate.toISOString().split('T')[0];
+                                 
+                                 const attendanceRecord = attendance.find(a => a.date === dateStr);
+                                 const leaveRecord = leaveRequests.find(l => {
+                                   const lDate = typeof l.startDate === 'string' ? l.startDate : (l.startDate as any)?.toDate?.()?.toISOString().split('T')[0];
+                                   return lDate === dateStr;
+                                 });
+                                 
+                                 const isFuture = currentMonthDate > today;
+                                 const isLeave = !!leaveRecord;
                                  
                                  return (
                                    <div 
                                       key={i} 
-                                      className={`h-24 lg:h-32 border ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col p-4 relative group cursor-crosshair`}
+                                      onClick={() => {
+                                        if (isFuture && !isLeave) {
+                                          setLeaveDate(dateStr);
+                                          setIsLeavePopupOpen(true);
+                                        }
+                                      }}
+                                      className={`h-24 lg:h-32 rounded-full aspect-square mx-auto border ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : isLeave ? 'border-[#FFFF00]/40 bg-[#FFFF00]/10' : isFuture ? 'border-[#FFFF00]/20 bg-[#FFFF00]/5 cursor-pointer hover:border-[#FFFF00]' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col items-center justify-center p-4 relative group`}
                                    >
-                                      <span className={`text-xs font-black italic ${attendanceRecord ? 'text-green-500' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
+                                      <span className={`text-xs font-black italic ${attendanceRecord ? 'text-green-500' : isLeave ? 'text-[#FFFF00]' : isFuture ? 'text-[#FFFF00]/60' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
                                       
                                       {attendanceRecord && (
-                                         <div className="mt-auto">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                            <p className="text-[8px] font-black uppercase text-green-500/60 tracking-[0.2em] mt-2 italic">Bio-Active</p>
+                                         <div className="mt-2 text-center">
+                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] mx-auto" />
+                                            <p className="text-[6px] font-black uppercase text-green-500/60 mt-1">Bio-Active</p>
+                                         </div>
+                                      )}
+
+                                      {isLeave && (
+                                         <div className="mt-2 text-center">
+                                            <div className="w-2 h-2 rounded-full bg-[#FFFF00] shadow-[0_0_10px_rgba(255,255,0,0.5)] mx-auto" />
+                                            <p className="text-[6px] font-black uppercase text-[#FFFF00]/60 mt-1">On Leave</p>
+                                         </div>
+                                      )}
+
+                                      {isFuture && !isLeave && (
+                                         <div className="mt-2 text-[8px] font-black uppercase text-[#FFFF00]/40 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                                            Ref Leave
                                          </div>
                                       )}
                                       
                                       {/* Info Overlay */}
-                                      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-center p-3 z-20">
-                                         <p className="text-[8px] font-black uppercase tracking-[0.4em] text-[#FFFF00] italic mb-2">Protocol Intel</p>
-                                         {attendanceRecord ? (
-                                           <div className="space-y-1">
-                                             <p className="text-xs font-black text-white italic">{attendanceRecord.totalHours?.toFixed(1)}h Active</p>
-                                             <p className="text-[8px] font-bold text-[#FFFF00] uppercase tracking-widest">In: {attendanceRecord.checkIn ? new Date(attendanceRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
-                                           </div>
-                                         ) : (
-                                           <div className="flex flex-col items-center">
-                                              <XCircle size={16} className="text-red-500/40 mb-1" />
-                                              <p className="text-[10px] font-black text-red-500/60 italic">Signal Lost</p>
-                                           </div>
-                                         )}
-                                      </div>
+                                      {!isFuture && (
+                                        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-center p-3 z-20 rounded-full">
+                                          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-[#FFFF00] italic mb-2">Protocol Intel</p>
+                                          {attendanceRecord ? (
+                                            <div className="space-y-1">
+                                              <p className="text-xs font-black text-white italic">{attendanceRecord.totalHours?.toFixed(1)}h Active</p>
+                                            </div>
+                                          ) : (
+                                            <div className="flex flex-col items-center">
+                                               <XCircle size={16} className="text-red-500/40 mb-1" />
+                                               <p className="text-[10px] font-black text-red-500/60 italic">Signal Lost</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
                                    </div>
                                  );
                                })}
@@ -1510,6 +1739,59 @@ Created At: ${formatDate(project.createdAt)}
                        </div>
                     </div>
 
+                    {isAdmin && systemSettings && (
+                      <div className="pt-8 border-t border-white/5 space-y-6">
+                        <div className="flex items-center gap-3">
+                          <Settings2 size={16} className="text-[#c7c42a]" />
+                          <h5 className="text-xs font-black uppercase tracking-widest text-white italic">Global Infrastructure (Admin)</h5>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-[8px] font-black uppercase text-white/40 ml-2">Basic Link (₹7,500)</label>
+                            <input 
+                              type="text"
+                              value={systemSettings.paymentLinks?.basic || ''}
+                              onChange={(e) => setSystemSettings({
+                                ...systemSettings,
+                                paymentLinks: { ...systemSettings.paymentLinks, basic: e.target.value }
+                              })}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-bold text-white outline-none focus:border-[#c7c42a]"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[8px] font-black uppercase text-white/40 ml-2">Standard (₹15,000)</label>
+                            <input 
+                              type="text"
+                              value={systemSettings.paymentLinks?.standard || ''}
+                              onChange={(e) => setSystemSettings({
+                                ...systemSettings,
+                                paymentLinks: { ...systemSettings.paymentLinks, standard: e.target.value }
+                              })}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-bold text-white outline-none focus:border-[#c7c42a]"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[8px] font-black uppercase text-white/40 ml-2">Premium (₹30,000)</label>
+                            <input 
+                              type="text"
+                              value={systemSettings.paymentLinks?.premium || ''}
+                              onChange={(e) => setSystemSettings({
+                                ...systemSettings,
+                                paymentLinks: { ...systemSettings.paymentLinks, premium: e.target.value }
+                              })}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-bold text-white outline-none focus:border-[#c7c42a]"
+                            />
+                          </div>
+                        </div>
+                        <button 
+                          onClick={handleUpdateSystemSettings}
+                          className="w-full py-4 bg-[#c7c42a] text-black font-black uppercase italic text-[10px] tracking-widest rounded-xl hover:scale-[1.01] transition-all"
+                        >
+                          Sync Global Links
+                        </button>
+                      </div>
+                    )}
+
                     <button 
                       onClick={async () => {
                         if (!user?.uid) return;
@@ -1668,187 +1950,344 @@ Created At: ${formatDate(project.createdAt)}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsDrawerOpen(false)}
-                className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm"
+                className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md"
               />
               <motion.div 
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
-                className="fixed top-0 right-0 h-full w-full max-w-md z-[301] bg-black border-l border-[#FFFF00]/10 shadow-2xl flex flex-col"
+                className="fixed top-0 right-0 h-full w-full max-w-2xl z-[301] bg-[#5B6D5E] border-l border-black shadow-2xl flex flex-col font-mono overflow-hidden"
               >
-                {/* Header */}
-                <div className="p-8 border-b border-[#FFFF00]/10 flex items-center justify-between bg-black">
-                  <div>
-                    <h2 className="text-2xl font-black italic uppercase tracking-tighter text-[#FFFF00]">Control Center</h2>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FFFF00]/40">Active Intelligence: {selectedProjectForDrawer.businessName}</p>
+                {/* Header - TITAN Design */}
+                <div className="p-10 border-b border-black/10 flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white leading-none">
+                      {selectedProjectForDrawer.businessName || 'TITAN'}
+                    </h2>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/60">Project Details</p>
                   </div>
-                  <button 
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="p-3 bg-[#FFFF00]/5 hover:bg-[#FFFF00]/10 text-[#FFFF00] rounded transition-all"
-                  >
-                    <X size={20} />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => handleDownloadClientDetails(selectedProjectForDrawer)}
+                      className="bg-[#D4E157] text-black px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 hover:bg-[#c7d14d] transition-all"
+                    >
+                      <Download size={14} /> Details
+                    </button>
+                    <button 
+                      onClick={() => handleDownloadPrompt(selectedProjectForDrawer)}
+                      className="bg-[#00E5FF] text-black px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 hover:bg-[#00d5ed] transition-all"
+                    >
+                      <Plus size={14} /> AI Prompt
+                    </button>
+                    <button 
+                      onClick={() => setIsDrawerOpen(false)}
+                      className="text-white hover:text-black transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                  {/* Status & Acceptance */}
-                  {(selectedProjectForDrawer.status?.toLowerCase() === 'pending' || selectedProjectForDrawer.status?.toLowerCase() === 'assigned' || !selectedProjectForDrawer.developerId) ? (
-                    <div className="p-8 bg-[#FFFF00]/5 border-2 border-[#FFFF00]/20 space-y-6">
-                      <div className="flex items-center gap-3">
-                        <AlertCircle className="text-[#FFFF00]" size={24} />
-                        <h3 className="text-sm font-black uppercase italic tracking-widest text-[#FFFF00]">Mission Pending</h3>
+                {/* Tabs */}
+                <div className="px-10 flex gap-4 mt-6">
+                  <button className="bg-[#D4E157] text-black px-8 py-2 text-[10px] font-black uppercase">Overview</button>
+                  <button className="bg-transparent text-black/40 px-8 py-2 text-[10px] font-black uppercase hover:text-black">Preview</button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar text-black">
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Client Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Client Information</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">Name</span>
+                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.userName || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Email</span>
+                        <span className="text-right lowercase truncate">{selectedProjectForDrawer.userEmail || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Phone</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.userPhone || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Country</span>
+                        <span className="text-right uppercase flex items-center justify-end gap-2">
+                          {selectedProjectForDrawer.country === 'India' ? '🇮🇳' : selectedProjectForDrawer.country === 'US' ? '🇺🇸' : '🇬🇧'} 
+                          {selectedProjectForDrawer.country || 'India'}
+                        </span>
                       </div>
-                      <p className="text-xs font-bold text-[#FFFF00]/60 uppercase leading-relaxed tracking-wider">
-                        AWAITING DEVELOPER CONFIRMATION. ONCE ACCEPTED, CLIENT MESSAGING AND BILLING INFRASTRUCTURE WILL BE INITIALIZED.
-                      </p>
-                      <button 
-                        onClick={() => {
-                          setIsDrawerOpen(false);
-                          openAcceptPopup(selectedProjectForDrawer.id);
-                        }}
-                        className="w-full py-5 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,0,0.3)]"
-                      >
-                        [ ACCEPT_PROJECT ]
-                      </button>
                     </div>
-                  ) : (
-                    <div className="space-y-8">
-                      {/* Progress Slider (Module 3) */}
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-end">
-                          <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Mission Progress</h3>
-                          <span className="text-2xl font-black italic text-[#FFFF00]">{selectedProjectForDrawer.progress || 0}%</span>
-                        </div>
-                        <div className="relative pt-4">
-                          <input 
-                            type="range" 
-                            min="0" 
-                            max="100" 
-                            value={selectedProjectForDrawer.progress || 0}
-                            onChange={async (e) => {
-                              const newProgress = parseInt(e.target.value);
-                              const updatedProj = { ...selectedProjectForDrawer, progress: newProgress };
-                              setSelectedProjectForDrawer(updatedProj);
-                              
-                              // Sync to DB
-                              try {
-                                await updateProject(selectedProjectForDrawer.id, { progress: newProgress });
-                                // Toast would be too noisy here, maybe just update local state
-                              } catch (err) {
-                                toast.error('Progress sync failed');
-                              }
-                            }}
-                            className="w-full h-8 bg-white/5 appearance-none cursor-pointer outline-none overflow-hidden border border-[#FFFF00]/10 accent-[#FFFF00]"
-                          />
-                          <style>{`
-                            input[type=range]::-webkit-slider-thumb {
-                              -webkit-appearance: none;
-                              height: 32px;
-                              width: 16px;
-                              background: #FFFF00;
-                              cursor: pointer;
-                              border-radius: 0;
-                              box-shadow: -400px 0 0 400px rgba(255, 255, 0, 0.4);
-                            }
-                          `}</style>
-                        </div>
-                        <p className="text-[8px] font-bold text-[#FFFF00]/40 uppercase tracking-[0.3em] text-center italic">
-                          Manual Override: Slide to update global status indicators
+
+                    {/* Business Details */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Business Details</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">Business Name</span>
+                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.businessName || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Business Phone</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.businessPhone || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Configuration</span>
+                        <span className="text-right uppercase font-black text-[#D4E157]">{selectedProjectForDrawer.storeType === 'online_store' ? 'ONLINE STORE' : 'LOCAL STORE'}</span>
+                        <span className="text-black/40 uppercase">Region</span>
+                        <span className="text-right uppercase truncate">{selectedProjectForDrawer.locationState || 'N/A'}, {selectedProjectForDrawer.city || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Project Overview */}
+                    <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-full">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Project Overview</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">Type</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.businessType || 'Website'}</span>
+                        <span className="text-black/40 uppercase">Plan</span>
+                        <span className="text-right uppercase text-[#D4E157] font-black">{selectedProjectForDrawer.plan || 'N/A'}</span>
+                        <span className="text-black/40 uppercase">Status</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.status || 'Pending'}</span>
+                        <span className="text-black/40 uppercase">Progress</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.progress || 0}%</span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Description</h3>
+                      <div className="bg-black/10 p-6 h-32 overflow-y-auto custom-scrollbar-slim rounded-3xl">
+                        <p className="text-[10px] font-bold uppercase leading-relaxed text-black/70 italic">
+                          {selectedProjectForDrawer.description || 'No description provided.'}
                         </p>
                       </div>
+                    </div>
+                  </div>
 
-                      {/* Financial Intel */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Payout</p>
-                          <p className="text-lg font-black italic text-[#FFFF00]">₹{calculatePayout(selectedProjectForDrawer.plan).toLocaleString()}</p>
+                  {/* AI BRIEF SECTION */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4E157] border-b border-black/10 pb-2">Mission Intelligence</h3>
+                    <div className="bg-black/10 p-8 rounded-[2rem] space-y-6">
+                      {selectedProjectForDrawer.developerNote && (
+                        <div className="space-y-2">
+                          <label className="text-[8px] font-black uppercase text-red-400">Direct Note from Client</label>
+                          <div className="bg-red-400/10 border border-red-400/20 p-6 rounded-2xl">
+                             <p className="text-[11px] font-black italic uppercase leading-relaxed text-red-400">
+                               "{selectedProjectForDrawer.developerNote}"
+                             </p>
+                          </div>
                         </div>
-                        <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Plan</p>
-                          <p className="text-lg font-black italic uppercase">{selectedProjectForDrawer.plan || 'BASIC'}</p>
+                      )}
+                      
+                      <div className="space-y-2 pt-4 border-t border-black/5">
+                        <label className="text-[8px] font-black uppercase text-black/40">Prompt Expert Instruction</label>
+                        <p className="text-[10px] font-bold text-white leading-relaxed italic">
+                          "You are a Prompt Engineering Expert. Your job is to take basic business details from me and turn them into a professional, high-level prompt for a Web Developer AI..."
+                        </p>
+                      </div>
+                      {selectedProjectForDrawer.aiDeveloperBrief && (
+                        <div className="space-y-2 pt-4 border-t border-black/5">
+                          <label className="text-[8px] font-black uppercase text-black/40">Generated Optimized Prompt</label>
+                          <div className="bg-black/20 p-6 rounded-2xl">
+                            <p className="text-[11px] font-black italic uppercase leading-relaxed text-[#D4E157] whitespace-pre-wrap">
+                              {selectedProjectForDrawer.aiDeveloperBrief}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      )}
+                    </div>
+                  </div>
 
-                      {/* Status Control */}
-                      <div className="space-y-4">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Deployment Status</h3>
-                        <select 
-                          value={selectedProjectForDrawer.status}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value;
-                            try {
-                              await updateProject(selectedProjectForDrawer.id, { status: newStatus });
-                              setSelectedProjectForDrawer({ ...selectedProjectForDrawer, status: newStatus as any });
-                              toast.success(`Deployment shifted to: ${newStatus.toUpperCase()}`);
-                            } catch (err) {
-                              toast.error('Status transition failed');
-                            }
-                          }}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-xs font-black uppercase italic tracking-widest text-white outline-none focus:border-[#FFFF00] transition-all"
-                        >
-                          <option value="Development Started" className="bg-black">Development Started</option>
-                          <option value="in-progress" className="bg-black">In Progress</option>
-                          <option value="Waiting for Review" className="bg-black">Under Review</option>
-                          <option value="completed" className="bg-black">Completed</option>
-                        </select>
-                      </div>
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Domain Intelligence */}
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Domain Intelligence</h3>
+                      <div className="grid grid-cols-2 gap-y-3 text-[10px] font-bold">
+                        <span className="text-black/40 uppercase">Requested Domain</span>
+                        <span className="text-right uppercase text-[#D4E157] truncate">{selectedProjectForDrawer.requestedDomain || selectedProjectForDrawer.domain || 'N/A'}</span>
+                        
+                        <span className="text-black/40 uppercase">Owns Domain?</span>
+                        <span className="text-right uppercase">{selectedProjectForDrawer.ownsDomain ? 'YES' : 'NO'}</span>
 
-                      {/* Actions */}
-                      <div className="grid grid-cols-1 gap-3 pt-4">
-                         <button 
-                            onClick={() => {
-                              setActiveTab('chat');
-                              setIsDrawerOpen(false);
-                            }}
-                            className="w-full py-5 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] rounded-2xl font-black uppercase italic text-xs tracking-widest hover:bg-[#FFFF00] hover:text-black transition-all flex items-center justify-center gap-3"
-                          >
-                            COMMUNICATION HUB <MessageSquare size={16} />
-                          </button>
-                          <button 
-                            onClick={() => handleDownloadPrompt(selectedProjectForDrawer)}
-                            className="w-full py-5 bg-white/5 border border-white/10 text-white/60 rounded-2xl font-black uppercase italic text-xs tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3"
-                          >
-                            DOWNLOAD BLUEPRINT <Download size={16} />
-                          </button>
+                        {selectedProjectForDrawer.ownsDomain ? (
+                          <>
+                            <span className="text-black/40 uppercase">Registrar</span>
+                            <span className="text-right uppercase">{selectedProjectForDrawer.domainRegistrar || 'N/A'}</span>
+                            <span className="text-black/40 uppercase">Auth Code</span>
+                            <span className="text-right uppercase">{selectedProjectForDrawer.domainTransferAuth || 'N/A'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-black/40 uppercase">Alt Choices</span>
+                            <span className="text-right uppercase text-[9px] leading-tight">
+                              {selectedProjectForDrawer.domainChoices?.filter(c => c).join(', ') || 'NONE'}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
-                  )}
 
-                  {/* Client Dossier */}
-                  <div className="pt-10 border-t border-[#FFFF00]/10 space-y-6">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-[#FFFF00] italic">Client Dossier</h3>
+                    {/* Selected Features */}
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-[#FFFF00]">
-                            <UserIcon size={20} />
-                         </div>
-                         <div>
-                            <p className="text-sm font-black italic uppercase">{selectedProjectForDrawer.userName || 'Private Identity'}</p>
-                            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{selectedProjectForDrawer.userEmail}</p>
-                         </div>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Selected Features</h3>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {selectedProjectForDrawer.selectedFeatures && selectedProjectForDrawer.selectedFeatures.length > 0 ? (
+                          selectedProjectForDrawer.selectedFeatures.map(f => (
+                            <span key={f} className="px-3 py-1 bg-black/10 text-[9px] font-black uppercase border border-white/5">{f}</span>
+                          ))
+                        ) : (
+                          <span className="text-[9px] font-black text-black/40">NO FEATURES SELECTED</span>
+                        )}
                       </div>
-                      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-2">
-                        <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Business Brief</p>
-                        <p className="text-xs font-medium italic text-white/60 leading-relaxed uppercase">{selectedProjectForDrawer.description || 'No brief provided.'}</p>
+                    </div>
+                  </div>
+
+                  {/* Timeline */}
+                  <div className="space-y-4 bg-black/5 p-6 border border-black/10 rounded-full">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Timeline</h3>
+                    <div className="grid grid-cols-4 gap-4 text-center">
+                      <div>
+                        <p className="text-black/40 text-[8px] font-black uppercase mb-1">Start Date</p>
+                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">{formatDate(selectedProjectForDrawer.createdAt)}</p>
                       </div>
-                      <button 
-                        onClick={() => handleContact(selectedProjectForDrawer)}
-                        className="w-full py-4 border border-[#FFFF00]/20 text-[#FFFF00] rounded-2xl font-black uppercase italic text-[10px] tracking-widest hover:bg-[#FFFF00]/5 transition-all"
-                      >
-                        ESTABLISH SECURE CONTACT
-                      </button>
+                      <div>
+                        <p className="text-black/40 text-[8px] font-black uppercase mb-1">Deadline</p>
+                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">TBD</p>
+                      </div>
+                      <div>
+                        <p className="text-black/40 text-[8px] font-black uppercase mb-1">Last Update</p>
+                        <p className="text-[10px] font-bold uppercase text-[#D4E157]">{formatDate(selectedProjectForDrawer.updatedAt)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Internal Notes */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Full Client Inputs</h3>
+                    <div className="bg-black/10 p-6 rounded-[2rem] space-y-4">
+                      {Object.entries((selectedProjectForDrawer as any).onboardingData || {}).map(([key, value]) => {
+                        if (typeof value === 'object' || !value || String(value).startsWith('http')) return null;
+                        return (
+                          <div key={key} className="flex justify-between items-center text-[10px] border-b border-black/5 pb-2">
+                             <span className="font-black uppercase text-black/40">{key.replace(/([A-Z])/g, ' $1')}</span>
+                             <span className="font-bold text-black uppercase italic truncate max-w-[200px]">{String(value)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Internal Notes */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Internal Notes</h3>
+                    <div className="bg-[#D4E157]/5 p-6 border border-[#D4E157]/20 rounded-full">
+                      <p className="text-[10px] font-bold uppercase italic text-[#D4E157]/80">
+                        {selectedProjectForDrawer.internalNotes || 'No internal notes added by the system or team.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Files & Assets */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Files & Assets</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                       {selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl ? (
+                          <div 
+                            onClick={() => window.open(selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl, '_blank')}
+                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all"
+                          >
+                             <div className="flex items-center gap-3">
+                               <ImageIcon size={16} className="text-black/40" />
+                               <span className="text-[10px] font-bold uppercase">Company Logo</span>
+                             </div>
+                             <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
+                          </div>
+                       ) : null}
+
+                       {selectedProjectForDrawer.documentsUrl || (selectedProjectForDrawer as any).onboardingData?.documentsUrl ? (
+                          <div 
+                            onClick={() => window.open(selectedProjectForDrawer.documentsUrl || (selectedProjectForDrawer as any).onboardingData?.documentsUrl, '_blank')}
+                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all"
+                          >
+                             <div className="flex items-center gap-3">
+                               <FileText size={16} className="text-black/40" />
+                               <span className="text-[10px] font-bold uppercase">Business Assets</span>
+                             </div>
+                             <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
+                          </div>
+                       ) : null}
+
+                       {!selectedProjectForDrawer.logoUrl && !(selectedProjectForDrawer as any).onboardingData?.logoUrl && 
+                        !selectedProjectForDrawer.documentsUrl && !(selectedProjectForDrawer as any).onboardingData?.documentsUrl && (
+                         <p className="text-[9px] font-black text-black/20 uppercase tracking-widest italic py-4">No assets provided by client</p>
+                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Footer Footer Footer */}
-                <div className="p-8 border-t border-[#FFFF00]/10 bg-black/50 backdrop-blur-xl">
-                  <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/10 text-center">
-                    WebbyLaunch // Security Protocol Alpha-9 // Mission ID: #{selectedProjectForDrawer.id.slice(-8).toUpperCase()}
-                  </p>
+                {/* Footer Actions */}
+                <div className="p-10 border-t border-black/10 grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => {
+                      setEditingProject(selectedProjectForDrawer);
+                      setIsDrawerOpen(false);
+                    }}
+                    className="bg-[#D4E157] text-black py-4 text-xs font-black uppercase italic tracking-widest hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    Edit Project
+                  </button>
+                  <button 
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="bg-black/20 text-white/60 py-4 text-xs font-black uppercase italic tracking-widest hover:bg-black/30 transition-all font-mono"
+                  >
+                    Close
+                  </button>
                 </div>
               </motion.div>
             </>
+          )}
+        </AnimatePresence>
+        {/* Leave Request Popup */}
+        <AnimatePresence>
+          {isLeavePopupOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/80 backdrop-blur-3xl"
+            >
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                className="max-w-md w-full bg-[#111] border border-white/10 rounded-full aspect-square p-12 flex flex-col items-center justify-center space-y-6 shadow-2xl relative"
+              >
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Apply leave if it is a future date</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FFFF00] italic">MISSION DATE SECURED: {leaveDate}</p>
+                </div>
+
+                <div className="w-full space-y-4 px-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 italic text-center block">REASON FOR ABSENCE</label>
+                    <textarea 
+                      value={leaveReason}
+                      onChange={(e) => setLeaveReason(e.target.value)}
+                      placeholder="ENTER VALID REASON FOR LEAVE..."
+                      className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-white text-[10px] font-bold outline-none focus:border-[#FFFF00] transition-all min-h-[100px] resize-none uppercase italic tracking-wider text-center"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <button 
+                      onClick={handleApplyLeave}
+                      disabled={isSubmitting || !leaveReason.trim()}
+                      className="w-full py-4 bg-[#FFFF00] text-black rounded-full text-[10px] font-black uppercase italic tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {isSubmitting ? 'Syncing...' : 'Request Leave'}
+                    </button>
+                    <button 
+                      onClick={() => setIsLeavePopupOpen(false)}
+                      className="w-full py-2 text-[10px] font-black uppercase italic tracking-widest text-white/20 hover:text-white transition-all"
+                    >
+                      Abort
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>
       </main>
@@ -1933,17 +2372,6 @@ Created At: ${formatDate(project.createdAt)}
               </div>
 
               <div className="flex gap-4">
-                <button 
-                  onClick={() => {
-                    setShowAcceptPopup(null);
-                    setTempPaymentLink('');
-                    setTempDomainPrice(0);
-                    setIsFinancialIntelSaved(false);
-                  }} 
-                  className="flex-1 py-4 rounded-2xl border border-white/10 text-white font-black uppercase italic text-xs tracking-widest hover:bg-white/5 transition-all"
-                >
-                  Cancel
-                </button>
                 <button 
                   onClick={() => handleAcceptProject(showAcceptPopup)}
                   disabled={isSubmitting || !isFinancialIntelSaved}
@@ -2113,6 +2541,32 @@ Created At: ${formatDate(project.createdAt)}
                   />
                 </div>
 
+                <div className="space-y-4 bg-white/5 p-6 rounded-2xl border border-white/10">
+                   <h4 className="text-[8px] font-black uppercase tracking-[0.3em] text-[#c7c42a] mb-4">Core Intelligence</h4>
+                   <div className="space-y-4">
+                      <div>
+                        <label className="text-[8px] font-bold text-white/40 uppercase ml-2">Business Phone</label>
+                        <input 
+                          type="text"
+                          value={editingProject.businessPhone || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, businessPhone: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white font-bold outline-none focus:border-[#c7c42a]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-white/40 uppercase ml-2">Store Type</label>
+                        <select 
+                          value={editingProject.storeType || 'online_store'}
+                          onChange={(e) => setEditingProject({ ...editingProject, storeType: e.target.value as any })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white font-bold outline-none focus:border-[#c7c42a]"
+                        >
+                          <option value="online_store" className="bg-[#111]">Online Store</option>
+                          <option value="local_store" className="bg-[#111]">Local Store</option>
+                        </select>
+                      </div>
+                   </div>
+                </div>
+
                 {editingProject.paymentStatus === 'verifying' && (
                   <div className="p-6 rounded-2xl bg-[#c7c42a]/10 border border-[#c7c42a]/20 space-y-4">
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic text-center">Client claims payment is completed. confirm?</p>
@@ -2172,6 +2626,8 @@ Created At: ${formatDate(project.createdAt)}
                         paymentLink: editingProject.paymentLink,
                         paymentLinkBasic: editingProject.paymentLinkBasic,
                         paymentLinkPremium: editingProject.paymentLinkPremium,
+                        businessPhone: editingProject.businessPhone,
+                        storeType: editingProject.storeType,
                         updatedAt: new Date().toISOString()
                       });
                       toast.success('Project details updated');

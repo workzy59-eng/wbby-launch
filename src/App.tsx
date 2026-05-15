@@ -4,7 +4,7 @@ import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc
 import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
+import { createUserProfile, getUserProfile, updateUserStatus, seedSampleBlogPosts } from './services/database';
 import { ADMIN_EMAIL } from './constants';
 import { Smartphone } from 'lucide-react';
 import { Loader } from './components/ui/loader';
@@ -57,6 +57,9 @@ export default function App() {
 
   useEffect(() => {
     if (user) {
+      // Seed blog posts if empty - helpful for SEO and initial content
+      seedSampleBlogPosts();
+
       // Set online status
       updateUserStatus(user.uid, 'online');
       
@@ -117,9 +120,9 @@ export default function App() {
                   element={
                     user ? (
                       (profile?.role === 'admin' || 
-                       [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                       user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                         <Navigate to="/admin" />
-                      ) : (['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                      ) : (['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
                         <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
@@ -167,10 +170,10 @@ export default function App() {
                     user ? (
                       profile ? (
                         (profile.role === 'admin' || 
-                         [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                         user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                           <AdminPanel user={user} profile={profile} />
                         ) : (profile.role === 'developer' || 
-                             ['sain17296174@gmail.com', 'sin17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                             ['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
@@ -196,7 +199,7 @@ export default function App() {
                   element={
                     user ? (
                       profile ? (
-                        profile.role === 'developer' ? (
+                        (profile.role === 'developer' || ['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : (
                           <Navigate to="/dashboard" />
@@ -213,7 +216,7 @@ export default function App() {
                 />
                 <Route 
                   path="/admin" 
-                  element={user && (profile?.role === 'admin' || [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'].includes(user.email?.toLowerCase() || '')) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                  element={user && (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
                 />
                 <Route 
                   path="/portfolio/gym" 

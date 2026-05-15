@@ -11,11 +11,18 @@ export { db };
 
 export const createNotification = async (data: any) => {
   try {
-    await addDoc(collection(db, 'notifications'), {
+    const notificationData = {
       ...data,
       read: false,
       createdAt: serverTimestamp()
-    });
+    };
+    
+    // Ensure userId or role is present
+    if (!notificationData.userId && !notificationData.role) {
+      console.warn('Notification missing recipient (userId or role):', notificationData);
+    }
+    
+    await addDoc(collection(db, 'notifications'), notificationData);
   } catch (error) {
     console.error('Notification failed:', error);
   }
@@ -100,41 +107,114 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// Corrected upload helper using Cloudinary (Client-side)
-export const uploadFile = async (file: File, folder: string = 'uploads'): Promise<string> => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+// Client-side image compression helper to prevent Firestore 1MB document limit breaches
+export const compressImageIfNeeded = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<File> => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
 
-  if (!cloudName || !uploadPreset) {
-    console.warn('Cloudinary credentials missing, falling back to Base64');
-    return await convertFileToBase64(file);
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            quality
+          );
+        } else {
+          resolve(file);
+        }
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
+
+import axios from 'axios';
+
+// Corrected upload helper using Backend API (proxied to Cloudinary)
+export const uploadFile = async (file: File, folder: string = 'uploads', onProgress?: (percent: number) => void): Promise<string> => {
+  let processedFile = file;
+  if (file.type.startsWith('image/')) {
+    try {
+      processedFile = await compressImageIfNeeded(file);
+    } catch (err) {
+      console.warn('Image compression failed, using original:', err);
+    }
   }
 
   try {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
     formData.append('folder', folder);
+    formData.append('file', processedFile);
 
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+    // Using our own backend API to handle the upload
+    // This avoids exposing Cloudinary secrets on client and bypasses direct Cloudinary CSP restrictions
+    const response = await axios.post(
+      '/api/upload',
+      formData,
       {
-        method: 'POST',
-        body: formData,
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onProgress(percentCompleted);
+          }
+        },
       }
     );
 
-    if (!response.ok) {
-      throw new Error('Cloudinary upload failed');
+    if (response.data && response.data.url) {
+      return response.data.url;
     }
-
-    const data = await response.json();
-    return data.secure_url;
-  } catch (error) {
-    console.error('Cloudinary upload error:', error);
-    return await convertFileToBase64(file);
+    throw new Error('Invalid response from upload server');
+  } catch (error: any) {
+    console.error('Upload error:', error);
+    
+    // If backend upload fails, we check if we can fallback to Base64 (only for small files)
+    if (processedFile.size > 700000) {
+      const errorMessage = error.response?.data?.error || error.message || 'Upload failed';
+      throw new Error(`Upload failed: ${errorMessage}. File is too large (${Math.round(processedFile.size / 1024)}KB) to fallback.`);
+    }
+    
+    console.warn('Backend upload failed, falling back to Base64');
+    return await convertFileToBase64(processedFile);
   }
 };
+
 
 
 // User Profile Operations
@@ -142,7 +222,7 @@ export const isUserAdmin = async (uid: string) => {
   const userDoc = await getDoc(doc(db, 'users', uid));
   if (!userDoc.exists()) return false;
   const data = userDoc.data();
-  const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'];
+  const adminEmails = [ADMIN_EMAIL.toLowerCase()];
   const userEmail = data.email?.toLowerCase() || '';
   return data.role === 'admin' || adminEmails.includes(userEmail);
 };
@@ -158,8 +238,8 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   
   try {
     let role = 'client';
-    const adminEmails = [ADMIN_EMAIL.toLowerCase(), 'workzy59@gmail.com', 'priyankapudi4u@gmail.com'];
-    const devEmails = ['sain17296174@gmail.com', 'bharathmath1729@gmail.com', 'aither2029@gmail.com'];
+    const adminEmails = [ADMIN_EMAIL.toLowerCase()];
+    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
@@ -167,7 +247,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
       role = 'developer';
     }
 
-    const defaultName = user.email === 'priyankapudi4u@gmail.com' ? "Priyanka Pudi | senior devloper" : (user.displayName || "");
+    const defaultName = (user.displayName || "");
 
     // PART 2 — FIX USER WRITE METHOD: setDoc with user.uid and merge: true
     await setDoc(doc(db, 'users', user.uid), {
@@ -366,6 +446,21 @@ export const checkUsernameUnique = async (username: string) => {
   }
 };
 
+// Domain availability check
+export const checkDomainInUse = async (domain: string) => {
+  try {
+    const dLower = domain.toLowerCase();
+    const q1 = query(collection(db, 'projects'), where('domain', '==', dLower), limit(1));
+    const q2 = query(collection(db, 'projects'), where('requestedDomain', '==', dLower), limit(1));
+    
+    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    return !snap1.empty || !snap2.empty;
+  } catch (error) {
+    console.error('Error checking domain:', error);
+    return false;
+  }
+};
+
 export const getUserProfile = async (uid: string) => {
   const path = `users/${uid}`;
   try {
@@ -479,10 +574,22 @@ export const getClients = async () => {
 export const requestLeave = async (leaveData: any) => {
   const path = 'leave_requests';
   try {
-    await addDoc(collection(db, 'leave_requests'), {
+    const docRef = await addDoc(collection(db, 'leave_requests'), {
       ...leaveData,
       createdAt: serverTimestamp(),
     });
+
+    // Notify admins about the new leave request
+    await createNotification({
+      role: 'admin',
+      type: 'leave_requested',
+      title: 'New Leave Request',
+      message: `${leaveData.userName} has requested leave for ${leaveData.startDate} to ${leaveData.endDate}.`,
+      leaveRequestId: docRef.id,
+      userId: leaveData.userId // Keep requester ID for context
+    });
+
+    return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
   }
@@ -512,10 +619,34 @@ export const getAllLeaveRequests = async () => {
   }
 };
 
-export const updateLeaveRequest = async (requestId: string, status: string) => {
+export const getAllLeaveRequestsSnap = (callback: (leaves: LeaveRequest[]) => void) => {
+  const q = query(collection(db, 'leave_requests'), orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LeaveRequest)));
+  }, (error) => {
+    console.error("Leave requests snapshot error:", error);
+  });
+};
+
+export const updateLeaveStatus = async (requestId: string, status: string) => {
   const path = `leave_requests/${requestId}`;
   try {
-    await updateDoc(doc(db, 'leave_requests', requestId), { status });
+    await updateDoc(doc(db, 'leave_requests', requestId), { status, updatedAt: serverTimestamp() });
+    
+    // Get the leave request to know who to notify
+    const leaveSnap = await getDoc(doc(db, 'leave_requests', requestId));
+    if (leaveSnap.exists()) {
+      const leaveData = leaveSnap.data();
+      
+      await createNotification({
+        userId: leaveData.userId,
+        type: 'leave_status_update',
+        title: `Leave ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+        message: `Your leave request from ${leaveData.startDate} has been ${status}.`,
+        leaveRequestId: requestId,
+        status: status
+      });
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -707,25 +838,60 @@ export const getProject = async (projectId: string) => {
 export const createProject = async (form: any) => {
   if (!currentUser) throw new Error("Auth required");
   const path = 'projects';
+  
+  // Strict Domain Check
+  if (form.onboardingData?.domain) {
+    const isTaken = await checkDomainInUse(form.onboardingData.domain);
+    if (isTaken) {
+      throw new Error(`Domain "${form.onboardingData.domain}" is already registered in our system.`);
+    }
+  }
+
   try {
     const docRef = await addDoc(collection(db, "projects"), {
       userId: currentUser.uid,
+      userName: form.userName || '',
+      userEmail: form.userEmail || '',
+      userPhone: form.onboardingData?.phone || '',
       businessName: form.businessName,
+      businessType: form.businessType || '',
+      businessEmail: form.onboardingData?.businessEmail || '',
+      businessPhone: form.onboardingData?.businessPhone || '',
+      storeType: form.onboardingData?.storeType || 'online_store',
+      location: form.onboardingData?.city || '',
+      locationState: form.onboardingData?.state || '',
+      country: form.onboardingData?.country || 'India',
+      description: form.description || '',
+      primaryColor: form.primaryColor || '#c7c42a',
+      secondaryColor: form.secondaryColor || '#000000',
+      plan: form.plan || 'basic',
       status: "pending",
       developerId: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      paymentStatus: form.paymentStatus || 'paid',
+      paymentStatus: form.paymentStatus || 'pending',
       progress: 0,
       isDeleted: false,
       isLocked: false,
+      logoUrl: form.onboardingData?.logoUrl || '',
+      documentsUrl: form.onboardingData?.documentsUrl || '',
+      domain: form.onboardingData?.domain || '',
+      requestedDomain: form.onboardingData?.requestedDomain || '',
+      domainPreferences: form.onboardingData?.domainPreferences || '',
       onboardingData: form.onboardingData || null
     });
 
     const projectId = docRef.id;
 
-    // Remove automatic admin conversation creation. 
-    // Projects now stay in the unassigned pool for developers to claim.
+    // Notify admins about the new project
+    await createNotification({
+      role: 'admin',
+      type: 'new_project',
+      title: 'New Mission Received',
+      message: `A new project for ${form.businessName} has been submitted by ${form.userName}.`,
+      projectId: projectId,
+      clientName: form.userName
+    });
     
     return projectId;
   } catch (error) {
@@ -736,10 +902,37 @@ export const createProject = async (form: any) => {
 export const updateProject = async (projectId: string, updateData: any) => {
   const path = `projects/${projectId}`;
   try {
+    const oldSnap = await getDoc(doc(db, 'projects', projectId));
+    const oldData = oldSnap.exists() ? oldSnap.data() : null;
+    
     await updateDoc(doc(db, 'projects', projectId), {
       ...updateData,
       updatedAt: serverTimestamp()
     });
+
+    if (oldData) {
+      // Notify client when status changes
+      if (updateData.status && updateData.status !== oldData.status) {
+        await createNotification({
+          userId: oldData.userId,
+          type: 'progress',
+          title: 'Project Status Updated',
+          message: `Your project "${oldData.businessName}" is now ${updateData.status}.`,
+          projectId: projectId
+        });
+      }
+
+      // Notify admin when website URL is submitted
+      if (updateData.websiteUrl && updateData.websiteUrl !== oldData.websiteUrl) {
+         await createNotification({
+          role: 'admin',
+          type: 'system',
+          title: 'Mission URL Submitted',
+          message: `Developer has submitted a preview URL for project "${oldData.businessName}".`,
+          projectId: projectId
+        });
+      }
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -846,9 +1039,58 @@ export const getBlogPostBySlug = async (slug: string) => {
   try {
     const q = query(collection(db, 'blog_posts'), where('slug', '==', slug));
     const snapshot = await getDocs(q);
-    return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+    return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BlogPost;
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
+  }
+};
+
+export const seedSampleBlogPosts = async () => {
+  const samplePosts: Partial<BlogPost>[] = [
+    {
+      title: "How to Design a High-Converting Gym Website in 2026",
+      slug: "gym-website-design-guide-2026",
+      excerpt: "Transform your fitness business with a website engineered for conversions and member retention.",
+      content: "A gym website needs to be as high-performance as the athletes it serves. This guide covers speed, mobile-first design, and conversion hooks for fitness centers...",
+      author: "Aditya Soni",
+      date: serverTimestamp(),
+      image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200",
+      category: "Business",
+      tags: ["Gym", "Design", "Featured"]
+    },
+    {
+      title: "The Ultimate Guide to Digital Growth for NGOs",
+      slug: "ngo-digital-growth-strategy",
+      excerpt: "Unlock more donations and reach a wider audience with our proven NGO digital infrastructure.",
+      content: "NGOs often struggle with outdated technology. We show you how modern infrastructure can amplify your impact and simplify donor management...",
+      author: "Aditya Soni",
+      date: serverTimestamp(),
+      image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200",
+      category: "SEO",
+      tags: ["NGO", "Strategy"]
+    },
+    {
+      title: "Why SEO is Critical for Clothing Brands in the Indian Market",
+      slug: "seo-for-clothing-brands-india",
+      excerpt: "Stop being invisible. Learn how to rank your clothing brand on the first page of Google India.",
+      content: "The clothing market in India is hyper-competitive. Without a surgical SEO strategy, your brand is invisible. Here is how we build SEO-first websites...",
+      author: "Aditya Soni",
+      date: serverTimestamp(),
+      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200",
+      category: "SEO",
+      tags: ["Clothing", "Business"]
+    }
+  ];
+
+  try {
+    const existingSnapshot = await getDocs(collection(db, 'blog_posts'));
+    if (existingSnapshot.empty) {
+      const promises = samplePosts.map(post => addDoc(collection(db, 'blog_posts'), { ...post, createdAt: serverTimestamp() }));
+      await Promise.all(promises);
+      console.log('Sample blog posts seeded for SEO.');
+    }
+  } catch (error) {
+    console.warn('Seeding failed:', error);
   }
 };
 
@@ -856,25 +1098,116 @@ export const getConversationId = (uid1: string, uid2: string) => {
   return [uid1, uid2].sort().join('_');
 };
 
+// Cloudinary Asset Tracking
+export interface VaultAsset {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadedBy: string;
+  projectId?: string;
+  createdAt: any;
+}
+
+export const saveVaultAsset = async (asset: Omit<VaultAsset, 'id' | 'createdAt'>) => {
+  const path = 'vault_assets';
+  try {
+    const docRef = await addDoc(collection(db, path), {
+      ...asset,
+      createdAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
+};
+
+export const getVaultAssets = (callback: (assets: VaultAsset[]) => void, projectId?: string) => {
+  const path = 'vault_assets';
+  let q = query(collection(db, path), orderBy('createdAt', 'desc'));
+  
+  if (projectId) {
+    q = query(collection(db, path), where('projectId', '==', projectId), orderBy('createdAt', 'desc'));
+  }
+
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VaultAsset)));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
+  });
+};
+
+export const deleteVaultAsset = async (assetId: string) => {
+  const path = `vault_assets/${assetId}`;
+  try {
+    await deleteDoc(doc(db, 'vault_assets', assetId));
+    toast.success("Asset decommissioned.");
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+};
+
+export const handleForceDownload = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename || 'download';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error('Download failed:', error);
+    // Fallback to normal anchor click
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.download = filename;
+    link.click();
+  }
+};
+
 export const sendMessage = async (projectId: string, messageData: any) => {
   if (!currentUser) return;
   const path = `projects/${projectId}/messages`;
   try {
     const message = messageData.text || '';
-    const imageUrl = messageData.imageUrl || null;
+    const imageUrl = messageData.imageUrl || messageData.mediaUrl || null;
+    const type = messageData.type || (imageUrl ? 'image' : 'text');
 
-    const docRef = await addDoc(collection(db, 'conversations', projectId, 'messages'), {
+    const projectRef = doc(db, 'projects', projectId);
+    const projectDoc = await getDoc(projectRef);
+    
+    if (!projectDoc.exists()) throw new Error("Project not found");
+    const data = projectDoc.data();
+    
+    // Calculate unread count for recipients
+    const unreadCount = data.unreadCount || {};
+    const recipients = [data.userId, data.developerId, data.assignedTo].filter(id => id && id !== currentUser!.uid) as string[];
+    
+    recipients.forEach(rid => {
+      unreadCount[rid] = (unreadCount[rid] || 0) + 1;
+    });
+
+    const docRef = await addDoc(collection(db, 'projects', projectId, 'messages'), {
+      ...messageData,
       text: message || null,
-      imageUrl: imageUrl || null,
+      mediaUrl: imageUrl,
+      type: type,
       senderId: currentUser.uid,
       createdAt: serverTimestamp()
     });
 
     // Update project metadata
-    await updateDoc(doc(db, 'projects', projectId), {
-      lastMessage: message || (imageUrl ? '📷 Photo' : 'New message'),
+    await updateDoc(projectRef, {
+      lastMessage: message || (type === 'image' ? '📷 Photo' : type === 'voice' ? '🎤 Voice message' : 'New message'),
       lastMessageAt: serverTimestamp(),
       lastSenderId: currentUser.uid,
+      unreadCount,
       updatedAt: serverTimestamp(),
     });
 
@@ -1005,14 +1338,15 @@ export const markProjectAsSeen = async (projectId: string, userId: string) => {
 };
 
 export const getNotifications = (userId: string, callback: (notifications: any[]) => void, role?: string) => {
+  const path = 'notifications';
   const q = role === 'admin' 
-    ? query(collection(db, 'notifications'), where('role', '==', 'admin'), orderBy('createdAt', 'desc'), limit(20))
-    : query(collection(db, 'notifications'), where('userId', '==', userId), orderBy('createdAt', 'desc'), limit(20));
+    ? query(collection(db, path), where('role', '==', 'admin'), orderBy('createdAt', 'desc'), limit(20))
+    : query(collection(db, path), where('userId', '==', userId), orderBy('createdAt', 'desc'), limit(20));
     
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {
-    console.error("Notifications listener error:", error);
+    handleFirestoreError(error, OperationType.GET, path);
   });
 };
 
@@ -1254,10 +1588,9 @@ export const getProjectUnreadNotifications = (callback: (projects: any[]) => voi
   if (!currentUser) return;
   const path = 'projects';
   
+  const isAdmin = currentUser.email?.toLowerCase() === 'workzy59@gmail.com';
+  
   // Only listen to projects that have unread messages for admin
-  // Note: Firestore doesn't support 'unreadCount.admin > 0' efficiently across all docs without an index 
-  // but we can try to at least filter by status or a smaller window.
-  // Actually, a better way is to listen to recent projects.
   const q = query(
     collection(db, 'projects'), 
     orderBy('updatedAt', 'desc'), 
@@ -1321,6 +1654,11 @@ export const getSystemSettings = async () => {
       starter: 1499,
       pro: 3499,
       enterprise: 9999
+    },
+    paymentLinks: {
+      basic: 'https://rzp.io/rzp/N4YcMZq2',
+      standard: 'https://rzp.io/rzp/rDHFQw2',
+      premium: 'https://rzp.io/rzp/3H3lO1x'
     },
     maintenanceMode: false,
     allowNewRegistrations: true,

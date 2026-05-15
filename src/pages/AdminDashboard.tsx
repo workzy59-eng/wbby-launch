@@ -34,13 +34,13 @@ import {
   updateProfile, 
   getProjectsAsync, 
   getAllLeaveRequests, 
-  updateLeaveRequest,
   getAllAttendance,
   createDeveloperInvite,
   getDeveloperInvites,
   getVisitSessions,
   getNotifications,
-  markNotificationAsRead
+  markNotificationAsRead,
+  updateLeaveStatus
 } from '../services/database';
 import ChatSystem from '../components/ChatSystem';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -251,7 +251,7 @@ export default function AdminDashboard({ user, profile }: AdminDashboardProps) {
   };
 
   const handleLeaveAction = async (requestId: string, status: 'approved' | 'declined') => {
-    await updateLeaveRequest(requestId, status);
+    await updateLeaveStatus(requestId, status);
     setLeaveRequests(prev => prev.map(r => r.id === requestId ? { ...r, status } : r));
   };
 
