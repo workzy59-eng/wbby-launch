@@ -59,7 +59,6 @@ import {
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
 import MessagesModule from '../components/MessagesModule';
-import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
 import { subscribeToMeetings } from '../services/meetingService';
@@ -85,7 +84,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const isSuccess = searchParams.get('success') === 'true';
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments' | 'vault'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
   
   // Whitelisted developers should be on the Developer Dashboard
   useEffect(() => {
@@ -216,6 +215,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   }, [projects]);
 
   const [showChat, setShowChat] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const [showDirectChat, setShowDirectChat] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
@@ -394,6 +394,16 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     });
     return () => unsubscribe();
   }, [user.uid, profile?.role]);
+
+  const handleCancelProject = async () => {
+    if (selectedProject) {
+      await updateProject(selectedProject.id, { isDeleted: true });
+      setShowCancelModal(false);
+      setSelectedProject(null);
+    }
+  };
+
+  // Removed old statusSteps and currentStepIndex from here
 
   const primaryColor = '#FFFF00';
 
@@ -606,15 +616,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col gap-5">
           {[
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-              ...(hasAcceptedProject ? [
-                { id: 'progress', icon: FolderKanban, label: 'Pulse' },
-                { id: 'meetings', icon: Video, label: 'Meetings' },
-                { id: 'messages', icon: MessageCircle, label: 'Chat' },
-                { id: 'vault', icon: Zap, label: 'Vault' },
-                { id: 'payments', icon: CreditCard, label: 'Plans' },
-                { id: 'settings', icon: Settings, label: 'User' },
-              ] : []),
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            ...(hasAcceptedProject ? [
+              { id: 'progress', icon: FolderKanban, label: 'Pulse' },
+              { id: 'meetings', icon: Video, label: 'Meetings' },
+              { id: 'messages', icon: MessageCircle, label: 'Chat' },
+              { id: 'payments', icon: CreditCard, label: 'Plans' },
+              { id: 'settings', icon: Settings, label: 'User' },
+            ] : []),
           ].map((tab) => (
             <button 
               key={tab.id}
@@ -707,14 +716,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
           {/* Mobile Navigation */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
           {[
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-              ...(hasAcceptedProject ? [
-                { id: 'progress', icon: FolderKanban, label: 'Progress' },
-                { id: 'messages', icon: MessageCircle, label: 'Chat' },
-                { id: 'meetings', icon: Video, label: 'Meets' },
-                { id: 'vault', icon: Zap, label: 'Vault' },
-                { id: 'settings', icon: Settings, label: 'Settings' },
-              ] : []),
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+            ...(hasAcceptedProject ? [
+              { id: 'progress', icon: FolderKanban, label: 'Progress' },
+              { id: 'messages', icon: MessageCircle, label: 'Chat' },
+              { id: 'meetings', icon: Video, label: 'Meets' },
+              { id: 'settings', icon: Settings, label: 'Settings' },
+            ] : []),
           ].map((tab) => (
               <button 
                 key={tab.id}
@@ -826,8 +834,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   projects={projects}
                   initialRecipientId={assignedDeveloper?.uid || adminProfile?.uid}
                 />
-              ) : activeTab === 'vault' ? (
-                <MediaVault currentUser={user} profile={profile} />
               ) : activeTab === 'progress' ? (
                 <div className="space-y-12">
                    <div className="flex flex-col gap-2">
@@ -1501,6 +1507,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                   <p className="text-red-400 font-black uppercase italic">Reason: {selectedProject.rejectionReason}</p>
                                 )}
                               </div>
+                              <button 
+                                onClick={() => setShowCancelModal(true)}
+                                className="text-white/30 hover:text-red-400 font-black text-xs uppercase tracking-widest transition-all"
+                              >
+                                Cancel Project
+                              </button>
                             </div>
                           </motion.div>
                         )}
@@ -1571,6 +1583,36 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       </AnimatePresence>
 
       {/* Cancel Modal */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+              onClick={() => setShowCancelModal(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#c7c42a]/10"
+            >
+              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">Cancel Project?</h3>
+              <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>
+              <div className="flex flex-col gap-4">
+                <button onClick={handleCancelProject} className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all">
+                  Yes, Cancel
+                </button>
+                <button onClick={() => setShowCancelModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-white/10 transition-all">
+                  No, Keep It
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

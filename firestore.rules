@@ -10,18 +10,6 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid != null;
     }
 
-    function isSuperuser() {
-      return isAuth() && (
-        request.auth.uid in ['vN3cIRGUKXeEnbBCA4shsOXNlE03', 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
-        (request.auth.token.email != null && request.auth.token.email.lower() == 'sain17296174@gmail.com') ||
-        (request.auth.token.email != null && request.auth.token.email.lower() == 'workzy59@gmail.com')
-      );
-    }
-
-    match /{document=**} {
-      allow read, write: if isSuperuser();
-    }
-
     function incoming() {
       return request.resource.data;
     }
@@ -36,12 +24,8 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuth() && (
-        isSuperuser() ||
-        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
-        request.auth.uid == 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73' ||
-        request.auth.uid == 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2' ||
-        (request.auth.token.email != null && 
-         request.auth.token.email.lower() == 'workzy59@gmail.com')
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'workzy59@gmail.com') ||
+        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03'
       );
     }
 
@@ -51,13 +35,16 @@ service cloud.firestore {
         (request.auth.token.email != null && (
          request.auth.token.email.lower() == 'aither2029@gmail.com' ||
          request.auth.token.email.lower() == 'sain17296174@gmail.com'
-        ))
+        )) ||
+        request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2']
       );
     }
 
-    // Default deny (Safety net)
+    // =========================
+    // GLOBAL ACCESS FOR ADMIN/SUPERUSERS
+    // =========================
     match /{document=**} {
-      allow read, write: if isSuperuser();
+      allow read, write: if isAdmin() || isWhitelistedDeveloper();
     }
 
     // =========================
@@ -66,7 +53,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow create: if isAuth() && request.auth.uid == userId;
       allow get: if isAuth();
-      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.get('uid', '') == request.auth.uid);
+      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.uid == request.auth.uid);
       allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
@@ -79,29 +66,29 @@ service cloud.firestore {
         return isAdmin() || 
                isWhitelistedDeveloper() ||
                (resource != null && (
-                 resource.data.get('userId', '') == request.auth.uid || 
-                 resource.data.get('developerId', '') == request.auth.uid ||
-                 resource.data.get('assignedTo', '') == request.auth.uid
+                 resource.data.userId == request.auth.uid || 
+                 resource.data.developerId == request.auth.uid ||
+                 resource.data.assignedTo == request.auth.uid
                ));
       }
 
-      allow create: if isAuth() && incoming().get('userId', '') == request.auth.uid;
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
       allow get: if isAuth() && canAccessProject();
       allow list: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() ||
-        resource.data.get('userId', '') == request.auth.uid || 
-        resource.data.get('developerId', '') == request.auth.uid ||
-        resource.data.get('assignedTo', '') == request.auth.uid
+        resource.data.userId == request.auth.uid || 
+        resource.data.developerId == request.auth.uid ||
+        resource.data.assignedTo == request.auth.uid
       );
 
       allow update: if isAuth() && (
         isAdmin() ||
-        existing().get('userId', '') == request.auth.uid ||
-        existing().get('developerId', '') == request.auth.uid ||
-        existing().get('assignedTo', '') == request.auth.uid ||
+        existing().userId == request.auth.uid ||
+        existing().developerId == request.auth.uid ||
+        existing().assignedTo == request.auth.uid ||
         (isWhitelistedDeveloper() && (
-          incoming().get('developerId', '') == request.auth.uid ||
+          incoming().developerId == request.auth.uid ||
           incoming().diff(existing()).affectedKeys().hasAny(['domainPrice', 'paymentLink', 'paymentLinkBasic', 'paymentLinkPremium', 'websiteUrl', 'progress', 'status'])
         ))
       );
@@ -111,7 +98,7 @@ service cloud.firestore {
       // Project Messages
       match /messages/{messageId} {
         allow read: if isAuth() && canAccessProject();
-        allow create: if isAuth() && incoming().get('senderId', '') == request.auth.uid && canAccessProject();
+        allow create: if isAuth() && incoming().senderId == request.auth.uid && canAccessProject();
         allow update: if isAuth();
       }
     }
@@ -129,32 +116,25 @@ service cloud.firestore {
       function isParticipant() {
         return isAuth() && (
           isAdmin() || 
-          request.auth.uid in resource.data.get('participants', [])
+          request.auth.uid in resource.data.participants
         );
       }
 
       function isParticipantAfter() {
         return isAuth() && (
           isAdmin() || 
-          isWhitelistedDeveloper() ||
-          (exists(/databases/$(database)/documents/conversations/$(conversationId)) && 
-           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('participants', [])) ||
-          conversationId.contains(request.auth.uid) ||
-          (exists(/databases/$(database)/documents/projects/$(conversationId)) && (
-            get(/databases/$(database)/documents/projects/$(conversationId)).data.get('userId', '') == request.auth.uid ||
-            get(/databases/$(database)/documents/projects/$(conversationId)).data.get('developerId', '') == request.auth.uid
-          ))
+          request.auth.uid in getConversation().data.participants
         );
       }
 
-      allow get: if isAuth() && (isAdmin() || request.auth.uid in resource.data.get('participants', []));
-      allow list: if isAuth() && (isAdmin() || request.auth.uid in resource.data.get('participants', []));
-      allow update: if isAuth() && (isAdmin() || request.auth.uid in resource.data.get('participants', []));
-      allow create: if isAuth() && request.auth.uid in incoming().get('participants', []);
+      allow get: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
+      allow list: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
+      allow update: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
+      allow create: if isAuth() && request.auth.uid in incoming().participants;
 
       match /messages/{messageId} {
         allow read: if isAuth() && isParticipantAfter();
-        allow create: if isAuth() && incoming().get('senderId', '') == request.auth.uid && isParticipantAfter();
+        allow create: if isAuth() && incoming().senderId == request.auth.uid && isParticipantAfter();
         allow update: if isAuth() && (
           isAdmin() || 
           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'seen', 'seenTime'])
@@ -163,7 +143,7 @@ service cloud.firestore {
       }
 
       match /typing/{userId} {
-        allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || conversationId.contains(request.auth.uid) || isParticipantAfter());
+        allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || conversationId.contains(request.auth.uid));
         allow write: if isAuth() && (userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
       }
     }
@@ -175,20 +155,20 @@ service cloud.firestore {
       allow get: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() || 
-        resource.data.get('userId', '') == request.auth.uid || 
+        resource.data.userId == request.auth.uid || 
         resource.data.get('role', '') == 'admin'
       );
       allow list: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() || 
-        (resource.data.get('userId', '') == request.auth.uid) || 
+        (resource.data.userId == request.auth.uid) || 
         (resource.data.get('role', '') == 'admin')
       );
       allow create: if isAuth();
       allow update, delete: if isAuth() && (
         isAdmin() || 
         isWhitelistedDeveloper() || 
-        resource.data.get('userId', '') == request.auth.uid
+        resource.data.userId == request.auth.uid
       );
     }
 

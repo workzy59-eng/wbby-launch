@@ -1,8 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /admin-panel
-Disallow: /developer-dashboard
-Disallow: /sales-dashboard
 
 Sitemap: https://webbylaunch.vercel.app/sitemap.xml

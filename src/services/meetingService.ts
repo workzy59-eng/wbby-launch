@@ -160,12 +160,16 @@ export const subscribeToMeetings = (
   } else if (role === 'developer') {
     q = query(
       collection(db, COLLECTION_NAME), 
-      where('developerId', '==', userId)
+      where('developerId', '==', userId),
+      orderBy('date', 'asc'), 
+      orderBy('time', 'asc')
     );
   } else {
     q = query(
       collection(db, COLLECTION_NAME), 
-      where('clientId', '==', userId)
+      where('clientId', '==', userId),
+      orderBy('date', 'asc'), 
+      orderBy('time', 'asc')
     );
   }
 
@@ -174,16 +178,7 @@ export const subscribeToMeetings = (
       id: doc.id,
       ...doc.data()
     })) as Meeting[];
-    
-    // Sort in memory to avoid required composite index errors during dev/preview
-    const sortedMeetings = [...meetings].sort((a, b) => {
-      const dateA = a.date || '';
-      const dateB = b.date || '';
-      if (dateA !== dateB) return dateA.localeCompare(dateB);
-      return (a.time || '').localeCompare(b.time || '');
-    });
-
-    callback(sortedMeetings);
+    callback(meetings);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
   });

@@ -25,7 +25,6 @@ import {
   Settings2,
   XCircle,
   Download,
-  Zap,
   User as UserIcon,
   FileText,
   Image as ImageIcon
@@ -58,7 +57,6 @@ import {
 import { formatDate } from '../lib/utils';
 import { Loader } from '../components/ui/loader';
 import MessagesModule from '../components/MessagesModule';
-import MediaVault from '../components/MediaVault';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { Bell, Info } from 'lucide-react';
 import { ADMIN_EMAIL } from '../constants';
@@ -70,7 +68,7 @@ interface DeveloperDashboardProps {
   profile: UserProfile | null;
 }
 
-type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance' | 'meetings' | 'vault';
+type Tab = 'dashboard' | 'projects' | 'pool' | 'chat' | 'analytics' | 'earnings' | 'settings' | 'attendance' | 'meetings';
 
 export default function DeveloperDashboard({ user, profile }: DeveloperDashboardProps) {
   const navigate = useNavigate();
@@ -450,28 +448,6 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     return 1125;
   };
 
-  const NavItem = ({ tab, icon: Icon, label }: { tab: Tab, icon: any, label: string }) => (
-    <button
-      onClick={() => {
-        setActiveTab(tab);
-        setIsSidebarOpen(false);
-      }}
-      className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold uppercase italic text-xs tracking-widest transition-all ${
-        activeTab === tab 
-          ? 'bg-[#FFFF00] text-black shadow-[0_0_20px_rgba(255,255,0,0.3)] scale-[1.02]' 
-          : 'text-white/40 hover:text-white hover:bg-white/5'
-      }`}
-    >
-      <Icon size={18} />
-      <span>{label}</span>
-      {tab === 'chat' && unreadCount > 0 && (
-        <span className="ml-auto w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black not-italic animate-pulse">
-          {unreadCount}
-        </span>
-      )}
-    </button>
-  );
-
   const getPlanPrice = (plan?: string) => {
     const p = plan?.toLowerCase() || 'basic';
     if (p === 'premium') return 30000;
@@ -664,6 +640,27 @@ Description: ${project.description || 'No description provided.'}
     );
   }
 
+  const NavItem = ({ tab, icon: Icon, label }: { tab: Tab, icon: any, label: string }) => (
+    <button
+      onClick={() => {
+        setActiveTab(tab);
+        setIsSidebarOpen(false);
+      }}
+      className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold uppercase italic text-xs tracking-widest transition-all ${
+        activeTab === tab 
+          ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' 
+          : 'text-white/40 hover:bg-white/5 hover:text-white'
+      }`}
+    >
+      <Icon size={18} />
+      <span>{label.includes('MESSAGES') && label.includes('(') ? (
+        <>
+          MESSAGES <span className="text-red-500">{label.split('MESSAGES ')[1]}</span>
+        </>
+      ) : label}</span>
+    </button>
+  );
+
   return (
     <>
       <AnimatePresence>
@@ -804,8 +801,7 @@ Description: ${project.description || 'No description provided.'}
           <NavItem tab="projects" icon={Briefcase} label="My Task" />
           <NavItem tab="pool" icon={Plus} label="Pool" />
           <NavItem tab="meetings" icon={Video} label="Meetings" />
-          <NavItem tab="chat" icon={MessageSquare} label="Messages" />
-          <NavItem tab="vault" icon={Zap} label="Media Vault" />
+          <NavItem tab="chat" icon={MessageSquare} label={unreadCount > 0 ? `Messages (${unreadCount})` : 'Messages'} />
           <NavItem tab="attendance" icon={Clock} label="Bio-Log" />
           <NavItem tab="analytics" icon={TrendingUp} label="Analytics" />
           <NavItem tab="earnings" icon={Wallet} label="Payments" />
@@ -1047,16 +1043,6 @@ Description: ${project.description || 'No description provided.'}
                           <div className="space-y-1">
                             <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
                             <p className="text-[10px] font-bold uppercase text-white/40">{p.userName || 'Private Client'}</p>
-                            {p.googleMapsLink && (
-                              <a 
-                                href={p.googleMapsLink} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="text-[9px] font-black text-[#FFFF00] uppercase tracking-widest flex items-center gap-1 hover:underline mt-1"
-                              >
-                                <Globe size={10} /> View Storefront
-                              </a>
-                            )}
                           </div>
                           <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
                             p.status?.toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-500' :
@@ -1138,13 +1124,23 @@ Description: ${project.description || 'No description provided.'}
 
                         {/* Actions */}
                         <div className="pt-2 flex gap-3">
-                          {(p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId) ? (
-                            <button 
+                          {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId ? (
+                            <>
+                              <button 
                                 onClick={() => openAcceptPopup(p.id)}
                                 className="flex-1 py-4 bg-[#c7c42a] text-black font-black uppercase italic text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#c7c42a]/10"
                               >
                                 Accept Project
                               </button>
+                              {p.developerId && (
+                                <button 
+                                  onClick={() => setShowRejectPopup(p.id)}
+                                  className="px-6 py-4 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase italic text-xs tracking-widest rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10"
+                                >
+                                  Reject
+                                </button>
+                              )}
+                            </>
                           ) : (
                             <div className="flex gap-2 w-full">
                               <button 
@@ -1385,18 +1381,6 @@ Description: ${project.description || 'No description provided.'}
                 className="h-[calc(100vh-250px)] bg-[#111] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl"
               >
                 {user && <MessagesModule currentUser={user} profile={profile} onClose={() => setActiveTab('dashboard')} />}
-              </motion.div>
-            )}
-
-            {activeTab === 'vault' && (
-              <motion.div 
-                key="vault"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="p-10"
-              >
-                {user && <MediaVault currentUser={user} profile={profile} />}
               </motion.div>
             )}
 
@@ -2373,6 +2357,17 @@ Description: ${project.description || 'No description provided.'}
               </div>
 
               <div className="flex gap-4">
+                <button 
+                  onClick={() => {
+                    setShowAcceptPopup(null);
+                    setTempPaymentLink('');
+                    setTempDomainPrice(0);
+                    setIsFinancialIntelSaved(false);
+                  }} 
+                  className="flex-1 py-4 rounded-2xl border border-white/10 text-white font-black uppercase italic text-xs tracking-widest hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
                 <button 
                   onClick={() => handleAcceptProject(showAcceptPopup)}
                   disabled={isSubmitting || !isFinancialIntelSaved}

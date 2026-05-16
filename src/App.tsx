@@ -4,7 +4,7 @@ import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc
 import { Toaster, toast } from 'react-hot-toast';
 import { UserProfile } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createUserProfile, getUserProfile, updateUserStatus, seedSampleBlogPosts } from './services/database';
+import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
 import { ADMIN_EMAIL } from './constants';
 import { Smartphone } from 'lucide-react';
 import { Loader } from './components/ui/loader';
@@ -57,9 +57,6 @@ export default function App() {
 
   useEffect(() => {
     if (user) {
-      // Seed blog posts if empty - helpful for SEO and initial content
-      seedSampleBlogPosts();
-
       // Set online status
       updateUserStatus(user.uid, 'online');
       

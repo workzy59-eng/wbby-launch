@@ -1041,58 +1041,9 @@ export const getBlogPostBySlug = async (slug: string) => {
   try {
     const q = query(collection(db, 'blog_posts'), where('slug', '==', slug));
     const snapshot = await getDocs(q);
-    return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BlogPost;
+    return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
-  }
-};
-
-export const seedSampleBlogPosts = async () => {
-      const samplePosts: Partial<BlogPost>[] = [
-        {
-          title: "How to Design a High-Converting Gym Website in 2026",
-          slug: "gym-website-design-guide-2026",
-          excerpt: "Transform your fitness business with a website engineered for conversions and member retention.",
-          content: "A gym website needs to be as high-performance as the athletes it serves. This guide covers speed, mobile-first design, and conversion hooks for fitness centers...",
-          author: "Aditya Soni",
-          date: serverTimestamp() as any,
-          image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200",
-          category: "Business",
-          tags: ["Gym", "Design", "Featured"]
-        },
-        {
-          title: "The Ultimate Guide to Digital Growth for NGOs",
-          slug: "ngo-digital-growth-strategy",
-          excerpt: "Unlock more donations and reach a wider audience with our proven NGO digital infrastructure.",
-          content: "NGOs often struggle with outdated technology. We show you how modern infrastructure can amplify your impact and simplify donor management...",
-          author: "Aditya Soni",
-          date: serverTimestamp() as any,
-          image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200",
-          category: "SEO",
-          tags: ["NGO", "Strategy"]
-        },
-        {
-          title: "Why SEO is Critical for Clothing Brands in the Indian Market",
-          slug: "seo-for-clothing-brands-india",
-          excerpt: "Stop being invisible. Learn how to rank your clothing brand on the first page of Google India.",
-          content: "The clothing market in India is hyper-competitive. Without a surgical SEO strategy, your brand is invisible. Here is how we build SEO-first websites...",
-          author: "Aditya Soni",
-          date: serverTimestamp() as any,
-          image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200",
-          category: "SEO",
-          tags: ["Clothing", "Business"]
-        }
-      ];
-
-  try {
-    const existingSnapshot = await getDocs(collection(db, 'blog_posts'));
-    if (existingSnapshot.empty) {
-      const promises = samplePosts.map(post => addDoc(collection(db, 'blog_posts'), { ...post, createdAt: serverTimestamp() }));
-      await Promise.all(promises);
-      console.log('Sample blog posts seeded for SEO.');
-    }
-  } catch (error) {
-    console.warn('Seeding failed:', error);
   }
 };
 
@@ -1100,116 +1051,25 @@ export const getConversationId = (uid1: string, uid2: string) => {
   return [uid1, uid2].sort().join('_');
 };
 
-// Cloudinary Asset Tracking
-export interface VaultAsset {
-  id: string;
-  url: string;
-  name: string;
-  size: number;
-  type: string;
-  uploadedBy: string;
-  projectId?: string;
-  createdAt: any;
-}
-
-export const saveVaultAsset = async (asset: Omit<VaultAsset, 'id' | 'createdAt'>) => {
-  const path = 'vault_assets';
-  try {
-    const docRef = await addDoc(collection(db, path), {
-      ...asset,
-      createdAt: serverTimestamp()
-    });
-    return docRef.id;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, path);
-  }
-};
-
-export const getVaultAssets = (callback: (assets: VaultAsset[]) => void, projectId?: string) => {
-  const path = 'vault_assets';
-  let q = query(collection(db, path), orderBy('createdAt', 'desc'));
-  
-  if (projectId) {
-    q = query(collection(db, path), where('projectId', '==', projectId), orderBy('createdAt', 'desc'));
-  }
-
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VaultAsset)));
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, path);
-  });
-};
-
-export const deleteVaultAsset = async (assetId: string) => {
-  const path = `vault_assets/${assetId}`;
-  try {
-    await deleteDoc(doc(db, 'vault_assets', assetId));
-    toast.success("Asset decommissioned.");
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
-  }
-};
-
-export const handleForceDownload = async (url: string, filename: string) => {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = filename || 'download';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(blobUrl);
-  } catch (error) {
-    console.error('Download failed:', error);
-    // Fallback to normal anchor click
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.download = filename;
-    link.click();
-  }
-};
-
 export const sendMessage = async (projectId: string, messageData: any) => {
   if (!currentUser) return;
   const path = `projects/${projectId}/messages`;
   try {
     const message = messageData.text || '';
-    const imageUrl = messageData.imageUrl || messageData.mediaUrl || null;
-    const type = messageData.type || (imageUrl ? 'image' : 'text');
+    const imageUrl = messageData.imageUrl || null;
 
-    const projectRef = doc(db, 'projects', projectId);
-    const projectDoc = await getDoc(projectRef);
-    
-    if (!projectDoc.exists()) throw new Error("Project not found");
-    const data = projectDoc.data();
-    
-    // Calculate unread count for recipients
-    const unreadCount = data.unreadCount || {};
-    const recipients = [data.userId, data.developerId, data.assignedTo].filter(id => id && id !== currentUser!.uid) as string[];
-    
-    recipients.forEach(rid => {
-      unreadCount[rid] = (unreadCount[rid] || 0) + 1;
-    });
-
-    const docRef = await addDoc(collection(db, 'projects', projectId, 'messages'), {
-      ...messageData,
+    const docRef = await addDoc(collection(db, 'conversations', projectId, 'messages'), {
       text: message || null,
-      mediaUrl: imageUrl,
-      type: type,
+      imageUrl: imageUrl || null,
       senderId: currentUser.uid,
       createdAt: serverTimestamp()
     });
 
     // Update project metadata
-    await updateDoc(projectRef, {
-      lastMessage: message || (type === 'image' ? '📷 Photo' : type === 'voice' ? '🎤 Voice message' : 'New message'),
+    await updateDoc(doc(db, 'projects', projectId), {
+      lastMessage: message || (imageUrl ? '📷 Photo' : 'New message'),
       lastMessageAt: serverTimestamp(),
       lastSenderId: currentUser.uid,
-      unreadCount,
       updatedAt: serverTimestamp(),
     });
 
@@ -1348,7 +1208,7 @@ export const getNotifications = (userId: string, callback: (notifications: any[]
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {
-    handleFirestoreError(error, OperationType.GET, path);
+    handleFirestoreError(error, OperationType.LIST, path);
   });
 };
 
