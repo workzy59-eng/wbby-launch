@@ -13,17 +13,11 @@ service cloud.firestore {
     function isSuperuser() {
       return isAuth() && (
         request.auth.uid in ['vN3cIRGUKXeEnbBCA4shsOXNlE03', 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
-        (request.auth.token.get('email', '') != null && request.auth.token.get('email', '').lower() == 'sain17296174@gmail.com') ||
-        (request.auth.token.get('email', '') != null && request.auth.token.get('email', '').lower() == 'workzy59@gmail.com')
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'sain17296174@gmail.com') ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'workzy59@gmail.com')
       );
     }
 
-    // Safety net: Deny all by default
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Superuser escape hatch (Highest priority)
     match /{document=**} {
       allow read, write: if isSuperuser();
     }
@@ -46,19 +40,24 @@ service cloud.firestore {
         request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
         request.auth.uid == 'Pc1bVwdIUHeAdoDyZWKv0VZ9OT73' ||
         request.auth.uid == 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2' ||
-        (request.auth.token.get('email', '') != null && 
-         request.auth.token.get('email', '').lower() == 'workzy59@gmail.com')
+        (request.auth.token.email != null && 
+         request.auth.token.email.lower() == 'workzy59@gmail.com')
       );
     }
 
     function isWhitelistedDeveloper() {
       return isAuth() && (
         isAdmin() ||
-        (request.auth.token.get('email', '') != null && (
-         request.auth.token.get('email', '').lower() == 'aither2029@gmail.com' ||
-         request.auth.token.get('email', '').lower() == 'sain17296174@gmail.com'
+        (request.auth.token.email != null && (
+         request.auth.token.email.lower() == 'aither2029@gmail.com' ||
+         request.auth.token.email.lower() == 'sain17296174@gmail.com'
         ))
       );
+    }
+
+    // Default deny (Safety net)
+    match /{document=**} {
+      allow read, write: if isSuperuser();
     }
 
     // =========================
