@@ -11,10 +11,14 @@ import {
   MoreVertical,
   Trash2,
   Edit2,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Share2
 } from 'lucide-react';
 import { Meeting, MeetingStatus } from '../../types';
 import { format, isAfter, isBefore, addMinutes, differenceInSeconds } from 'date-fns';
+import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, downloadIcsFile } from '../../services/calendarUtils';
+import { AnimatePresence } from 'motion/react';
 
 interface MeetingCardProps {
   meeting: Meeting;
@@ -37,6 +41,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
   const [rescheduleMsg, setRescheduleMsg] = useState('');
   const [rescheduleDate, setRescheduleDate] = useState(meeting.date);
   const [rescheduleTime, setRescheduleTime] = useState(meeting.time);
+  const [showSyncOptions, setShowSyncOptions] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -208,16 +213,60 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
               Join Meeting
             </button>
             
-            <button 
-              onClick={() => {
-                const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(meeting.title)}&dates=${meeting.date.replace(/-/g, '')}T${meeting.time.replace(/:/g, '')}00Z/${meeting.date.replace(/-/g, '')}T${meeting.time.replace(/:/g, '')}00Z&details=${encodeURIComponent(meeting.notes || '')}&location=${encodeURIComponent(meeting.meetingLink)}`;
-                window.open(url, '_blank');
-              }}
-              className="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-white/40 hover:text-white transition-all"
-              title="Add to Google Calendar"
-            >
-              <Calendar size={16} />
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setShowSyncOptions(!showSyncOptions)}
+                className={`p-3 rounded-xl transition-all ${showSyncOptions ? 'bg-[#c7c42a] text-black' : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'}`}
+                title="Sync to Calendar"
+              >
+                <Share2 size={16} />
+              </button>
+              
+              <AnimatePresence>
+                {showSyncOptions && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute bottom-full mb-2 right-0 bg-[#111] border border-white/10 rounded-2xl p-2 shadow-2xl z-50 min-w-[200px]"
+                  >
+                    <button 
+                      onClick={() => {
+                        const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                        window.open(generateGoogleCalendarUrl(meeting, attendees), '_blank');
+                        setShowSyncOptions(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all text-left"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      Google Calendar
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                        window.open(generateOutlookCalendarUrl(meeting, attendees), '_blank');
+                        setShowSyncOptions(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all text-left"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-blue-400" />
+                      Outlook / Office
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                        downloadIcsFile(meeting, attendees);
+                        setShowSyncOptions(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all text-left"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
+                      Download .ICS File
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         )}
       </div>

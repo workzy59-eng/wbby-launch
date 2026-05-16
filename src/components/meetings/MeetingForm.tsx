@@ -36,10 +36,12 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     clientId: initialData?.clientId || (isAdmin ? '' : currentUserId),
     date: initialData?.date || '',
     time: initialData?.time || '',
+    duration: 60,
     meetingLink: initialData?.meetingLink || '',
     notes: initialData?.notes || '',
     status: initialData?.status || 'pending',
-    requestedBy: initialData?.requestedBy || currentUserId
+    requestedBy: initialData?.requestedBy || currentUserId,
+    sendReminder: true
   });
 
   const [validation, setValidation] = useState<{ isValid: boolean; error: string }>({ isValid: true, error: '' });
@@ -63,8 +65,11 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     e.preventDefault();
     if (!validation.isValid) return;
     
+    const selectedClient = clients.find(c => c.uid === formData.clientId);
+    
     onSubmit({
       ...formData,
+      clientEmail: selectedClient?.email,
       platform: platform || 'Google Meet'
     });
   };
@@ -166,6 +171,50 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all [color-scheme:dark]"
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2 flex items-center gap-2">
+                  <Clock size={12} />
+                  Duration
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[30, 60, 90].map(dur => (
+                    <button
+                      key={dur}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, duration: dur })}
+                      className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
+                        formData.duration === dur 
+                          ? 'bg-[#c7c42a] text-black border-[#c7c42a]' 
+                          : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                      }`}
+                    >
+                      {dur}m
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2 flex items-center gap-2">
+                  <AlertCircle size={12} />
+                  Reminders
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, sendReminder: !formData.sendReminder })}
+                  className="w-full h-12 flex items-center justify-between px-4 bg-white/5 border border-white/10 rounded-2xl group hover:border-[#c7c42a]/30 transition-all"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-wider italic text-white/40">
+                    Auto 30m Alarm
+                  </span>
+                  <div className={`w-8 h-4 rounded-full p-0.5 transition-all ${formData.sendReminder ? 'bg-[#c7c42a]' : 'bg-white/10'}`}>
+                    <div className={`w-3 h-3 bg-black rounded-full transition-all ${formData.sendReminder ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                </button>
               </div>
             </div>
 

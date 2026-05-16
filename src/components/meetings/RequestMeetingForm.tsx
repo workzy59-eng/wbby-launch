@@ -59,10 +59,15 @@ export const RequestMeetingForm: React.FC<RequestMeetingFormProps> = ({ isOpen, 
 
     setIsSubmitting(true);
     try {
+      const { getUserProfile } = await import('../../services/database');
+      const devProfile = developerId ? await getUserProfile(developerId) : null;
+      
       await createMeeting({
         title: formData.title || 'Client Sync Session',
         clientId,
+        clientEmail: auth.currentUser?.email || '',
         developerId,
+        developerEmail: devProfile?.email || '',
         adminId: 'SYSTEM',
         date: formData.preferredDate,
         time: formData.preferredTime,

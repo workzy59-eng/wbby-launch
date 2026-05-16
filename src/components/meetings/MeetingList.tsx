@@ -73,6 +73,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
       } else {
         // If admin is creating, try to find the developer for the selected client's active project
         let devId = data.developerId;
+        let developerEmail = '';
         if (isAdmin && data.clientId && !devId) {
           const clientProjects = await getProjectsAsync(data.clientId);
           const activeProj = clientProjects.find(p => p.status !== 'Completed' && p.developerId);
@@ -81,10 +82,24 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           }
         }
 
+        if (devId) {
+          if (devId === user.uid) {
+            developerEmail = user.email;
+          } else {
+            const { getUserProfile } = await import('../../services/database');
+            const devProfile = await getUserProfile(devId);
+            developerEmail = devProfile?.email || '';
+          }
+        } else if (assignedDeveloper) {
+          devId = assignedDeveloper.uid;
+          developerEmail = assignedDeveloper.email;
+        }
+
         const meetingData = {
           ...data,
           requestedBy: user.uid,
           developerId: devId || (isDev ? user.uid : null),
+          developerEmail: developerEmail || (isDev ? user.email : ''),
           ...(isAdmin ? { adminId: user.uid } : { adminId: 'SYSTEM' })
         };
         const meetingRef = await createMeeting(meetingData);

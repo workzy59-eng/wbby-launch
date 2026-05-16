@@ -389,11 +389,14 @@ export interface Meeting {
   id: string;
   title: string;
   clientId: string;
+  clientEmail?: string;
   adminId: string;
   developerId?: string; // Assigned developer
+  developerEmail?: string;
   projectId?: string; // Linked project
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
+  duration?: number; // In minutes
   meetingLink: string;
   platform: 'Google Meet' | 'Zoom';
   notes?: string;
