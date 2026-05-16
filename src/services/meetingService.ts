@@ -27,13 +27,24 @@ export const createMeeting = async (meetingData: Omit<Meeting, 'id' | 'createdAt
     updatedAt: serverTimestamp()
   });
 
-  // Notify client if developer created it (accepted)
-  if (meetingData.developerId && meetingData.clientId && meetingData.status === 'accepted') {
+  // Notify Client
+  if (meetingData.clientId) {
     await createNotification({
       userId: meetingData.clientId,
       type: 'meeting',
-      title: 'Meeting Confirmed',
-      description: `Your developer has confirmed the meeting for ${meetingData.date} at ${meetingData.time}.`,
+      title: 'New Meeting Scheduled',
+      description: `A new meeting "${meetingData.title}" has been scheduled for ${meetingData.date} at ${meetingData.time}.`,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  // Notify Developer
+  if (meetingData.developerId) {
+    await createNotification({
+      userId: meetingData.developerId,
+      type: 'meeting',
+      title: 'New Meeting Scheduled',
+      description: `A new meeting "${meetingData.title}" has been scheduled for ${meetingData.date} at ${meetingData.time}.`,
       createdAt: serverTimestamp()
     });
   }

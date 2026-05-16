@@ -291,7 +291,7 @@ export const acceptProject = async (projectId: string) => {
 
       tx.update(ref, {
         developerId: currentUser!.uid,
-        status: "in-progress",
+        status: "Accepted",
         payout: payout,
         acceptedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -660,7 +660,7 @@ export const getDeveloperStats = async (uid: string) => {
   try {
     const projectsRef = collection(db, 'projects');
     const qCompleted = query(projectsRef, where('developerId', '==', uid), where('status', '==', 'Completed'));
-    const qActive = query(projectsRef, where('developerId', '==', uid), where('status', 'in', ['Development Started', 'Accepted', 'assigned', 'in_progress', 'active']));
+    const qActive = query(projectsRef, where('developerId', '==', uid), where('status', 'in', ['Development Started', 'Accepted', 'Under Review']));
     
     const [completedSnap, activeSnap] = await Promise.all([
       getDocs(qCompleted),
@@ -867,7 +867,7 @@ export const createProject = async (form: any) => {
       primaryColor: form.primaryColor || '#c7c42a',
       secondaryColor: form.secondaryColor || '#000000',
       plan: form.plan || 'basic',
-      status: "pending",
+      status: "Waiting for Review",
       developerId: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -1010,7 +1010,7 @@ export const getUnassignedProjects = (callback: (projects: Project[]) => void) =
   // Pending projects
   const q = query(
     collection(db, "projects"),
-    where("status", "==", "pending"),
+    where("status", "==", "Waiting for Review"),
     orderBy('createdAt', 'desc')
   );
 
@@ -1303,10 +1303,33 @@ export const createMeeting = async (meetingData: Partial<Meeting>) => {
   try {
     const docRef = await addDoc(collection(db, 'meetings'), {
       ...meetingData,
-      status: 'Pending',
+      status: 'pending',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+
+    // Notify Developer
+    if (meetingData.developerId) {
+      await createNotification({
+        userId: meetingData.developerId,
+        type: 'meeting',
+        title: 'New Meeting Scheduled',
+        message: `A new meeting "${meetingData.title}" has been scheduled for ${meetingData.date} at ${meetingData.time}.`,
+        projectId: meetingData.projectId
+      });
+    }
+
+    // Notify Client
+    if (meetingData.clientId) {
+      await createNotification({
+        userId: meetingData.clientId,
+        type: 'meeting',
+        title: 'New Meeting Scheduled',
+        message: `A new meeting "${meetingData.title}" has been scheduled for ${meetingData.date} at ${meetingData.time}.`,
+        projectId: meetingData.projectId
+      });
+    }
+
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);

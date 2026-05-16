@@ -19,7 +19,7 @@ import { MeetingCard } from './MeetingCard';
 import { MeetingForm } from './MeetingForm';
 import { RequestMeetingForm } from './RequestMeetingForm';
 import { MeetingCountdown } from './MeetingCountdown';
-import { db, createNotification, getConversationId } from '../../services/database';
+import { db, createNotification, getConversationId, getProjectsAsync } from '../../services/database';
 import { 
   subscribeToMeetings, 
   createMeeting, 
@@ -71,10 +71,21 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         await updateMeeting(editingMeeting.id, data);
         toast.success('Meeting updated successfully!');
       } else {
+        // If admin is creating, try to find the developer for the selected client's active project
+        let devId = data.developerId;
+        if (isAdmin && data.clientId && !devId) {
+          const clientProjects = await getProjectsAsync(data.clientId);
+          const activeProj = clientProjects.find(p => p.status !== 'Completed' && p.developerId);
+          if (activeProj) {
+            devId = activeProj.developerId;
+          }
+        }
+
         const meetingData = {
           ...data,
           requestedBy: user.uid,
-          ...(profile.role === 'admin' ? { adminId: user.uid } : { developerId: user.uid, adminId: 'SYSTEM' })
+          developerId: devId || (isDev ? user.uid : null),
+          ...(isAdmin ? { adminId: user.uid } : { adminId: 'SYSTEM' })
         };
         const meetingRef = await createMeeting(meetingData);
         
@@ -96,11 +107,22 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           // Also a general notification for the client
           await createNotification({
             userId: data.clientId,
-            type: 'system',
+            type: 'meeting', // Changed from system
             title: 'New Meeting Scheduled',
             description: `A meeting "${data.title}" has been scheduled for ${data.date}.`,
             read: false
           });
+
+          // If there's a developer, notify them too
+          if (devId && devId !== user.uid) {
+            await createNotification({
+              userId: devId,
+              type: 'meeting',
+              title: 'Meeting Assignment',
+              description: `Admin has scheduled a meeting for your project: "${data.title}" on ${data.date}.`,
+              read: false
+            });
+          }
         } catch (msgErr) {
           console.warn("Notification message failed:", msgErr);
         }

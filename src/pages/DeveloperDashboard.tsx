@@ -625,7 +625,7 @@ Description: ${project.description || 'No description provided.'}
   const stats = useMemo(() => {
     const total = projects.length;
     const completed = projects.filter(p => p.status?.toLowerCase() === 'completed').length;
-    const active = projects.filter(p => ['development started', 'in-progress', 'assigned', 'pending', 'delayed', 'accepted', 'under review'].includes(p.status?.toLowerCase() || '')).length;
+    const active = projects.filter(p => ['development started', 'in-progress', 'assigned', 'pending', 'delayed', 'accepted', 'under review', 'waiting for review'].includes(p.status?.toLowerCase() || '')).length;
     
     const totalEarned = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
     
@@ -1090,7 +1090,7 @@ Description: ${project.description || 'No description provided.'}
                         </div>
 
                         {/* Deadline Timer */}
-                        {(p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned') && (
+                        {(p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || p.status?.toLowerCase() === 'waiting for review' || p.status?.toLowerCase() === 'accepted') && (
                           <div className="flex items-center gap-3 p-4 bg-black/40 rounded-2xl border border-white/5">
                             <Clock size={16} className={timeLeft[p.id] === 'DELAYED' ? 'text-red-500' : 'text-[#c7c42a]'} />
                             <div className="flex-1">
@@ -1124,7 +1124,7 @@ Description: ${project.description || 'No description provided.'}
 
                         {/* Actions */}
                         <div className="pt-2 flex gap-3">
-                          {p.status?.toLowerCase() === 'pending' || p.status?.toLowerCase() === 'assigned' || !p.developerId ? (
+                          {!p.developerId ? (
                             <>
                               <button 
                                 onClick={() => openAcceptPopup(p.id)}
@@ -2478,19 +2478,18 @@ Description: ${project.description || 'No description provided.'}
               <div className="space-y-6">
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Project Status</label>
-                  <select 
-                    value={editingProject.status || ''}
-                    onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value as any })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
-                  >
-                     <option value="pending" className="bg-[#111]">Pending</option>
-                     <option value="Under Review" className="bg-[#111]">Under Review</option>
-                     <option value="Assigned" className="bg-[#111]">Assigned</option>
-                     <option value="Development Started" className="bg-[#111]">Development Started</option>
-                     <option value="in-progress" className="bg-[#111]">In Progress</option>
-                     <option value="completed" className="bg-[#111]">Completed</option>
-                     <option value="rejected" className="bg-[#111]">Rejected</option>
-                  </select>
+                      <select 
+                        value={editingProject.status || ''}
+                        onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value as any })}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                      >
+                         <option value="Waiting for Review" className="bg-[#111]">Waiting for Review</option>
+                         <option value="Under Review" className="bg-[#111]">Under Review</option>
+                         <option value="Accepted" className="bg-[#111]">Accepted</option>
+                         <option value="Development Started" className="bg-[#111]">Development Started</option>
+                         <option value="Completed" className="bg-[#111]">Completed</option>
+                         <option value="Rejected" className="bg-[#111]">Rejected</option>
+                      </select>
                 </div>
 
                 <div className="space-y-4">

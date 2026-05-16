@@ -280,12 +280,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     }
   }, [selectedProject?.developerId, selectedProject?.assignedTo]);
 
-  const statusSteps = selectedProject?.status === 'Rejected' 
+  const normalizeStatus = (status: string) => {
+    const s = (status || "").toLowerCase();
+    if (s === 'pending' || s === 'waiting for review') return "Waiting for Review";
+    if (s === 'under review') return "Under Review";
+    if (s === 'accepted' || s === 'assigned') return "Accepted";
+    if (s === 'development started' || s === 'in-progress' || s === 'in_progress') return "Development Started";
+    if (s === 'completed' || s === 'finished') return "Completed";
+    if (s === 'rejected' || s === 'declined') return "Declined";
+    return status;
+  };
+
+  const statusSteps = normalizeStatus(selectedProject?.status || "") === 'Declined'
     ? ["Waiting for Review", "Under Review", "Declined"]
     : ["Waiting for Review", "Under Review", "Accepted", "Development Started", "Completed"];
   
   const currentStepIndex = selectedProject 
-    ? statusSteps.indexOf(selectedProject.status === 'Rejected' ? 'Declined' : selectedProject.status) 
+    ? statusSteps.indexOf(normalizeStatus(selectedProject.status)) 
     : -1;
 
   useEffect(() => {
