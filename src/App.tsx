@@ -39,6 +39,7 @@ const LocationPage = React.lazy(() => import('./pages/LocationPage'));
 const Docs = React.lazy(() => import('./pages/Docs'));
 const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
 const DomainSelection = React.lazy(() => import('./pages/DomainSelection'));
+const BioLogPage = React.lazy(() => import('./pages/BioLogPage'));
 
 import { useAuth } from './context/AuthContext';
 import { useActivityTracker } from './hooks/useActivityTracker';
@@ -186,6 +187,10 @@ export default function App() {
                       <Navigate to="/auth" />
                     )
                   } 
+                />
+                <Route 
+                  path="/bio-log" 
+                  element={user ? <BioLogPage /> : <Navigate to="/auth" />} 
                 />
                 <Route 
                   path="/domain-selection/:projectId" 

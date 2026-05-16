@@ -153,10 +153,9 @@ service cloud.firestore {
     // =========================
     match /notifications/{notificationId} {
       allow read: if isAuth() && (
-        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
         isAdmin() || 
         resource.data.userId == request.auth.uid || 
-        resource.data.role == 'admin'
+        (resource.data.role == 'admin' && isAdmin())
       );
       allow write: if isAuth();
     }
@@ -211,6 +210,16 @@ service cloud.firestore {
 
     match /meeting_requests/{requestId} {
       allow read, write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || incoming().clientId == request.auth.uid || incoming().developerId == request.auth.uid));
+    }
+
+    // =========================
+    // BIO LOGS
+    // =========================
+    match /bio_logs/{logId} {
+      allow get: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow update, delete: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
     }
     
     // Generic catch-all for other collections used by admin

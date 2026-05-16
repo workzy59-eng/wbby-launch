@@ -43,7 +43,8 @@ import {
   Mic,
   Send,
   CheckCheck,
-  RefreshCw
+  RefreshCw,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -1321,6 +1322,38 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                          {/* Bio Log Quick Card */}
+                          <div className="lg:col-span-3">
+                             <motion.div 
+                               initial={{ opacity: 0, y: 20 }}
+                               animate={{ opacity: 1, y: 0 }}
+                               onClick={() => navigate('/bio-log')}
+                               className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-12 cursor-pointer group hover:border-[#c7c42a]/50 transition-all relative overflow-hidden"
+                             >
+                                <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#c7c42a]/5 rounded-full blur-3xl group-hover:bg-[#c7c42a]/10 transition-all"></div>
+                                <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                                   <div className="flex items-center gap-6">
+                                      <div className="w-20 h-20 bg-[#c7c42a]/20 rounded-[2rem] flex items-center justify-center text-[#c7c42a] group-hover:scale-110 transition-transform">
+                                         <CalendarIcon size={40} />
+                                      </div>
+                                      <div>
+                                         <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">Daily Bio Log</h3>
+                                         <p className="text-xs font-bold text-white/40 uppercase tracking-[0.2em] mt-1">Track your growth & daily evolution</p>
+                                      </div>
+                                   </div>
+                                   <div className="flex items-center gap-4">
+                                      <div className="text-right hidden md:block">
+                                         <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">Active Evolution</p>
+                                         <p className="text-sm font-bold text-white/60 italic">Personal Journey Mode</p>
+                                      </div>
+                                      <div className="w-14 h-14 bg-[#c7c42a] text-black rounded-2xl flex items-center justify-center group-hover:translate-x-2 transition-transform shadow-lg shadow-[#c7c42a]/20">
+                                         <ArrowRight size={24} />
+                                      </div>
+                                   </div>
+                                </div>
+                             </motion.div>
+                          </div>
+
                           {/* Project List */}
                           <div className="lg:col-span-1 space-y-6">
                             <div className="flex items-center justify-between px-4">

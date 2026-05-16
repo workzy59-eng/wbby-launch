@@ -226,7 +226,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         // Also a general notification
         await createNotification({
           userId: otherId,
-          type: 'system',
+          type: 'meeting',
           title: 'Meeting Accepted',
           description: `Meeting "${meeting.title}" has been accepted.`,
           read: false

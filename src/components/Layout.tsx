@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2, Instagram } from 'lucide-react';
+import { Menu, X, Phone, Mail, MapPin, ChevronRight, MessageCircle, Smartphone, Briefcase, Settings as Settings2, Instagram, Calendar as CalendarIcon } from 'lucide-react';
 import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import NavHeader from './ui/nav-header';
@@ -28,6 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
 
   const navItems = [
     { name: 'Home', path: '/', icon: Menu },
+    { name: 'Bio Log', path: '/bio-log', icon: CalendarIcon },
     { name: 'About', path: '/about', icon: Menu },
     { name: 'Services', path: '/services', icon: Menu },
     { name: 'Pricing', path: '/pricing', icon: Menu },

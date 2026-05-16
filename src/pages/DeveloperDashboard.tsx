@@ -146,6 +146,10 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
   const [leaveDate, setLeaveDate] = useState<string>('');
   const [leaveReason, setLeaveReason] = useState('');
+  
+  // Calendar State
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date().getMonth());
+  const [currentCalendarYear, setCurrentCalendarYear] = useState(new Date().getFullYear());
 
   const handleApplyLeave = async () => {
     if (!user?.uid || !leaveDate || !leaveReason) return;
@@ -624,12 +628,28 @@ Description: ${project.description || 'No description provided.'}
 
   const stats = useMemo(() => {
     const total = projects.length;
-    const completed = projects.filter(p => p.status?.toLowerCase() === 'completed').length;
-    const active = projects.filter(p => ['development started', 'in-progress', 'assigned', 'pending', 'delayed', 'accepted', 'under review', 'waiting for review'].includes(p.status?.toLowerCase() || '')).length;
+    
+    const countByStatus = (status: string) => 
+      projects.filter(p => p.status?.toLowerCase() === status.toLowerCase()).length;
+
+    const waitingForReview = countByStatus("Waiting for Review");
+    const underReview = countByStatus("Under Review");
+    const accepted = countByStatus("Accepted");
+    const developmentStarted = countByStatus("Development Started") + countByStatus("in-progress");
+    const completed = countByStatus("Completed") + countByStatus("completed");
     
     const totalEarned = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
     
-    return { total, completed, pending: active, pool: unassignedProjects.length, earnings: totalEarned };
+    return { 
+      total, 
+      waitingForReview, 
+      underReview, 
+      accepted, 
+      developmentStarted, 
+      completed, 
+      pool: unassignedProjects.length, 
+      earnings: totalEarned 
+    };
   }, [projects, payments, unassignedProjects]);
 
   if (loading) {
@@ -1008,21 +1028,22 @@ Description: ${project.description || 'No description provided.'}
                     </div>
                   </div>
 
-                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 md:gap-6">
+                    <div className="lg:col-span-2 grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {[
-                      { label: 'Completed', value: devStats.completedCount, color: 'text-green-500', size: 'text-6xl md:text-[85px]' },
-                      { label: 'Active', value: devStats.activeCount, color: 'text-[#c7c42a]', size: 'text-6xl md:text-[85px]' },
-                      { label: 'New Jobs', value: stats.pool, color: 'text-[#c7c42a]', size: 'text-5xl md:text-[78px]', onClick: () => setActiveTab('pool') },
-                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]', size: 'text-3xl md:text-[60px] xl:text-[78px]', onClick: () => setActiveTab('earnings') }
+                      { label: 'Wait for Review', value: stats.waitingForReview, color: 'text-orange-500', size: 'text-5xl md:text-7xl' },
+                      { label: 'Under Review', value: stats.underReview, color: 'text-blue-500', size: 'text-5xl md:text-7xl' },
+                      { label: 'Accepted', value: stats.accepted, color: 'text-cyan-500', size: 'text-5xl md:text-7xl' },
+                      { label: 'Developing', value: stats.developmentStarted, color: 'text-yellow-500', size: 'text-5xl md:text-7xl' },
+                      { label: 'Completed', value: stats.completed, color: 'text-green-500', size: 'text-5xl md:text-7xl' },
+                      { label: 'Earnings', value: `₹${devStats.totalPayout.toLocaleString()}`, color: 'text-[#c7c42a]', size: 'text-2xl md:text-4xl', onClick: () => setActiveTab('earnings') }
                     ].map((stat, i) => (
                       <div 
                         key={i} 
-                        className={`bg-white/5 border border-white/10 rounded-[4.5rem] p-10 flex flex-col justify-between min-h-[200px] ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
+                        className={`bg-white/5 border border-white/10 rounded-[3rem] p-8 flex flex-col justify-between min-h-[160px] ${stat.onClick ? 'cursor-pointer hover:border-[#c7c42a]/50 bg-[#c7c42a]/5 shadow-xl shadow-[#c7c42a]/5' : ''}`}
                         onClick={stat.onClick}
                       >
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
-                        <h3 className={`${stat.size} font-black italic ${stat.color} leading-none mt-4 overflow-hidden text-ellipsis`}>
-                          <span className="sr-only">{stat.label} value</span>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-white/40 italic">{stat.label}</p>
+                        <h3 className={`${stat.size} font-black italic ${stat.color} leading-none mt-2 overflow-hidden text-ellipsis`}>
                           <span>{stat.value}</span>
                         </h3>
                       </div>
@@ -1466,8 +1487,30 @@ Description: ${project.description || 'No description provided.'}
                             <div className="absolute top-0 right-0 p-20 opacity-[0.03] rotate-12">
                                <LayoutDashboard size={300} />
                             </div>
-                            <div className="flex justify-between items-center relative z-10">
-                              <h3 className="text-2xl font-black uppercase italic tracking-tighter">Mission Calendar</h3>
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+                              <div className="flex flex-col gap-2">
+                                <h3 className="text-2xl font-black uppercase italic tracking-tighter">Mission Calendar</h3>
+                                <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                                  <select 
+                                    value={currentCalendarMonth}
+                                    onChange={(e) => setCurrentCalendarMonth(parseInt(e.target.value))}
+                                    className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:text-[#FFFF00] transition-colors"
+                                  >
+                                    {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                                      <option key={m} value={i} className="bg-black">{m}</option>
+                                    ))}
+                                  </select>
+                                  <select 
+                                    value={currentCalendarYear}
+                                    onChange={(e) => setCurrentCalendarYear(parseInt(e.target.value))}
+                                    className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:text-[#FFFF00] transition-colors"
+                                  >
+                                    {Array.from({ length: 15 }, (_, i) => 2024 + i).map(y => (
+                                      <option key={y} value={y} className="bg-black">{y}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
                               <div className="flex gap-4">
                                  <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -1484,15 +1527,24 @@ Description: ${project.description || 'No description provided.'}
                               </div>
                             </div>
 
-                             <div className="grid grid-cols-7 gap-4 relative z-10">
+                             <div className="grid grid-cols-7 gap-3 md:gap-4 relative z-10">
                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                                  <div key={day} className="text-center text-[10px] font-black uppercase text-white/20 tracking-widest mb-4 italic">{day}</div>
                                ))}
-                               {Array.from({ length: 31 }).map((_, i) => {
-                                 const dayNum = i + 1;
+                               {Array.from({ length: 42 }).map((_, i) => {
+                                 const firstDayOfMonth = new Date(currentCalendarYear, currentCalendarMonth, 1).getDay();
+                                 const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+                                 const daysInMonth = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
+                                 
+                                 const dayNum = i - adjustedFirstDay + 1;
+                                 
+                                 if (dayNum <= 0 || dayNum > daysInMonth) {
+                                   return <div key={i} className="h-20 md:h-24 lg:h-32 rounded-full aspect-square mx-auto opacity-0" />;
+                                 }
+
                                  const today = new Date();
-                                 const currentMonthDate = new Date(today.getFullYear(), today.getMonth(), dayNum);
-                                 const dateStr = currentMonthDate.toISOString().split('T')[0];
+                                 const targetDate = new Date(currentCalendarYear, currentCalendarMonth, dayNum);
+                                 const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                                  
                                  const attendanceRecord = attendance.find(a => a.date === dateStr);
                                  const leaveRecord = leaveRequests.find(l => {
@@ -1500,7 +1552,7 @@ Description: ${project.description || 'No description provided.'}
                                    return lDate === dateStr;
                                  });
                                  
-                                 const isFuture = currentMonthDate > today;
+                                 const isFuture = targetDate > today;
                                  const isLeave = !!leaveRecord;
                                  
                                  return (
@@ -1512,21 +1564,21 @@ Description: ${project.description || 'No description provided.'}
                                           setIsLeavePopupOpen(true);
                                         }
                                       }}
-                                      className={`h-24 lg:h-32 rounded-full aspect-square mx-auto border ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : isLeave ? 'border-[#FFFF00]/40 bg-[#FFFF00]/10' : isFuture ? 'border-[#FFFF00]/20 bg-[#FFFF00]/5 cursor-pointer hover:border-[#FFFF00]' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col items-center justify-center p-4 relative group`}
+                                      className={`h-20 md:h-24 lg:h-32 rounded-full aspect-square mx-auto border ${attendanceRecord ? 'border-green-500/20 bg-green-500/5' : isLeave ? 'border-[#FFFF00]/40 bg-[#FFFF00]/10' : isFuture ? 'border-[#FFFF00]/20 bg-[#FFFF00]/5 cursor-pointer hover:border-[#FFFF00]' : 'border-white/5 hover:border-red-500/20 hover:bg-red-500/5'} transition-all flex flex-col items-center justify-center p-3 md:p-4 relative group`}
                                    >
-                                      <span className={`text-xs font-black italic ${attendanceRecord ? 'text-green-500' : isLeave ? 'text-[#FFFF00]' : isFuture ? 'text-[#FFFF00]/60' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
+                                      <span className={`text-[10px] md:text-xs font-black italic ${attendanceRecord ? 'text-green-500' : isLeave ? 'text-[#FFFF00]' : isFuture ? 'text-[#FFFF00]/60' : 'text-white/20'}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
                                       
                                       {attendanceRecord && (
                                          <div className="mt-2 text-center">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] mx-auto" />
-                                            <p className="text-[6px] font-black uppercase text-green-500/60 mt-1">Bio-Active</p>
+                                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] mx-auto" />
+                                            <p className="text-[5px] md:text-[6px] font-black uppercase text-green-500/60 mt-1">Bio-Active</p>
                                          </div>
                                       )}
 
                                       {isLeave && (
                                          <div className="mt-2 text-center">
-                                            <div className="w-2 h-2 rounded-full bg-[#FFFF00] shadow-[0_0_10px_rgba(255,255,0,0.5)] mx-auto" />
-                                            <p className="text-[6px] font-black uppercase text-[#FFFF00]/60 mt-1">On Leave</p>
+                                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#FFFF00] shadow-[0_0_10px_rgba(255,255,0,0.5)] mx-auto" />
+                                            <p className="text-[5px] md:text-[6px] font-black uppercase text-[#FFFF00]/60 mt-1">On Leave</p>
                                          </div>
                                       )}
 
@@ -1559,7 +1611,7 @@ Description: ${project.description || 'No description provided.'}
                             
                             <div className="pt-10 border-t border-white/5 relative z-10">
                                <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/10 text-center italic">
-                                  Sync-Cycle: May 2026 // Distributed Ledger Verification Active
+                                  Sync-Cycle: {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][currentCalendarMonth]} {currentCalendarYear} // Distributed Ledger Verification Active
                                </p>
                             </div>
                         </div>

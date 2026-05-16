@@ -431,3 +431,14 @@ export interface Notification {
   createdAt: string | Timestamp;
   read: boolean;
 }
+
+export interface BioLog {
+  id: string;
+  userId: string;
+  date: string; // YYYY-MM-DD
+  mood?: string;
+  notes?: string;
+  data?: any;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
+}

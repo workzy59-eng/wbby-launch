@@ -3,11 +3,50 @@ import {
   ref, uploadBytes, getDownloadURL, storage, getDocFromServer, arrayUnion, arrayRemove, runTransaction, onAuthStateChanged, getCountFromServer
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
-import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting } from '../types';
+import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting, BioLog } from '../types';
 import { ADMIN_EMAIL } from '../constants';
 import { toast } from 'react-hot-toast';
 
 export { db };
+
+// Bio Log Operations
+export const saveBioLog = async (logData: Partial<BioLog>) => {
+  const dateStr = logData.date;
+  const uid = currentUser?.uid;
+  if (!uid || !dateStr) throw new Error("Missing requirements");
+  
+  const logId = `${uid}_${dateStr}`;
+  const path = `bio_logs/${logId}`;
+  
+  try {
+    await setDoc(doc(db, 'bio_logs', logId), {
+      ...logData,
+      userId: uid,
+      updatedAt: serverTimestamp(),
+      createdAt: serverTimestamp() 
+    }, { merge: true });
+    toast.success("Log saved successfully");
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+};
+
+export const getBioLogs = async (userId: string, year: number) => {
+  const path = 'bio_logs';
+  try {
+    const q = query(
+      collection(db, 'bio_logs'),
+      where('userId', '==', userId),
+      where('date', '>=', `${year}-01-01`),
+      where('date', '<=', `${year}-12-31`)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BioLog));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
 
 export const createNotification = async (data: any) => {
   try {
