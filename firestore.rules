@@ -24,19 +24,19 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuth() && (
-        (request.auth.token.email != null && request.auth.token.email.lower() == 'workzy59@gmail.com') ||
-        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03'
+        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'workzy59@gmail.com')
       );
     }
 
     function isWhitelistedDeveloper() {
       return isAuth() && (
         isAdmin() ||
+        request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
         (request.auth.token.email != null && (
-         request.auth.token.email.lower() == 'aither2029@gmail.com' ||
-         request.auth.token.email.lower() == 'sain17296174@gmail.com'
-        )) ||
-        request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2']
+          request.auth.token.email.lower() == 'aither2029@gmail.com' ||
+          request.auth.token.email.lower() == 'sain17296174@gmail.com'
+        ))
       );
     }
 
@@ -152,24 +152,13 @@ service cloud.firestore {
     // NOTIFICATIONS
     // =========================
     match /notifications/{notificationId} {
-      allow get: if isAuth() && (
+      allow read: if isAuth() && (
+        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
         isAdmin() || 
-        isWhitelistedDeveloper() || 
         resource.data.userId == request.auth.uid || 
-        resource.data.get('role', '') == 'admin'
+        resource.data.role == 'admin'
       );
-      allow list: if isAuth() && (
-        isAdmin() || 
-        isWhitelistedDeveloper() || 
-        (resource.data.userId == request.auth.uid) || 
-        (resource.data.get('role', '') == 'admin')
-      );
-      allow create: if isAuth();
-      allow update, delete: if isAuth() && (
-        isAdmin() || 
-        isWhitelistedDeveloper() || 
-        resource.data.userId == request.auth.uid
-      );
+      allow write: if isAuth();
     }
 
     // =========================
