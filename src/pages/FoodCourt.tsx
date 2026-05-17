@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArrowLeft, Utensils, Clock, MapPin, Star, ChevronRight, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

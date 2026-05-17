@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { 
   Calendar, 
   Clock, 
@@ -18,7 +18,7 @@ import {
 import { Meeting, MeetingStatus } from '../../types';
 import { format, isAfter, isBefore, addMinutes, differenceInSeconds } from 'date-fns';
 import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, downloadIcsFile } from '../../services/calendarUtils';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 
 interface MeetingCardProps {
   meeting: Meeting;

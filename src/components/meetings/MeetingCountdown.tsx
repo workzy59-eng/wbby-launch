@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Clock, Video, Share2, Calendar } from 'lucide-react';
 import { format, differenceInSeconds, parseISO } from 'date-fns';
-import { Meeting, UserProfile } from '../../types';
+import { Meeting } from '../../types';
 import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, downloadIcsFile } from '../../services/calendarUtils';
 import { toast } from 'react-hot-toast';
 

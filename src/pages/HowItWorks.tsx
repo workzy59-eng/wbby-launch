@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArrowLeft, CheckCircle2, MessageSquare, Code, Layout, Rocket } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

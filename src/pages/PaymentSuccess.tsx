@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, Rocket, ShieldCheck, Clock } from 'lucide-react';
 import { updateProject } from '../services/database';

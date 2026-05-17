@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { TestimonialCarousel, type Testimonial } from '@/components/ui/testimonial';
 import { Loader } from '@/components/ui/loader';
 import NavHeader from '@/components/ui/nav-header';

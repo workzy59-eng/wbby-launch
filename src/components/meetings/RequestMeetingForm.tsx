@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Calendar, Clock, MessageSquare, Send, Video, FileText } from 'lucide-react';
 import { createMeeting, validateMeetingLink, detectPlatform } from '../../services/meetingService';
 import { auth } from '../../firebase';

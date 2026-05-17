@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Video, Clock, Calendar, Bell, RefreshCw, Loader2, Check, MessageSquare } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { updateUserProfile } from '../../services/database';

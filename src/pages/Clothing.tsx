@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowLeft, ShoppingBag, Heart, Search, User, ChevronDown, ArrowRight, Star, Zap, ShoppingCart, Info, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRef } from 'react';

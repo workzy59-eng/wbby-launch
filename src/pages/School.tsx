@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { GraduationCap, ArrowRight, BookOpen, Users, Award, Calendar, Search, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
