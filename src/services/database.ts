@@ -146,14 +146,14 @@ export interface CloudinaryResponse {
   resource_type: string;
 }
 
-// Enhanced upload helper using direct Cloudinary upload or server relay
+// Enhanced upload helper using direct Cloudinary upload (client-side)
 export const uploadFile = async (
   file: File, 
   folder: string = 'webbylaunch', 
   onProgress?: (percent: number) => void
 ): Promise<CloudinaryResponse> => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || import.meta.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || import.meta.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dvrxv19t0';
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'iahbvbad';
 
   // Validation
   const MAX_SIZE = 10 * 1024 * 1024; // 10MB
@@ -165,8 +165,9 @@ export const uploadFile = async (
     'image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp',
     'application/pdf', 'application/zip', 'application/x-zip-compressed'
   ];
-  if (!allowedTypes.includes(file.type) && !file.type.startsWith('image/')) {
-    // Basic check for file extension if type is weird
+  const isImage = file.type.startsWith('image/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(file.name);
+  
+  if (!allowedTypes.includes(file.type) && !isImage) {
     const ext = file.name.split('.').pop()?.toLowerCase();
     const moreAllowed = ['png', 'jpg', 'jpeg', 'svg', 'webp', 'pdf', 'zip'];
     if (!ext || !moreAllowed.includes(ext)) {
@@ -174,78 +175,53 @@ export const uploadFile = async (
     }
   }
 
-  // Attempt direct frontend upload first
-  if (cloudName && uploadPreset) {
-    try {
-      const data = new FormData();
-      data.append('file', file);
-      data.append('upload_preset', uploadPreset);
-      data.append('folder', folder);
-
-      const isImage = file.type.startsWith('image/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(file.name);
-      const uploadUrl = isImage
-        ? `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
-        : `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
-
-      const response = await axios.post(uploadUrl, data, {
-        onUploadProgress: (progressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            onProgress(percentCompleted);
-          }
-        },
-      });
-
-      if (response.data?.secure_url) {
-        return {
-          url: response.data.secure_url,
-          secure_url: response.data.secure_url,
-          public_id: response.data.public_id,
-          original_filename: file.name,
-          resource_type: response.data.resource_type
-        };
-      }
-    } catch (err) {
-      console.warn('Direct Cloudinary upload failed, attempting server relay:', err);
-    }
-  }
-
-  // Relayed upload via our server
-  const relayData = new FormData();
-  relayData.append('folder', folder);
-  relayData.append('file', file);
-
   try {
-    const response = await axios.post('/api/upload', relayData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress(percentCompleted);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', folder);
+
+    const uploadUrl = isImage
+      ? `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+      : `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
+
+    // Use XHR for progress tracking as fetch doesn't support it natively for uploads
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', uploadUrl);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && onProgress) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent);
         }
-      },
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.responseText);
+          resolve({
+            url: response.secure_url,
+            secure_url: response.secure_url,
+            public_id: response.public_id,
+            original_filename: file.name,
+            resource_type: response.resource_type
+          });
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Network error during upload'));
+      xhr.send(formData);
     });
 
-    const result = response.data;
-    if (result && (result.url || result.secure_url)) {
-      const finalUrl = result.secure_url || result.url;
-      return {
-        url: finalUrl,
-        secure_url: finalUrl,
-        public_id: result.public_id || '',
-        original_filename: file.name,
-        resource_type: result.resource_type || 'auto'
-      };
-    }
-    
-    throw new Error('Invalid response from upload server');
   } catch (error) {
-    console.error('File upload failed both direct and via server:', error);
-    throw new Error('File upload failed. Please check your internet connection or cloud configuration.');
+    console.error('File upload failed:', error);
+    throw new Error('File upload failed. Please check your cloud configuration.');
   }
 };
+
 
 
 
