@@ -18,7 +18,8 @@ import {
   ShieldCheck,
   Clock,
   CornerUpLeft,
-  Edit
+  Edit,
+  Download
 } from 'lucide-react';
 
 const Loader = ({ color = "white" }: { color?: string }) => (
@@ -195,6 +196,26 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     }
   }, [messages, typingUsers]);
 
+  const downloadFileUrl = (url: string, filename: string) => {
+    if (!url) return;
+    
+    let downloadUrl = url;
+    if (url.includes('cloudinary.com') && !url.includes('fl_attachment')) {
+      const parts = url.split('/upload/');
+      if (parts.length === 2) {
+        downloadUrl = `${parts[0]}/upload/fl_attachment/${parts[1]}`;
+      }
+    }
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!inputText.trim() && Object.keys(uploadProgress).length === 0) || isSending) return;
@@ -223,6 +244,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             text: messageText,
             status: 'sent',
             type: 'text',
+            fileType: 'text',
             mentions: currentMentions,
             replyTo: currentReplyingTo ? {
               id: currentReplyingTo.id,
@@ -248,6 +270,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             text: messageText,
             status: 'sent',
             type: 'text',
+            fileType: 'text',
             mentions: currentMentions,
             replyTo: currentReplyingTo ? {
               id: currentReplyingTo.id,
@@ -328,7 +351,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     const mediaUrl = m.mediaUrl || m.fileUrl || m.imageUrl || m.fileData;
     if (!mediaUrl) return null;
 
-    if (m.type === 'image') {
+    const isImage = m.type === 'image' || (m.fileType && m.fileType.startsWith('image/')) || /\.(jpeg|jpg|gif|png|webp|svg)$/i.test(mediaUrl);
+
+    if (isImage) {
       return (
         <div 
           className="relative group/media mb-2 rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-black/40 shadow-2xl transition-all hover:scale-[1.01]" 
@@ -352,7 +377,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       );
     }
 
-    if (m.type === 'file') {
+    if (m.type === 'file' || (m.fileType && !m.fileType.startsWith('image/'))) {
       const isMe = m.senderId === currentUser.uid;
       return (
         <div className={`flex items-center gap-3 p-3 rounded-xl border mb-2 ${isMe ? 'bg-black/10 border-black/5' : 'bg-white/5 border-white/10'}`}>
@@ -361,16 +386,24 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-white truncate">{m.fileName || 'Attachment'}</p>
-            <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Document</p>
+            <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">{m.fileType ? m.fileType.split('/')[1].toUpperCase() : 'Document'}</p>
           </div>
-          <a 
-            href={mediaUrl} 
-            target="_blank" 
-            rel="noreferrer" 
-            className="p-2 hover:bg-white/10 rounded-lg transition-all text-white/40 hover:text-white"
-          >
-            <ExternalLink size={18} />
-          </a>
+          <div className="flex gap-1">
+            <button 
+              onClick={() => downloadFileUrl(mediaUrl, m.fileName || 'Attachment')}
+              className="p-2 hover:bg-white/10 rounded-lg transition-all text-yellow-400 hover:text-white"
+            >
+              <Download size={18} />
+            </button>
+            <a 
+              href={mediaUrl} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="p-2 hover:bg-white/10 rounded-lg transition-all text-white/40 hover:text-white"
+            >
+              <ExternalLink size={18} />
+            </a>
+          </div>
         </div>
       );
     }
@@ -417,7 +450,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             senderName: currentUser.displayName || profile?.displayName || 'User',
             text: `Shared ${file.name}`,
             type: 'file',
+            fileType: file.type,
             mediaUrl: url,
+            fileUrl: url,
             fileName: file.name
           };
 
@@ -462,7 +497,9 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             senderName: currentUser.displayName || profile?.displayName || 'User',
             text: item.caption || 'Sent an image',
             type: 'image',
+            fileType: file.type,
             mediaUrl: url,
+            fileUrl: url,
             fileName: file.name
           };
 
@@ -942,10 +979,10 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           <button 
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 md:p-3 text-[#c7c42a] hover:bg-[#c7c42a]/10 rounded-xl transition-all"
+            className="p-2 md:p-3 text-yellow-400 hover:bg-yellow-400/10 rounded-xl transition-all"
             title="Upload Files"
           >
-            <ImageIcon size={20} className="md:w-6 md:h-6" />
+            <Paperclip size={20} className="md:w-6 md:h-6" />
           </button>
 
           <div className="flex-1 relative min-w-0">

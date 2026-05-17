@@ -205,54 +205,74 @@ export const compressImageIfNeeded = (file: File, maxWidth = 800, maxHeight = 80
 
 import axios from 'axios';
 
-// Corrected upload helper using Cloudinary (Client-side)
-export const uploadFile = async (file: File, folder: string = 'uploads', onProgress?: (percent: number) => void): Promise<string> => {
-  let processedFile = file;
-  if (file.type.startsWith('image/')) {
-    try {
-      processedFile = await compressImageIfNeeded(file);
-    } catch (err) {
-      console.warn('Image compression failed, using original:', err);
-    }
-  }
-
+// Corrected upload helper using direct Cloudinary upload (frontend first) or server-side proxy fallback
+export const uploadFile = async (file: File, folder: string = 'webbylaunch-chat', onProgress?: (percent: number) => void): Promise<string> => {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-  if (!cloudName || !uploadPreset) {
-    console.warn('Cloudinary credentials missing, falling back to Base64');
-    if (processedFile.size > 700000) {
-      throw new Error(`File is too large (${Math.round(processedFile.size / 1024)}KB). Maximum allowed without Cloudinary is 700KB.`);
-    }
-    return await convertFileToBase64(processedFile);
-  }
+  // Attempt direct frontend upload first if preset is configured (as requested by user architecture)
+  if (cloudName && uploadPreset) {
+    try {
+      const data = new FormData();
+      data.append('file', file);
+      data.append('upload_preset', uploadPreset);
+      data.append('folder', folder);
 
-  try {
-    const formData = new FormData();
-    formData.append('file', processedFile);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('folder', folder);
+      const isImage = file.type.startsWith('image/');
+      const uploadUrl = isImage
+        ? `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+        : `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
 
-    const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-      formData,
-      {
+      const response = await axios.post(uploadUrl, data, {
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             onProgress(percentCompleted);
           }
         },
-      }
-    );
+      });
 
-    return response.data.secure_url;
-  } catch (error) {
-    console.error('Cloudinary upload error:', error);
-    if (processedFile.size > 700000) {
-      throw new Error(`Cloudinary failed & file is too large (${Math.round(processedFile.size / 1024)}KB) to fallback to local database.`);
+      if (response.data?.secure_url) {
+        return response.data.secure_url;
+      }
+    } catch (err) {
+      console.warn('Direct Cloudinary upload failed, attempting server relay:', err);
     }
-    return await convertFileToBase64(processedFile);
+  }
+
+  // Fallback to server-side relay
+  const formData = new FormData();
+  formData.append('folder', folder);
+  formData.append('file', file);
+
+  try {
+    const response = await axios.post('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total && !cloudName) { // Only progress if we haven't already reported it from above
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percentCompleted);
+        }
+      },
+    });
+
+    if (response.data && (response.data.url || response.data.secure_url)) {
+      return response.data.url || response.data.secure_url;
+    }
+    
+    throw new Error('Invalid response from upload server');
+  } catch (error) {
+    console.error('File upload failed both direct and via server:', error);
+    
+    // Final fallback to legacy Base64 for very small images
+    if (file.size < 500000 && file.type.startsWith('image/')) {
+      const processed = await compressImageIfNeeded(file);
+      return await convertFileToBase64(processed);
+    }
+    
+    throw new Error('File upload failed. Please check your internet connection or Cloudinary configuration.');
   }
 };
 
@@ -1095,18 +1115,20 @@ export const sendMessage = async (projectId: string, messageData: any) => {
   const path = `projects/${projectId}/messages`;
   try {
     const message = messageData.text || '';
-    const imageUrl = messageData.imageUrl || null;
-
-    const docRef = await addDoc(collection(db, 'conversations', projectId, 'messages'), {
-      text: message || null,
-      imageUrl: imageUrl || null,
+    
+    // Support both direct fields and messageData object
+    const finalData = {
+      ...messageData,
       senderId: currentUser.uid,
-      createdAt: serverTimestamp()
-    });
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    const docRef = await addDoc(collection(db, 'conversations', projectId, 'messages'), finalData);
 
     // Update project metadata
     await updateDoc(doc(db, 'projects', projectId), {
-      lastMessage: message || (imageUrl ? '📷 Photo' : 'New message'),
+      lastMessage: message || (messageData.imageUrl || messageData.mediaUrl ? '📷 Photo' : 'New message'),
       lastMessageAt: serverTimestamp(),
       lastSenderId: currentUser.uid,
       updatedAt: serverTimestamp(),
@@ -1124,8 +1146,7 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
   const path = `conversations/${conversationId}`;
   try {
     const message = messageData.text || '';
-    const imageUrl = messageData.imageUrl || null;
-
+    
     const convRef = doc(db, 'conversations', conversationId);
     const convDoc = await getDoc(convRef);
     let unreadCount = {};
@@ -1136,7 +1157,7 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
     unreadCount[recipientId] = (unreadCount[recipientId] || 0) + 1;
 
     await setDoc(convRef, {
-      lastMessage: message || (imageUrl ? '📷 Photo' : 'New message'),
+      lastMessage: message || (messageData.imageUrl || messageData.mediaUrl ? '📷 Photo' : 'New message'),
       lastMessageAt: serverTimestamp(),
       lastSenderId: currentUser.uid,
       participants: [currentUser.uid, recipientId],
@@ -1144,14 +1165,16 @@ export const sendDirectMessage = async (recipientId: string, messageData: any) =
       updatedAt: serverTimestamp(),
     }, { merge: true });
 
+    const finalData = {
+      ...messageData,
+      senderId: currentUser.uid,
+      createdAt: serverTimestamp(),
+      status: messageData.status || 'sent'
+    };
+
     const docRef = await addDoc(
       collection(db, "conversations", conversationId, "messages"),
-      {
-        text: message || null,
-        imageUrl: imageUrl || null,
-        senderId: currentUser.uid,
-        createdAt: serverTimestamp()
-      }
+      finalData
     );
     
     return docRef.id;

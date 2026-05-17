@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Clock, Video, Share2, Calendar } from 'lucide-react';
 import { format, differenceInSeconds, parseISO } from 'date-fns';
-import { Meeting } from '../../types';
+import { Meeting, UserProfile } from '../../types';
 import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, downloadIcsFile } from '../../services/calendarUtils';
 import { toast } from 'react-hot-toast';
 
@@ -120,35 +120,31 @@ export const MeetingCountdown: React.FC<MeetingCountdownProps> = ({ meeting, pro
 
         <div className="pt-6 border-t border-white/5 w-full flex flex-col items-center gap-4">
           <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#c7c42a]/60">
-            {profile?.googleCalendarEnabled ? '✓ Auto-Synced to Google' : 'Sync To Device Calendar'}
+            Sync To Device Calendar
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            {!profile?.googleCalendarEnabled && (
-              <>
-                <button 
-                  onClick={() => {
-                    toast.loading('Opening Google Calendar...', { duration: 2000 });
-                    const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
-                    window.open(generateGoogleCalendarUrl(meeting, attendees), '_blank');
-                  }}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white transition-all group"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-white" />
-                  Google
-                </button>
-                <button 
-                  onClick={() => {
-                    toast.loading('Opening Outlook...', { duration: 2000 });
-                    const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
-                    window.open(generateOutlookCalendarUrl(meeting, attendees), '_blank');
-                  }}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-400/10 hover:bg-blue-400 border border-blue-400/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white transition-all group"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 group-hover:bg-white" />
-                  Outlook
-                </button>
-              </>
-            )}
+            <button 
+              onClick={() => {
+                toast.loading('Opening Google Calendar...', { duration: 2000 });
+                const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                window.open(generateGoogleCalendarUrl(meeting, attendees), '_blank');
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white transition-all group"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-white" />
+              Google
+            </button>
+            <button 
+              onClick={() => {
+                toast.loading('Opening Outlook...', { duration: 2000 });
+                const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                window.open(generateOutlookCalendarUrl(meeting, attendees), '_blank');
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-400/10 hover:bg-blue-400 border border-blue-400/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white transition-all group"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 group-hover:bg-white" />
+              Outlook
+            </button>
             <button 
               onClick={() => {
                 toast.success('Downloading .ics file...');
@@ -158,7 +154,7 @@ export const MeetingCountdown: React.FC<MeetingCountdownProps> = ({ meeting, pro
               className="flex items-center gap-2 px-5 py-2.5 bg-green-500/10 hover:bg-green-500 border border-green-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-green-400 hover:text-white transition-all group"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 group-hover:bg-white" />
-              {profile?.googleCalendarEnabled ? 'Update/Download .ICS' : 'Apple / ICS'}
+              Apple / ICS
             </button>
           </div>
         </div>

@@ -106,19 +106,6 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         };
         const meetingRef = await createMeeting(meetingData);
         
-        // Automatic Google Calendar Sync
-        try {
-          if (profile?.googleCalendarEnabled) {
-            await fetch('/api/meetings/sync-google', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ meetingId: meetingRef, userId: user.uid })
-            });
-          }
-        } catch (syncErr) {
-          console.warn("Auto-sync to Google Calendar failed:", syncErr);
-        }
-        
         // System Notification in Chat
         try {
           const conversationId = getConversationId(user.uid, data.clientId);
@@ -209,43 +196,6 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
 
   const now = tickerNow;
   const [showSyncId, setShowSyncId] = useState<string | null>(null);
-  const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
-
-  const handleConnectGoogle = async () => {
-    if (!user) return;
-    setIsConnectingGoogle(true);
-    try {
-      const response = await fetch(`/api/google/auth-url?userId=${user.uid}`);
-      const { url } = await response.json();
-      
-      const width = 600;
-      const height = 700;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      
-      const popup = window.open(
-        url,
-        'google_auth',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      // Listener for completion message from popup
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
-          toast.success("Google Calendar connected successfully!");
-          window.removeEventListener('message', handleMessage);
-          // Firestore update will propagate via onSnapshot automatically
-        }
-      };
-      window.addEventListener('message', handleMessage);
-
-    } catch (error) {
-      console.error("Failed to get Google Auth URL:", error);
-      toast.error("Failed to connect Google Calendar");
-    } finally {
-      setIsConnectingGoogle(false);
-    }
-  };
   
   // High contrast countdown logic
   const upcomingMeeting = meetings.find(m => 
@@ -273,19 +223,6 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
   const handleAccept = async (id: string, meeting: Meeting) => {
     try {
       await acceptMeeting(id, user.uid);
-      
-      // Automatic Google Calendar Sync
-      try {
-        if (profile?.googleCalendarEnabled) {
-          await fetch('/api/meetings/sync-google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ meetingId: id, userId: user.uid })
-          });
-        }
-      } catch (syncErr) {
-        console.warn("Auto-sync to Google Calendar failed:", syncErr);
-      }
       
       // System Notification in messages
       try {
@@ -470,47 +407,6 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                                 <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#c7c42a]">Export Session</p>
                               </div>
                               
-                              {profile?.googleCalendarEnabled ? (
-                                <button 
-                                  onClick={async () => {
-                                    const loadingToast = toast.loading('Syncing with Google Calendar...');
-                                    try {
-                                      const res = await fetch('/api/meetings/sync-google', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ meetingId: m.id, userId: user.uid })
-                                      });
-                                      const data = await res.json();
-                                      if (data.success) {
-                                        toast.success('Successfully synced!', { id: loadingToast });
-                                      } else {
-                                        toast.error(data.error || 'Sync failed', { id: loadingToast });
-                                      }
-                                    } catch (err) {
-                                      toast.error('Connection error', { id: loadingToast });
-                                    }
-                                    setShowSyncId(null);
-                                  }}
-                                  className="w-full flex items-center gap-3 px-4 py-3 bg-[#c7c42a]/10 hover:bg-[#c7c42a] rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:text-black transition-all text-left mb-2"
-                                >
-                                  <div className="w-2 h-2 rounded-full bg-[#c7c42a]" />
-                                  Push to Auto-Sync
-                                </button>
-                              ) : (
-                                <button 
-                                  onClick={() => {
-                                    handleConnectGoogle();
-                                    setShowSyncId(null);
-                                  }}
-                                  className="w-full flex items-center gap-3 px-4 py-3 bg-[#c7c42a]/10 hover:bg-[#c7c42a] rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:text-black transition-all text-left mb-2"
-                                >
-                                  <div className="w-2 h-2 rounded-full bg-[#c7c42a]" />
-                                  Enable Auto-Sync
-                                </button>
-                              )}
-
-                              <div className="h-[1px] bg-white/5 my-1 mx-2" />
-                              
                               <button 
                                 onClick={() => {
                                   toast.loading('Opening Google Calendar...', { duration: 2000 });
@@ -518,7 +414,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                                   window.open(generateGoogleCalendarUrl(m, attendees), '_blank');
                                   setShowSyncId(null);
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-500/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all text-left"
+                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-500/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all text-left mb-2"
                               >
                                 <div className="w-2 h-2 rounded-full bg-blue-500" />
                                 Google Calendar
@@ -530,7 +426,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                                   window.open(generateOutlookCalendarUrl(m, attendees), '_blank');
                                   setShowSyncId(null);
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-400/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all text-left"
+                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-400/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all text-left mb-2"
                               >
                                 <div className="w-2 h-2 rounded-full bg-blue-400" />
                                 Outlook / Office
@@ -684,52 +580,6 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
           </div>
         </div>
 
-        <div className={`p-8 rounded-[2.5rem] border transition-all duration-500 mb-6 ${
-          profile?.googleCalendarEnabled 
-            ? 'bg-green-500/5 border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.05)]' 
-            : 'bg-[#c7c42a]/5 border-[#c7c42a]/20 shadow-[0_0_20px_rgba(199,196,42,0.05)]'
-        }`}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Calendar className={profile?.googleCalendarEnabled ? 'text-green-500' : 'text-[#c7c42a]'} size={20} />
-              <h3 className="text-[12px] font-black uppercase tracking-widest text-white">Google Calendar Sync</h3>
-            </div>
-            {profile?.googleCalendarEnabled && (
-              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            )}
-          </div>
-          
-          <p className="text-[10px] text-white/40 leading-relaxed mb-6 font-medium">
-            {profile?.googleCalendarEnabled 
-              ? "Automated sync is active. New sessions will appear in your Google Calendar automatically."
-              : "Authorize to allow the system to automatically push sessions and reminders to your Google Calendar."}
-          </p>
-
-          <button 
-            onClick={handleConnectGoogle}
-            disabled={isConnectingGoogle || profile?.googleCalendarEnabled}
-            className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
-              profile?.googleCalendarEnabled
-                ? 'bg-green-500/10 text-green-500 border border-green-500/30 cursor-default'
-                : 'bg-[#c7c42a] text-black hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#c7c42a]/10'
-            }`}
-          >
-            {isConnectingGoogle ? (
-              <>
-                <RefreshCw size={14} className="animate-spin" />
-                Connecting...
-              </>
-            ) : profile?.googleCalendarEnabled ? (
-              <>
-                <CheckCircle2 size={14} />
-                Auto-Sync Enabled
-              </>
-            ) : (
-              'Connect Google Calendar'
-            )}
-          </button>
-        </div>
-
         <div className="bg-[#c7c42a]/5 border border-[#c7c42a]/10 p-8 rounded-[2.5rem] space-y-4">
           <div className="flex items-center gap-3 text-[#c7c42a]">
             <AlertCircle size={18} />
@@ -739,7 +589,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
             {[
               "Double-Opt-In required for all syncs.",
               "Access links activate 5m prior to start.",
-              "Automated Google Sync for authorized users.",
+              "Manual Export supported for all calendars.",
               "System alerts sent via EmailJS on accept."
             ].map((rule, i) => (
               <li key={i} className="text-[10px] text-white/40 leading-relaxed flex items-start gap-2">

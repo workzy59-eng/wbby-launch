@@ -205,6 +205,26 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const notificationSound = useRef<HTMLAudioElement | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const downloadFileUrl = (url: string, filename: string) => {
+    if (!url) return;
+    
+    let downloadUrl = url;
+    if (url.includes('cloudinary.com') && !url.includes('fl_attachment')) {
+      const parts = url.split('/upload/');
+      if (parts.length === 2) {
+        downloadUrl = `${parts[0]}/upload/fl_attachment/${parts[1]}`;
+      }
+    }
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
     
@@ -484,7 +504,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
           status: 'sent',
           mentions: currentMentions,
           type: type,
+          fileType: imageToUpload ? imageToUpload.type : 'text',
+          fileName: imageToUpload ? imageToUpload.name : null,
           mediaUrl: mediaUrl,
+          fileUrl: mediaUrl, // Add as alias for compatibility
           replyTo: currentReplyingTo ? {
             id: currentReplyingTo.id,
             text: currentReplyingTo.text,
@@ -731,7 +754,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     
     // Check if message text is a URL (fallback for when type isn't set correctly)
     const imageRegex = /\.(jpeg|jpg|gif|png|webp|svg)$/i;
-    const fileRegex = /\.(pdf|zip|rar|doc|docx|xls|xlsx|ppt|pptx)$/i;
+    const fileRegex = /\.(pdf|zip|rar|doc|docx|xls|xlsx|ppt|pptx|txt|json|csv)$/i;
     const isUrlImage = m.text && (imageRegex.test(m.text) || m.text.includes('cloudinary.com') || m.text.includes('firebasestorage.googleapis.com'));
     const isUrlFile = m.text && fileRegex.test(m.text);
 
@@ -739,47 +762,68 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
     if (!effectiveUrl) return null;
 
-    if (m.type === 'image' || isUrlImage) {
+    const isImage = m.type === 'image' || isUrlImage || (m.fileType && m.fileType.startsWith('image/'));
+
+    if (isImage) {
       return (
         <div 
-          className="relative group/media mb-2 rounded-xl overflow-hidden border border-[#FFFF00]/10 cursor-pointer bg-[#2a3942]" 
+          className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/10 cursor-pointer bg-[#2a3942]" 
           onClick={() => setSelectedImage(effectiveUrl)}
         >
           <img src={effectiveUrl} alt="Shared" className="max-w-full h-auto max-h-[300px] object-cover" />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/media:opacity-100 transition-all flex items-center justify-center">
             <Maximize2 size={24} className="text-white drop-shadow-lg" />
           </div>
+          <div className="absolute top-2 right-2 opacity-0 group-hover/media:opacity-100 transition-all flex gap-2">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                downloadFileUrl(effectiveUrl, m.fileName || 'image.jpg');
+              }}
+              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-black transition-all"
+            >
+              <Download size={14} />
+            </button>
+          </div>
           <p className="absolute bottom-2 left-2 text-[8px] font-black uppercase text-[#FFFF00] bg-black/60 px-2 py-0.5 rounded-full tracking-widest backdrop-blur-sm opacity-0 group-hover/media:opacity-100 transition-opacity">Visual Intel Attached</p>
         </div>
       );
     }
 
-    if (m.type === 'file' || isUrlFile) {
-      const fileName = m.fileName || (m.text.split('/').pop()?.split('?')[0]) || 'Intel Document';
+    if (m.type === 'file' || isUrlFile || (m.fileType && !m.fileType.startsWith('image/') && m.type !== 'voice')) {
+      const fileName = m.fileName || (m.text && !m.text.includes('http') ? m.text : (effectiveUrl.split('/').pop()?.split('?')[0])) || 'Intel Document';
       const isProjectFile = fileName.toLowerCase().match(/\.(zip|pdf|rar)$/);
 
       return (
-        <div className={`p-5 rounded-3xl border-2 mb-2 transition-all group/file bg-black shadow-2xl ${
-          isProjectFile ? 'border-[#FFFF00]' : 'border-[#FFFF00]/10'
+        <div className={`p-4 rounded-2xl border-2 mb-2 transition-all group/file bg-black shadow-2xl ${
+          isProjectFile ? 'border-cyan-500/50' : 'border-white/10 hover:border-white/20'
         }`}>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#FFFF00] text-black">
-              <FileText size={24} />
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isProjectFile ? 'bg-cyan-500 text-black' : 'bg-white/10 text-white'}`}>
+              <FileText size={20} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-[#FFFF00] truncate tracking-tight uppercase italic">{fileName}</p>
-              <p className="text-[10px] text-[#FFFF00]/60 font-black uppercase tracking-widest mt-0.5">
+              <p className="text-sm font-black text-white truncate tracking-tight uppercase italic">{fileName}</p>
+              <p className="text-[9px] text-white/40 font-black uppercase tracking-widest mt-0.5">
                 {isProjectFile ? 'Critical Project Resource' : 'Data Document'}
               </p>
             </div>
           </div>
-          <button 
-            onClick={() => window.open(effectiveUrl, '_blank')}
-            className="w-full py-4 bg-[#FFFF00] text-black rounded-2xl font-black uppercase italic text-xs hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#FFFF00]/20"
-          >
-            <Download size={16} />
-            {isProjectFile ? 'Download Project Files' : 'Retrieve Intelligence'}
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => downloadFileUrl(effectiveUrl, fileName)}
+              className="flex-1 py-2.5 bg-yellow-400 hover:bg-white text-black rounded-xl font-black uppercase italic text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-yellow-400/20"
+            >
+              <Download size={12} />
+              Retrieve
+            </button>
+            <button 
+              onClick={() => window.open(effectiveUrl, '_blank')}
+              className="px-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all"
+            >
+              <ExternalLink size={12} />
+            </button>
+          </div>
         </div>
       );
     }
@@ -889,7 +933,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             senderName: senderName,
             text: `Shared ${file.name}`,
             type: 'file',
+            fileType: file.type,
             mediaUrl: url,
+            fileUrl: url,
             fileName: file.name,
             status: 'sent'
           };
@@ -937,7 +983,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             senderName: getEffectiveSenderName(),
             text: item.caption || 'Sent a photo',
             type: 'image',
+            fileType: file.type,
             mediaUrl: url,
+            fileUrl: url,
             fileName: file.name,
             status: 'sent'
           };
@@ -1474,8 +1522,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                          multiple 
                          onChange={(e) => handleFileUpload(e.target.files)} 
                        />
-                       <label htmlFor="file-upload" className="p-4 text-white/20 hover:text-[#3b82f6] transition-all cursor-pointer">
-                         <Plus size={24} />
+                       <label htmlFor="file-upload" className="p-4 text-yellow-400 hover:text-white transition-all cursor-pointer">
+                         <Paperclip size={24} />
                        </label>
                     </div>
 

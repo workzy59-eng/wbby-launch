@@ -566,6 +566,27 @@ PRECISION BUILT BY WEBBYLAUNCH
     toast.success('Client details downloaded');
   };
 
+  const handleDownloadAsset = (url: string, filename: string) => {
+    if (!url) return;
+    
+    // Cloudinary force download if it's a Cloudinary URL
+    let downloadUrl = url;
+    if (url.includes('cloudinary.com') && !url.includes('fl_attachment')) {
+      const parts = url.split('/upload/');
+      if (parts.length === 2) {
+        downloadUrl = `${parts[0]}/upload/fl_attachment/${parts[1]}`;
+      }
+    }
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleRejectProject = async (projectId: string) => {
     if (!rejectionReason.trim()) {
       toast.error('Rejection reason is required');
@@ -1132,10 +1153,10 @@ Description: ${project.description || 'No description provided.'}
                            </button>
                            <button 
                              onClick={() => {
-                               if (p.logoUrl) window.open(p.logoUrl, '_blank');
-                               if (p.documentsUrl) window.open(p.documentsUrl, '_blank');
+                               if (p.logoUrl) handleDownloadAsset(p.logoUrl, `${p.businessName}_logo`);
+                               if (p.documentsUrl) handleDownloadAsset(p.documentsUrl, `${p.businessName}_docs`);
                                if (!p.logoUrl && !p.documentsUrl) toast.error('No assets found');
-                               else toast.success('Opening client assets...');
+                               else toast.success('Starting asset download...');
                              }}
                              className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase italic tracking-widest text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all"
                            >
