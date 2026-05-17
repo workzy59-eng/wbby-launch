@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Clock, Video, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Clock, Video, Share2, Calendar } from 'lucide-react';
 import { format, differenceInSeconds, parseISO } from 'date-fns';
+import { Meeting } from '../../types';
+import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, downloadIcsFile } from '../../services/calendarUtils';
+import { toast } from 'react-hot-toast';
 
 interface MeetingCountdownProps {
-  startTime: string; // ISO string or combined date/time
-  title: string;
-  link: string;
+  meeting: Meeting;
+  profile?: UserProfile;
   onJoin?: () => void;
 }
 
-export const MeetingCountdown: React.FC<MeetingCountdownProps> = ({ startTime, title, link, onJoin }) => {
+export const MeetingCountdown: React.FC<MeetingCountdownProps> = ({ meeting, profile, onJoin }) => {
+  const { date, time, title, meetingLink: link } = meeting;
+  const startTime = `${date}T${time}`;
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isReady, setIsReady] = useState(false);
+  const [showSyncOptions, setShowSyncOptions] = useState(false);
 
   useEffect(() => {
     const targetDate = new Date(startTime);
@@ -112,6 +117,51 @@ export const MeetingCountdown: React.FC<MeetingCountdownProps> = ({ startTime, t
             Access link activates 5 min prior
           </p>
         )}
+
+        <div className="pt-6 border-t border-white/5 w-full flex flex-col items-center gap-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#c7c42a]/60">
+            {profile?.googleCalendarEnabled ? '✓ Auto-Synced to Google' : 'Sync To Device Calendar'}
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {!profile?.googleCalendarEnabled && (
+              <>
+                <button 
+                  onClick={() => {
+                    toast.loading('Opening Google Calendar...', { duration: 2000 });
+                    const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                    window.open(generateGoogleCalendarUrl(meeting, attendees), '_blank');
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 hover:bg-blue-500 border border-blue-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white transition-all group"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-white" />
+                  Google
+                </button>
+                <button 
+                  onClick={() => {
+                    toast.loading('Opening Outlook...', { duration: 2000 });
+                    const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                    window.open(generateOutlookCalendarUrl(meeting, attendees), '_blank');
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-400/10 hover:bg-blue-400 border border-blue-400/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white transition-all group"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 group-hover:bg-white" />
+                  Outlook
+                </button>
+              </>
+            )}
+            <button 
+              onClick={() => {
+                toast.success('Downloading .ics file...');
+                const attendees = [meeting.clientEmail, meeting.developerEmail].filter(Boolean) as string[];
+                downloadIcsFile(meeting, attendees);
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-green-500/10 hover:bg-green-500 border border-green-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-green-400 hover:text-white transition-all group"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 group-hover:bg-white" />
+              {profile?.googleCalendarEnabled ? 'Update/Download .ICS' : 'Apple / ICS'}
+            </button>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

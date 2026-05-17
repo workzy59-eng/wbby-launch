@@ -2,9 +2,10 @@ import { format, parseISO, addHours } from 'date-fns';
 import { Meeting } from '../types';
 
 export const generateGoogleCalendarUrl = (meeting: Meeting, attendees: string[] = []): string => {
-  const startDateTime = `${meeting.date.replace(/-/g, '')}T${meeting.time.replace(':', '')}00`;
   const startDate = parseISO(`${meeting.date}T${meeting.time}`);
   const endDate = addHours(startDate, (meeting.duration || 60) / 60);
+  
+  const startDateTime = format(startDate, "yyyyMMdd'T'HHmmss");
   const endDateTime = format(endDate, "yyyyMMdd'T'HHmmss");
 
   const params = new URLSearchParams({

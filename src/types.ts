@@ -80,6 +80,8 @@ export interface UserProfile {
   isPunchedIn?: boolean;
   lastPunchIn?: string | Timestamp;
   lastPunchOut?: string | Timestamp;
+  googleCalendarEnabled?: boolean;
+  googleRefreshToken?: string;
 
   // Business details for clients (Legacy/Duplicate - keeping for compatibility but preferring structured fields above)
   businessName?: string;
