@@ -1,8 +1,5 @@
 {
-  "name": "webbylaunch",
-  "description": "Professional Web Development Platform",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "name": "WebbyLaunch",
+  "description": "Premium SaaS platform for modern website development with developer onboarding, real-time tracking, and integrated payments.",
+  
 }

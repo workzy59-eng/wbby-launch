@@ -1,103 +1,249 @@
-import React, { useState } from 'react';
-import { Calendar, CheckCircle2, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { auth, onAuthStateChanged, FirebaseUser, db, collection, getDocs, addDoc, serverTimestamp, onSnapshot, doc, query, where } from './firebase';
 import { Toaster, toast } from 'react-hot-toast';
+import { UserProfile } from './types';
+import { AnimatePresence, motion } from 'framer-motion';
+import { createUserProfile, getUserProfile, updateUserStatus } from './services/database';
+import { ADMIN_EMAIL } from './constants';
+import { Smartphone } from 'lucide-react';
+import { Loader } from './components/ui/loader';
 
-function App() {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+const AuthPage = React.lazy(() => import('./pages/AuthPage'));
+const OnboardingFlow = React.lazy(() => import('./pages/OnboardingFlow'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
+const DeveloperDashboard = React.lazy(() => import('./pages/DeveloperDashboard'));
+const SalesDashboard = React.lazy(() => import('./pages/SalesDashboard'));
+const Gym = React.lazy(() => import('./pages/Gym'));
+const Resort = React.lazy(() => import('./pages/Resort'));
+const Autos = React.lazy(() => import('./pages/Autos'));
+const Cars = React.lazy(() => import('./pages/Cars'));
+const Clothing = React.lazy(() => import('./pages/Clothing'));
+const About = React.lazy(() => import('./pages/About'));
+const Contact = React.lazy(() => import('./pages/Contact'));
+const Services = React.lazy(() => import('./pages/Services'));
+const Pricing = React.lazy(() => import('./pages/Pricing'));
+const Blog = React.lazy(() => import('./pages/Blog'));
+const BlogPost = React.lazy(() => import('./pages/BlogPost'));
+const Testimonials = React.lazy(() => import('./pages/Testimonials'));
+const HowItWorks = React.lazy(() => import('./pages/HowItWorks'));
+const Privacy = React.lazy(() => import('./pages/Privacy'));
+const Terms = React.lazy(() => import('./pages/Terms'));
+const MessagesModule = React.lazy(() => import('./components/MessagesModule'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const ComponentShowcase = React.lazy(() => import('./pages/ComponentShowcase'));
+const Layout = React.lazy(() => import('./components/Layout'));
+const LocationPage = React.lazy(() => import('./pages/LocationPage'));
+const Docs = React.lazy(() => import('./pages/Docs'));
+const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
+const DomainSelection = React.lazy(() => import('./pages/DomainSelection'));
+const BioLogPage = React.lazy(() => import('./pages/BioLogPage'));
 
-  const handleConnectGoogle = async () => {
-    setIsConnecting(true);
-    try {
-      // In a real app, we'd get the current user ID
-      const userId = 'user_123'; 
-      const response = await fetch(`/api/google/auth-url?userId=${userId}`);
-      const { url } = await response.json();
+import { useAuth } from './context/AuthContext';
+import { useActivityTracker } from './hooks/useActivityTracker';
+
+export default function App() {
+  const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  // Track activity for logged in users
+  useActivityTracker(user?.uid);
+
+  useEffect(() => {
+    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      // Set online status
+      updateUserStatus(user.uid, 'online');
       
-      const width = 600;
-      const height = 700;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      
-      window.open(
-        url,
-        'google_auth',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
-          toast.success("webbylaunch: Google Calendar connected!");
-          setIsConnected(true);
-          window.removeEventListener('message', handleMessage);
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          updateUserStatus(user.uid, 'online');
+        } else {
+          updateUserStatus(user.uid, 'away');
         }
       };
-      window.addEventListener('message', handleMessage);
-    } catch (error) {
-      toast.error("Connection failed");
-    } finally {
-      setIsConnecting(false);
+
+      const handleBeforeUnload = () => {
+        updateUserStatus(user.uid, 'offline');
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        updateUserStatus(user.uid, 'offline');
+      };
     }
-  };
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader size={48} />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-      <Toaster position="top-center" />
-      
-      <div className="max-w-md w-full space-y-8 text-center">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">webbylaunch</h1>
-          <p className="text-white/40 text-sm">Professional sync for your development sessions.</p>
-        </div>
-
-        <div className={`p-8 rounded-[2.5rem] border transition-all duration-500 ${
-          isConnected 
-            ? 'bg-green-500/5 border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]' 
-            : 'bg-[#c7c42a]/5 border-[#c7c42a]/20 shadow-[0_0_20px_rgba(199,196,42,0.1)]'
-        }`}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Calendar className={isConnected ? 'text-green-500' : 'text-[#c7c42a]'} size={24} />
-              <h3 className="text-sm font-bold uppercase tracking-widest">Google Calendar</h3>
-            </div>
-            {isConnected && (
-              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            )}
-          </div>
-          
-          <p className="text-xs text-white/50 leading-relaxed mb-8">
-            {isConnected 
-              ? "webbylaunch is actively syncing your sessions. You will receive notifications in your calendar automatically."
-              : "Authorize webbylaunch to push sessions and milestones directly to your Google Calendar."}
-          </p>
-
-          <button 
-            onClick={handleConnectGoogle}
-            disabled={isConnecting || isConnected}
-            className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
-              isConnected
-                ? 'bg-green-500/10 text-green-500 border border-green-500/30 cursor-default'
-                : 'bg-[#c7c42a] text-black hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#c7c42a]/20'
-            }`}
-          >
-            {isConnecting ? (
-              <>
-                <RefreshCw size={14} className="animate-spin" />
-                Connecting...
-              </>
-            ) : isConnected ? (
-              <>
-                <CheckCircle2 size={14} />
-                Sync Active
-              </>
-            ) : (
-              'Connect Google Calendar'
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+    <React.Suspense fallback={<div className="flex items-center justify-center h-screen bg-black"><Loader size={48} /></div>}>
+        <Layout user={user} profile={profile}>
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#000000',
+                  color: '#c7c42a',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '1rem',
+                  fontSize: '12px',
+                  fontWeight: '900',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontStyle: 'italic'
+                },
+              }}
+            />
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route 
+                  path="/" 
+                  element={
+                    user ? (
+                      (profile?.role === 'admin' || 
+                       user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
+                        <Navigate to="/admin" />
+                      ) : (['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                        <Navigate to="/dashboard" />
+                      ) : (
+                        <Navigate to="/dashboard" />
+                      )
+                    ) : (
+                      <LandingPage user={user} profile={profile} />
+                    )
+                  } 
+                />
+                <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/docs" element={<Docs />} />
+                <Route path="/preview-builder" element={<PreviewBuilder />} />
+                <Route path="/testimonials" element={<Testimonials />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/privacy-policy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/showcase" element={<ComponentShowcase />} />
+                <Route path="/web-development-:city" element={<LocationPage />} />
+                <Route 
+                  path="/onboarding" 
+                  element={<OnboardingFlow user={user} profile={profile} />} 
+                />
+                <Route 
+                  path="/messages" 
+                  element={
+                    user ? (
+                      <MessagesModule currentUser={user} profile={profile} onClose={() => navigate('/dashboard')} />
+                    ) : (
+                      <Navigate to="/auth" />
+                    )
+                  } 
+                />
+                <Route 
+                  path="/settings" 
+                  element={user ? <Settings user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                />
+                <Route 
+                  path="/dashboard"                   element={
+                    user ? (
+                      profile ? (
+                        (profile.role === 'admin' || 
+                         user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
+                          <AdminPanel user={user} profile={profile} />
+                        ) : (profile.role === 'developer' || 
+                             ['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                          <DeveloperDashboard user={user} profile={profile} />
+                        ) : profile.role === 'sales' ? (
+                          <SalesDashboard user={user} profile={profile} />
+                        ) : (
+                          <Dashboard user={user} profile={profile} />
+                        )
+                      ) : (
+                        <div className="min-h-screen bg-black flex items-center justify-center">
+                          <Loader />
+                        </div>
+                      )
+                    ) : (
+                      <Navigate to="/auth" />
+                    )
+                  } 
+                />
+                <Route 
+                  path="/bio-log" 
+                  element={user ? <BioLogPage /> : <Navigate to="/auth" />} 
+                />
+                <Route 
+                  path="/domain-selection/:projectId" 
+                  element={user ? <DomainSelection /> : <Navigate to="/auth" />} 
+                />
+                <Route 
+                  path="/developer-dashboard" 
+                  element={
+                    user ? (
+                      profile ? (
+                        (profile.role === 'developer' || ['aither2029@gmail.com', 'sain17296174@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                          <DeveloperDashboard user={user} profile={profile} />
+                        ) : (
+                          <Navigate to="/dashboard" />
+                        )
+                      ) : (
+                        <div className="min-h-screen bg-black flex items-center justify-center">
+                          <Loader />
+                        </div>
+                      )
+                    ) : (
+                      <Navigate to="/auth" />
+                    )
+                  } 
+                />
+                <Route 
+                  path="/admin" 
+                  element={user && (profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? <AdminPanel user={user} profile={profile} /> : <Navigate to="/auth" />} 
+                />
+                <Route 
+                  path="/portfolio/gym" 
+                  element={<Gym />} 
+                />
+                <Route 
+                  path="/portfolio/resort" 
+                  element={<Resort />} 
+                />
+                <Route 
+                  path="/portfolio/autos" 
+                  element={<Autos />} 
+                />
+                <Route 
+                  path="/portfolio/cars" 
+                  element={<Cars />} 
+                />
+                <Route 
+                  path="/portfolio/clothing" 
+                  element={<Clothing />} 
+                />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </AnimatePresence>
+          </Layout>
+      </React.Suspense>
   );
 }
-
-export default App;

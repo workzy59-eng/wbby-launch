@@ -1,11 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
 @import "tailwindcss";
 
-:root {
+@theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --color-primary: #FFFF00;
+  --color-primary-foreground: #000000;
+  --color-background: #000000;
 }
 
-body {
-  background-color: #000;
-  color: #fff;
-  font-family: var(--font-sans);
+@layer base {
+  * {
+    border-radius: 0 !important;
+    font-family: inherit;
+  }
+  
+  body {
+    @apply bg-black text-white antialiased overflow-x-hidden;
+    font-family: var(--font-sans);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
 }
+
+@layer utilities {
+  .industrial-border {
+    border: 1px solid #FFFF00;
+  }
+  
+  .industrial-button {
+    @apply border border-[#FFFF00] bg-transparent text-[#FFFF00] transition-all duration-200 uppercase font-black tracking-widest px-6 py-3;
+  }
+  
+  .industrial-button:hover {
+    @apply bg-[#FFFF00] text-black;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #000;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #FFFF00;
+  }
+}
+
+/* Industrial-Chic Error States & Inputs */
+@keyframes neonShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.input-error-neon {
+  border: 2px solid #ff0000 !important;
+  box-shadow: 0 0 15px #ff0000, inset 0 0 5px #ff0000;
+  animation: neonShake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+  animation-iteration-count: 2;
+}
+
+.industrial-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 2px solid #FFFF00 !important;
+  color: #FFFF00 !important;
+  font-family: 'Inter', sans-serif !important;
+  text-transform: uppercase !important;
+  transition: all 0.3s ease !important;
+}
+
+
