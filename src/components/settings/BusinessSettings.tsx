@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Building2, Mail, Phone, Globe, Image as ImageIcon, Loader2, Check, Camera } from 'lucide-react';
+import { Building2, Mail, Phone, Globe, Image as ImageIcon, Loader2, Check, Camera, Download } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { updateUserProfile, uploadFile } from '../../services/database';
 import { toast } from 'react-hot-toast';
@@ -54,9 +54,55 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
   return (
     <div className="space-y-10">
       <div className="flex flex-col sm:flex-row items-center gap-8">
+        <div className="relative group">
+          <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-white/10 bg-white/5 flex items-center justify-center relative">
+            {isUploading ? (
+              <Loader2 className="animate-spin text-[#c7c42a]" size={32} />
+            ) : formData.logo ? (
+              <img src={formData.logo} alt="Business Logo" className="w-full h-full object-contain" />
+            ) : (
+              <Building2 className="text-white/10" size={48} />
+            )}
+            
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all cursor-pointer"
+            >
+              <Camera className="text-white mb-2" size={24} />
+              <span className="text-[8px] font-black uppercase tracking-widest text-white">Change Logo</span>
+            </button>
+          </div>
+          
+          {formData.logo && (
+            <button 
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = formData.logo.includes('cloudinary.com') 
+                  ? formData.logo.replace('/upload/', '/upload/fl_attachment/') 
+                  : formData.logo;
+                link.download = 'business-logo';
+                link.target = '_blank';
+                link.click();
+              }}
+              className="absolute -bottom-3 -right-3 p-3 bg-yellow-400 text-black rounded-2xl shadow-xl hover:scale-110 transition-all"
+              title="Download Logo"
+            >
+              <Download size={16} />
+            </button>
+          )}
+          
+          <input 
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
+          />
+        </div>
+
         <div className="text-center sm:text-left space-y-1">
           <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Business Information</h3>
-          <p className="text-white/40 text-sm italic">Update your business contact details below.</p>
+          <p className="text-white/40 text-sm italic">Update your business contact details and logo below.</p>
         </div>
       </div>
 
