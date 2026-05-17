@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Download, Share2, CheckCircle2, CreditCard, FileText, Smartphone, Globe, ShieldCheck, Zap } from 'lucide-react';
 import { Project, UserProfile } from '../types';
 import { formatDate } from '../lib/utils';

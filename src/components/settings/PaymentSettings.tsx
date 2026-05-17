@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { CreditCard, Landmark, QrCode, ShieldCheck, Loader2, Check, Plus } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { updateUserProfile } from '../../services/database';

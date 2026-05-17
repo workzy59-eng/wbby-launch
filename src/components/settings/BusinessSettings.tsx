@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Building2, Mail, Phone, Globe, Image as ImageIcon, Loader2, Check, Camera } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { updateUserProfile, uploadFile } from '../../services/database';

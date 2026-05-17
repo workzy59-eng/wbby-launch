@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Lock, Eye, EyeOff, Shield, AlertTriangle, Loader2, Check } from 'lucide-react';
 import { auth } from '../../firebase';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';

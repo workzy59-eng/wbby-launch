@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Code, Mail, ArrowRight, ShieldCheck, Laptop, User, Github, Briefcase, FileText, ExternalLink, MessageSquare } from 'lucide-react';

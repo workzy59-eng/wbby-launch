@@ -18,19 +18,42 @@ const oauth2Client = new google.auth.OAuth2(
 
 // Firebase Admin setup
 if (!admin.apps.length) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  if (privateKey) {
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+
+  if (privateKey && clientEmail && projectId) {
+    // Robust parsing for the private key
+    // 1. Handle literal \n and real newlines
+    let formattedKey = privateKey.replace(/\\n/g, '\n');
+    
+    // 2. Remove any wrapping quotes if they exist
+    if (formattedKey.startsWith('"') && formattedKey.endsWith('"')) {
+      formattedKey = formattedKey.substring(1, formattedKey.length - 1);
+    }
+
+    // 3. Ensure the key has the correct PEM headers/footers
+    if (!formattedKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      formattedKey = `-----BEGIN PRIVATE KEY-----\n${formattedKey}`;
+    }
+    if (!formattedKey.includes('-----END PRIVATE KEY-----')) {
+      formattedKey = `${formattedKey}\n-----END PRIVATE KEY-----`;
+    }
+
     admin.initializeApp({
       credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: privateKey,
+        projectId,
+        clientEmail,
+        privateKey: formattedKey,
       }),
     });
+    console.log("Firebase Admin initialized with Service Account Credentials");
   } else {
+    // Fallback to ADC if running in a Google Cloud environment with permissions
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
     });
+    console.log("Firebase Admin initialized with Application Default Credentials");
   }
 }
 

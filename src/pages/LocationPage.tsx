@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { MapPin, ArrowRight, CheckCircle2, Zap, Smartphone, Search } from 'lucide-react';
 import SEO from '../components/SEO';
 import { ADMIN_EMAIL } from '../constants';
