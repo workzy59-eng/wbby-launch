@@ -1,5 +1,13 @@
 import { Timestamp } from 'firebase/firestore';
 
+export interface CloudinaryAsset {
+  secure_url: string;
+  public_id: string;
+  original_filename: string;
+  resource_type?: string;
+  createdAt?: Timestamp | string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -39,6 +47,7 @@ export interface UserProfile {
     phone: string;
     website: string;
     logo?: string;
+    logoMetadata?: CloudinaryAsset;
   };
   paymentDetails?: {
     upiId: string;

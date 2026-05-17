@@ -19,9 +19,12 @@ import {
   Check,
   Upload,
   MousePointer2,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { uploadFile } from '../services/database';
+import { toast } from 'react-hot-toast';
 
 const PREVIEW_PAGES = [
   { id: 'home', label: 'Home', icon: Home },
@@ -38,16 +41,35 @@ export default function PreviewBuilder() {
   const [logo, setLogo] = useState<string | null>(null);
   const [activePage, setActivePage] = useState('home');
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogo(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validation
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB for preview logo
+    if (file.size > MAX_SIZE) {
+      toast.error('File too large. Max size is 2MB.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const response = await uploadFile(file, 'previews');
+      setLogo(response.secure_url);
+      toast.success('Logo uploaded for preview');
+    } catch (error: any) {
+      console.error(error);
+      toast.error('Failed to upload logo');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -93,10 +115,15 @@ export default function PreviewBuilder() {
               <ImageIcon size={12} /> Brand Logo
             </label>
             <div 
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => !isUploading && fileInputRef.current?.click()}
               className="w-full aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#c7c42a]/30 transition-all group overflow-hidden relative"
             >
-              {logo ? (
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="animate-spin text-[#c7c42a]" size={32} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Uploading Brand...</span>
+                </div>
+              ) : logo ? (
                 <img src={logo} alt="Logo" className="w-full h-full object-contain p-4" />
               ) : (
                 <>

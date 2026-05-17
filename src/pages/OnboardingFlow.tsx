@@ -432,7 +432,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         let finalProfileUrl = profile?.photoURL || '';
 
         if (profileFile) {
-          finalProfileUrl = await uploadFile(profileFile, 'profiles');
+          const res = await uploadFile(profileFile, 'profiles');
+          finalProfileUrl = res.url;
         }
 
         const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
@@ -1151,8 +1152,8 @@ ${formData.developerNote || 'No specific note provided.'}
                         setDocsFile(file);
                         setDocsName(file.name);
                         try {
-                          const base64 = await uploadFile(file);
-                          handleInputChange('documentsUrl', base64);
+                          const res = await uploadFile(file, 'project-files');
+                          handleInputChange('documentsUrl', res.url);
                           toast.success('Document uploaded!');
                         } catch (err) {
                           toast.error('Upload failed');
@@ -1401,8 +1402,8 @@ ${formData.developerNote || 'No specific note provided.'}
                       if (file) {
                         setLogoFile(file);
                         setLogoPreview(URL.createObjectURL(file));
-                        const base64 = await uploadFile(file);
-                        handleInputChange('logoUrl', base64);
+                        const res = await uploadFile(file, 'logos');
+                        handleInputChange('logoUrl', res.url);
                         toast.success('Logo uploaded!');
                       }
                     }}

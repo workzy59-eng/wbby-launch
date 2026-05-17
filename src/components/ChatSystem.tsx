@@ -440,7 +440,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
         
         try {
-          const url = await uploadFile(file, 'uploads', (percent) => {
+          const res = await uploadFile(file, 'chat-files', (percent) => {
             setUploadProgress(prev => ({ ...prev, [file.name]: percent }));
           });
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
@@ -451,9 +451,14 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             text: `Shared ${file.name}`,
             type: 'file',
             fileType: file.type,
-            mediaUrl: url,
-            fileUrl: url,
-            fileName: file.name
+            mediaUrl: res.url,
+            fileUrl: res.url,
+            fileName: file.name,
+            cloudinaryMetadata: {
+              public_id: res.public_id,
+              secure_url: res.secure_url,
+              original_filename: res.original_filename
+            }
           };
 
           if (isDirect && recipientUser) {
@@ -487,7 +492,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
         setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
         
         try {
-          const url = await uploadFile(file, 'uploads', (percent) => {
+          const res = await uploadFile(file, 'chat-files', (percent) => {
             setUploadProgress(prev => ({ ...prev, [file.name]: percent }));
           });
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
@@ -498,9 +503,14 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             text: item.caption || 'Sent an image',
             type: 'image',
             fileType: file.type,
-            mediaUrl: url,
-            fileUrl: url,
-            fileName: file.name
+            mediaUrl: res.url,
+            fileUrl: res.url,
+            fileName: file.name,
+            cloudinaryMetadata: {
+              public_id: res.public_id,
+              secure_url: res.secure_url,
+              original_filename: res.original_filename
+            }
           };
 
           if (isDirect && recipientUser) {

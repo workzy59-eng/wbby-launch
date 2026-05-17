@@ -478,7 +478,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       let type = 'text';
 
       if (imageToUpload) {
-        mediaUrl = await uploadFile(imageToUpload);
+        const res = await uploadFile(imageToUpload, 'chat-files');
+        mediaUrl = res.url;
         type = 'image';
       }
 
@@ -624,7 +625,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
 
         try {
           setIsSending(true);
-          const voiceUrl = await uploadFile(audioFile, 'voice_messages');
+          const res = await uploadFile(audioFile, 'chat-files');
+          const voiceUrl = res.url;
           
           if (activeConversation) {
             const messageData = {
@@ -923,7 +925,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const url = await uploadFile(file);
+          const res = await uploadFile(file, 'chat-files');
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
           const senderName = getEffectiveSenderName();
@@ -934,9 +936,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             text: `Shared ${file.name}`,
             type: 'file',
             fileType: file.type,
-            mediaUrl: url,
-            fileUrl: url,
+            mediaUrl: res.url,
+            fileUrl: res.url,
             fileName: file.name,
+            cloudinaryMetadata: {
+              public_id: res.public_id,
+              secure_url: res.secure_url,
+              original_filename: res.original_filename
+            },
             status: 'sent'
           };
 
@@ -975,7 +982,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         setUploadProgress(prev => ({ ...prev, [file.name]: 30 }));
         
         try {
-          const url = await uploadFile(file);
+          const res = await uploadFile(file, 'chat-files');
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
           const messageData = {
@@ -984,9 +991,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             text: item.caption || 'Sent a photo',
             type: 'image',
             fileType: file.type,
-            mediaUrl: url,
-            fileUrl: url,
+            mediaUrl: res.url,
+            fileUrl: res.url,
             fileName: file.name,
+            cloudinaryMetadata: {
+              public_id: res.public_id,
+              secure_url: res.secure_url,
+              original_filename: res.original_filename
+            },
             status: 'sent'
           };
 

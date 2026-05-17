@@ -183,10 +183,25 @@ apiRouter.post("/upload", (req, res, next) => {
     };
 
     console.log("Uploading file to Cloudinary:", req.file.originalname, "Folder:", req.body.folder);
+    
+    // Server-side validation
+    const allowedExtensions = ['png', 'jpg', 'jpeg', 'svg', 'webp', 'pdf', 'zip'];
+    const fileExt = req.file.originalname.split('.').pop()?.toLowerCase() || '';
+    
+    if (!allowedExtensions.includes(fileExt) && !req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ error: "Invalid file type restricted by server policy." });
+    }
+
     const result: any = await uploadToCloudinary(req.file.buffer, req.file.originalname, req.body.folder);
     
     console.log("File uploaded successfully to:", result.secure_url);
-    res.json({ url: result.secure_url });
+    res.json({ 
+      url: result.secure_url,
+      secure_url: result.secure_url,
+      public_id: result.public_id,
+      resource_type: result.resource_type,
+      original_filename: req.file.originalname
+    });
   } catch (error: any) {
     console.error("Upload handler error:", error);
     res.status(500).json({ error: error.message || "Upload failed" });

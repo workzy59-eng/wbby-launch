@@ -17,31 +17,64 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
     website: profile.businessInfo?.website || '',
     logo: profile.businessInfo?.logo || ''
   });
+  const [logoMetadata, setLogoMetadata] = useState<any>(profile.businessInfo?.logoMetadata || null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validation
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_SIZE) {
+      toast.error('File too large. Max size is 10MB.');
+      return;
+    }
+
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload PNG, JPG, SVG or WEBP.');
+      return;
+    }
+
     setIsUploading(true);
+    setUploadProgress(0);
     try {
-      const url = await uploadFile(file, `business/logo`);
-      setFormData(prev => ({ ...prev, logo: url }));
-      toast.success('Logo uploaded');
-    } catch (error) {
+      const response = await uploadFile(file, `logos`, (progress) => {
+        setUploadProgress(progress);
+      });
+      
+      const metadata = {
+        secure_url: response.secure_url,
+        public_id: response.public_id,
+        original_filename: response.original_filename,
+        resource_type: response.resource_type
+      };
+
+      setFormData(prev => ({ ...prev, logo: response.secure_url }));
+      setLogoMetadata(metadata);
+      toast.success('Logo uploaded successfully');
+    } catch (error: any) {
       console.error(error);
-      toast.error('Failed to upload logo');
+      toast.error(error.message || 'Failed to upload logo');
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateUserProfile(profile.uid, { businessInfo: formData });
+      await updateUserProfile(profile.uid, { 
+        businessInfo: { 
+          ...formData,
+          logoMetadata 
+        } 
+      });
       toast.success('Business information updated');
     } catch (error) {
       console.error(error);
@@ -51,13 +84,21 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
     }
   };
 
+  const getFocedDownloadUrl = (url: string) => {
+    if (!url) return '';
+    return url.replace('/upload/', '/upload/fl_attachment/');
+  };
+
   return (
     <div className="space-y-10">
       <div className="flex flex-col sm:flex-row items-center gap-8">
         <div className="relative group">
           <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-white/10 bg-white/5 flex items-center justify-center relative">
             {isUploading ? (
-              <Loader2 className="animate-spin text-[#c7c42a]" size={32} />
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="animate-spin text-[#c7c42a]" size={32} />
+                <span className="text-[10px] font-black text-[#c7c42a]">{uploadProgress}%</span>
+              </div>
             ) : formData.logo ? (
               <img src={formData.logo} alt="Business Logo" className="w-full h-full object-contain" />
             ) : (
@@ -74,28 +115,35 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
           </div>
           
           {formData.logo && (
-            <button 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = formData.logo.includes('cloudinary.com') 
-                  ? formData.logo.replace('/upload/', '/upload/fl_attachment/') 
-                  : formData.logo;
-                link.download = 'business-logo';
-                link.target = '_blank';
-                link.click();
-              }}
-              className="absolute -bottom-3 -right-3 p-3 bg-yellow-400 text-black rounded-2xl shadow-xl hover:scale-110 transition-all"
-              title="Download Logo"
-            >
-              <Download size={16} />
-            </button>
+            <div className="absolute -bottom-3 -right-3 flex gap-2">
+              <button 
+                onClick={() => window.open(formData.logo, '_blank')}
+                className="p-3 bg-white/10 backdrop-blur-md text-white rounded-2xl shadow-xl hover:scale-110 hover:bg-white hover:text-black transition-all border border-white/10"
+                title="Open Logo"
+              >
+                <ImageIcon size={16} />
+              </button>
+              <button 
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = getFocedDownloadUrl(formData.logo);
+                  link.download = logoMetadata?.original_filename || 'business-logo';
+                  link.target = '_blank';
+                  link.click();
+                }}
+                className="p-3 bg-yellow-400 text-black rounded-2xl shadow-xl hover:scale-110 transition-all"
+                title="Download Logo"
+              >
+                <Download size={16} />
+              </button>
+            </div>
           )}
           
           <input 
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept="image/*"
+            accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
             className="hidden"
           />
         </div>

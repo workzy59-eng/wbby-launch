@@ -49,21 +49,26 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ profile }) => 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview locally
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData(prev => ({ ...prev, photoURL: reader.result as string }));
-    };
-    reader.readAsDataURL(file);
+    // Validation
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB for profile pic
+    if (file.size > MAX_SIZE) {
+      toast.error('File too large. Max size is 5MB.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file.');
+      return;
+    }
 
     setIsUploading(true);
     try {
-      const url = await uploadFile(file, `profiles/${profile.uid}`);
-      setFormData(prev => ({ ...prev, photoURL: url }));
+      const response = await uploadFile(file, `profiles`);
+      setFormData(prev => ({ ...prev, photoURL: response.secure_url }));
       toast.success('Profile picture uploaded');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error('Failed to upload image');
+      toast.error(error.message || 'Failed to upload image');
     } finally {
       setIsUploading(false);
     }

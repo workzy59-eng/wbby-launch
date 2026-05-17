@@ -136,81 +136,45 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-// File Upload Helper (Base64 conversion)
-export const convertFileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-};
-
-// Client-side image compression helper to prevent Firestore 1MB document limit breaches
-export const compressImageIfNeeded = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<File> => {
-  return new Promise((resolve) => {
-    if (!file.type.startsWith('image/')) {
-      resolve(file);
-      return;
-    }
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth || height > maxHeight) {
-          if (width > height) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          } else {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                const compressedFile = new File([blob], file.name, {
-                  type: 'image/jpeg',
-                  lastModified: Date.now(),
-                });
-                resolve(compressedFile);
-              } else {
-                resolve(file);
-              }
-            },
-            'image/jpeg',
-            quality
-          );
-        } else {
-          resolve(file);
-        }
-      };
-      img.onerror = () => resolve(file);
-    };
-    reader.onerror = () => resolve(file);
-  });
-};
-
 import axios from 'axios';
 
-// Corrected upload helper using direct Cloudinary upload (frontend first) or server-side proxy fallback
-export const uploadFile = async (file: File, folder: string = 'webbylaunch-chat', onProgress?: (percent: number) => void): Promise<string> => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+export interface CloudinaryResponse {
+  url: string;
+  secure_url: string;
+  public_id: string;
+  original_filename: string;
+  resource_type: string;
+}
 
-  // Attempt direct frontend upload first if preset is configured (as requested by user architecture)
+// Enhanced upload helper using direct Cloudinary upload or server relay
+export const uploadFile = async (
+  file: File, 
+  folder: string = 'webbylaunch', 
+  onProgress?: (percent: number) => void
+): Promise<CloudinaryResponse> => {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || import.meta.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || import.meta.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  // Validation
+  const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+  if (file.size > MAX_SIZE) {
+    throw new Error('File too large. Max size is 10MB.');
+  }
+
+  const allowedTypes = [
+    'image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp',
+    'application/pdf', 'application/zip', 'application/x-zip-compressed'
+  ];
+  if (!allowedTypes.includes(file.type) && !file.type.startsWith('image/')) {
+    // Basic check for file extension if type is weird
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const moreAllowed = ['png', 'jpg', 'jpeg', 'svg', 'webp', 'pdf', 'zip'];
+    if (!ext || !moreAllowed.includes(ext)) {
+      throw new Error('Invalid file type.');
+    }
+  }
+
+  // Attempt direct frontend upload first
   if (cloudName && uploadPreset) {
     try {
       const data = new FormData();
@@ -218,7 +182,7 @@ export const uploadFile = async (file: File, folder: string = 'webbylaunch-chat'
       data.append('upload_preset', uploadPreset);
       data.append('folder', folder);
 
-      const isImage = file.type.startsWith('image/');
+      const isImage = file.type.startsWith('image/') || /\.(png|jpg|jpeg|svg|webp)$/i.test(file.name);
       const uploadUrl = isImage
         ? `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
         : `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
@@ -233,46 +197,53 @@ export const uploadFile = async (file: File, folder: string = 'webbylaunch-chat'
       });
 
       if (response.data?.secure_url) {
-        return response.data.secure_url;
+        return {
+          url: response.data.secure_url,
+          secure_url: response.data.secure_url,
+          public_id: response.data.public_id,
+          original_filename: file.name,
+          resource_type: response.data.resource_type
+        };
       }
     } catch (err) {
       console.warn('Direct Cloudinary upload failed, attempting server relay:', err);
     }
   }
 
-  // Fallback to server-side relay
-  const formData = new FormData();
-  formData.append('folder', folder);
-  formData.append('file', file);
+  // Relayed upload via our server
+  const relayData = new FormData();
+  relayData.append('folder', folder);
+  relayData.append('file', file);
 
   try {
-    const response = await axios.post('/api/upload', formData, {
+    const response = await axios.post('/api/upload', relayData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total && !cloudName) { // Only progress if we haven't already reported it from above
+        if (onProgress && progressEvent.total) {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           onProgress(percentCompleted);
         }
       },
     });
 
-    if (response.data && (response.data.url || response.data.secure_url)) {
-      return response.data.url || response.data.secure_url;
+    const result = response.data;
+    if (result && (result.url || result.secure_url)) {
+      const finalUrl = result.secure_url || result.url;
+      return {
+        url: finalUrl,
+        secure_url: finalUrl,
+        public_id: result.public_id || '',
+        original_filename: file.name,
+        resource_type: result.resource_type || 'auto'
+      };
     }
     
     throw new Error('Invalid response from upload server');
   } catch (error) {
     console.error('File upload failed both direct and via server:', error);
-    
-    // Final fallback to legacy Base64 for very small images
-    if (file.size < 500000 && file.type.startsWith('image/')) {
-      const processed = await compressImageIfNeeded(file);
-      return await convertFileToBase64(processed);
-    }
-    
-    throw new Error('File upload failed. Please check your internet connection or Cloudinary configuration.');
+    throw new Error('File upload failed. Please check your internet connection or cloud configuration.');
   }
 };
 
