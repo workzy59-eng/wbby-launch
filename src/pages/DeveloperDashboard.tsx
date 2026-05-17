@@ -1082,9 +1082,25 @@ Description: ${project.description || 'No description provided.'}
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl group-hover:bg-[#c7c42a]/10 transition-all" />
                         
                         <div className="flex justify-between items-start">
-                          <div className="space-y-1">
-                            <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">{p.businessName}</h4>
-                            <p className="text-[10px] font-bold uppercase text-white/40">{p.userName || 'Private Client'}</p>
+                          <div className="flex items-start gap-4">
+                            {p.logoUrl ? (
+                              <div className="w-12 h-12 bg-white/5 rounded-2xl overflow-hidden border border-white/10 shrink-0">
+                                <img 
+                                  src={p.logoUrl} 
+                                  alt="" 
+                                  className="w-full h-full object-contain"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a] shrink-0 border border-[#c7c42a]/20">
+                                <ImageIcon size={20} />
+                              </div>
+                            )}
+                            <div className="space-y-1">
+                              <h4 className="text-xl font-black italic uppercase tracking-tighter text-white truncate max-w-[150px]">{p.businessName}</h4>
+                              <p className="text-[10px] font-bold uppercase text-white/40 truncate max-w-[150px]">{p.userName || 'Private Client'}</p>
+                            </div>
                           </div>
                           <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
                             p.status?.toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-500' :
@@ -2241,6 +2257,28 @@ Description: ${project.description || 'No description provided.'}
                   {/* Files & Assets */}
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 border-b border-black/10 pb-2">Files & Assets</h3>
+                    
+                    {/* Visual Asset Preview */}
+                    {(selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl) && (
+                      <div className="bg-black/20 p-6 rounded-3xl border border-white/5 flex flex-col items-center gap-4">
+                        <p className="text-[8px] font-black uppercase text-white/40 tracking-widest self-start">Visual Identity Preview</p>
+                        <div className="w-32 h-32 bg-white/5 rounded-2xl overflow-hidden border border-white/10 flex items-center justify-center">
+                          <img 
+                            src={selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl} 
+                            alt="Logo" 
+                            className="max-w-full max-h-full object-contain"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                        <button 
+                          onClick={() => handleDownloadAsset(selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl, `${selectedProjectForDrawer.businessName}_logo`)}
+                          className="text-[9px] font-black uppercase text-[#D4E157] hover:underline"
+                        >
+                          Download High-Res Logo
+                        </button>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                        {selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl ? (
                           <div 

@@ -433,7 +433,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
 
         if (profileFile) {
           const res = await uploadFile(profileFile, 'profiles');
-          finalProfileUrl = res.url;
+          finalProfileUrl = res.secure_url || res.url;
         }
 
         const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
@@ -1134,14 +1134,18 @@ ${formData.developerNote || 'No specific note provided.'}
               <div className="space-y-4">
                 <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic text-primary">Branding Assets (Optional)</label>
                 <div className="relative group p-12 rounded-[3rem] border-2 border-dashed border-white/5 bg-white/[0.02] hover:border-primary/50 transition-all flex flex-col items-center justify-center gap-6 cursor-pointer">
-                  <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white/20 group-hover:text-primary group-hover:scale-110 transition-all">
-                    <FileText size={32} />
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-[#c7c42a]/10 rounded-2xl flex items-center justify-center text-[#c7c42a] group-hover:scale-110 transition-all">
+                      <span className="text-3xl text-yellow-400">🧷</span>
+                    </div>
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-black uppercase italic tracking-tighter text-white">
                       {docsName || 'Drop Business Assets / ID / Trade License'}
                     </p>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mt-2 italic">PRO TIP: UPLOAD YOUR LOGO IN STEP 5</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mt-2 italic flex items-center justify-center gap-2">
+                      <span className="text-yellow-400 text-lg">🧷</span> PRO TIP: UPLOAD YOUR LOGO IN NEXT STEP <span className="text-yellow-400 text-lg">🧷</span>
+                    </p>
                   </div>
                   <input
                     type="file"
@@ -1153,7 +1157,7 @@ ${formData.developerNote || 'No specific note provided.'}
                         setDocsName(file.name);
                         try {
                           const res = await uploadFile(file, 'project-files');
-                          handleInputChange('documentsUrl', res.url);
+                          handleInputChange('documentsUrl', res.secure_url || res.url);
                           toast.success('Document uploaded!');
                         } catch (err) {
                           toast.error('Upload failed');
@@ -1386,7 +1390,10 @@ ${formData.developerNote || 'No specific note provided.'}
                   {logoPreview ? (
                     <img src={logoPreview} alt="Logo Preview" className="h-20 object-contain" />
                   ) : (
-                    <ImageIcon className="text-subtext w-10 h-10 group-hover:text-primary transition-colors" />
+                    <div className="flex flex-col items-center gap-2">
+                       <span className="text-4xl text-yellow-400 animate-bounce">🧷</span>
+                       <ImageIcon className="text-subtext w-10 h-10 group-hover:text-primary transition-colors" />
+                    </div>
                   )}
                   <div className="text-center">
                     <p className="text-[10px] font-black uppercase tracking-widest text-text">
@@ -1403,7 +1410,7 @@ ${formData.developerNote || 'No specific note provided.'}
                         setLogoFile(file);
                         setLogoPreview(URL.createObjectURL(file));
                         const res = await uploadFile(file, 'logos');
-                        handleInputChange('logoUrl', res.url);
+                        handleInputChange('logoUrl', res.secure_url || res.url);
                         toast.success('Logo uploaded!');
                       }
                     }}

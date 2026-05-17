@@ -967,9 +967,20 @@ Generated on: ${new Date().toLocaleString()}
                 {projects.map((project, idx) => (
                   <div key={idx} className="p-8 bg-white/5 rounded-3xl border border-white/10 space-y-6 group hover:border-[#00F2FF]/40 transition-all">
                     <div className="flex justify-between items-start">
-                      <div className="w-14 h-14 bg-[#00F2FF] rounded-2xl flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_20px_rgba(0,242,255,0.2)]">
-                        {project.businessName?.[0]}
-                      </div>
+                      {project.logoUrl ? (
+                         <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+                            <img 
+                              src={project.logoUrl} 
+                              alt="" 
+                              className="w-full h-full object-contain"
+                              referrerPolicy="no-referrer"
+                            />
+                         </div>
+                      ) : (
+                        <div className="w-14 h-14 bg-[#00F2FF] rounded-2xl flex items-center justify-center text-black font-black text-xl italic shadow-[0_0_20px_rgba(0,242,255,0.2)]">
+                          {project.businessName?.[0]}
+                        </div>
+                      )}
                       <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                         project.status === 'completed' ? 'bg-green-500/20 text-green-400' :
                         project.status === 'in-progress' ? 'bg-blue-500/20 text-blue-400' :
