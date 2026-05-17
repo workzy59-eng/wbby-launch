@@ -215,7 +215,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
     if (!user) return;
     setIsConnectingGoogle(true);
     try {
-      const response = await fetch(`/api/auth/google/url?userId=${user.uid}`);
+      const response = await fetch(`/api/google/auth-url?userId=${user.uid}`);
       const { url } = await response.json();
       
       const width = 600;
