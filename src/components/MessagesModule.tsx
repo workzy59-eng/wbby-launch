@@ -34,6 +34,7 @@ import {
   Reply,
   Download,
   Star,
+  Settings2,
   Mic,
   Play
 } from 'lucide-react';
@@ -1111,146 +1112,118 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       const showDate = messageDate !== lastDate;
       if (showDate) lastDate = messageDate;
       
-      const isActionsVisible = showActions === m.id;
       const isFirstOfGroup = idx === 0 || messages[idx-1].senderId !== m.senderId;
       const isLastOfGroup = idx === messages.length - 1 || messages[idx+1].senderId !== m.senderId;
       
       return (
-        <React.Fragment key={m.id}>
+        <motion.div 
+          key={m.id}
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          className={`flex flex-col mb-1 ${isMe ? 'items-end' : 'items-start'}`}
+        >
           {showDate && (
-            <div className="flex justify-center my-8">
-              <span className="text-[10px] font-black tracking-[0.2em] text-white/20 uppercase">
+            <div className="w-full flex justify-center my-10">
+              <span className="text-[10px] font-black tracking-[0.3em] text-white/10 uppercase italic">
                 {messageDate}
               </span>
             </div>
           )}
-          <div 
-            className={`flex items-end mb-1 group px-1 ${isMe ? 'justify-end' : 'justify-start'}`}
-            onMouseEnter={() => setShowActions(m.id)}
-            onMouseLeave={() => setShowActions(null)}
-          >
-            <div className={`flex items-end gap-2 max-w-[85%] md:max-w-[75%]`}>
-              {!isMe && (
-                <div className="w-7 h-7 mb-1 shrink-0">
-                  {isLastOfGroup ? (
-                    <div className="w-full h-full rounded-full bg-white/10 flex items-center justify-center text-[10px] font-black uppercase overflow-hidden border border-white/5">
-                      {activeConversation?.recipientProfile?.displayName?.[0] || 'U'}
-                    </div>
-                  ) : <div className="w-7" />}
-                </div>
-              )}
 
-              <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} relative group/msg`}>
-                <div 
-                  className={`relative px-5 py-4 text-[14px] leading-relaxed shadow-2xl transition-all border ${
+          <div className={`flex items-end gap-2 max-w-[85%] md:max-w-[70%] group/item`}>
+            {!isMe && (
+              <div className="w-8 h-8 mb-1 shrink-0">
+                {isLastOfGroup ? (
+                   <div className="w-full h-full rounded-xl bg-white/5 border border-white/5 flex items-center justify-center overflow-hidden">
+                      {activeConversation?.recipientProfile?.photoURL ? (
+                        <img src={activeConversation.recipientProfile.photoURL} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] font-black italic text-[#c7c42a]">
+                          {activeConversation?.recipientProfile?.displayName?.[0] || 'U'}
+                        </span>
+                      )}
+                   </div>
+                ) : <div className="w-8" />}
+              </div>
+            )}
+
+            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} relative`}>
+               <div 
+                  className={`relative p-4 md:px-6 md:py-4 transition-all duration-300 ${
                   isMe 
-                    ? 'bg-[#FFFF00] text-black border-[#FFFF00]' 
-                    : 'bg-black text-[#FFFF00] border-[#FFFF00]/20'
+                    ? 'bg-[#c7c42a] text-black shadow-[0_10px_30px_rgba(199,196,42,0.15)]' 
+                    : 'bg-white/5 text-white border border-white/5'
                 } ${
                   isMe 
-                    ? `rounded-[24px] ${isLastOfGroup ? 'rounded-br-sm' : ''} ${!isFirstOfGroup ? 'rounded-tr-2xl' : ''}` 
-                    : `rounded-[24px] ${isLastOfGroup ? 'rounded-bl-sm' : ''} ${!isFirstOfGroup ? 'rounded-tl-2xl' : ''}`
-                } ${m.temp ? 'opacity-70 animate-pulse' : ''}`}
+                    ? `rounded-[28px] ${isLastOfGroup ? 'rounded-br-sm' : ''} ${!isFirstOfGroup ? 'rounded-tr-2xl' : ''}` 
+                    : `rounded-[28px] ${isLastOfGroup ? 'rounded-bl-sm' : ''} ${!isFirstOfGroup ? 'rounded-tl-2xl' : ''}`
+                }`}
                 >
                   {m.replyTo && !m.isDeleted && (
-                    <div className={`mb-3 p-3 rounded-xl border-l-[4px] bg-black/40 ${isMe ? 'border-black/40' : 'border-[#FFFF00]/60'}`}>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[#FFFF00]/60 mb-1">
-                        {m.replyTo.senderName}
-                      </p>
-                      <p className={`text-xs truncate italic line-clamp-1 ${isMe ? 'text-black/60' : 'text-white/60'}`}>
-                        {m.replyTo.text}
-                      </p>
+                    <div className={`mb-3 p-3 rounded-2xl bg-black/10 border-l-4 border-black/20 text-xs italic opacity-60`}>
+                       <span className="font-black uppercase block mb-1 text-[9px]">Transmission Reply</span>
+                       {m.replyTo.text}
                     </div>
                   )}
-                  
+
                   {renderMedia(m)}
 
                   {m.isDeleted ? (
-                    <p className="text-xs italic text-white/30 flex items-center gap-2 py-1">
-                      <Trash2 size={12} />
-                      This message was deleted
+                    <p className="text-xs italic opacity-30 flex items-center gap-2">
+                       <Trash2 size={12} /> Deleted Transmission
                     </p>
                   ) : (
-                    <div className="space-y-2">
-                       {(() => {
-                         const imageRegex = /\.(jpeg|jpg|gif|png|webp|svg)$/i;
-                         const fileRegex = /\.(pdf|zip|rar|doc|docx|xls|xlsx|ppt|pptx)$/i;
-                         const isUrlImage = m.text && (imageRegex.test(m.text) || m.text.includes('cloudinary.com') || m.text.includes('firebasestorage.googleapis.com'));
-                         const isUrlFile = m.text && fileRegex.test(m.text);
-                         const isPlaceholder = m.text === 'Sent a photo' || m.text === 'Sent a file' || m.text === 'sent image' || m.text === 'Sent a photo.';
-                         
-                         // If it's just a file/image URL or a placeholder, don't repeat the text
-                         if ((isUrlImage || isUrlFile || (isPlaceholder && (m.mediaUrl || m.fileUrl))) && (!m.text || m.text.trim() === m.mediaUrl || m.text.trim() === m.fileUrl || isPlaceholder || m.text.split('?')[0].includes(m.text.trim()))) {
-                           return null;
-                         }
-
-                         return (
-                           <p className="whitespace-pre-wrap break-words font-medium">
-                            {m.text.split(' ').map((word, i) => {
-                              if (word.startsWith('@')) {
-                                return <span key={i} className="text-[#FFFF00] font-black cursor-pointer hover:underline">{word} </span>;
-                              }
-                              return word + ' ';
-                            })}
-                          </p>
-                         );
-                       })()}
-                      {m.edited && (
-                        <p className="text-[9px] text-white/30 italic">Edited</p>
-                      )}
+                    <div className="space-y-1">
+                       {m.text && m.text !== 'Sent a photo' && m.text !== 'Sent a file' && (
+                         <p className="text-[14px] font-medium leading-relaxed tracking-tight whitespace-pre-wrap">
+                            {m.text}
+                         </p>
+                       )}
+                       {m.edited && (
+                         <span className="text-[8px] font-black uppercase tracking-widest opacity-30">Modified</span>
+                       )}
                     </div>
                   )}
 
-                  {/* Reactions */}
-                  {m.reactions && Object.keys(m.reactions).length > 0 && !m.isDeleted && (
-                    <div className={`absolute -bottom-2 ${isMe ? 'right-2' : 'left-2'} flex items-center gap-0.5 bg-[#262626] border border-white/10 rounded-full px-1.5 py-0.5 shadow-xl`}>
-                      {Object.keys(m.reactions).map(emoji => (
-                        <span key={emoji} className="text-[12px]">{emoji}</span>
-                      ))}
-                      <span className="text-[9px] font-black ml-1 text-white/40">{Object.values(m.reactions).flat().length}</span>
+                  {/* Reaction Overlay */}
+                  {m.reactions && Object.keys(m.reactions).length > 0 && (
+                    <div className={`absolute -bottom-3 ${isMe ? 'right-4' : 'left-4'} flex bg-[#111] border border-white/5 rounded-full px-2 py-1 shadow-2xl scale-90`}>
+                       {Object.keys(m.reactions).map(emoji => (
+                         <span key={emoji} className="text-sm">{emoji}</span>
+                       ))}
                     </div>
                   )}
-                </div>
+               </div>
 
-                {isLastOfGroup && (
-                  <div className={`flex items-center gap-1.5 mt-1.5 px-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white/20">
-                      {formatDate(m.createdAt, 'h:mm a')}
+               {isLastOfGroup && (
+                 <div className={`flex items-center gap-2 mt-2 px-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-white/20 italic">
+                      {formatDate(m.createdAt, 'time')}
                     </span>
-                    {isMe && !m.isDeleted && (
-                      <span className="opacity-40 scale-75">
-                        {m.status === 'seen' ? (
-                          <CheckCheck size={14} className="text-[#3b82f6]" />
-                        ) : (
-                          <Check size={14} className="text-white" />
-                        )}
-                      </span>
+                    {isMe && (
+                      <div className="scale-75">
+                         {m.status === 'seen' ? (
+                           <CheckCheck size={14} className="text-[#c7c42a] shadow-lg" />
+                         ) : (
+                           <Check size={14} className="text-white/20" />
+                         )}
+                      </div>
                     )}
-                  </div>
-                )}
-              </div>
+                 </div>
+               )}
+            </div>
 
-              {/* Hover Actions */}
-              <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all ${isMe ? 'flex-row-reverse order-first' : 'flex-row'}`}>
-                <button 
-                  onClick={() => setReplyingTo(m)}
-                  className="p-2 hover:bg-white/5 rounded-full text-white/30 hover:text-white"
-                >
-                  <Reply size={16} />
-                </button>
-                <button 
-                  onClick={(e) => setReactionAnchor({ x: e.clientX, y: e.clientY, messageId: m.id })}
-                  className="p-2 hover:bg-white/5 rounded-full text-white/30 hover:text-white"
-                >
-                  <Smile size={16} />
-                </button>
-                <button className="p-2 hover:bg-white/5 rounded-full text-white/30 hover:text-white">
-                  <MoreVertical size={16} />
-                </button>
-              </div>
+            {/* Hidden Actions (Hover) */}
+            <div className={`flex gap-1 items-center opacity-0 group-hover/item:opacity-100 transition-all duration-300 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+               <button onClick={() => setReplyingTo(m)} className="p-2 text-white/10 hover:text-white transition-colors">
+                 <Reply size={14} />
+               </button>
+               <button onClick={(e) => setReactionAnchor({ x: e.clientX, y: e.clientY, messageId: m.id })} className="p-2 text-white/10 hover:text-[#c7c42a] transition-colors">
+                 <Smile size={14} />
+               </button>
             </div>
           </div>
-        </React.Fragment>
+        </motion.div>
       );
     });
   };
@@ -1260,437 +1233,551 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     : "relative w-full h-[calc(100vh-120px)] bg-black rounded-[2.5rem] border border-white/5 flex flex-col md:flex-row overflow-hidden font-sans shadow-2xl";
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className={containerClasses}
-    >
-      {/* Reaction Floating Tray */}
-      <AnimatePresence>
-        {reactionAnchor && (
-          <>
-            <div 
-              className="fixed inset-0 z-[300]" 
-              onClick={() => setReactionAnchor(null)}
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: 10 }}
-              style={{ 
-                left: Math.min(window.innerWidth - 300, Math.max(20, reactionAnchor.x - 150)),
-                top: reactionAnchor.y - 80 
-              }}
-              className="fixed z-[310] flex items-center gap-1 bg-[#2a3942] p-2 rounded-full border border-white/10 shadow-2xl"
-            >
-              {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-black/90 backdrop-blur-xl transition-all duration-500`}>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className={`w-full overflow-hidden bg-[#0a0a0a] border border-white/5 relative flex flex-col md:flex-row transition-all duration-500 ${
+          fullScreen ? 'h-full md:h-[92vh] md:max-w-[1200px] md:rounded-[2.5rem]' : 'h-full'
+        }`}
+      >
+        {/* --- Sidebar (Conversations List) --- */}
+        <aside className={`w-full md:w-[380px] border-r border-white/5 flex flex-col bg-[#050505] relative z-20 ${
+          activeConversation && 'hidden md:flex'
+        }`}>
+          {/* Sidebar Header */}
+          <div className="p-6 pb-2">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Direct</h2>
+                <div className="w-2 h-2 rounded-full bg-[#c7c42a] animate-pulse" />
+              </div>
+              <div className="flex items-center gap-3">
                 <button 
-                  key={emoji}
-                  onClick={() => {
-                    handleToggleReaction(reactionAnchor.messageId, emoji);
-                    setReactionAnchor(null);
-                  }}
-                  className="p-2 hover:scale-150 transition-transform text-2xl"
+                  onClick={() => setShowUserList(true)}
+                  className="p-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all text-white/60 hover:text-white"
                 >
-                  {emoji}
+                  <Plus size={20} />
+                </button>
+                <button 
+                  onClick={onClose}
+                  className="p-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all text-white/60 md:hidden"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex gap-2 mb-6">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'unread', label: 'Unread' },
+                { id: 'favorites', label: 'Favorites' }
+              ].map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id as any)}
+                  className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                    activeFilter === filter.id 
+                      ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' 
+                      : 'bg-white/5 text-white/40 hover:bg-white/10'
+                  }`}
+                >
+                  {filter.label}
                 </button>
               ))}
-              <div className="w-px h-6 bg-white/10 mx-1" />
-              <button 
-                onClick={() => {
-                  const msg = messages.find(m => m.id === reactionAnchor.messageId);
-                  if (msg) setReplyingTo(msg);
-                  setReactionAnchor(null);
-                }}
-                className="p-2 hover:bg-white/5 rounded-full text-[#8696a0] hover:text-[#00a884]"
-              >
-                <CornerUpLeft size={20} />
-              </button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
 
-      {/* Sidebar / List View */}
-      <div className={`w-full md:w-[380px] border-r border-white/5 flex flex-col bg-black h-full ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-6 space-y-6 shrink-0">
-          <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-black italic uppercase tracking-tighter text-white">Direct</h1>
-                        <div className="flex items-center gap-1">
-                          <div className="flex bg-white/5 rounded-xl p-1">
-                            {['all', 'unread', 'favorites'].map((f) => (
-                              <button
-                                key={f}
-                                onClick={() => setActiveFilter(f as any)}
-                                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                  activeFilter === f ? 'bg-[#3b82f6] text-white shadow-lg' : 'text-white/40 hover:text-white'
-                                }`}
-                              >
-                                {f}
-                              </button>
-                            ))}
-                          </div>
-                          <button 
-                            onClick={() => setShowUserList(true)}
-                            className="p-2 hover:bg-white/5 text-white/40 hover:text-white rounded-xl transition-all"
-                          >
-                            <Plus size={24} />
-                          </button>
-                        </div>
-                      </div>
-
-          <div className="relative">
-            <div className="relative bg-white/5 rounded-2xl flex items-center px-4 py-3 border border-white/5 transition-all focus-within:border-[#3b82f6]/50">
-              <Search size={18} className="text-white/20" />
+            {/* Search */}
+            <div className="relative group mb-4">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#c7c42a] transition-colors" size={16} />
               <input 
                 type="text"
-                placeholder="Search intelligence..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-none px-3 text-sm text-white placeholder:text-white/20 outline-none font-bold"
+                placeholder="Search Intelligence..."
+                className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-white outline-none focus:bg-white/10 focus:border-[#c7c42a]/50 transition-all placeholder:text-white/10"
               />
             </div>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-64 space-y-4">
-              <Loader2 className="animate-spin text-[#3b82f6]" size={32} />
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20 animate-pulse">Syncing Intel...</p>
-            </div>
-          ) : (
-            <div className="px-2 space-y-1">
-              {filteredConversations.map((conv) => {
+          {/* Conversations List */}
+          <div className="flex-1 overflow-y-auto px-4 space-y-1 custom-scrollbar pb-10">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center h-full gap-4 opacity-20">
+                <Loader color="yellow" />
+              </div>
+            ) : filteredConversations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-12 text-center opacity-20">
+                <MessageSquare size={48} className="mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-widest">No Transmissions Found</p>
+              </div>
+            ) : (
+              filteredConversations.map((conv) => {
+                const isActive = activeConversation?.id === conv.id;
                 const unread = conv.unreadCount?.[currentUser.uid] || 0;
-                const isAdminConv = conv.id === 'new_admin' || conv.recipientProfile?.role === 'admin' || conv.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                const isDevConv = conv.id === 'new_dev' || (profile?.role === 'client' && (conv.recipientProfile?.uid === assignedDeveloper?.uid || conv.recipientProfile?.role === 'developer'));
-                const isSupport = isAdminConv || isDevConv;
+                const isFavorite = profile?.favoriteConversations?.includes(conv.id);
                 
                 return (
-                  <button
+                  <motion.div
                     key={conv.id}
+                    layoutId={`conv-${conv.id}`}
                     onClick={() => setActiveConversation(conv)}
-                    className={`w-full p-4 flex items-center gap-4 transition-all rounded-[2rem] group ${
-                      activeConversation?.id === conv.id ? 'bg-white/10 shadow-lg' : 'hover:bg-white/5'
+                    className={`group p-4 rounded-3xl cursor-pointer transition-all flex items-center gap-4 relative overflow-hidden ${
+                      isActive 
+                        ? 'bg-[#c7c42a] text-black' 
+                        : 'hover:bg-white/5 text-white'
                     }`}
                   >
+                    {/* Active Background Glow */}
+                    {isActive && (
+                      <motion.div 
+                        layoutId="active-glow"
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent blur-xl" 
+                      />
+                    )}
+
                     <div className="relative shrink-0">
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center font-black text-xl italic shadow-2xl ${
-                        isSupport ? 'bg-[#3b82f6] text-white' : 'bg-white/5 text-white/60 border border-white/10'
+                      <div className={`w-14 h-14 rounded-2xl overflow-hidden shadow-2xl relative z-10 ${
+                        isActive ? 'bg-black/10' : 'bg-white/10'
                       }`}>
-                        {conv.isProject ? <Briefcase size={28} /> : (isAdminConv ? 'WL' : (isDevConv ? 'DEV' : (conv.recipientProfile?.displayName?.[0] || 'U')))}
+                        {conv.isProject ? (
+                          <div className="w-full h-full flex items-center justify-center text-[#c7c42a]">
+                            <Briefcase size={24} />
+                          </div>
+                        ) : conv.recipientProfile?.photoURL ? (
+                          <img src={conv.recipientProfile.photoURL} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xl font-black italic text-[#c7c42a]">
+                            {(conv.recipientProfile?.displayName || conv.id)[0].toUpperCase()}
+                          </div>
+                        )}
                       </div>
-                      {!conv.isProject && conv.recipientProfile?.status === 'online' && (
-                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-4 border-black rounded-full" />
-                      )}
+                      
+                      {/* Online Indicator */}
+                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-4 ${
+                        isActive ? 'border-[#c7c42a]' : 'border-[#050505]'
+                      } ${conv.recipientProfile?.status === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-white/20'}`} />
                     </div>
 
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="flex justify-between items-center mb-0.5">
-                        <div className="flex items-center gap-2 truncate">
-                          <span className="font-black text-white italic uppercase tracking-tighter truncate text-sm">
-                            {conv.isProject ? conv.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Your Developer' : conv.recipientProfile?.displayName))}
-                          </span>
-                          {profile?.favoriteConversations?.includes(conv.id) && (
-                            <Star size={10} className="text-yellow-400 fill-yellow-400 shrink-0" />
-                          )}
-                        </div>
-                        <span className="text-[10px] font-bold text-white/20 uppercase">
-                          {conv.lastMessageAt ? formatDate(conv.lastMessageAt, 'h:mm a') : ''}
+                    <div className="flex-1 min-w-0 relative z-10">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className={`text-sm font-black italic uppercase tracking-tighter truncate ${
+                          isActive ? 'text-black' : 'text-white'
+                        }`}>
+                          {conv.isProject ? conv.project?.businessName : conv.recipientProfile?.displayName}
+                        </h4>
+                        <span className={`text-[9px] font-black uppercase italic ${
+                          isActive ? 'text-black/40' : 'text-white/20'
+                        }`}>
+                          {conv.lastMessageAt ? formatDate(conv.lastMessageAt, 'time') : ''}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <p className={`text-xs truncate ${unread > 0 ? 'text-white font-black' : 'text-white/40 font-bold'}`}>
-                          {conv.lastSenderId === currentUser.uid && (
-                            <span className="text-[#3b82f6] mr-1">You:</span>
-                          )}
-                          {conv.lastMessage || 'Channel active...'}
-                        </p>
-                        <div className="flex items-center gap-2">
-                           <button 
-                            onClick={(e) => toggleFavorite(e, conv.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-lg text-white/20 hover:text-yellow-400 transition-all"
-                           >
-                             <Star size={14} className={profile?.favoriteConversations?.includes(conv.id) ? 'fill-yellow-400 text-yellow-400' : ''} />
-                           </button>
-                           {unread > 0 && (
-                            <div className="bg-[#3b82f6] text-white text-[10px] font-black min-w-[20px] h-5 rounded-full flex items-center justify-center px-1.5 shadow-xl shadow-[#3b82f6]/20">
-                              {unread}
-                            </div>
-                           )}
-                        </div>
-                      </div>
+                      <p className={`text-xs truncate ${
+                        isActive ? 'text-black/60 font-bold' : unread > 0 ? 'text-white font-black' : 'text-white/40'
+                      }`}>
+                        {conv.lastSenderId === currentUser.uid && 'You: '}{conv.lastMessage || 'Channel active...'}
+                      </p>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Main Chat View */}
-      <div className={`flex-1 flex flex-col bg-black relative ${!activeConversation ? 'hidden md:flex' : 'flex'}`}>
-        {activeConversation ? (
-          <div key={activeConversation.id} className="flex-1 flex flex-col overflow-hidden relative z-10">
-            {/* Header */}
-            <header className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black relative z-20">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => setActiveConversation(null)}
-                  className="p-2 hover:bg-white/5 rounded-xl text-white/40 md:hidden"
-                >
-                  <ArrowLeft size={24} />
-                </button>
-                <div className="relative">
-                   {(() => {
-                     const isAdminConv = activeConversation.id === 'new_admin' || activeConversation.recipientProfile?.role === 'admin' || activeConversation.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                     const isDevConv = activeConversation.id === 'new_dev' || (profile?.role === 'client' && activeConversation.recipientProfile?.uid === assignedDeveloper?.uid);
-                     const isSupport = isAdminConv || isDevConv;
-
-                     return (
-                       <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black text-lg italic shadow-2xl ${
-                         activeConversation.isProject || isSupport ? 'bg-[#3b82f6] text-white' : 'bg-white/5 border border-white/10 text-white'
-                       }`}>
-                         {activeConversation.isProject ? <Briefcase size={22} /> : (isAdminConv ? 'WL' : (isDevConv ? 'DEV' : (activeConversation.recipientProfile?.displayName?.[0] || 'U')))}
-                       </div>
-                     );
-                   })()}
-                </div>
-                <div>
-                  <h3 className="font-black text-white text-lg italic uppercase tracking-tighter leading-tight">
-                    {(() => {
-                      const isAdminConv = activeConversation.id === 'new_admin' || activeConversation.recipientProfile?.role === 'admin' || activeConversation.recipientProfile?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                      const isDevConv = activeConversation.id === 'new_dev' || (profile?.role === 'client' && (activeConversation.recipientProfile?.uid === assignedDeveloper?.uid || activeConversation.recipientProfile?.role === 'developer'));
-                      
-                      return activeConversation.isProject ? activeConversation.project?.businessName : (isAdminConv ? 'Support' : (isDevConv ? 'Your Developer' : activeConversation.recipientProfile?.displayName));
-                    })()}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    {typingUsers.length > 0 ? (
-                      <p className="text-[10px] text-[#3b82f6] font-black uppercase tracking-widest animate-pulse">Analyzing Typing Data...</p>
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${activeConversation.recipientProfile?.status === 'online' ? 'bg-green-500' : 'bg-white/20'}`} />
-                        <p className="text-[10px] text-white/20 font-black uppercase tracking-widest">
-                          {activeConversation.recipientProfile?.status === 'online' ? 'Active Intel' : 'Station Offline'}
-                        </p>
+                    {unread > 0 && (
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black ${
+                        isActive ? 'bg-black text-[#c7c42a]' : 'bg-[#c7c42a] text-black'
+                      } shadow-lg relative z-10`}>
+                        {unread}
                       </div>
                     )}
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                 <button className="p-3 hover:bg-white/5 rounded-2xl text-white/20 hover:text-white transition-all">
-                    <Video size={22} />
-                 </button>
-                 <button className="p-3 hover:bg-white/5 rounded-2xl text-white/20 hover:text-white transition-all">
-                    <MoreVertical size={22} />
-                 </button>
-              </div>
-            </header>
+                    {!isActive && isFavorite && (
+                      <Star size={10} className="text-[#c7c42a] fill-[#c7c42a] absolute top-4 right-4" />
+                    )}
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
 
-            {/* Messages Area */}
-            <div 
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto px-4 md:px-10 py-10 space-y-2 relative z-10 custom-scrollbar scroll-smooth bg-black"
-            >
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full space-y-6 opacity-20">
-                  <MessageSquare size={64} className="text-white mb-4" />
-                  <p className="text-xs font-black uppercase tracking-[0.3em] text-white">Encryption Establised</p>
-                </div>
-              ) : (
-                renderMessages()
-              )}
+          {/* User Profile Footer */}
+          <div className="p-6 bg-black/40 backdrop-blur-xl border-t border-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#c7c42a] flex items-center justify-center text-black font-black italic overflow-hidden">
+                {profile?.photoURL ? (
+                  <img src={profile.photoURL} alt="P" className="w-full h-full object-cover" />
+                ) : (
+                  profile?.displayName?.[0] || 'U'
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] truncate">{profile?.displayName}</p>
+                <p className="text-[8px] font-bold text-white/40 uppercase tracking-tighter truncate">Operational & Secure</p>
+              </div>
             </div>
-            
-            {renderReactionPopup()}
+            <button onClick={onClose} className="p-2 text-white/20 hover:text-white transition-all hidden md:block">
+              <Settings2 size={18} />
+            </button>
+          </div>
+        </aside>
 
-            {/* Input Area */}
-            <footer className="p-4 md:p-6 bg-black relative z-20">
-               <div className="max-w-4xl mx-auto space-y-4">
-                 {replyingTo && (
-                   <div className="flex items-center justify-between px-6 py-3 bg-white/5 rounded-2xl border-l-[4px] border-[#3b82f6]">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-black text-[#3b82f6] uppercase tracking-widest">Replying to {replyingTo.senderName}</p>
-                        <p className="text-xs text-white/40 truncate italic">{replyingTo.text}</p>
-                      </div>
-                      <button onClick={() => setReplyingTo(null)} className="p-2 hover:bg-white/10 rounded-full text-white/40">
-                        <X size={18} />
-                      </button>
-                   </div>
-                 )}
-
-                 <div className="flex items-center gap-3 bg-[#1A1A1A] rounded-[2rem] p-2 pr-4 border border-white/5 focus-within:border-[#3b82f6]/30 transition-all shadow-2xl">
-                    <div className="flex items-center">
-                       <input 
-                         type="file" 
-                         id="file-upload" 
-                         className="hidden" 
-                         multiple 
-                         onChange={(e) => handleFileUpload(e.target.files)} 
-                       />
-                       <label htmlFor="file-upload" className="p-4 text-yellow-400 hover:text-white transition-all cursor-pointer">
-                         <Paperclip size={24} />
-                       </label>
-                    </div>
-
-                    <input 
-                       type="text"
-                       value={inputText}
-                       onChange={handleInputChange}
-                       onKeyPress={(e) => {
-                         if (e.key === 'Enter' && !e.shiftKey) {
-                           e.preventDefault();
-                           handleSendMessage(e as any);
-                         }
-                       }}
-                       placeholder="Send intel..."
-                       className="flex-1 bg-transparent border-none py-4 text-sm text-white placeholder:text-white/20 outline-none font-bold italic"
-                    />
-
-                    <div className="flex items-center gap-1">
-                      <button 
-                        type="button"
-                        onClick={() => setShowReactionPicker(prev => prev === 'input' ? null : 'input')}
-                        className={`p-3 transition-all ${showReactionPicker === 'input' ? 'text-[#3b82f6]' : 'text-white/20 hover:text-[#3b82f6]'}`}
-                      >
-                        <Smile size={24} />
-                      </button>
-                      
-                      <button 
-                        onClick={handleSendMessage}
-                        disabled={isSending || (!inputText.trim() && !previewImage)}
-                        className={`p-4 rounded-full transition-all flex items-center justify-center ${
-                          inputText.trim() || previewImage 
-                          ? 'bg-[#3b82f6] text-white shadow-xl shadow-[#3b82f6]/20 hover:scale-105 active:scale-95' 
-                          : 'bg-white/5 text-white/20 cursor-not-allowed'
-                        }`}
-                      >
-                        {isSending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
-                      </button>
-                    </div>
-
-                    <AnimatePresence>
-                      {showReactionPicker === 'input' && (
-                        <div className="absolute bottom-full right-0 mb-4 z-50">
-                          <EmojiPicker 
-                            onEmojiClick={onEmojiClick}
-                            theme={EmojiTheme.DARK}
-                            lazyLoadEmojis
-                          />
+        {/* --- Main Chat Area --- */}
+        <main className={`flex-1 flex flex-col min-w-0 bg-[#0a0a0a] relative ${
+          !activeConversation && 'hidden md:flex'
+        }`}>
+          {activeConversation ? (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Chat Header */}
+              <header className="p-6 bg-[#0a0a0a]/80 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between sticky top-0 z-30">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => setActiveConversation(null)}
+                    className="p-2 text-white/40 hover:text-white transition-all md:hidden"
+                  >
+                    <ArrowLeft size={24} />
+                  </button>
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center overflow-hidden border border-white/5 shadow-2xl shadow-black">
+                      {activeConversation.isProject ? (
+                        <div className="text-[#c7c42a]"><Briefcase size={20} /></div>
+                      ) : activeConversation.recipientProfile?.photoURL ? (
+                        <img src={activeConversation.recipientProfile.photoURL} alt="User" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="text-lg font-black italic text-[#c7c42a]">
+                          {(activeConversation.recipientProfile?.displayName || activeConversation.id)[0].toUpperCase()}
                         </div>
                       )}
-                    </AnimatePresence>
+                    </div>
+                    {!activeConversation.isProject && (
+                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-[3px] border-[#0a0a0a] ${
+                        activeConversation.recipientProfile?.status === 'online' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-white/20'
+                      }`} />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-black italic uppercase tracking-tighter text-white truncate leading-none mb-1">
+                      {activeConversation.isProject ? activeConversation.project?.businessName : activeConversation.recipientProfile?.displayName}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                       <p className={`text-[10px] font-black uppercase tracking-widest ${
+                         activeConversation.recipientProfile?.status === 'online' ? 'text-green-500' : 'text-white/20'
+                       }`}>
+                         {activeConversation.isProject ? 'Project Channel Active' : activeConversation.recipientProfile?.status === 'online' ? 'Active Intel' : 'Station Offline'}
+                       </p>
+                       {typingUsers.length > 0 && (
+                         <>
+                           <span className="w-1 h-1 rounded-full bg-white/20" />
+                           <div className="flex gap-0.5 items-center">
+                              <motion.div animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-1 h-1 bg-[#c7c42a] rounded-full" />
+                              <motion.div animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }} className="w-1 h-1 bg-[#c7c42a] rounded-full" />
+                              <motion.div animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.4 }} className="w-1 h-1 bg-[#c7c42a] rounded-full" />
+                              <span className="text-[8px] font-black uppercase tracking-widest text-[#c7c42a] ml-1">Transmitting...</span>
+                           </div>
+                         </>
+                       )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                   <button 
+                     onClick={() => setShowSearch(!showSearch)}
+                     className={`p-3 rounded-2xl transition-all ${showSearch ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                   >
+                     <Search size={20} />
+                   </button>
+                   <button 
+                     onClick={(e) => activeConversation && toggleFavorite(e, activeConversation.id)}
+                     className={`p-3 rounded-2xl transition-all ${
+                       activeConversation && profile?.favoriteConversations?.includes(activeConversation.id)
+                         ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' 
+                         : 'bg-white/5 text-white/40 hover:bg-white/10'
+                     }`}
+                   >
+                     <Star size={20} fill={activeConversation && profile?.favoriteConversations?.includes(activeConversation.id) ? 'currentColor' : 'none'} />
+                   </button>
+                </div>
+
+                <AnimatePresence>
+                  {showSearch && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="absolute top-full left-0 w-full p-4 bg-[#0a0a0a]/90 backdrop-blur-2xl border-b border-white/5 z-20"
+                    >
+                      <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                        <input 
+                          type="text"
+                          value={messageSearchQuery}
+                          onChange={(e) => setMessageSearchQuery(e.target.value)}
+                          placeholder="Search transmission history..."
+                          className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm font-bold text-white outline-none focus:bg-white/10 focus:border-[#c7c42a]/50 transition-all"
+                          autoFocus
+                        />
+                         <button 
+                           onClick={() => { setShowSearch(false); setMessageSearchQuery(''); }}
+                           className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white"
+                         >
+                           <X size={16} />
+                         </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </header>
+
+              {/* Messages Container */}
+              <div 
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto px-6 md:px-12 py-12 space-y-4 custom-scrollbar bg-chat-pattern scroll-smooth"
+              >
+                {renderMessages()}
+              </div>
+
+              {/* Input Area */}
+              <footer className="p-8 bg-[#0a0a0a]/80 backdrop-blur-2xl border-t border-white/5 relative z-40">
+                {/* Replying State Indicator */}
+                <AnimatePresence>
+                  {(replyingTo || editingMessage) && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className="absolute bottom-full left-0 w-full p-4 px-12 bg-[#111] border-t border-white/5 flex items-center justify-between gap-4 z-10 shadow-2xl"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2.5 bg-[#c7c42a]/10 rounded-xl text-[#c7c42a]">
+                          {editingMessage ? <Edit size={16} /> : <Reply size={16} />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-[#c7c42a]">
+                            {editingMessage ? 'Modifying Transmission' : `Replying to ${replyingTo?.senderName}`}
+                          </p>
+                          <p className="text-xs text-white/40 truncate italic">{editingMessage ? editingMessage.text : replyingTo?.text}</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => { setReplyingTo(null); setEditingMessage(null); }}
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-white/40 hover:text-white"
+                      >
+                        <X size={16} />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="max-w-5xl mx-auto flex items-end gap-5">
+                   <div className="flex gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-[22px] flex items-center justify-center text-white/40 hover:text-white transition-all shadow-xl group">
+                          <Paperclip size={20} className="group-hover:rotate-45 transition-transform" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-56 bg-[#1a1a1a] border-white/5 rounded-3xl p-2 shadow-2xl backdrop-blur-3xl mb-4" align="start">
+                        <button 
+                          onClick={() => document.getElementById('image-upload')?.click()}
+                          className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                        >
+                          <ImageIcon size={16} className="text-[#c7c42a]" /> Visual Intel
+                        </button>
+                        <button 
+                          onClick={() => document.getElementById('file-upload')?.click()}
+                          className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                        >
+                          <FileText size={16} className="text-[#c7c42a]" /> Data Document
+                        </button>
+                      </PopoverContent>
+                    </Popover>
+                    <input id="image-upload" type="file" hidden accept="image/*" multiple onChange={(e) => handleFileUpload(e.target.files)} />
+                    <input id="file-upload" type="file" hidden onChange={(e) => handleFileUpload(e.target.files)} />
+                  </div>
+
+                  <form 
+                    onSubmit={handleSendMessage}
+                    className="flex-1 flex items-center bg-white/5 rounded-[30px] p-1.5 pl-6 transition-all focus-within:bg-white/10 focus-within:ring-2 focus-within:ring-[#c7c42a]/20 group border border-white/5 relative"
+                  >
+                    <input 
+                      type="text"
+                      value={inputText}
+                      onChange={handleInputChange}
+                      placeholder="Transmitting Intel..."
+                      className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-white py-4 placeholder:text-white/10"
+                    />
+                    
+                    <div className="flex items-center gap-1 pr-2">
+                       <button 
+                         type="button"
+                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                         className={`p-3 rounded-2xl transition-all ${showEmojiPicker ? 'text-[#c7c42a]' : 'text-white/20 hover:text-white'}`}
+                       >
+                         <Smile size={22} />
+                       </button>
+
+                       {showEmojiPicker && (
+                         <div className="absolute bottom-full right-0 mb-6 z-50">
+                           <EmojiPicker 
+                             onEmojiClick={onEmojiClick}
+                             theme={EmojiTheme.DARK}
+                             width={350}
+                             height={450}
+                           />
+                         </div>
+                       )}
+
+                       <div className="h-8 w-[1px] bg-white/5 mx-2" />
+                       
+                       <button 
+                          onClick={handleSendMessage}
+                          disabled={isSending || (!inputText.trim() && !previewImage)}
+                          className={`p-4 rounded-full transition-all flex items-center justify-center ${
+                            inputText.trim() || previewImage 
+                            ? 'bg-[#c7c42a] text-black shadow-xl shadow-[#c7c42a]/20 hover:scale-105 active:scale-95' 
+                            : 'bg-white/5 text-white/20 cursor-not-allowed'
+                          }`}
+                        >
+                          {isSending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                        </button>
+                    </div>
+                  </form>
+                </div>
+              </footer>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center bg-chat-pattern relative overflow-hidden">
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                 animate={{ opacity: 1, scale: 1, y: 0 }}
+                 className="relative z-10 flex flex-col items-center text-center p-12"
+               >
+                 <div className="w-24 h-24 bg-[#c7c42a]/10 rounded-full flex items-center justify-center mb-8">
+                    <MessageSquare size={48} className="text-[#c7c42a]" />
                  </div>
-               </div>
-            </footer>
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-10 bg-black">
-             <div className="w-32 h-32 bg-white/[0.02] rounded-full flex items-center justify-center relative">
-                <div className="absolute inset-0 bg-[#3b82f6]/5 rounded-full blur-2xl animate-pulse" />
-                <MessageCircle size={64} className="text-[#3b82f6] relative z-10" />
-             </div>
-             <div className="space-y-4 max-w-sm">
-               <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white">Select a Channel</h2>
-               <p className="text-sm font-black uppercase text-white/20 tracking-widest leading-relaxed">
-                 Encrypted direct communication center. Contact Webby Launch support or your project team.
-               </p>
-             </div>
-          </div>
-        )}
-      </div>
+                 <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-4">Direct <span className="text-[#c7c42a]">Channel.</span></h2>
+                 <p className="text-sm font-black uppercase tracking-[0.2em] text-white/20 mb-10 max-w-sm">
+                   Establish a secure transmission link to communicate with the network.
+                 </p>
+                 <button 
+                   onClick={() => setShowUserList(true)}
+                   className="px-10 py-5 bg-[#c7c42a] text-black rounded-[2rem] font-black uppercase italic tracking-tighter text-lg hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#c7c42a]/20 flex items-center gap-3"
+                 >
+                   New Transmission
+                   <Plus size={20} />
+                 </button>
+               </motion.div>
+            </div>
+          )}
+        </main>
 
+        {/* --- Floating Intelligence List (New Chat) --- */}
+        <AnimatePresence>
+          {showUserList && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-[#050505]/95 backdrop-blur-3xl flex items-center justify-center p-4"
+            >
+              <div className="w-full max-w-[500px] bg-[#111] border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl relative">
+                <header className="p-8 border-b border-white/5 flex items-center justify-between">
+                  <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white leading-none">New Intel Link</h3>
+                  <button 
+                    onClick={() => { setShowUserList(false); setSearchQuery(''); }}
+                    className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all text-white/40 hover:text-white"
+                  >
+                    <X size={20} />
+                  </button>
+                </header>
 
-      <AnimatePresence>
+                <div className="p-8 space-y-6">
+                   <div className="relative group">
+                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#c7c42a]" size={16} />
+                     <input 
+                       type="text"
+                       value={searchQuery}
+                       onChange={(e) => setSearchQuery(e.target.value)}
+                       placeholder="Scan for Personnel..."
+                       className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-white outline-none focus:bg-white/10 focus:border-[#c7c42a]/50 transition-all"
+                       autoFocus
+                     />
+                   </div>
+
+                   <div className="max-h-[400px] overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                     {allProfiles
+                       .filter(p => !searchQuery || p.displayName?.toLowerCase().includes(searchQuery.toLowerCase()))
+                       .map(user => (
+                         <button
+                           key={user.uid}
+                           onClick={() => startNewChat(user)}
+                           className="w-full flex items-center gap-4 p-4 hover:bg-white/5 rounded-[2rem] transition-all text-left border border-transparent hover:border-white/5 group"
+                         >
+                            <div className="relative">
+                              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-white/20 overflow-hidden border border-white/5 group-hover:border-[#c7c42a]/30 transition-all">
+                                {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : (user.displayName?.[0] || 'U')}
+                              </div>
+                              {user.status === 'online' && (
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-4 border-[#111]" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-black italic uppercase tracking-tighter text-white truncate mb-0.5">{user.displayName}</p>
+                              <p className="text-[9px] font-black uppercase tracking-widest text-[#c7c42a]/40">{user.role || 'Personnel'}</p>
+                            </div>
+                            <ArrowRight size={18} className="ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-[#c7c42a]" />
+                         </button>
+                       ))}
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* --- Image Preview Modal --- */}
+        <AnimatePresence>
+          {selectedImage && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedImage(null)}
+              className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4 md:p-12"
+            >
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-10 right-10 p-5 bg-white/5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-all z-10"
+              >
+                <X size={28} />
+              </button>
+              <motion.img 
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                src={selectedImage} 
+                alt="Fullscreen" 
+                className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* --- File Editor (Images) --- */}
         {pendingFiles.length > 0 && (
           <FilePreviewEditor 
-            files={pendingFiles}
-            onCancel={() => setPendingFiles([])}
-            onSend={handleSendFromEditor}
+            files={pendingFiles} 
+            onCancel={() => setPendingFiles([])} 
+            onSend={handleSendFromEditor} 
             onAddMore={() => {
               const input = document.getElementById('file-upload') as HTMLInputElement;
               input?.click();
             }}
           />
         )}
-      </AnimatePresence>
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
-            className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 md:p-20 cursor-zoom-out"
-          >
-            <motion.img 
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              src={selectedImage}
-              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-            />
-            <button className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all">
-              <X size={24} />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* User Selection Modal */}
-      <AnimatePresence>
-        {showUserList && (
-           <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
-               exit={{ opacity: 0, scale: 0.95 }}
-               className="bg-[#111b21] rounded-2xl border border-white/5 w-full max-w-md overflow-hidden shadow-2xl"
-             >
-                <div className="p-6 border-b border-[#202c33] flex justify-between items-center bg-[#202c33]">
-                   <h3 className="text-lg font-bold text-[#e9edef]">New Chat</h3>
-                   <button onClick={() => setShowUserList(false)} className="p-2 hover:bg-white/5 rounded-full text-[#aebac1] transition-all">
-                      <X size={20} />
-                   </button>
-                </div>
-                
-                <div className="max-h-[60vh] overflow-y-auto space-y-1 p-4 custom-scrollbar">
-                   {allProfiles.length === 0 ? (
-                     <div className="text-center py-10">
-                        <p className="text-sm text-[#8696a0]">No results found.</p>
-                     </div>
-                   ) : (
-                     allProfiles.map(u => (
-                        <button 
-                          key={u.uid}
-                          onClick={() => startNewChat(u)}
-                          className="w-full p-4 hover:bg-[#202c33] rounded-xl transition-all flex items-center gap-4 text-left"
-                        >
-                           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
-                             u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'bg-[#ffc107] text-black' : 'bg-[#3b4a54] text-white'
-                           }`}>
-                              {u.displayName?.[0] || 'U'}
-                           </div>
-                           <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-[#e9edef] truncate">{u.displayName === 'SAI ROSHAN' ? 'System Support' : u.displayName}</h4>
-                              <p className="text-xs text-[#8696a0] truncate">{u.role}</p>
-                           </div>
-                        </button>
-                     ))
-                   )}
-                </div>
-             </motion.div>
-           </div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+        {/* --- Reaction Popup Overlay --- */}
+        {renderReactionPopup()}
+      </motion.div>
+    </div>
   );
 }

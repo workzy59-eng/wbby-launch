@@ -61,28 +61,24 @@ if (!admin.apps.length) {
     }
     
     // Replace literal \n with real newlines (handle both \n and \\n)
-    privateKey = privateKey.replace(/\\n/g, '\n').replace(/\\n/g, '\n');
+    privateKey = privateKey.replace(/\\n/g, '\n');
+    
+    // Sometimes the key might have literal newlines already but is still double escaped or has weird spacing
+    // Ensure we don't have dangling whitespace at the end of lines within the key
+    privateKey = privateKey.split('\n').map(line => line.trim()).join('\n');
     
     // Ensure the header and footer are correctly formatted with newlines
     if (privateKey.includes('BEGIN PRIVATE KEY')) {
-      if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-        // Fix missing dashes if present
-        privateKey = privateKey.replace(/.*BEGIN PRIVATE KEY.*/, '-----BEGIN PRIVATE KEY-----');
-      }
+      // Standardize headers
+      privateKey = privateKey.replace(/-----BEGIN PRIVATE KEY-----/, '-----BEGIN PRIVATE KEY-----\n');
+      privateKey = privateKey.replace(/-----END PRIVATE KEY-----/, '\n-----END PRIVATE KEY-----');
       
-      // Ensure newline after header
-      if (!privateKey.startsWith('-----BEGIN PRIVATE KEY-----\n')) {
-        privateKey = privateKey.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n');
-      }
-      
-      // Ensure newline before footer
-      if (privateKey.includes('-----END PRIVATE KEY-----') && !privateKey.includes('\n-----END PRIVATE KEY-----')) {
-        privateKey = privateKey.replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
-      }
+      // Remove any double newlines that might have been introduced
+      privateKey = privateKey.replace(/\n\n+/g, '\n');
     }
   }
   
-  const hasValidKey = privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----');
+  const hasValidKey = privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----') && privateKey.includes('-----END PRIVATE KEY-----');
   const hasClientEmail = clientEmail && clientEmail.includes('@');
 
   if (hasValidKey && hasClientEmail) {

@@ -1,6 +1,6 @@
 {
-  "name": "WebbyLaunch",
-  "description": "Premium SaaS platform for modern website development with developer onboarding, real-time tracking, and integrated payments.",
+  "name": "WebbyLaunch | Smart International Web Development",
+  "description": "Premium SaaS platform offering smart international web development with country-based validation, localized pricing, and secure payment integrations. Build high-performance websites in 52 hours.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

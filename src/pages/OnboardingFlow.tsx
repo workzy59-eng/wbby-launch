@@ -1032,32 +1032,14 @@ ${formData.developerNote || 'No specific note provided.'}
                   animate={(invalidFields.includes('state') || invalidFields.includes('city')) ? "shake" : ""}
                   variants={shakeAnimation}
                 >
-                  {formData.country === 'India' ? (
-                    <StateCityDropdown 
-                      onSelect={(state, city) => {
-                        handleInputChange('state', state);
-                        handleInputChange('city', city);
-                      }}
-                      error={invalidFields.includes('state') || invalidFields.includes('city') ? "Please select both state and city" : undefined}
-                    />
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
-                        value={formData.city}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                        placeholder="ENTER CITY"
-                      />
-                      <input
-                        type="text"
-                        className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
-                        value={formData.state}
-                        onChange={(e) => handleInputChange('state', e.target.value)}
-                        placeholder="ENTER STATE"
-                      />
-                    </div>
-                  )}
+                  <StateCityDropdown 
+                    country={formData.country === 'India' ? 'India' : formData.country === 'US' ? 'United States' : 'United Kingdom'}
+                    onSelect={(state, city) => {
+                      handleInputChange('state', state);
+                      handleInputChange('city', city);
+                    }}
+                    error={invalidFields.includes('state') || invalidFields.includes('city') ? 'Please select both' : ''}
+                  />
                 </motion.div>
               </div>
 
