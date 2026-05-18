@@ -49,8 +49,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
         <div className="bg-[#111] border border-white/5 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-xl italic tracking-tighter">{APP_NAME[0]}</span>
+            <div className="w-10 h-10 overflow-hidden rounded-lg">
+              <img src="/favicon.svg" alt="WebbyLaunch Logo" className="w-full h-full object-cover" />
             </div>
             <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
               {APP_NAME}
@@ -116,8 +116,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20">
           <div className="space-y-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white font-black text-xl italic tracking-tighter">{APP_NAME[0]}</span>
+              <div className="w-10 h-10 overflow-hidden rounded-lg">
+                <img src="/favicon.svg" alt="WebbyLaunch Logo" className="w-full h-full object-cover" />
               </div>
               <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
                 {APP_NAME}
