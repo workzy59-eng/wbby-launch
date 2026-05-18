@@ -98,8 +98,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const hasProjects = projects.length > 0;
   const hasAcceptedProject = projects.some(p => 
-    ['accepted', 'development started', 'completed', 'active', 'in-progress'].includes(p.status?.toLowerCase() || '') && 
-    p.websiteUrl
+    ['accepted', 'development started', 'completed', 'active', 'in-progress'].includes(p.status?.toLowerCase() || '')
   );
 
   useEffect(() => {

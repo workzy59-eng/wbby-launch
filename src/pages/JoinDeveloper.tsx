@@ -31,6 +31,11 @@ export default function JoinDeveloper() {
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (email.trim().toLowerCase() === 'aither2029@gmail.com') {
+      toast.error("This account is not authorized to join the developer network.");
+      return;
+    }
     
     setLoading(true);
     try {

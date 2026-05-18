@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FirebaseUser, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
@@ -1182,8 +1182,7 @@ ${formData.developerNote || 'No specific note provided.'}
               </button>
               <button 
                 onClick={handleNext} 
-                className="flex-1 bg-primary text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 uppercase italic tracking-tighter"
-                style={{ backgroundColor: formData.primaryColor }}
+                className="flex-1 bg-[#c7c42a] text-black py-6 rounded-[2rem] font-black text-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-[#c7c42a]/20 uppercase italic tracking-tighter"
               >
                 Continue
               </button>
@@ -1201,12 +1200,12 @@ ${formData.developerNote || 'No specific note provided.'}
           >
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                 <div className="bg-primary p-2 rounded-xl" style={{ backgroundColor: formData.primaryColor }}>
+                 <div className="bg-[#c7c42a] p-2 rounded-xl">
                     <Globe className="text-black" size={24} />
                  </div>
                  <div>
-                    <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 3</h2>
-                    <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Domain selection</h3>
+                    <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 3</h2>
+                    <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Domain selection</h3>
                  </div>
               </div>
               <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Secure your digital territory. Choose your primary URL.</p>
@@ -1219,7 +1218,7 @@ ${formData.developerNote || 'No specific note provided.'}
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      className="w-full p-8 rounded-[2rem] bg-black/40 border border-white/10 text-white font-black italic text-xl tracking-tighter uppercase focus:outline-none focus:border-primary placeholder:text-white/5"
+                      className="w-full p-8 rounded-[2rem] bg-black/40 border border-white/10 text-white font-black italic text-xl tracking-tighter uppercase focus:outline-none focus:border-[#c7c42a] placeholder:text-white/5"
                       value={formData.domain}
                       onChange={(e) => {
                         const val = e.target.value.toLowerCase().replace(/\s/g, '');
@@ -1231,8 +1230,7 @@ ${formData.developerNote || 'No specific note provided.'}
                     <button 
                       onClick={handleDomainNext}
                       disabled={!formData.domain || isCheckingDomain}
-                      className="bg-primary text-black px-10 rounded-[2rem] font-black text-xl hover:scale-[1.05] active:scale-[0.95] transition-all disabled:opacity-50"
-                      style={{ backgroundColor: formData.primaryColor }}
+                      className="bg-[#c7c42a] text-black px-10 rounded-[2rem] font-black text-xl hover:scale-[1.05] active:scale-[0.95] transition-all disabled:opacity-50"
                     >
                       {isCheckingDomain ? <Loader color="black" /> : <ArrowRight size={28} />}
                     </button>
@@ -1251,8 +1249,8 @@ ${formData.developerNote || 'No specific note provided.'}
                       }`}
                     >
                       <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Option {i + 1}</span>
-                      <span className={`text-sm font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-primary' : 'text-white'}`}>{d.name}</span>
-                      {d.status === 'loading' && <div className="absolute top-2 right-2"><Loader color={formData.primaryColor} /></div>}
+                      <span className={`text-sm font-black italic uppercase tracking-tighter ${formData.domain === d.name ? 'text-[#c7c42a]' : 'text-white'}`}>{d.name}</span>
+                      {d.status === 'loading' && <div className="absolute top-2 right-2"><Loader color="#c7c42a" /></div>}
                       {d.status === 'available' && <div className="absolute top-2 right-2 text-green-400 text-[8px] font-black uppercase">Available</div>}
                       {d.status === 'taken' && <div className="absolute top-2 right-2 text-red-400 text-[8px] font-black uppercase">Taken</div>}
                     </button>
@@ -1279,9 +1277,9 @@ ${formData.developerNote || 'No specific note provided.'}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 4</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text">Select Features</h3>
-              <p className="text-subtext font-medium italic">Customize your platform with premium features</p>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 4</h2>
+              <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Select Features</h3>
+              <p className="text-white/40 font-black uppercase tracking-widest italic text-[10px] leading-relaxed">Customize your platform with premium features</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1298,9 +1296,9 @@ ${formData.developerNote || 'No specific note provided.'}
                     }`}
                   >
                     <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${
-                      isSelected ? 'bg-white border-white text-primary' : 'border-border text-transparent'
-                    }`} style={{ backgroundColor: isSelected ? formData.primaryColor : 'transparent', borderColor: isSelected ? formData.primaryColor : '#cbd5e1' }}>
-                      <Check size={14} strokeWidth={4} className={isSelected ? 'text-white' : ''} />
+                      isSelected ? 'bg-[#c7c42a] border-[#c7c42a] text-black' : 'border-white/20 text-transparent'
+                    }`}>
+                      <Check size={14} strokeWidth={4} />
                     </div>
                     <div>
                       <div className="text-sm font-bold uppercase tracking-widest">{feature}</div>
@@ -1326,8 +1324,8 @@ ${formData.developerNote || 'No specific note provided.'}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 5</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-text">Design for your website</h3>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 5</h2>
+              <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Design your website</h3>
             </div>
 
             <div className="space-y-8">
@@ -1423,9 +1421,9 @@ ${formData.developerNote || 'No specific note provided.'}
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
-              <button onClick={handleNext} className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">Next</button>
+            <div className="flex gap-6">
+              <button onClick={handleBack} className="flex-[0.4] border-2 border-white/10 text-white/40 py-6 rounded-2xl font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter">Back</button>
+              <button onClick={handleNext} className="flex-1 bg-[#c7c42a] text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#c7c42a]/20 uppercase italic tracking-tighter">Next</button>
             </div>
           </motion.div>
         );
@@ -1440,27 +1438,27 @@ ${formData.developerNote || 'No specific note provided.'}
           >
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 6</h2>
-                <h3 className="text-4xl font-bold tracking-tight text-text">Website Preview</h3>
-                <p className="text-subtext font-medium italic">See how your website will look on different devices</p>
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 6</h2>
+                <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Website Preview</h3>
+                <p className="text-white/40 font-black uppercase tracking-widest italic text-[10px] leading-relaxed">See how your website will look on different devices</p>
               </div>
 
               <div className="flex items-center gap-2 bg-card p-1.5 rounded-2xl border border-border">
                 <button 
                   onClick={() => setPreviewDevice('desktop')}
-                  className={`p-3 rounded-xl transition-all ${previewDevice === 'desktop' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                  className={`p-3 rounded-xl transition-all ${previewDevice === 'desktop' ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' : 'text-subtext hover:text-text'}`}
                 >
                   <Monitor size={20} />
                 </button>
                 <button 
                   onClick={() => setPreviewDevice('tablet')}
-                  className={`p-3 rounded-xl transition-all ${previewDevice === 'tablet' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                  className={`p-3 rounded-xl transition-all ${previewDevice === 'tablet' ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' : 'text-subtext hover:text-text'}`}
                 >
                   <Tablet size={20} />
                 </button>
                 <button 
                   onClick={() => setPreviewDevice('mobile')}
-                  className={`p-3 rounded-xl transition-all ${previewDevice === 'mobile' ? 'bg-primary text-white' : 'text-subtext hover:text-text'}`}
+                  className={`p-3 rounded-xl transition-all ${previewDevice === 'mobile' ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/20' : 'text-subtext hover:text-text'}`}
                 >
                   <Smartphone size={20} />
                 </button>
@@ -1471,18 +1469,18 @@ ${formData.developerNote || 'No specific note provided.'}
               <WebsitePreview data={formData} device={previewDevice} />
             </div>
 
-            <div className="bg-primary/10 border border-primary/20 p-6 rounded-2xl">
+            <div className="bg-[#c7c42a]/10 border border-[#c7c42a]/20 p-6 rounded-2xl">
                <p className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] text-center italic">
                  Note: Selected colors apply to buttons (secondary) and background (primary) in your preview.
                </p>
-               <p className="text-xs font-bold text-primary uppercase tracking-widest text-center italic mt-2">
+               <p className="text-xs font-black text-[#c7c42a] uppercase tracking-widest text-center italic mt-2 underline decoration-[#c7c42a]/30">
                  ⚠️ This is only a sample preview. Final website will be 100% more professional and better.
                </p>
             </div>
 
-            <div className="flex gap-4">
-              <button onClick={handleBack} className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all">Back</button>
-              <button onClick={handleNext} className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">Next</button>
+            <div className="flex gap-6">
+              <button onClick={handleBack} className="flex-[0.4] border-2 border-white/10 text-white/40 py-6 rounded-2xl font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter">Back</button>
+              <button onClick={handleNext} className="flex-1 bg-[#c7c42a] text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#c7c42a]/20 uppercase italic tracking-tighter">Next</button>
             </div>
           </motion.div>
         );
@@ -1498,21 +1496,20 @@ ${formData.developerNote || 'No specific note provided.'}
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="bg-primary px-2 py-0.5 rounded flex items-center justify-center" style={{ backgroundColor: formData.primaryColor }}>
+                  <div className="bg-[#c7c42a] px-3 py-1 rounded flex items-center justify-center shadow-lg shadow-[#c7c42a]/20">
                     <span className="text-black font-black text-[10px] tracking-tighter uppercase">{HYPHENATED_NAME}</span>
                   </div>
-                  <div className="text-3xl font-bold tracking-tighter text-white uppercase italic">{APP_NAME}</div>
+                  <div className="text-3xl font-black tracking-tighter text-white uppercase italic leading-none">{APP_NAME}</div>
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 7</h2>
-                  <h3 className="text-4xl font-bold tracking-tight text-text">Choose Plan</h3>
+                  <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 7</h2>
+                  <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Choose Plan</h3>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 bg-card p-2 rounded-2xl border border-border">
+              <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
                 <button 
-                  className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-white"
-                  style={{ backgroundColor: formData.primaryColor }}
+                  className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-[#c7c42a] text-black"
                 >
                   One-Time Payment
                 </button>
@@ -1543,30 +1540,27 @@ ${formData.developerNote || 'No specific note provided.'}
                 <button
                   key={plan.id}
                   onClick={() => setFormData({ ...formData, plan: plan.id as any })}
-                  className={`p-8 rounded-2xl border transition-all text-left flex flex-col h-full ${
+                  className={`p-8 rounded-2xl border-2 transition-all text-left flex flex-col h-full relative overflow-hidden ${
                     formData.plan === plan.id 
-                      ? 'text-white shadow-lg shadow-primary/20' 
-                      : 'bg-card border-border text-text hover:border-primary/50'
+                      ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
+                      : 'bg-black border-white/10 text-white hover:border-[#c7c42a]/50'
                   }`}
-                  style={formData.plan === plan.id ? { backgroundColor: formData.primaryColor, borderColor: formData.primaryColor } : {}}
                 >
                   <div className="flex justify-between items-start mb-6">
                     <div 
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.plan === plan.id ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}
-                      style={formData.plan !== plan.id ? { backgroundColor: formData.primaryColor + '10', color: formData.primaryColor } : {}}
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.plan === plan.id ? 'bg-black/10' : 'bg-[#c7c42a]/10 text-[#c7c42a]'}`}
                     >
                       <CreditCard size={24} />
                     </div>
-                    {formData.plan === plan.id && <Check size={20} />}
+                    {formData.plan === plan.id && <Check size={20} strokeWidth={4} />}
                   </div>
-                  <h4 className="text-2xl font-bold mb-2">{plan.name}</h4>
-                  <div className="text-3xl font-bold mb-6">{plan.price}</div>
+                  <h4 className="text-2xl font-black italic uppercase tracking-tighter mb-2">{plan.name}</h4>
+                  <div className="text-3xl font-black italic tracking-tighter mb-6">{plan.price}</div>
                   <ul className="space-y-3 flex-1">
                     {plan.features.map((feature, i) => (
-                      <li key={i} className={`text-xs font-medium flex items-center gap-2 ${formData.plan === plan.id ? 'text-white/80' : 'text-subtext'}`}>
+                      <li key={i} className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${formData.plan === plan.id ? 'text-black/60' : 'text-white/40'}`}>
                         <div 
-                          className={`w-1.5 h-1.5 rounded-full ${formData.plan === plan.id ? 'bg-white' : 'bg-primary'}`} 
-                          style={formData.plan !== plan.id ? { backgroundColor: formData.primaryColor } : {}}
+                          className={`w-1.5 h-1.5 rounded-full ${formData.plan === plan.id ? 'bg-black' : 'bg-[#c7c42a]'}`} 
                         />
                         {feature}
                       </li>
@@ -1576,11 +1570,10 @@ ${formData.developerNote || 'No specific note provided.'}
               ))}
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-6">
               <button 
                 onClick={handleBack} 
-                className="flex-1 border border-primary text-primary py-6 rounded-2xl font-bold text-xl hover:bg-primary hover:text-white transition-all"
-                style={{ borderColor: formData.primaryColor, color: formData.primaryColor }}
+                className="flex-[0.4] border-2 border-white/10 text-white/40 py-6 rounded-2xl font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
               >
                 Back
               </button>
@@ -1592,8 +1585,7 @@ ${formData.developerNote || 'No specific note provided.'}
                   }
                   handleNext();
                 }} 
-                className="flex-1 bg-primary text-white py-6 rounded-2xl font-bold text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
-                style={{ backgroundColor: formData.primaryColor }}
+                className="flex-1 bg-[#c7c42a] text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#c7c42a]/20 uppercase italic tracking-tighter"
               >
                 Next
               </button>
@@ -1610,9 +1602,9 @@ ${formData.developerNote || 'No specific note provided.'}
             className="space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 8</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-white italic leading-none uppercase">Terms & Submission</h3>
-              <p className="text-subtext font-medium italic">Review our terms before launching your project.</p>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 8</h2>
+              <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Terms & Submission</h3>
+              <p className="text-white/40 font-black uppercase tracking-widest italic leading-relaxed text-[10px]">Review our terms before launching your project.</p>
             </div>
 
             <div className="bg-card rounded-[2.5rem] p-10 space-y-8 border border-border/50">
@@ -1626,7 +1618,7 @@ ${formData.developerNote || 'No specific note provided.'}
                   </div>
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Target Domain</p>
-                    <p className="text-sm font-bold text-[#c7c42a]" style={{ color: formData.primaryColor }}>{formData.domain || 'Not Set'}</p>
+                    <p className="text-sm font-bold text-[#c7c42a]">{formData.domain || 'Not Set'}</p>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -1679,14 +1671,13 @@ ${formData.developerNote || 'No specific note provided.'}
             <div className="flex items-center gap-6 p-8 bg-white/5 rounded-[2rem] border border-white/5 transition-all hover:bg-white/10 group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
               <div 
                 className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center transition-all ${
-                  agreedToTerms ? 'bg-primary border-primary text-black' : 'border-white/20'
+                  agreedToTerms ? 'bg-[#c7c42a] border-[#c7c42a] text-black' : 'border-white/20'
                 }`}
-                style={agreedToTerms ? { backgroundColor: formData.primaryColor, borderColor: formData.primaryColor } : {}}
               >
                 {agreedToTerms && <Check size={18} strokeWidth={4} />}
               </div>
               <p className="text-xs font-bold text-white/60 uppercase tracking-widest leading-relaxed">
-                I have reviewed my project summary and agree to the <span className="text-primary italic underline underline-offset-4" style={{ color: formData.primaryColor }}>Terms & Conditions</span>
+                I have reviewed my project summary and agree to the <span className="text-[#c7c42a] italic underline underline-offset-4">Terms & Conditions</span>
               </p>
             </div>
 
@@ -1697,10 +1688,9 @@ ${formData.developerNote || 'No specific note provided.'}
                 disabled={!agreedToTerms || isSubmitting}
                 className={`flex-1 py-6 rounded-[2rem] font-black text-2xl transition-all flex items-center justify-center gap-4 shadow-2xl ${
                   agreedToTerms && !isSubmitting
-                    ? 'bg-primary text-black hover:scale-[1.02] active:scale-[0.98]' 
+                    ? 'bg-[#c7c42a] text-black hover:scale-[1.02] active:scale-[0.98]' 
                     : 'bg-white/5 text-white/20 cursor-not-allowed'
                 }`}
-                style={agreedToTerms && !isSubmitting ? { backgroundColor: formData.primaryColor } : {}}
               >
                 {isSubmitting ? <Loader color="black" /> : (
                   <>
@@ -1722,12 +1712,11 @@ ${formData.developerNote || 'No specific note provided.'}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
             <div className="relative z-10 space-y-10">
-              <div className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto relative" style={{ color: formData.primaryColor }}>
+              <div className="w-32 h-32 bg-[#c7c42a]/20 rounded-full flex items-center justify-center text-[#c7c42a] mx-auto relative">
                 <motion.div 
                   animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute inset-0 rounded-full blur-2xl"
-                  style={{ backgroundColor: formData.primaryColor }}
+                  className="absolute inset-0 rounded-full blur-2xl bg-[#c7c42a]"
                 />
                 <ShieldCheck size={64} strokeWidth={1.5} className="relative z-10" />
               </div>
@@ -1754,21 +1743,20 @@ ${formData.developerNote || 'No specific note provided.'}
     <div className="min-h-screen bg-black font-sans selection:bg-primary selection:text-black">
       <header className="px-10 py-8 border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50 text-white">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20" style={{ backgroundColor: formData.primaryColor }}>
-              <span className="text-black font-bold text-xl">W</span>
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 overflow-hidden rounded-lg">
+              <img src="/favicon.svg" alt="WebbyLaunch Logo" className="w-full h-full object-cover" />
             </div>
-            <div className="text-2xl font-bold tracking-tight text-white uppercase italic">
-              Webby<span style={{ color: formData.primaryColor }}>Launch</span>
+            <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
+              Webby<span className="text-[#c7c42a]">Launch</span>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-4">
             <div className="h-1.5 w-32 bg-white/10 rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-                className="h-full"
-                style={{ backgroundColor: formData.primaryColor }}
+                className="h-full bg-[#c7c42a]"
               />
             </div>
             <div className="text-[10px] font-black italic text-white/40 uppercase tracking-[0.2em]">Step {step <= 8 ? step : 'Final'} of 8</div>

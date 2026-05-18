@@ -84,6 +84,13 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (user?.email?.toLowerCase() === 'aither2029@gmail.com') {
+      navigate('/dashboard');
+      toast.error("Developer access revoked.");
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
   }, []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -2601,6 +2608,17 @@ Description: ${project.description || 'No description provided.'}
                          <option value="Completed" className="bg-[#111]">Completed</option>
                          <option value="Rejected" className="bg-[#111]">Rejected</option>
                       </select>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] italic ml-4">Website Preview Link (MUST set to give client access)</label>
+                  <input 
+                    type="text"
+                    value={editingProject.websiteUrl || ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, websiteUrl: e.target.value })}
+                    placeholder="https://your-preview-link.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                  />
                 </div>
 
                 <div className="space-y-4">
