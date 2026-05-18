@@ -7,8 +7,8 @@
  * @returns The secure URL of the uploaded file
  */
 export const uploadToCloudinary = async (file: File, folder: string = 'uploads'): Promise<string> => {
-  const cloudName = process.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   if (!cloudName || !uploadPreset) {
     console.error("Cloudinary configuration missing. Falling back to base64 or throwing error.");

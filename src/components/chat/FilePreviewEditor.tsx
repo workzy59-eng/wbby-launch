@@ -14,7 +14,11 @@ import {
   StickyNote, 
   Download,
   Plus,
-  Monitor
+  Monitor,
+  File as FileIcon,
+  Music,
+  Film,
+  FileText
 } from 'lucide-react';
 
 interface FilePreviewEditorProps {
@@ -111,6 +115,26 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
     });
   };
 
+  const isImage = (file: File) => file.type.startsWith('image/');
+  const isVideo = (file: File) => file.type.startsWith('video/');
+  const isAudio = (file: File) => file.type.startsWith('audio/');
+
+  const getFileIcon = (file: File) => {
+    if (isImage(file)) return null;
+    if (isVideo(file)) return <Film size={64} />;
+    if (isAudio(file)) return <Music size={64} />;
+    if (file.type.includes('pdf')) return <FileText size={64} />;
+    return <FileIcon size={64} />;
+  };
+
+  const getThumbIcon = (file: File) => {
+    if (isImage(file)) return null;
+    if (isVideo(file)) return <Film size={20} />;
+    if (isAudio(file)) return <Music size={20} />;
+    if (file.type.includes('pdf')) return <FileText size={20} />;
+    return <FileIcon size={20} />;
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -125,7 +149,7 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
           <X size={24} />
         </button>
         
-        <div className="flex items-center gap-1 md:gap-4 overflow-x-auto scrollbar-hide px-2">
+        <div className={`flex items-center gap-1 md:gap-4 overflow-x-auto scrollbar-hide px-2 ${!isImage(files[currentIndex]) ? 'opacity-20 pointer-events-none' : ''}`}>
           {[
             { icon: RotateCw, label: 'Rotate', action: handleRotate },
             { icon: Wand2, label: 'Filter', action: handleFilter },
@@ -163,14 +187,24 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
             }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: 'spring', damping: 20 }}
-            className="w-full h-full flex items-center justify-center"
+            className="w-full h-full flex flex-col items-center justify-center gap-6"
           >
-            <img 
-              src={previewUrls[currentIndex]} 
-              alt="Preview" 
-              className="max-w-[90%] max-h-[70%] object-contain shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl transition-all duration-300"
-              style={{ filter: activeFilters[currentIndex] }}
-            />
+            {isImage(files[currentIndex]) ? (
+              <img 
+                src={previewUrls[currentIndex]} 
+                alt="Preview" 
+                className="max-w-[90%] max-h-[70%] object-contain shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl transition-all duration-300"
+                style={{ filter: activeFilters[currentIndex] }}
+              />
+            ) : (
+              <div className="w-48 h-48 bg-white/5 border border-white/10 rounded-[3rem] flex flex-col items-center justify-center text-[#22c55e] shadow-2xl">
+                {getFileIcon(files[currentIndex])}
+                <div className="mt-6 text-center px-6">
+                  <p className="text-white font-black uppercase text-xs truncate max-w-[200px]">{files[currentIndex].name}</p>
+                  <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest mt-1">{(files[currentIndex].size / 1024 / 1024).toFixed(2)} MB</p>
+                </div>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -183,11 +217,17 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
             <button
               key={url}
               onClick={() => setCurrentIndex(i)}
-              className={`relative w-14 h-14 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
+              className={`relative w-14 h-14 shrink-0 rounded-xl overflow-hidden border-2 transition-all flex items-center justify-center bg-white/5 ${
                 i === currentIndex ? 'border-[#22c55e] scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100'
               }`}
             >
-              <img src={url} alt="Thumb" className="w-full h-full object-cover" />
+              {isImage(files[i]) ? (
+                <img src={url} alt="Thumb" className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-[#22c55e]">
+                  {getThumbIcon(files[i])}
+                </div>
+              )}
             </button>
           ))}
           <button 

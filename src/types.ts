@@ -321,6 +321,7 @@ export interface Message {
   attachmentUrl?: string;
   fileData?: string; // Base64 string
   fileName?: string;
+  fileSize?: number;
   createdAt: string | Timestamp | Date;
   status: 'sending' | 'sent' | 'delivered' | 'seen';
   seen: boolean;

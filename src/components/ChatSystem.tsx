@@ -12,6 +12,7 @@ import {
   MessageCircle,
   Trash2,
   FileText,
+  FileTerminal,
   Maximize2,
   File,
   ExternalLink,
@@ -379,30 +380,43 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
 
     if (m.type === 'file' || (m.fileType && !m.fileType.startsWith('image/'))) {
       const isMe = m.senderId === currentUser.uid;
+      const isPdf = m.fileType === 'application/pdf' || mediaUrl.toLowerCase().endsWith('.pdf');
+      
       return (
-        <div className={`flex items-center gap-3 p-3 rounded-xl border mb-2 ${isMe ? 'bg-black/10 border-black/5' : 'bg-white/5 border-white/10'}`}>
-          <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-[#ffc107]">
-            <FileText size={24} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-white truncate">{m.fileName || 'Attachment'}</p>
-            <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">{m.fileType ? m.fileType.split('/')[1].toUpperCase() : 'Document'}</p>
-          </div>
-          <div className="flex gap-1">
-            <button 
-              onClick={() => downloadFileUrl(mediaUrl, m.fileName || 'Attachment')}
-              className="p-2 hover:bg-white/10 rounded-lg transition-all text-yellow-400 hover:text-white"
-            >
-              <Download size={18} />
-            </button>
-            <a 
-              href={mediaUrl} 
-              target="_blank" 
-              rel="noreferrer" 
-              className="p-2 hover:bg-white/10 rounded-lg transition-all text-white/40 hover:text-white"
-            >
-              <ExternalLink size={18} />
-            </a>
+        <div className="flex flex-col gap-2 mb-2">
+          <div className={`flex items-center gap-3 p-4 rounded-2xl border ${isMe ? 'bg-[#c7c42a]/10 border-[#c7c42a]/20' : 'bg-white/5 border-white/10'} hover:border-[#c7c42a]/40 transition-all group/file`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover/file:scale-110 ${isPdf ? 'bg-red-500/20 text-red-500' : 'bg-blue-500/20 text-blue-500'}`}>
+              {isPdf ? <FileText size={28} /> : <FileTerminal size={28} />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-black text-white truncate group-hover/file:text-[#c7c42a] transition-colors">{m.fileName || 'Attachment'}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold bg-white/5 px-2 py-0.5 rounded-md">
+                  {m.fileType ? m.fileType.split('/')[1].toUpperCase() : (isPdf ? 'PDF' : 'DOC')}
+                </span>
+                {m.fileSize && (
+                  <span className="text-[10px] text-white/20 uppercase font-bold">{(m.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <button 
+                onClick={() => downloadFileUrl(mediaUrl, m.fileName || 'Attachment')}
+                className="p-2.5 bg-white/5 hover:bg-[#c7c42a] rounded-xl transition-all text-white/40 hover:text-black group-hover/file:bg-white/10"
+                title="Download"
+              >
+                <Download size={20} />
+              </button>
+              <a 
+                href={mediaUrl} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-white/40 hover:text-white"
+                title="Open in new tab"
+              >
+                <ExternalLink size={20} />
+              </a>
+            </div>
           </div>
         </div>
       );
@@ -415,17 +429,8 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
     if (!files || files.length === 0 || isSending) return;
     
     const fileList = Array.from(files);
-    const images = fileList.filter(f => f.type.startsWith('image/'));
-    const others = fileList.filter(f => !f.type.startsWith('image/'));
-
-    if (images.length > 0) {
-      setPendingFiles(prev => [...prev, ...images]);
-    }
-
-    if (others.length > 0) {
-      // Direct upload for non-images
-      uploadNonImages(others);
-    }
+    // Route all files to editor for preview/captioning
+    setPendingFiles(prev => [...prev, ...fileList]);
   };
 
   const uploadNonImages = async (files: File[]) => {
@@ -454,6 +459,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             mediaUrl: res.url,
             fileUrl: res.url,
             fileName: file.name,
+            fileSize: file.size,
             cloudinaryMetadata: {
               public_id: res.public_id,
               secure_url: res.secure_url,
@@ -484,10 +490,14 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       for (let item of data) {
         let file = item.file;
         
-        // Compress images
-        try {
-          file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
-        } catch (e) { console.error(e); }
+        // Compress images if needed
+        if (file.type.startsWith('image/')) {
+          try {
+            file = await imageCompression(file as any, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) as any;
+          } catch (e) { 
+            console.warn('Image compression failed, using original:', e); 
+          }
+        }
 
         setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
         
@@ -497,15 +507,18 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           });
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
+          const isImg = file.type.startsWith('image/');
+          
           const messageData = {
             senderId: currentUser.uid,
             senderName: currentUser.displayName || profile?.displayName || 'User',
-            text: item.caption || 'Sent an image',
-            type: 'image',
+            text: item.caption || (isImg ? 'Sent an image' : `Shared ${file.name}`),
+            type: isImg ? 'image' : (file.type.startsWith('video/') ? 'video' : 'file'),
             fileType: file.type,
             mediaUrl: res.url,
             fileUrl: res.url,
             fileName: file.name,
+            fileSize: file.size,
             cloudinaryMetadata: {
               public_id: res.public_id,
               secure_url: res.secure_url,
@@ -983,7 +996,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
             className="hidden" 
             multiple 
             onChange={(e) => handleFileUpload(e.target.files)}
-            accept="image/*,video/*,.pdf,.doc,.docx"
           />
           
           <button 
