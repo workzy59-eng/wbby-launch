@@ -881,16 +881,22 @@ ${formData.developerNote || 'No specific note provided.'}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
-            <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-[0.4em] text-primary" style={{ color: formData.primaryColor }}>Step 2</h2>
-              <h3 className="text-4xl font-bold tracking-tight text-white uppercase italic leading-none">Business Intelligence</h3>
-              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic">Define your operational footprint. <span className="text-primary underline">Note: these will be visible in your website.</span></p>
+            <div className="space-y-2 text-left">
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 2</h2>
+              <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
+                Business<br />
+                <span className="text-[#c7c42a]">Intelligence</span>
+              </h3>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest italic leading-relaxed">
+                Define your operational footprint. <br />
+                <span className="text-white/60 underline decoration-[#c7c42a]/40">Note: these will be visible on your website metadata.</span>
+              </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-10">
               {/* Store Type Selection */}
               <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Store Configuration <span className="text-error">*</span></label>
+                <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Store Configuration <span className="text-error font-black">*</span></label>
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     { id: 'online_store', label: 'Online Store', desc: 'Ships anywhere' },
@@ -899,14 +905,14 @@ ${formData.developerNote || 'No specific note provided.'}
                     <button
                       key={type.id}
                       onClick={() => handleInputChange('storeType', type.id)}
-                      className={`p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-1 ${
+                      className={`p-10 rounded-sm border-2 transition-all text-left flex flex-col gap-2 ${
                         formData.storeType === type.id 
-                          ? 'bg-primary/10 border-primary' 
-                          : 'bg-white/5 border-white/5 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 hover:border-white/10'
+                          ? 'bg-[#c7c42a] border-[#c7c42a]' 
+                          : 'bg-black border-white/20 hover:border-white/40'
                       }`}
                     >
-                      <span className={`text-lg font-black italic uppercase tracking-tighter ${formData.storeType === type.id ? 'text-primary' : 'text-white'}`}>{type.label}</span>
-                      <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">{type.desc}</span>
+                      <span className={`text-2xl font-black italic uppercase tracking-tighter ${formData.storeType === type.id ? 'text-black' : 'text-white'}`}>{type.label}</span>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${formData.storeType === type.id ? 'text-black/60' : 'text-white/40'}`}>{type.desc}</span>
                     </button>
                   ))}
                 </div>
@@ -914,7 +920,7 @@ ${formData.developerNote || 'No specific note provided.'}
 
               {/* Country Selection */}
               <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Operational Region <span className="text-error">*</span></label>
+                <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Select Country <span className="text-error font-black">*</span></label>
                 <div className="grid grid-cols-3 gap-4">
                   {[
                     { id: 'India', label: 'India', flag: '🇮🇳' },
@@ -924,44 +930,44 @@ ${formData.developerNote || 'No specific note provided.'}
                     <button
                       key={c.id}
                       onClick={() => handleInputChange('country', c.id)}
-                      className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center gap-2 ${
+                      className={`p-10 rounded-sm border-2 transition-all flex flex-col items-center justify-center gap-2 ${
                         formData.country === c.id 
-                          ? 'bg-primary/10 border-primary scale-[1.02]' 
-                          : 'bg-white/5 border-white/5 opacity-40 hover:opacity-100 hover:border-white/10'
+                          ? 'bg-[#c7c42a] border-[#c7c42a]' 
+                          : 'bg-black border-white/20 hover:border-white/40 grayscale'
                       }`}
                     >
                       <span className="text-3xl">{c.flag}</span>
-                      <span className={`text-[10px] font-black italic uppercase tracking-tighter ${formData.country === c.id ? 'text-primary' : 'text-white'}`}>{c.label}</span>
+                      <span className={`text-[10px] font-black italic uppercase tracking-tighter ${formData.country === c.id ? 'text-black' : 'text-white'}`}>{c.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Name <span className="text-error">*</span></label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Business Name <span className="text-error font-black">*</span></label>
                   <motion.div
                     animate={invalidFields.includes('businessName') ? "shake" : ""}
                     variants={shakeAnimation}
                   >
                     <input
                       type="text"
-                      className={getInputClass('businessName', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
                       value={formData.businessName}
                       onChange={(e) => handleInputChange('businessName', e.target.value)}
                       placeholder="E.G. TITAN FORGE"
                     />
                   </motion.div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Phone <span className="text-error">*</span></label>
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Business Phone <span className="text-error font-black">*</span></label>
                   <motion.div
                     animate={invalidFields.includes('businessPhone') ? "shake" : ""}
                     variants={shakeAnimation}
                   >
                     <input
                       type="tel"
-                      className={getInputClass('businessPhone', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
                       value={formData.businessPhone}
                       onChange={(e) => handleInputChange('businessPhone', e.target.value)}
                       placeholder="E.G. 9876543210"
@@ -970,42 +976,40 @@ ${formData.developerNote || 'No specific note provided.'}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Email <span className="text-error">*</span></label>
-                  <motion.div
-                    animate={invalidFields.includes('businessEmail') ? "shake" : ""}
-                    variants={shakeAnimation}
-                  >
-                    <input
-                      type="email"
-                      className={getInputClass('businessEmail', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter")}
-                      value={formData.businessEmail}
-                      onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                      placeholder="HELLO@BRAND.COM"
-                    />
-                  </motion.div>
-                </div>
+              <div className="space-y-4">
+                <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Business Email <span className="text-error font-black">*</span></label>
+                <motion.div
+                  animate={invalidFields.includes('businessEmail') ? "shake" : ""}
+                  variants={shakeAnimation}
+                >
+                  <input
+                    type="email"
+                    className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter placeholder:text-white/10"
+                    value={formData.businessEmail}
+                    onChange={(e) => handleInputChange('businessEmail', e.target.value)}
+                    placeholder="HELLO@BRAND.COM"
+                  />
+                </motion.div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Address Line <span className="text-error">*</span></label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Address Line <span className="text-error font-black">*</span></label>
                   <motion.div
                     animate={invalidFields.includes('addressLine') ? "shake" : ""}
                     variants={shakeAnimation}
                   >
                     <input
                       type="text"
-                      className={getInputClass('addressLine', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
                       value={formData.addressLine}
                       onChange={(e) => handleInputChange('addressLine', e.target.value)}
                       placeholder="123 BUSINESS PARK"
                     />
                   </motion.div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Pincode <span className="text-error">*</span></label>
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Pincode <span className="text-error font-black">*</span></label>
                   <motion.div
                     animate={invalidFields.includes('pincode') ? "shake" : ""}
                     variants={shakeAnimation}
@@ -1013,7 +1017,7 @@ ${formData.developerNote || 'No specific note provided.'}
                     <input
                       type="text"
                       maxLength={6}
-                      className={getInputClass('pincode', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                      className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
                       value={formData.pincode}
                       onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
                       placeholder="123456"
@@ -1022,8 +1026,8 @@ ${formData.developerNote || 'No specific note provided.'}
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Location Details <span className="text-error">*</span></label>
+              <div className="space-y-4 text-left">
+                <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic block">Location Details <span className="text-error font-black">*</span></label>
                 <motion.div
                   animate={(invalidFields.includes('state') || invalidFields.includes('city')) ? "shake" : ""}
                   variants={shakeAnimation}
@@ -1040,17 +1044,17 @@ ${formData.developerNote || 'No specific note provided.'}
                     <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text"
-                        className={getInputClass('city', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                        className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
                         value={formData.city}
                         onChange={(e) => handleInputChange('city', e.target.value)}
                         placeholder="ENTER CITY"
                       />
                       <input
                         type="text"
-                        className={getInputClass('state', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                        className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10"
                         value={formData.state}
                         onChange={(e) => handleInputChange('state', e.target.value)}
-                        placeholder={formData.country === 'US' ? "ENTER STATE (E.G. NY)" : "ENTER COUNTY/REGION"}
+                        placeholder="ENTER STATE"
                       />
                     </div>
                   )}
@@ -1058,14 +1062,14 @@ ${formData.developerNote || 'No specific note provided.'}
               </div>
 
               <div className="space-y-4">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Business Category <span className="text-error">*</span></label>
-                <div className="relative">
+                <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Business Category <span className="text-error font-black">*</span></label>
+                <div className="relative group">
                   <motion.div
                     animate={invalidFields.includes('businessType') ? "shake" : ""}
                     variants={shakeAnimation}
                   >
                     <select
-                      className={getInputClass('businessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase appearance-none cursor-pointer")}
+                      className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase appearance-none"
                       value={formData.businessType}
                       onChange={(e) => handleInputChange('businessType', e.target.value)}
                     >
@@ -1096,7 +1100,7 @@ ${formData.developerNote || 'No specific note provided.'}
                       <option value="Logistics">LOGISTICS</option>
                       <option value="Other">OTHER</option>
                     </select>
-                    <ChevronDown className="absolute right-8 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={20} />
+                    <ChevronDown className="absolute right-8 top-1/2 -translate-y-1/2 text-white pointer-events-none group-focus-within:text-[#c7c42a] transition-colors" size={20} />
                   </motion.div>
                 </div>
               </div>
@@ -1109,21 +1113,21 @@ ${formData.developerNote || 'No specific note provided.'}
                   <input
                     type="text"
                     placeholder="ENTER YOUR BUSINESS TYPE"
-                    className={getInputClass('otherBusinessType', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-xl tracking-tighter uppercase")}
+                    className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase"
                     value={formData.otherBusinessType}
                     onChange={(e) => handleInputChange('otherBusinessType', e.target.value)}
                   />
                 </motion.div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-subtext uppercase tracking-wider ml-4 italic">Description <span className="text-error">*</span></label>
+              <div className="space-y-4">
+                <label className="text-xs font-black text-white uppercase tracking-[0.2em] ml-2 italic text-left block">Description <span className="text-error font-black">*</span></label>
                 <motion.div
                   animate={invalidFields.includes('description') ? "shake" : ""}
                   variants={shakeAnimation}
                 >
                   <textarea
-                    className={getInputClass('description', "w-full p-8 rounded-[2rem] bg-white/5 border text-white focus:outline-none focus:border-primary font-black italic text-lg tracking-tighter uppercase h-40 resize-none")}
+                    className="w-full p-8 rounded-sm bg-black border-2 border-white text-white focus:outline-none focus:border-[#c7c42a] font-black italic text-xl tracking-tighter uppercase placeholder:text-white/10 resize-none text-left h-40"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="TELL US ABOUT YOUR BRAND..."

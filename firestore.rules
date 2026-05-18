@@ -34,7 +34,6 @@ service cloud.firestore {
         isAdmin() ||
         request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
         (request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'aither2029@gmail.com' ||
           request.auth.token.email.lower() == 'sain17296174@gmail.com'
         ))
       );

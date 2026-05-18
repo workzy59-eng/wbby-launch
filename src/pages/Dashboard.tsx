@@ -89,7 +89,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   
   // Whitelisted developers should be on the Developer Dashboard
   useEffect(() => {
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const devEmails = ['sain17296174@gmail.com'];
     if (user?.email && devEmails.includes(user.email.toLowerCase())) {
       navigate('/developer-dashboard', { replace: true });
     }
@@ -98,7 +98,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const hasProjects = projects.length > 0;
   const hasAcceptedProject = projects.some(p => 
-    !['Waiting for Review', 'Rejected', 'Under Review', 'pending', 'assigned'].includes(p.status?.toLowerCase() || '')
+    ['accepted', 'development started', 'completed', 'active', 'in-progress'].includes(p.status?.toLowerCase() || '') && 
+    p.websiteUrl
   );
 
   useEffect(() => {
@@ -246,7 +247,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     if (!profile || !user.email) return;
-    const devEmails = ['aither2029@gmail.com', 'sain17296174@gmail.com'];
+    const devEmails = ['sain17296174@gmail.com'];
     const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     const isDeveloper = devEmails.includes(user.email.toLowerCase());
     
