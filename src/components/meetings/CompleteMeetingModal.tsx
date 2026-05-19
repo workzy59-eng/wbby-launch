@@ -26,24 +26,34 @@ export const CompleteMeetingModal: React.FC<CompleteMeetingModalProps> = ({
 
   useEffect(() => {
     const fetchProject = async () => {
-      if (meeting.projectId) {
-        try {
+      try {
+        if (meeting.projectId) {
           const p = await getProject(meeting.projectId);
           setProject(p as Project);
-          // If project already has domain price or payment link, pre-fill them
           if (p?.domainPrice) setDomainPrice(p.domainPrice);
           if (p?.paymentLink) setPaymentLink(p.paymentLink);
-        } catch (error) {
-          console.error("Failed to fetch project:", error);
+        } else if (meeting.clientId) {
+          // Fallback: search for client's projects
+          const { getProjectsAsync } = await import('../../services/database');
+          const projects = await getProjectsAsync(meeting.clientId);
+          if (projects && projects.length > 0) {
+            // Pick the latest non-completed project
+            const activeProj = projects.find(p => p.status !== 'Completed') || projects[0];
+            setProject(activeProj);
+            if (activeProj.domainPrice) setDomainPrice(activeProj.domainPrice);
+            if (activeProj.paymentLink) setPaymentLink(activeProj.paymentLink);
+          }
         }
+      } catch (error) {
+        console.error("Failed to fetch project:", error);
       }
       setLoading(false);
     };
     fetchProject();
-  }, [meeting.projectId]);
+  }, [meeting.projectId, meeting.clientId]);
 
   const handleConfirm = async () => {
-    if (salesCode === 'sales@GB') {
+    if (salesCode.trim().toLowerCase() === 'sales@gb') {
       if (!domainPrice || !paymentLink) {
         toast.error('Developer must enter domain price and payment link');
         return;
@@ -66,11 +76,16 @@ export const CompleteMeetingModal: React.FC<CompleteMeetingModalProps> = ({
 
   const getQRImage = () => {
     const plan = project?.plan?.toLowerCase() || 'basic';
-    // Use the provided names or mapping
-    if (plan === 'basic' || plan === 'starter') return 'https://placehold.co/400x400?text=Basic+Plan+QR'; // Placeholder
-    if (plan === 'standard' || plan === 'business' || plan === 'intermediate') return 'https://placehold.co/400x400?text=Standard+Plan+QR'; // Placeholder
-    if (plan === 'pro' || plan === 'premium') return 'https://placehold.co/400x400?text=Pro+Plan+QR'; // Placeholder
-    return 'https://placehold.co/400x400?text=QR+Code';
+    const upiId = 'kumodkumarguptanemua@oksbi';
+    let amount = '300';
+    
+    if (plan === 'basic' || plan === 'starter') amount = '300';
+    else if (plan === 'standard' || plan === 'business' || plan === 'intermediate') amount = '700';
+    else if (plan === 'pro' || plan === 'premium') amount = '1200';
+    
+    // Generate a reliable UPI QR code using a public API
+    const upiLink = `upi://pay?pa=${upiId}&am=${amount}&pn=KK%20GUPTA&cu=INR`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(upiLink)}`;
   };
 
   const getPlanName = () => {
@@ -168,7 +183,7 @@ export const CompleteMeetingModal: React.FC<CompleteMeetingModalProps> = ({
                 disabled={submitting}
                 className="w-full py-5 bg-[#c7c42a] text-black rounded-3xl font-black uppercase italic tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(199,196,42,0.3)]"
               >
-                {submitting ? 'Processing...' : salesCode === 'sales@GB' ? 'Show QR & Close' : 'Confirm Close'}
+                {submitting ? 'Processing...' : salesCode.trim().toLowerCase() === 'sales@gb' ? 'Show QR & Close' : 'Confirm Close'}
               </button>
             </>
           ) : (

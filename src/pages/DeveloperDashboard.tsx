@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { 
@@ -25,6 +25,7 @@ import {
   Settings2,
   XCircle,
   Download,
+  ShieldCheck,
   User as UserIcon,
   FileText,
   Image as ImageIcon
@@ -417,6 +418,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   // Financial Intelligence State
   const [tempDomainPrice, setTempDomainPrice] = useState<number>(0);
   const [tempPaymentLink, setTempPaymentLink] = useState('');
+  const [salesCode, setSalesCode] = useState('');
   const [isFinancialIntelSaved, setIsFinancialIntelSaved] = useState(false);
 
   const handleSaveFinancialIntel = async (projectId: string) => {
@@ -2425,6 +2427,20 @@ Description: ${project.description || 'No description provided.'}
                 <p className="text-xs font-bold text-white/60 text-center uppercase tracking-widest leading-relaxed">
                   Enter financial parameters to unlock the 'Accept Mission' command. Intel must be committed to the database first.
                 </p>
+
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Internal Sales Code</label>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                    <input 
+                      type="text" 
+                      value={salesCode || ''}
+                      onChange={(e) => setSalesCode(e.target.value)}
+                      placeholder="e.g. sales@GB"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                    />
+                  </div>
+                </div>
                 
                 <div className="space-y-2">
                   <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Razorpay Payment Link</label>
@@ -2472,6 +2488,42 @@ Description: ${project.description || 'No description provided.'}
                 >
                   {isSubmitting ? 'Syncing...' : isFinancialIntelSaved ? 'INTELLIGENCE SAVED ✓' : 'SAVE FINANCIAL INTEL'}
                 </button>
+
+                {isFinancialIntelSaved && salesCode?.trim().toLowerCase() === 'sales@gb' && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-4 pt-4 border-t border-white/5"
+                  >
+                    <div className="text-center space-y-2">
+                       <p className="text-[8px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Settlement QR Protocol</p>
+                       <p className="text-[10px] font-bold text-white/40 uppercase italic">Scan to verify financial channel</p>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-3xl w-48 h-48 mx-auto shadow-2xl relative group">
+                       <img 
+                         src={(() => {
+                           const p = unassignedProjects.find(proj => proj.id === showAcceptPopup);
+                           const plan = p?.plan?.toLowerCase() || 'basic';
+                           const upiId = 'kumodkumarguptanemua@oksbi';
+                           let amount = '300';
+                           if (plan.includes('basic') || plan.includes('starter')) amount = '300';
+                           else if (plan.includes('standard') || plan.includes('business') || plan.includes('intermediate')) amount = '700';
+                           else if (plan.includes('pro') || plan.includes('premium')) amount = '1200';
+                           
+                           const upiLink = `upi://pay?pa=${upiId}&am=${amount}&pn=KK%20GUPTA&cu=INR`;
+                           return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(upiLink)}`;
+                         })()}
+                         alt="UPI QR"
+                         className="w-full h-full object-contain"
+                       />
+                       <div className="absolute inset-0 border-4 border-[#c7c42a]/20 rounded-3xl pointer-events-none group-hover:border-[#c7c42a]/40 transition-all" />
+                    </div>
+                    <div className="text-center">
+                       <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Plan Detected: {unassignedProjects.find(proj => proj.id === showAcceptPopup)?.plan || 'Basic'}</p>
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
               <div className="flex gap-4">
