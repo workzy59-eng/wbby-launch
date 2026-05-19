@@ -212,6 +212,16 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
               <Video size={14} />
               Join Meeting
             </button>
+
+            {isAdmin && meeting.status === 'accepted' && (
+              <button 
+                onClick={() => onStatusUpdate?.(meeting.id, 'completed')}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-blue-500/20"
+              >
+                <CheckCircle2 size={14} />
+                Complete
+              </button>
+            )}
             
             <div className="relative">
               <button 

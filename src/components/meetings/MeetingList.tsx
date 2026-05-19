@@ -20,7 +20,8 @@ import { MeetingCard } from './MeetingCard';
 import { MeetingForm } from './MeetingForm';
 import { RequestMeetingForm } from './RequestMeetingForm';
 import { MeetingCountdown } from './MeetingCountdown';
-import { db, createNotification, getConversationId, getProjectsAsync } from '../../services/database';
+import { CompleteMeetingModal } from './CompleteMeetingModal';
+import { db, createNotification, getConversationId, getProjectsAsync, updateProject } from '../../services/database';
 import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, downloadIcsFile } from '../../services/calendarUtils';
 import { 
   subscribeToMeetings, 
@@ -46,6 +47,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [closingMeeting, setClosingMeeting] = useState<Meeting | null>(null);
   const [editingMeeting, setEditingMeeting] = useState<Meeting | undefined>();
   const [filter, setFilter] = useState<MeetingStatus | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,6 +157,14 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
   };
 
   const handleStatusUpdate = async (id: string, status: MeetingStatus, message?: string, preferredDate?: string, preferredTime?: string) => {
+    if (status === 'completed') {
+      const meeting = meetings.find(m => m.id === id);
+      if (meeting) {
+        setClosingMeeting(meeting);
+        return;
+      }
+    }
+
     try {
       await updateMeeting(id, { 
         status, 
@@ -183,6 +193,32 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         console.error(error);
         toast.error('Failed to delete meeting');
       }
+    }
+  };
+
+  const handleConfirmCompletion = async (salesCode: string, domainPrice: number, paymentLink: string) => {
+    if (!closingMeeting) return;
+    
+    try {
+      await updateMeeting(closingMeeting.id, { 
+        status: 'completed',
+        updatedAt: new Date().toISOString()
+      });
+
+      // Update linked project if details provided
+      if (closingMeeting.projectId) {
+        await updateProject(closingMeeting.projectId, {
+          domainPrice,
+          paymentLink,
+          status: 'Development Started'
+        });
+      }
+
+      toast.success('Mission session completed successfully');
+      setClosingMeeting(null);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to complete session');
     }
   };
 
@@ -382,6 +418,16 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
                       >
                         {isGlowActive ? '⚡ JOIN ACTIVE SESSION ⚡' : 'Join Signal'}
                       </a>
+                      
+                      {isManager && (
+                        <button 
+                          onClick={() => handleStatusUpdate(m.id, 'completed')}
+                          className="px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-blue-600/20"
+                        >
+                          Complete
+                        </button>
+                      )}
+
                       <div className="flex items-center gap-2">
                         <button 
                           onClick={() => setShowSyncId(showSyncId === m.id ? null : m.id)}
@@ -603,6 +649,13 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
 
       {/* Form Modal */}
       <AnimatePresence>
+        {closingMeeting && (
+          <CompleteMeetingModal 
+            meeting={closingMeeting}
+            onClose={() => setClosingMeeting(null)}
+            onConfirm={handleConfirmCompletion}
+          />
+        )}
         {showForm && (
           <MeetingForm 
             clients={allClients}

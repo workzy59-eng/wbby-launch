@@ -4,7 +4,7 @@ import {
 } from '../firebase';
 import { FirebaseUser } from '../firebase';
 import { UserProfile, Project, Message, LeaveRequest, Attendance, BlogPost, SystemSettings, Meeting, BioLog } from '../types';
-import { ADMIN_EMAIL } from '../constants';
+import { ADMIN_EMAIL, DEVELOPER_EMAIL } from '../constants';
 import { toast } from 'react-hot-toast';
 
 export { db };
@@ -250,7 +250,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   try {
     let role = 'client';
     const adminEmails = [ADMIN_EMAIL.toLowerCase()];
-    const devEmails = ['sain17296174@gmail.com'];
+    const devEmails = [DEVELOPER_EMAIL.toLowerCase(), 'sain17296174@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
