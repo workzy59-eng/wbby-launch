@@ -3,12 +3,16 @@ import { motion } from 'framer-motion';
 import { Check, Sparkles, ArrowRight, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PROFESSIONAL_EMAIL } from '../constants';
+import { useRegion } from '../context/RegionContext';
 
 export default function Pricing() {
+  const { pricing: globalPricing, currency, symbol, gateway, paymentLinks, country } = useRegion();
+  
   const oneTimePlans = [
     {
+      id: 'basic',
       name: 'Basic',
-      price: '₹7,500',
+      price: globalPricing.basic,
       period: 'One-Time',
       description: '1–3 pages website. Perfect for small businesses starting their digital journey.',
       features: [
@@ -21,8 +25,9 @@ export default function Pricing() {
       stripeLink: 'https://buy.stripe.com/test_eVqcN45is5n6bTudhRbAs0a'
     },
     {
+      id: 'standard',
       name: 'Standard',
-      price: '₹15,000',
+      price: globalPricing.standard,
       period: 'One-Time',
       description: '4–7 pages website. Modern UI/UX and better performance for growing brands.',
       features: [
@@ -37,8 +42,9 @@ export default function Pricing() {
       stripeLink: 'https://buy.stripe.com/test_6oU6oGdOY8zi7Deb9JbAs0b'
     },
     {
+      id: 'premium',
       name: 'Premium',
-      price: '₹30,000',
+      price: globalPricing.premium,
       period: 'One-Time',
       description: 'Full custom website. Advanced UI/UX and full optimization for established businesses.',
       features: [
@@ -58,8 +64,11 @@ export default function Pricing() {
 
   const navigate = useNavigate();
 
-  const handleSubscribe = (stripeLink: string) => {
-    if (stripeLink) {
+  const handleSubscribe = (planId: string, stripeLink: string) => {
+    const link = (paymentLinks as any)[planId];
+    if (link && link !== '#') {
+      window.location.href = link;
+    } else if (stripeLink) {
       window.location.href = stripeLink;
     } else {
       navigate('/auth');
@@ -129,9 +138,9 @@ export default function Pricing() {
                   </div>
 
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-serif italic text-white/10">₹</span>
-                    <span className="text-9xl font-black tracking-tighter text-white">
-                      {plan.price.replace('₹', '')}
+                    <span className="text-3xl font-serif italic text-white/10">{currency}</span>
+                    <span className="text-5xl md:text-7xl font-black tracking-tighter text-white">
+                      {plan.price}
                     </span>
                     <span className="text-xs font-black uppercase tracking-widest text-white/20 italic ml-2">{plan.period}</span>
                   </div>
@@ -153,11 +162,11 @@ export default function Pricing() {
 
               <div className="pt-16 space-y-8">
                 <div className="flex flex-col gap-2 text-left opacity-30 text-[10px] font-black uppercase tracking-widest italic group-hover:opacity-60 transition-opacity">
-                  <span className="flex items-center gap-2"> <Check size={10} /> Secure Node via Stripe</span>
+                  <span className="flex items-center gap-2"> <Check size={10} /> Secure Node via {gateway}</span>
                   <span className="flex items-center gap-2"> <Check size={10} /> 52hr Direct Channel Entry</span>
                 </div>
                 <button 
-                  onClick={() => handleSubscribe(plan.stripeLink)}
+                  onClick={() => handleSubscribe(plan.id, plan.stripeLink)}
                   className={`w-full py-8 text-center font-black uppercase italic text-sm tracking-widest transition-all rounded-2xl ${plan.popular ? 'bg-[#c7c42a] text-black shadow-[0_30px_60px_rgba(199,196,42,0.1)]' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
                 >
                   Initiate Build

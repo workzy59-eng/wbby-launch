@@ -7,15 +7,18 @@ import './index.css';
 
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { RegionProvider } from './context/RegionContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
       <AuthProvider>
         <NotificationProvider>
-          <Router>
-            <App />
-          </Router>
+          <RegionProvider>
+            <Router>
+              <App />
+            </Router>
+          </RegionProvider>
         </NotificationProvider>
       </AuthProvider>
     </HelmetProvider>

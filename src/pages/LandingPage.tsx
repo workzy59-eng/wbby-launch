@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FirebaseUser } from '../firebase';
 import { SystemSettings, UserProfile } from '../types';
 import { getSystemSettings } from '../services/database';
+import { useRegion } from '../context/RegionContext';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -39,6 +40,7 @@ interface LandingPageProps {
 
 export default function LandingPage({ user, profile }: LandingPageProps) {
   const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const { pricing: globalPricing, currency } = useRegion();
 
   useEffect(() => {
     getSystemSettings().then(s => {
@@ -810,21 +812,21 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             {[
               { 
                 name: 'Basic', 
-                price: '5,000', 
+                price: globalPricing.basic, 
                 features: ['1–3 Pages Website', 'Basic Design', 'Mobile Responsive', 'Hosting Included', 'Free SEO Setup', 'Domain (1st Year Free)'],
                 popular: false,
                 color: 'text-white/40'
               },
               { 
                 name: 'Standard', 
-                price: '15,000', 
+                price: globalPricing.standard, 
                 features: ['5–7 Pages Website', 'Premium Design', 'Free SEO Setup', 'Meeting System', 'Priority Support', 'Domain (1st Year Free)', 'Custom Email Setup'],
                 popular: true,
                 color: 'text-[#c7c42a]'
               },
               { 
                 name: 'Custom', 
-                price: '30,000', 
+                price: globalPricing.premium, 
                 features: ['Full Custom Website', 'Admin Dashboard', 'Free SEO Setup', 'Meetings + Chat System', 'Fast Support', 'Domain (1st Year Free)', 'Advanced Analytics'],
                 popular: false,
                 color: 'text-white'
@@ -848,8 +850,8 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
                   </div>
                   
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-serif italic text-white/20">₹</span>
-                    <span className="text-8xl font-black tracking-tighter text-white">{plan.price}</span>
+                    <span className="text-2xl font-serif italic text-white/20">{currency}</span>
+                    <span className="text-5xl md:text-7xl font-black tracking-tighter text-white">{plan.price}</span>
                     <span className="text-xs font-black uppercase tracking-widest text-white/20 ml-2 italic">Fixed</span>
                   </div>
 

@@ -6,6 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { serverTimestamp } from 'firebase/firestore';
 import { UserProfile } from '../types';
 import { Check, Image as ImageIcon, FileText, CreditCard } from 'lucide-react';
+import { useRegion } from '../context/RegionContext';
 
 const Loader = ({ color = "black" }: { color?: string }) => (
   <div className="flex items-center justify-center gap-2">
@@ -203,6 +204,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { signInWithGoogle } = useAuth();
+  const { country: globalCountry, currency, pricing: globalPricing, paymentLinks } = useRegion();
 
   useEffect(() => {
     if (!user) {
@@ -496,7 +498,16 @@ ${formData.developerNote || 'No specific note provided.'}
         toast.success("SUCCESS: DATA SAVED");
         setStep(9); 
         
-        setTimeout(() => navigate('/dashboard'), 5000);
+        setTimeout(() => {
+          if (globalCountry === 'India' && formData.plan) {
+            const link = (paymentLinks as any)[formData.plan];
+            if (link && link !== '#') {
+              window.location.href = link;
+              return;
+            }
+          }
+          navigate('/dashboard');
+        }, 5000);
       } catch (err: any) {
         console.error("PERMISSION OR SYSTEM ERROR:", err);
         setError("Submission failed. Permission denied or network issue.");
@@ -1503,19 +1514,19 @@ ${formData.developerNote || 'No specific note provided.'}
                 { 
                   id: 'basic', 
                   name: 'Basic', 
-                  price: '₹7,500/-', 
+                  price: `${currency}${globalPricing.basic}/-`, 
                   features: ['1–3 Pages Website', 'Simple Design', 'Mobile Responsive'] 
                 },
                 { 
                   id: 'standard', 
                   name: 'Standard', 
-                  price: '₹15,000/-', 
+                  price: `${currency}${globalPricing.standard}/-`, 
                   features: ['4–7 Pages Website', 'Modern UI/UX', 'Basic SEO'] 
                 },
                 { 
                   id: 'premium', 
                   name: 'Premium', 
-                  price: '₹30,000/-', 
+                  price: `${currency}${globalPricing.premium}/-`, 
                   features: ['Full Custom Website', 'Advanced UI/UX', 'SEO Optimization'] 
                 }
               ].map((plan) => (

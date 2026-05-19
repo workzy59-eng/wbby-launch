@@ -8,11 +8,10 @@ import {
 } from 'lucide-react';
 import StateCityDropdown from './StateCityDropdown';
 import { useGeoLocation } from '../hooks/useGeoLocation';
+import { useRegion, type Country } from '../context/RegionContext';
 import { toast } from 'react-hot-toast';
 
 // --- Data & Types ---
-
-type Country = 'India' | 'United States' | 'United Kingdom';
 
 interface FormState {
   fullName: string;
@@ -27,27 +26,6 @@ interface FormState {
   budget: string;
   message: string;
 }
-
-const PRICING = {
-  'India': {
-    currency: '₹',
-    symbol: 'INR',
-    plans: { starter: '7,500', growth: '15,000', premium: '30,000' },
-    gateway: 'Razorpay'
-  },
-  'United States': {
-    currency: '$',
-    symbol: 'USD',
-    plans: { starter: '209', growth: '520', premium: '729' },
-    gateway: 'Stripe'
-  },
-  'United Kingdom': {
-    currency: '£',
-    symbol: 'GBP',
-    plans: { starter: '156', growth: '390', premium: '547' },
-    gateway: 'Stripe'
-  }
-};
 
 const PROJECT_TYPES = [
   'E-commerce Website',
@@ -151,13 +129,14 @@ const SmartInput = ({
 
 export default function SmartInternationalForm() {
   const { geoData, loading: geoLoading } = useGeoLocation();
+  const { country: globalCountry, setCountry: setGlobalCountry, currency, symbol, gateway, pricing: globalPricing, paymentLinks } = useRegion();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<FormState>({
     fullName: '',
     businessName: '',
     email: '',
     phone: '',
-    country: 'India',
+    country: globalCountry,
     state: '',
     city: '',
     postalCode: '',
@@ -169,20 +148,26 @@ export default function SmartInternationalForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof FormState, boolean>>>({});
 
+  // Sync internal country with global context if global context changes (e.g. on mount or detection)
+  useEffect(() => {
+    setForm(prev => ({ ...prev, country: globalCountry }));
+  }, [globalCountry]);
+
   // Auto-detect country
   useEffect(() => {
-    if (geoData) {
+    if (geoData && !localStorage.getItem('webbylaunch_region')) {
       let detectedCountry: Country = 'India';
       if (geoData.country_name === 'United States') detectedCountry = 'United States';
       if (geoData.country_name === 'United Kingdom') detectedCountry = 'United Kingdom';
       
+      setGlobalCountry(detectedCountry);
       setForm(prev => ({ 
         ...prev, 
         country: detectedCountry,
         phone: detectedCountry === 'India' ? '+91 ' : detectedCountry === 'United States' ? '+1 ' : '+44 '
       }));
     }
-  }, [geoData]);
+  }, [geoData, setGlobalCountry]);
 
   // Validation logic
   const validateField = (field: keyof FormState, value: string) => {
@@ -259,10 +244,17 @@ export default function SmartInternationalForm() {
     setTimeout(() => {
       setIsSubmitting(false);
       toast.success('Project inquiry sent successfully!');
+      
+      if (form.country === 'India' && form.budget) {
+        const link = (paymentLinks as any)[form.budget];
+        if (link && link !== '#') {
+          setTimeout(() => {
+            window.location.href = link;
+          }, 1000);
+        }
+      }
     }, 2000);
   };
-
-  const pricing = PRICING[form.country];
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 sm:p-8">
@@ -290,13 +282,13 @@ export default function SmartInternationalForm() {
               </div>
             </div>
             <div className="w-px h-8 bg-white/10" />
-            <div className="space-y-1">
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/40">Payment Ready</p>
-              <div className="flex items-center gap-2 font-black italic uppercase tracking-tighter text-[#c7c42a]">
-                <ShieldCheck size={14} />
-                {pricing.gateway}
-              </div>
-            </div>
+                <div className="space-y-1">
+                  <p className="text-[8px] font-black uppercase tracking-widest text-white/40">Payment Ready</p>
+                  <div className="flex items-center gap-2 font-black italic uppercase tracking-tighter text-[#c7c42a]">
+                    <ShieldCheck size={14} />
+                    {gateway}
+                  </div>
+                </div>
           </div>
         </div>
 
@@ -364,6 +356,7 @@ export default function SmartInternationalForm() {
                     type="button"
                     onClick={() => {
                       const prefix = c === 'India' ? '+91 ' : c === 'United States' ? '+1 ' : '+44 ';
+                      setGlobalCountry(c);
                       setForm(prev => ({ ...prev, country: c, phone: prefix, state: '', city: '' }));
                     }}
                     className={`py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${
@@ -432,7 +425,7 @@ export default function SmartInternationalForm() {
                  </div>
                  <div className="text-left">
                     <p className="text-[8px] font-black uppercase tracking-widest text-white/30">Currency</p>
-                    <p className="text-[10px] font-black uppercase tracking-tighter text-white">{pricing.symbol}</p>
+                    <p className="text-[10px] font-black uppercase tracking-tighter text-white">{symbol}</p>
                  </div>
               </div>
               <div className="px-6 py-3 rounded-2xl bg-black border border-white/10 flex items-center gap-3">
@@ -441,39 +434,43 @@ export default function SmartInternationalForm() {
                  </div>
                  <div className="text-left">
                     <p className="text-[8px] font-black uppercase tracking-widest text-white/30">Gateway</p>
-                    <p className="text-[10px] font-black uppercase tracking-tighter text-white">{pricing.gateway}</p>
+                    <p className="text-[10px] font-black uppercase tracking-tighter text-white">{gateway}</p>
                  </div>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {(['starter', 'growth', 'premium'] as const).map((plan) => (
-              <button
-                key={plan}
-                type="button"
-                onClick={() => handleInputChange('budget', plan)}
-                className={`p-8 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-4 group ${
-                  form.budget === plan 
-                    ? 'border-[#c7c42a] bg-[#c7c42a]/5 shadow-2xl shadow-[#c7c42a]/10' 
-                    : 'border-white/5 bg-black/40 hover:border-white/20'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${form.budget === plan ? 'text-[#c7c42a]' : 'text-white/20'}`}>
-                    {plan}
-                  </span>
-                  {form.budget === plan && <Check size={16} className="text-[#c7c42a]" />}
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-1">
-                    <span className="text-[#c7c42a] text-lg">{pricing.currency}</span>
-                    {pricing.plans[plan]}
-                  </p>
-                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Base Investment</p>
-                </div>
-              </button>
-            ))}
+            {(['basic', 'standard', 'premium'] as const).map((plan, index) => {
+              const fontSizes = ['64px', '56px', '48px'];
+              return (
+                <button
+                  key={plan}
+                  type="button"
+                  onClick={() => handleInputChange('budget', plan)}
+                  className={`p-8 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-4 group min-h-[250px] justify-between ${
+                    form.budget === plan 
+                      ? 'border-[#c7c42a] bg-[#c7c42a]/5 shadow-2xl shadow-[#c7c42a]/10' 
+                      : 'border-white/5 bg-black/40 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${form.budget === plan ? 'text-[#c7c42a]' : 'text-white/20'}`}>
+                      {plan === 'basic' ? 'starter' : plan === 'standard' ? 'growth' : 'premium'}
+                    </span>
+                    {form.budget === plan && <Check size={16} className="text-[#c7c42a]" />}
+                  </div>
+                  <div className="space-y-0.5 mt-auto">
+                    <p className="font-black italic uppercase tracking-tighter flex items-end gap-1 leading-none">
+                      <span className="text-[#c7c42a] text-lg mb-2">{currency}</span>
+                      <span style={{ fontSize: fontSizes[index] }}>{globalPricing[plan]}</span>
+                      <span className="text-[8px] font-bold text-white/20 mb-2">{symbol}</span>
+                    </p>
+                    <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Base Investment</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
