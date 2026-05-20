@@ -2427,20 +2427,6 @@ Description: ${project.description || 'No description provided.'}
                 <p className="text-xs font-bold text-white/60 text-center uppercase tracking-widest leading-relaxed">
                   Enter financial parameters to unlock the 'Accept Mission' command. Intel must be committed to the database first.
                 </p>
-
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Internal Sales Code</label>
-                  <div className="relative">
-                    <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                    <input 
-                      type="text" 
-                      value={salesCode || ''}
-                      onChange={(e) => setSalesCode(e.target.value)}
-                      placeholder="e.g. sales@GB"
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
-                    />
-                  </div>
-                </div>
                 
                 <div className="space-y-2">
                   <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Razorpay Payment Link</label>
@@ -2489,7 +2475,7 @@ Description: ${project.description || 'No description provided.'}
                   {isSubmitting ? 'Syncing...' : isFinancialIntelSaved ? 'INTELLIGENCE SAVED ✓' : 'SAVE FINANCIAL INTEL'}
                 </button>
 
-                {isFinancialIntelSaved && salesCode?.trim().toLowerCase() === 'sales@gb' && (
+                {isFinancialIntelSaved && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
