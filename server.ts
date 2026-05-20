@@ -122,13 +122,21 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 const dbAdmin = admin.firestore();
 
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_SrTt4UUFFqETs8';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'cvaeGiWKoL6N5bXPPuyeaSD5';
+const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'webhook_secret_456776540909';
+
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret',
+  key_id: RAZORPAY_KEY_ID,
+  key_secret: RAZORPAY_KEY_SECRET,
 });
 
 // API Routes
@@ -262,6 +270,344 @@ apiRouter.post("/razorpay/save-payment", async (req, res) => {
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+apiRouter.post("/razorpay/create-payment-link", async (req, res) => {
+  try {
+    const { projectId, plan, amount, customerName, customerEmail, customerPhone } = req.body;
+    if (!projectId || !amount || !plan) {
+      return res.status(400).json({ error: "Missing required core parameters (projectId, amount, plan)" });
+    }
+
+    // Standardize amount for Razorpay (convert to paise)
+    const amountInPaise = Math.round(Number(amount) * 100);
+
+    // Make Razorpay Payment Link
+    console.log(`Creating dynamic Razorpay Payment Link for Project: ${projectId}, Plan: ${plan}, Amount: ${amount}`);
+    const host = process.env.APP_URL || 'https://ais-dev-cxnuohxnxotikhimmakonv-628570041945.asia-southeast1.run.app';
+    const callbackUrl = `${host.endsWith('/') ? host.slice(0, -1) : host}/dashboard?success=true&projectId=${projectId}`;
+
+    const paymentLink = await razorpay.paymentLink.create({
+      amount: amountInPaise,
+      currency: "INR",
+      accept_partial: false,
+      first_min_partial_amount: amountInPaise,
+      description: `Payment for WebbyLaunch ${plan.toUpperCase()} Plan`,
+      customer: {
+        name: customerName || "Customer",
+        email: customerEmail || "customer@example.com",
+        contact: customerPhone ? (customerPhone.startsWith('+') ? customerPhone : `+91${customerPhone}`) : "+919999999999",
+      },
+      notify: {
+        sms: false,
+        email: true
+      },
+      reminder_enable: true,
+      notes: {
+        projectId,
+        plan,
+      },
+      callback_url: callbackUrl,
+      callback_method: "get"
+    });
+
+    console.log(`Payment Link created successfully. ID: ${paymentLink.id}, URL: ${paymentLink.short_url}`);
+
+    // Save detailed parameters as requested in Requirement 2 & 9:
+    // "Save: payment_link_id, customer name, email, phone, selected plan, payment status"
+    await dbAdmin.collection('payments').doc(paymentLink.id).set({
+      payment_link_id: paymentLink.id,
+      customerName: customerName || "Customer",
+      email: customerEmail || "customer@example.com",
+      phone: customerPhone || "+919999999999",
+      selectedPlan: plan,
+      paymentStatus: 'pending',
+      status: 'pending',
+      amount: Number(amount),
+      projectId: projectId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update the project document as well so it is aware of the active paymentLink
+    await dbAdmin.collection('projects').doc(projectId).update({
+      paymentStatus: 'pending',
+      paymentLink: paymentLink.short_url,
+      paymentLinkId: paymentLink.id,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({
+      success: true,
+      paymentLink: paymentLink.short_url,
+      paymentLinkId: paymentLink.id,
+    });
+  } catch (error: any) {
+    console.error("Error creating Razorpay Payment Link:", error);
+    res.status(500).json({ error: error.message || "Failed to create payment link" });
+  }
+});
+
+apiRouter.post("/razorpay-webhook", async (req: any, res) => {
+  try {
+    const signature = req.headers["x-razorpay-signature"];
+    if (!signature) {
+      console.error("Webhook verification failed: Missing x-razorpay-signature header");
+      return res.status(400).json({ error: "Missing x-razorpay-signature header" });
+    }
+
+    // Verify webhook signature securely
+    const shasum = crypto.createHmac("sha256", RAZORPAY_WEBHOOK_SECRET);
+    if (req.rawBody) {
+      shasum.update(req.rawBody);
+    } else {
+      shasum.update(JSON.stringify(req.body));
+    }
+    const digest = shasum.digest("hex");
+
+    if (digest !== signature) {
+      console.error("Webhook signature mismatch. Validation failed.");
+      return res.status(400).json({ error: "Invalid signature" });
+    }
+
+    const { event: eventType, payload } = req.body;
+    console.log(`Razorpay webhook verified: event: ${eventType}`);
+
+    // We only process 'payment_link.paid' and 'payment.captured'
+    if (eventType !== 'payment_link.paid' && eventType !== 'payment.captured') {
+      return res.json({ success: true, message: `Skipping unhandled webhook event: ${eventType}` });
+    }
+
+    let projectId = "";
+    let plan = "";
+    let amount = 0;
+    let paymentId = "";
+    let paymentLinkId = "";
+    let customerName = "";
+    let email = "";
+    let phone = "";
+
+    if (eventType === 'payment_link.paid') {
+      const plEntity = payload?.payment_link?.entity;
+      const payEntity = payload?.payment?.entity;
+      
+      if (plEntity) {
+        paymentLinkId = plEntity.id;
+        projectId = plEntity.notes?.projectId || "";
+        plan = plEntity.notes?.plan || "";
+        amount = plEntity.amount ? plEntity.amount / 100 : 0;
+        customerName = plEntity.customer?.name || "";
+        email = plEntity.customer?.email || "";
+        phone = plEntity.customer?.contact || "";
+      }
+      if (payEntity) {
+        paymentId = payEntity.id;
+      }
+    } else if (eventType === 'payment.captured') {
+      const payEntity = payload?.payment?.entity;
+      if (payEntity) {
+        paymentId = payEntity.id;
+        paymentLinkId = payEntity.payment_link_id || "";
+        projectId = payEntity.notes?.projectId || "";
+        plan = payEntity.notes?.plan || "";
+        amount = payEntity.amount ? payEntity.amount / 100 : 0;
+        email = payEntity.email || "";
+        phone = payEntity.contact || "";
+      }
+    }
+
+    // Error handling of missing core fields
+    if (!paymentLinkId && !paymentId) {
+      console.error("Webhook processing error: Missing payment identifiers.");
+      return res.status(400).json({ error: "Missing payment identifiers in webhook payload" });
+    }
+
+    // Resilient fallback logic: lookup project details in existing payment collections
+    if (!projectId && paymentLinkId) {
+      const paymentCheck = await dbAdmin.collection('payments')
+        .where('payment_link_id', '==', paymentLinkId)
+        .limit(1)
+        .get();
+      if (!paymentCheck.empty) {
+        const payData = paymentCheck.docs[0].data();
+        projectId = payData.projectId || "";
+        if (!plan) plan = payData.selectedPlan || "";
+        if (!amount) amount = payData.amount || 0;
+        if (!customerName) customerName = payData.customerName || "";
+        if (!email) email = payData.email || "";
+        if (!phone) phone = payData.phone || "";
+      }
+    }
+
+    // Duplicate webhook protection
+    if (paymentId) {
+      const duplicateCheck = await dbAdmin.collection('payments')
+        .where('payment_id', '==', paymentId)
+        .where('paymentStatus', '==', 'paid')
+        .limit(1)
+        .get();
+      if (!duplicateCheck.empty) {
+        console.warn(`Duplicate webhook discarded: payment_id ${paymentId} is already completed.`);
+        return res.json({ success: true, message: "Webhook already processed (duplicate)" });
+      }
+    }
+
+    console.log(`Processing valid payment: Link ID: ${paymentLinkId}, Payment ID: ${paymentId}, Project: ${projectId}, Plan: ${plan}`);
+
+    // Fetch information from Project to notify correct developer & get correct project metadata
+    let developerId = "";
+    let projectName = "Premium Website Design";
+    if (projectId) {
+      const projectDoc = await dbAdmin.collection('projects').doc(projectId).get();
+      if (projectDoc.exists) {
+        const projData = projectDoc.data();
+        developerId = projData?.developerId || projData?.assignedTo || "";
+        projectName = projData?.businessName || projData?.websiteName || "Premium Website Design";
+      }
+    }
+
+    // 6. If payment verified:
+    // - update database payment status to PAID
+    // - activate selected plan
+    // - unlock dashboard/services
+    // - save payment_id
+    // - save paidAt timestamp
+    // - notify developer/admin
+    if (projectId) {
+      await dbAdmin.collection('projects').doc(projectId).update({
+        paymentStatus: 'paid',
+        status: 'Under Review', // Activates plan and triggers start
+        isLocked: false,       // Unlock dashboard/services
+        paymentId: paymentId || "",
+        paidAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      console.log(`Unlocked project dashboard and set paymentStatus to paid for Project ID: ${projectId}`);
+    }
+
+    if (paymentLinkId) {
+      const paymentsQuery = await dbAdmin.collection('payments')
+        .where('payment_link_id', '==', paymentLinkId)
+        .limit(1)
+        .get();
+
+      if (!paymentsQuery.empty) {
+        const payDocId = paymentsQuery.docs[0].id;
+        await dbAdmin.collection('payments').doc(payDocId).update({
+          paymentStatus: 'paid',
+          status: 'completed',
+          payment_id: paymentId || "",
+          paidAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } else {
+        await dbAdmin.collection('payments').add({
+          payment_link_id: paymentLinkId,
+          payment_id: paymentId || "",
+          projectId: projectId || "",
+          customerName: customerName || "Customer",
+          email: email || "customer@example.com",
+          phone: phone || "+919999999999",
+          selectedPlan: plan || "basic",
+          paymentStatus: 'paid',
+          status: 'completed',
+          paidAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
+    // Create notifications to notify developer/admin
+    // Admin notification
+    await dbAdmin.collection('notifications').add({
+      userId: 'admin',
+      title: 'Payment Received',
+      description: `Payment of ₹${amount} received successfully for "${projectName}". Plan: ${plan}.`,
+      type: 'admin',
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Developer notification
+    if (developerId) {
+      await dbAdmin.collection('notifications').add({
+        userId: developerId,
+        title: 'Project Funded & Active',
+        description: `Client payment validated for "${projectName}". You can now complete development tasks.`,
+        type: 'progress',
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    res.json({ success: true, message: "Webhook processed and payment verified successfully" });
+  } catch (err: any) {
+    console.error("Critical Webhook processing error:", err);
+    res.status(500).json({ error: err.message || "Internal server webhook processing error" });
+  }
+});
+
+apiRouter.get("/payment-status/:paymentLinkId", async (req, res) => {
+  const { paymentLinkId } = req.params;
+  try {
+    if (!paymentLinkId) {
+      return res.status(400).json({ error: "Missing paymentLinkId" });
+    }
+
+    // 1. Look up in Firestore payments collection
+    const paymentsQuery = await dbAdmin.collection('payments')
+      .where('payment_link_id', '==', paymentLinkId)
+      .limit(1)
+      .get();
+
+    if (!paymentsQuery.empty) {
+      const payData = paymentsQuery.docs[0].data();
+      const st = String(payData.paymentStatus || payData.status).toLowerCase();
+      if (st === 'paid' || st === 'completed') {
+        return res.json({
+          success: true,
+          status: "paid"
+        });
+      }
+    }
+
+    // 2. Look up in projects collection
+    const projectsQuery = await dbAdmin.collection('projects')
+      .where('paymentLinkId', '==', paymentLinkId)
+      .limit(1)
+      .get();
+
+    if (!projectsQuery.empty) {
+      const projData = projectsQuery.docs[0].data();
+      const st = String(projData.paymentStatus).toLowerCase();
+      if (st === 'paid') {
+        return res.json({
+          success: true,
+          status: "paid"
+        });
+      }
+    }
+
+    // 3. Resilience fallback: Query Razorpay Payment Link API directly
+    try {
+      const linkDetails = await razorpay.paymentLink.fetch(paymentLinkId);
+      if (linkDetails && linkDetails.status === 'paid') {
+        return res.json({
+          success: true,
+          status: "paid"
+        });
+      }
+    } catch (apiErr) {
+      console.warn("Direct Razorpay Payment Link query fallback failed:", apiErr);
+    }
+
+    res.json({
+      success: true,
+      status: "pending"
+    });
+  } catch (error: any) {
+    console.error(`Error checking payment status for id ${paymentLinkId}:`, error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
