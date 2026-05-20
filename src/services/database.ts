@@ -1032,16 +1032,52 @@ export const getUnassignedProjects = (callback: (projects: Project[]) => void) =
   });
 };
 
+export const FALLBACK_BLOG_POSTS: BlogPost[] = [
+  {
+    id: "restaurant-website-fallback",
+    title: "Why Every Restaurant Needs a High-Converting Website in 2026",
+    slug: "restaurant-website",
+    category: "Business",
+    excerpt: "In the digital age, a restaurant website is more than just a menu online—it is your most powerful sales and seating engine. Here is how to optimize it for maximum revenue.",
+    content: `In 2026, the restaurant industry is more competitive than ever. While third-party delivery platforms offer convenience, they also eat into your hard-earned margins by up to 30%. **A premium, high-converting restaurant website is your key to financial independence and strong brand identity.**
+
+### 1. Zero Commission Direct Ordering
+Every order placed through your own website is pure profit. Implementing a seamless, high-speed native checkout allows customers to order their favorite meals effortlessly, without you losing a cut to middlemen.
+
+### 2. High-Yield Search Engine Visibility
+When hungry food lovers search for "best Italian restaurant near me" or "authentic wood-fired pizza," a fully SEO-optimized website ensures your kitchen is at the absolute top of their Google search results. This drives highly targeted local organic traffic to your reservations and menu directly.
+
+### 3. Immaculate Aesthetics & Emotional Connection
+Your website is the digital storefront of your culinary experience. Stunning high-definition imagery, smooth loading transitions, and a beautifully presented menu evoke taste and emotion before the guest even steps inside.
+
+*   **Responsive Menu Integration:** Do not upload a static PDF menu. Instead, build a mobile-focused, interactive menu that is searchable and easy to navigate on smartphones.
+*   **Instant Seat Reservations:** Empower guests to book tables instantly with zero friction.
+*   **Local Marketing Power:** Capture customer emails and contact details securely to announce premium weekend specials and exclusive tasting events.`,
+    author: "Elena Vance",
+    date: "2026-05-20",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
+    tags: ["Restaurant", "Web Design", "SEO", "Sales"]
+  }
+];
+
 // Blog Operations
 export const getBlogPosts = async () => {
   const path = 'blog_posts';
   try {
     const q = query(collection(db, 'blog_posts'), orderBy('date', 'desc'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+    const dbPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+    // Combine with missing fallback posts to guarantee SEO slugs are always available
+    const allPosts = [...dbPosts];
+    FALLBACK_BLOG_POSTS.forEach(fallback => {
+      if (!allPosts.some(p => p.slug === fallback.slug)) {
+        allPosts.push(fallback);
+      }
+    });
+    return allPosts;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
-    return [];
+    return FALLBACK_BLOG_POSTS;
   }
 };
 
@@ -1050,10 +1086,14 @@ export const getBlogPostBySlug = async (slug: string) => {
   try {
     const q = query(collection(db, 'blog_posts'), where('slug', '==', slug));
     const snapshot = await getDocs(q);
-    return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+    if (!snapshot.empty) {
+      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as BlogPost;
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
   }
+  // Try fallback list if not found in db
+  return FALLBACK_BLOG_POSTS.find(p => p.slug === slug) || null;
 };
 
 export const getConversationId = (uid1: string, uid2: string) => {
