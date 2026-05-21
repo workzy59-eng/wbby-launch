@@ -205,6 +205,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const scrollRef = useRef<HTMLDivElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const activeConversationRef = useRef<any>(null);
+
+  useEffect(() => {
+    activeConversationRef.current = activeConversation;
+  }, [activeConversation]);
 
   const downloadFileUrl = (url: string, filename: string) => {
     if (!url) return;
@@ -369,6 +374,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
               const newUnread = newConv.unreadCount?.[currentUser.uid] || 0;
               const oldUnread = oldConv.unreadCount?.[currentUser.uid] || 0;
               
+              // Skip playing notification sound if this is the active conversation they are reading
+              if (activeConversationRef.current && newConv.id === activeConversationRef.current.id) {
+                return false;
+              }
+              
               return newUnread > oldUnread;
             });
 
@@ -409,6 +419,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
         setMessages(newMessages);
 
+        // Mark container/conversation as seen in real-time
+        markProjectAsSeen(activeConversation.id, currentUser.uid).catch(console.error);
+
         // Mark individual messages as delivered/seen
         newMessages.forEach(async (m) => {
           if (m.senderId !== currentUser.uid) {
@@ -431,6 +444,9 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         unsub = getDirectMessages(currentUser.uid, recipientId, (messagesData) => {
           const newMessages = (messagesData as Message[]).filter(m => !m.hiddenFor?.includes(currentUser.uid));
           setMessages(newMessages);
+
+          // Mark container/conversation as seen in real-time
+          markConversationAsSeen(activeConversation.id, currentUser.uid).catch(console.error);
 
           // Mark as delivered or seen
           newMessages.forEach(async (m) => {

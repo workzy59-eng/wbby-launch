@@ -60,7 +60,8 @@ import {
   Bar
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications, getNotifications, markNotificationAsRead } from '../services/database';
+import MessagesModule from '../components/MessagesModule';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications, getNotifications, markNotificationAsRead, deleteNotification } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -191,6 +192,7 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
+  const prevUnreadNotificationsCountRef = useRef<number | null>(null);
 
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
@@ -313,13 +315,18 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       setConversations(convs);
     });
 
+    const unsubDirectMessageCount = getUnreadMessageCount(user.uid, (count) => {
+      setUserUnreadCounts({ total: count });
+    });
+
     const unsubNotifs = getNotifications(user.uid, (data) => {
-      const prevUnreadCount = notifications.filter(n => !n.read).length;
       const newUnreadCount = data.filter((n: any) => !n.read).length;
       
-      if (newUnreadCount > prevUnreadCount) {
+      if (prevUnreadNotificationsCountRef.current !== null && newUnreadCount > prevUnreadNotificationsCountRef.current) {
         notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
       }
+      
+      prevUnreadNotificationsCountRef.current = newUnreadCount;
       setNotifications(data);
     }, 'admin');
 
@@ -330,9 +337,10 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
     return () => {
       unsubUnread?.();
       unsubscribeConversations?.();
+      unsubDirectMessageCount?.();
       unsubNotifs?.();
     };
-  }, [user.uid, isUserAdmin, notifications.length]);
+  }, [user.uid, isUserAdmin]);
 
   useEffect(() => {
     // Tab-specific data loading
@@ -2055,11 +2063,22 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
                                 <Bell size={18} />
                               </div>
                               <div className="flex-1">
-                                <div className="flex justify-between items-start mb-1">
+                                <div className="flex justify-between items-start mb-1 gap-2">
                                   <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">{notif.title}</span>
-                                  <span className="text-[8px] font-bold text-white/20 uppercase">{formatDate(notif.createdAt)}</span>
+                                  <button 
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      await deleteNotification(notif.id);
+                                      toast.success("Notification dismissed");
+                                    }}
+                                    className="p-1 rounded-md text-white/40 hover:text-red-500 hover:bg-white/5 transition-colors"
+                                    title="Dismiss Notification"
+                                  >
+                                    <X size={12} />
+                                  </button>
                                 </div>
                                 <p className="text-xs font-bold text-white/70 leading-relaxed">{notif.message}</p>
+                                <p className="text-[8px] font-bold text-white/20 uppercase mt-2">{formatDate(notif.createdAt)}</p>
                               </div>
                             </div>
                             {!notif.read && (
@@ -2200,7 +2219,11 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
             {activeTab === 'leaves' && renderLeaves()}
             {activeTab === 'domains' && <DomainConnectivity />}
             {activeTab === 'analytics' && renderAnalytics()}
-            {activeTab === 'messages' && renderMessages()}
+            {activeTab === 'messages' && (
+              <div className="h-[calc(100vh-160px)] min-h-[500px] text-[#A0AEC0] bg-black/40 rounded-[2rem] overflow-hidden border border-white/5">
+                <MessagesModule currentUser={user} profile={profile!} onClose={() => setActiveTab('dashboard')} />
+              </div>
+            )}
             {activeTab === 'recycle' && renderRecycleBin()}
             {activeTab === 'system' && renderSystem()}
             {activeTab === 'meetings' && (

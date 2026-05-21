@@ -45,6 +45,7 @@ import {
   acceptProject, 
   getNotifications, 
   markNotificationAsRead, 
+  deleteNotification,
   punchIn, 
   punchOut, 
   getUnreadMessageCount,
@@ -83,6 +84,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
+  const prevUnreadNotificationsCountRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (user?.email?.toLowerCase() === 'aither2029@gmail.com') {
@@ -304,12 +306,13 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     }, user.uid, 'developer');
 
     const unsubNotifications = getNotifications(user.uid, (notifs) => {
-      const prevUnread = notifications.filter(n => !n.read).length;
       const newUnread = notifs.filter((n: any) => !n.read).length;
       
-      if (newUnread > prevUnread) {
+      if (prevUnreadNotificationsCountRef.current !== null && newUnread > prevUnreadNotificationsCountRef.current) {
         notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
       }
+      
+      prevUnreadNotificationsCountRef.current = newUnread;
       setNotifications(notifs);
     });
 
@@ -329,7 +332,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       unsubNotifications();
       unsubUnassigned();
     };
-  }, [user?.uid, activeTab, notifications.length]);
+  }, [user?.uid, activeTab]);
 
   // Sync settings when profile updates
   useEffect(() => {
@@ -902,9 +905,22 @@ Description: ${project.description || 'No description provided.'}
                           <div 
                             key={n.id} 
                             onClick={() => !n.read && markNotificationAsRead(n.id)}
-                            className={`p-6 border-b border-[#FFFF00]/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
+                            className={`p-6 border-b border-[#FFFF00]/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors relative ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
                           >
-                            <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest mb-1">{n.title}</p>
+                            <div className="flex justify-between items-start mb-1 gap-2">
+                              <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest">{n.title}</p>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await deleteNotification(n.id);
+                                  toast.success("Notification dismissed");
+                                }}
+                                className="p-1 rounded-md text-[#FFFF00]/40 hover:text-red-500 hover:bg-white/5 transition-colors"
+                                title="Dismiss Notification"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
                             <p className="text-xs text-[#FFFF00]/60 leading-relaxed font-medium italic">{n.message}</p>
                             <p className="text-[8px] text-[#FFFF00]/20 uppercase mt-2 font-black tracking-widest">{formatDate(n.createdAt)}</p>
                           </div>
