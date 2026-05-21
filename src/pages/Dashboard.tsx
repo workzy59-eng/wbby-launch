@@ -64,7 +64,7 @@ import MessagesModule from '../components/MessagesModule';
 import { MeetingList } from '../components/meetings/MeetingList';
 import { MeetingReminder } from '../components/meetings/MeetingReminder';
 import { subscribeToMeetings } from '../services/meetingService';
-import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead, getSystemSettings, deleteNotification } from '../services/database';
+import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead, getSystemSettings } from '../services/database';
 import { formatDate } from '../lib/utils';
 import { toast } from 'react-hot-toast';
 import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
@@ -112,7 +112,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
-  const prevUnreadNotificationsCountRef = useRef<number | null>(null);
 
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [currentPaymentLinkId, setCurrentPaymentLinkId] = useState<string | null>(null);
@@ -358,18 +357,17 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   useEffect(() => {
     if (user?.uid) {
       const unsubscribe = getNotifications(user.uid, (data) => {
+        const prevUnread = notifications.filter(n => !n.read).length;
         const newUnread = data.filter((n: any) => !n.read).length;
         
-        if (prevUnreadNotificationsCountRef.current !== null && newUnread > prevUnreadNotificationsCountRef.current) {
+        if (newUnread > prevUnread) {
           notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
         }
-        
-        prevUnreadNotificationsCountRef.current = newUnread;
         setNotifications(data);
       });
       return () => unsubscribe();
     }
-  }, [user?.uid]);
+  }, [user?.uid, notifications.length]);
 
   useEffect(() => {
     const fetchStatsOrAdmin = async () => {
@@ -727,22 +725,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           if (!n.read) markNotificationAsRead(n.id);
                           setShowNotifications(false);
                         }}
-                        className={`p-6 border-b border-white/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors relative ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
+                        className={`p-6 border-b border-white/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
                       >
-                        <div className="flex justify-between items-start mb-1 gap-2">
-                          <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest">{n.title}</p>
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              await deleteNotification(n.id);
-                              toast.success("Notification dismissed");
-                            }}
-                            className="p-1 rounded-md text-[#FFFF00]/40 hover:text-red-500 hover:bg-white/5 transition-colors"
-                            title="Dismiss Notification"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
+                        <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest mb-1">{n.title}</p>
                         <p className="text-xs text-[#FFFF00]/60 leading-relaxed font-medium italic">{n.message}</p>
                         <p className="text-[8px] text-[#FFFF00]/20 uppercase mt-2 font-black tracking-widest">{formatDate(n.createdAt)}</p>
                       </div>

@@ -100,16 +100,6 @@ service cloud.firestore {
           isAdmin() ||
           isWhitelistedDeveloper()
         );
-        allow update: if isAuth() && (
-          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
-        ) && (
-          (!('senderId' in incoming()) || incoming().senderId == existing().senderId) &&
-          (!('createdAt' in incoming()) || incoming().createdAt == existing().createdAt)
-        );
       }
     }
 
@@ -133,30 +123,7 @@ service cloud.firestore {
           isWhitelistedDeveloper()
         );
 
-        allow update: if isAuth() && (
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
-        ) && (
-          (!('senderId' in incoming()) || incoming().senderId == existing().senderId) &&
-          (!('createdAt' in incoming()) || incoming().createdAt == existing().createdAt)
-        );
-      }
-
-      match /typing/{userId} {
-        allow read: if isAuth() && (
-          isAdmin() ||
-          isWhitelistedDeveloper() ||
-          (exists(/databases/$(database)/documents/conversations/$(conversationId)) && 
-           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants) ||
-          (exists(/databases/$(database)/documents/projects/$(conversationId)) && (
-            get(/databases/$(database)/documents/projects/$(conversationId)).data.userId == request.auth.uid ||
-            get(/databases/$(database)/documents/projects/$(conversationId)).data.developerId == request.auth.uid ||
-            get(/databases/$(database)/documents/projects/$(conversationId)).data.assignedTo == request.auth.uid
-          )) ||
-          conversationId.matches('.*' + request.auth.uid + '.*')
-        );
-        allow write: if isAuth() && request.auth.uid == userId;
+        allow update, delete: if false; 
       }
     }
 
