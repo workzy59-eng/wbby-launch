@@ -201,7 +201,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
       <SEO />
       
       {/* Hero Section */}
-      <section id="home" className="relative h-screen flex flex-col items-center justify-center overflow-hidden technical-grid">
+      <section id="home" className="relative min-h-screen lg:h-screen py-24 lg:py-0 flex flex-col items-center justify-center overflow-hidden technical-grid">
         <div className="absolute inset-0 z-0">
           <motion.div 
             animate={{ 
@@ -221,18 +221,18 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
           />
         </div>
 
-        <div className="relative z-10 w-full px-6 flex flex-col items-center text-center">
+        <div className="relative z-10 w-full px-6 py-12 lg:py-0 flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 100 }}
-            className="inline-block px-6 py-2 bg-[#c7c42a] text-black text-[10px] font-black uppercase tracking-[0.6em] transform -skew-x-12 mb-12 italic shadow-[0_0_40px_rgba(199,196,42,0.4)]"
+            className="inline-block px-6 py-2 bg-[#c7c42a] text-black text-[10px] font-black uppercase tracking-[0.6em] transform -skew-x-12 mb-6 sm:mb-10 lg:mb-12 italic shadow-[0_0_40px_rgba(199,196,42,0.4)]"
           >
             Elite CLOTHING BUSINESS
           </motion.div>
 
-          <div className="relative mb-12">
-            <h1 className="text-[14vw] md:text-[16vw] font-black leading-[0.75] tracking-tighter uppercase italic flex flex-col">
+          <div className="relative mb-6 sm:mb-10 lg:mb-12">
+            <h1 className="text-[11vw] sm:text-[14vw] md:text-[16vw] font-black leading-[0.8] sm:leading-[0.75] tracking-tighter uppercase italic flex flex-col">
               <motion.span 
                 initial={{ x: -200, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -273,7 +273,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 1 }}
-            className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/40 leading-tight italic"
+            className="text-sm sm:text-lg md:text-2xl lg:text-3xl max-w-3xl mx-auto mb-8 sm:mb-12 lg:mb-16 font-medium text-white/40 leading-normal sm:leading-tight italic"
           >
             Scale your <span className="text-white">CLOTHING BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 52 hours.
           </motion.p>
@@ -282,22 +282,22 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2 }}
-            className="flex flex-wrap items-center justify-center gap-6"
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6"
           >
             <Link 
               to={user ? "/onboarding" : "/auth"} 
-              className="group relative bg-[#c7c42a] text-black px-16 py-6 font-black uppercase italic text-2xl tracking-tighter hover:scale-110 active:scale-95 transition-all shadow-[0_20px_50px_rgba(199,196,42,0.2)] flex items-center gap-4"
+              className="group relative bg-[#c7c42a] text-black px-8 py-3.5 sm:px-16 sm:py-5 font-black uppercase italic text-lg sm:text-2xl tracking-tighter hover:scale-110 active:scale-95 transition-all shadow-[0_20px_50px_rgba(199,196,42,0.2)] flex items-center gap-3 sm:gap-4"
             >
               Get Access Now
-              <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 transition-transform" />
             </Link>
             
-            <div className="flex gap-4">
-              <a href="https://discord.gg/EDZb5Aefb" target="_blank" rel="noopener noreferrer" className="p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-full group">
-                <Briefcase size={20} className="text-[#c7c42a] group-hover:scale-125 transition-transform" />
+            <div className="flex gap-3 sm:gap-4">
+              <a href="https://discord.gg/EDZb5Aefb" target="_blank" rel="noopener noreferrer" className="p-4 sm:p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-full group">
+                <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[#c7c42a] group-hover:scale-125 transition-transform" />
               </a>
-              <Link to="/join-sales" className="p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-full group">
-                <User size={20} className="text-[#c7c42a] group-hover:scale-125 transition-transform" />
+              <Link to="/join-sales" className="p-4 sm:p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-full group">
+                <User className="w-4 h-4 sm:w-5 sm:h-5 text-[#c7c42a] group-hover:scale-125 transition-transform" />
               </Link>
             </div>
           </motion.div>

@@ -292,6 +292,13 @@ export interface Project {
   domainRegistrar?: string;
   domainTransferAuth?: string;
   domainChoices?: string[];
+  milestones?: {
+    id: string;
+    title: string;
+    description: string;
+    isCompleted: boolean;
+    completedAt?: string | null;
+  }[];
 }
 
 export interface Attachment {

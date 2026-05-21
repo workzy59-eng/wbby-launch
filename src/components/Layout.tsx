@@ -46,13 +46,13 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-[#c7c42a] selection:text-black">
       {/* Navbar */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
-        <div className="bg-[#111] border border-white/5 rounded-2xl px-8 py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 overflow-hidden rounded-lg">
+      <nav className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 pointer-events-none">
+        <div className="bg-[#111] border border-white/5 rounded-2xl px-4 py-3 sm:px-8 sm:py-4 flex items-center justify-between shadow-2xl pointer-events-auto">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 overflow-hidden rounded-lg">
               <img src="/favicon.svg" alt="WebbyLaunch Logo" className="w-full h-full object-cover" />
             </div>
-            <div className="text-2xl font-black tracking-tighter uppercase italic text-white">
+            <div className="text-lg sm:text-2xl font-black tracking-tighter uppercase italic text-white">
               {APP_NAME}
             </div>
           </Link>
@@ -61,14 +61,17 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
             <NavHeader />
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             {user ? (
-              <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#c7c42a] transition-all">Dashboard</Link>
+              <Link to="/dashboard" className="text-xs sm:text-sm font-bold uppercase tracking-widest hover:text-[#c7c42a] transition-all">Dashboard</Link>
             ) : (
-              <Link to="/auth" className="bg-[#c7c42a] text-black px-8 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]">Get Started</Link>
+              <Link to="/auth" className="bg-[#c7c42a] text-black px-3 py-2 sm:px-8 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider hover:scale-105 transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)] flex items-center gap-1">
+                <span className="hidden sm:inline">Get Started</span>
+                <span className="sm:hidden">Start →</span>
+              </Link>
             )}
-            <button className="lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X /> : <Menu />}
+            <button className="lg:hidden text-white hover:text-[#c7c42a] p-1 transition-colors" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
