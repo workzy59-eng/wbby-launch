@@ -893,6 +893,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   };
 
   const handleFileUpload = async (files: FileList | null) => {
+    if (profile?.role !== 'admin') {
+      toast.error("File upload is restricted to administrators only.");
+      return;
+    }
     if (!files || files.length === 0 || !activeConversation || isSending) return;
     
     const fileList = Array.from(files);
@@ -1568,31 +1572,33 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </AnimatePresence>
 
                 <div className="max-w-5xl mx-auto flex items-end gap-5">
-                   <div className="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-[22px] flex items-center justify-center text-white/40 hover:text-white transition-all shadow-xl group">
-                          <Paperclip size={20} className="group-hover:rotate-45 transition-transform" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-56 bg-[#1a1a1a] border-white/5 rounded-3xl p-2 shadow-2xl backdrop-blur-3xl mb-4" align="start">
-                        <button 
-                          onClick={() => document.getElementById('image-upload')?.click()}
-                          className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
-                        >
-                          <ImageIcon size={16} className="text-[#c7c42a]" /> Visual Intel
-                        </button>
-                        <button 
-                          onClick={() => document.getElementById('file-upload')?.click()}
-                          className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
-                        >
-                          <FileText size={16} className="text-[#c7c42a]" /> Data Document
-                        </button>
-                      </PopoverContent>
-                    </Popover>
-                    <input id="image-upload" type="file" hidden accept="image/*" multiple onChange={(e) => handleFileUpload(e.target.files)} />
-                    <input id="file-upload" type="file" hidden onChange={(e) => handleFileUpload(e.target.files)} />
-                  </div>
+                   {profile?.role === 'admin' && (
+                     <div className="flex gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-[22px] flex items-center justify-center text-white/40 hover:text-white transition-all shadow-xl group">
+                            <Paperclip size={20} className="group-hover:rotate-45 transition-transform" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-56 bg-[#1a1a1a] border-white/5 rounded-3xl p-2 shadow-2xl backdrop-blur-3xl mb-4" align="start">
+                          <button 
+                            onClick={() => document.getElementById('image-upload')?.click()}
+                            className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                          >
+                            <ImageIcon size={16} className="text-[#c7c42a]" /> Visual Intel
+                          </button>
+                          <button 
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                            className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                          >
+                            <FileText size={16} className="text-[#c7c42a]" /> Data Document
+                          </button>
+                        </PopoverContent>
+                      </Popover>
+                      <input id="image-upload" type="file" hidden accept="image/*" multiple onChange={(e) => handleFileUpload(e.target.files)} />
+                      <input id="file-upload" type="file" hidden onChange={(e) => handleFileUpload(e.target.files)} />
+                    </div>
+                  )}
 
                   <form 
                     onSubmit={handleSendMessage}
