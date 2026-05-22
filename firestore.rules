@@ -5,12 +5,9 @@ service cloud.firestore {
     // =========================
     // HELPER FUNCTIONS
     // =========================
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
+    
     function isAuth() {
-      return isSignedIn();
+      return request.auth != null && request.auth.uid != null;
     }
 
     function incoming() {
@@ -25,12 +22,10 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    // Safely checks for admin role with email fallback
     function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email.lower() == 'workzy59@gmail.com' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      return isAuth() && (
+        request.auth.uid == 'vN3cIRGUKXeEnbBCA4shsOXNlE03' ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'workzy59@gmail.com')
       );
     }
 
@@ -40,27 +35,24 @@ service cloud.firestore {
         request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
         (request.auth.token.email != null && (
           request.auth.token.email.lower() == 'sain17296174@gmail.com'
-        )) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer' ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
         ))
       );
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    // =========================
+    // GLOBAL ACCESS FOR ADMIN/SUPERUSERS
+    // =========================
+    match /{document=**} {
+      allow read, write: if isAdmin() || isWhitelistedDeveloper();
     }
 
     // =========================
-    // USERS
+    // USERS & PROFILES
     // =========================
     match /users/{userId} {
       allow create: if isAuth() && request.auth.uid == userId;
-      // Single profile gets are allowed for any registered user (so developers and clients can view each other's details in chat/assignments)
       allow get: if isAuth();
-      // List/Query users is allowed for admins & developers to search/collaborate
-      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper());
+      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.uid == request.auth.uid);
       allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
@@ -69,77 +61,89 @@ service cloud.firestore {
     // PROJECTS
     // =========================
     match /projects/{projectId} {
-      
-      // Ensures the document being created belongs to the person creating it
-      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      function canAccessProject() {
+        return isAdmin() || 
+               isWhitelistedDeveloper() ||
+               (resource != null && (
+                 resource.data.userId == request.auth.uid || 
+                 resource.data.developerId == request.auth.uid ||
+                 resource.data.assignedTo == request.auth.uid
+               ));
+      }
 
-      // Users can only read/update projects they are part of, or if whitelisted
-      allow read, update: if isAuth() && (
-        existing().userId == request.auth.uid || 
-        (existing().developerId != null && existing().developerId == request.auth.uid) || 
-        (existing().assignedTo != null && existing().assignedTo == request.auth.uid) ||
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow get: if isAuth() && canAccessProject();
+      allow list: if isAuth() && (
+        isAdmin() || 
+        isWhitelistedDeveloper() ||
+        resource.data.userId == request.auth.uid || 
+        resource.data.developerId == request.auth.uid ||
+        resource.data.assignedTo == request.auth.uid
+      );
+
+      allow update: if isAuth() && (
         isAdmin() ||
-        isWhitelistedDeveloper()
+        existing().userId == request.auth.uid ||
+        existing().developerId == request.auth.uid ||
+        existing().assignedTo == request.auth.uid ||
+        (isWhitelistedDeveloper() && (
+          incoming().developerId == request.auth.uid ||
+          incoming().diff(existing()).affectedKeys().hasAny(['domainPrice', 'paymentLink', 'paymentLinkBasic', 'paymentLinkPremium', 'websiteUrl', 'progress', 'status'])
+        ))
       );
 
       allow delete: if isAdmin();
 
-      // Project Messages (Subcollection)
+      // Project Messages
       match /messages/{messageId} {
-        allow read: if isAuth() && (
-          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
-        );
-        allow create: if isAuth() && incoming().senderId == request.auth.uid && (
-          get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.assignedTo == request.auth.uid ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
-        );
+        allow read: if isAuth() && canAccessProject();
+        allow create: if isAuth() && incoming().senderId == request.auth.uid && canAccessProject();
+        allow update: if isAuth();
       }
     }
 
     // =========================
-    // CONVERSATIONS & MESSAGES
+    // CONVERSATIONS
     // =========================
     match /conversations/{conversationId} {
-      allow read, update: if isAuth() && (request.auth.uid in existing().participants || isAdmin() || isWhitelistedDeveloper());
-      allow create: if isAuth() && request.auth.uid in incoming().participants;
+      function getConversation() {
+        return existsAfter(/databases/$(database)/documents/conversations/$(conversationId))
+          ? getAfter(/databases/$(database)/documents/conversations/$(conversationId))
+          : get(/databases/$(database)/documents/conversations/$(conversationId));
+      }
 
-      match /typing/{uid} {
-        allow read: if isAuth() && (
-          !exists(/databases/$(database)/documents/conversations/$(conversationId)) ||
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
-        );
-
-        allow write: if isAuth() && request.auth.uid == uid && (
-          !exists(/databases/$(database)/documents/conversations/$(conversationId)) ||
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
+      function isParticipant() {
+        return isAuth() && (
+          isAdmin() || 
+          request.auth.uid in resource.data.participants
         );
       }
 
+      function isParticipantAfter() {
+        return isAuth() && (
+          isAdmin() || 
+          request.auth.uid in getConversation().data.participants
+        );
+      }
+
+      allow get: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
+      allow list: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
+      allow update: if isAuth() && (isAdmin() || request.auth.uid in resource.data.participants);
+      allow create: if isAuth() && request.auth.uid in incoming().participants;
+
       match /messages/{messageId} {
-        allow read: if isAuth() && (
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
+        allow read: if isAuth() && isParticipantAfter();
+        allow create: if isAuth() && incoming().senderId == request.auth.uid && isParticipantAfter();
+        allow update: if isAuth() && (
+          isAdmin() || 
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'seen', 'seenTime'])
         );
+        allow delete: if isAdmin();
+      }
 
-        allow create: if isAuth() && incoming().senderId == request.auth.uid && (
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
-          isAdmin() ||
-          isWhitelistedDeveloper()
-        );
-
-        allow update, delete: if false; 
+      match /typing/{userId} {
+        allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || conversationId.contains(request.auth.uid));
+        allow write: if isAuth() && (userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
       }
     }
 
@@ -149,29 +153,32 @@ service cloud.firestore {
     match /notifications/{notificationId} {
       allow read: if isAuth() && (
         isAdmin() || 
-        isWhitelistedDeveloper() || 
-        resource.data.userId == request.auth.uid
+        resource.data.userId == request.auth.uid || 
+        (resource.data.role == 'admin' && isAdmin())
       );
       allow write: if isAuth();
     }
 
     // =========================
-    // ADMIN & SYSTEM COLLECTIONS
+    // LEAVES & ATTENDANCE
     // =========================
-    match /payments/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
-    match /commissions/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
-    match /leads/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
-
-    match /developer_requests/{id} {
-      allow create: if isAuth();
-      allow read, update, delete: if isAdmin() || isWhitelistedDeveloper();
+    match /leave_requests/{requestId} {
+      allow create: if isAuth() && incoming().userId == request.auth.uid;
+      allow get: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.userId == request.auth.uid);
+      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.userId == request.auth.uid);
+      allow update: if isAdmin() || isWhitelistedDeveloper();
+    }
+    
+    match /attendance/{attendanceId} {
+      allow create: if isAuth() && (incoming().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow get: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || (resource == null || resource.data.userId == request.auth.uid));
+      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.userId == request.auth.uid);
+      allow update: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || request.auth.uid == resource.data.userId);
     }
 
-    match /sales_applications/{id} {
-      allow create: if isAuth();
-      allow read, update, delete: if isAdmin() || isWhitelistedDeveloper();
-    }
-
+    // =========================
+    // SYSTEM COLLECTIONS
+    // =========================
     match /system_settings/{id} {
       allow read: if true;
       allow write: if isAdmin() || isWhitelistedDeveloper();
@@ -189,46 +196,37 @@ service cloud.firestore {
 
     match /visit_sessions/{id} {
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow update, read: if isAuth() && (existing().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow get: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.userId == request.auth.uid);
+      allow list: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || resource.data.userId == request.auth.uid);
+      allow update: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || existing().userId == request.auth.uid);
     }
 
-    // --- Meetings & Meeting Requests ---
     match /meetings/{meetingId} {
-      allow create: if isAuth() && (incoming().clientId == request.auth.uid || incoming().developerId == request.auth.uid || isWhitelistedDeveloper());
-      allow read, update: if isAuth() && (existing().clientId == request.auth.uid || existing().developerId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
-      allow delete: if isAdmin();
+      allow get: if isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow list: if isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
+      allow write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (incoming().clientId == request.auth.uid || incoming().developerId == request.auth.uid));
     }
 
     match /meeting_requests/{requestId} {
       allow read, write: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && (resource.data.clientId == request.auth.uid || resource.data.developerId == request.auth.uid || incoming().clientId == request.auth.uid || incoming().developerId == request.auth.uid));
     }
 
-    // --- Leave Requests & Attendance ---
-    match /leave_requests/{requestId} {
+    // =========================
+    // BIO LOGS
+    // =========================
+    match /bio_logs/{logId} {
+      allow get: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && existing().userId == request.auth.uid);
-      allow update: if isAdmin() || isWhitelistedDeveloper();
+      allow update, delete: if isAuth() && (existing().userId == request.auth.uid || isAdmin());
     }
     
-    match /attendance/{attendanceId} {
-      allow create: if isAuth() && (incoming().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
-      allow read: if isAdmin() || isWhitelistedDeveloper() || (isAuth() && existing().userId == request.auth.uid);
-      allow update: if isAdmin() || isWhitelistedDeveloper();
-    }
+    // Generic catch-all for other collections used by admin
+    match /payments/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
+    match /commissions/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
+    match /leads/{id} { allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
+    match /developer_requests/{id} { allow create: if isAuth(); allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
+    match /sales_applications/{id} { allow create: if isAuth(); allow read, write: if isAdmin() || isWhitelistedDeveloper(); }
 
-    // --- Bio Logs ---
-    match /bio_logs/{logId} {
-      allow get: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
-      allow list: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
-      allow create: if isAuth() && incoming().userId == request.auth.uid;
-      allow update, delete: if isAuth() && (existing().userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
-    }
-
-    // =========================
-    // GLOBAL DENY (Safety Net)
-    // =========================
-    match /{document=**} {
-      allow read, write: if false;
-    }
   }
 }

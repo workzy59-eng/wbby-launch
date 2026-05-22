@@ -69,7 +69,6 @@ import imageCompression from 'browser-image-compression';
 
 import FilePreviewEditor from './chat/FilePreviewEditor';
 import FileDropZone from './chat/FileDropZone';
-import toast from 'react-hot-toast';
 
 interface ChatSystemProps {
   projectId?: string;
