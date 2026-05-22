@@ -445,14 +445,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     console.log("FETCHING PROJECTS FOR:", user.uid, "ROLE:", profile.role);
     const unsubscribe = getProjects((projectsData) => {
       console.log("PROJECTS RECEIVED:", projectsData.length);
-      const list = projectsData as Project[];
-      setProjects(list);
-      if (list.length > 0) {
-        setSelectedProject((prevSelected) => {
-          if (!prevSelected) return list[0];
-          const updated = list.find(p => p.id === prevSelected.id);
-          return updated || list[0];
-        });
+      setProjects(projectsData as Project[]);
+      if (projectsData.length > 0 && !selectedProject) {
+        setSelectedProject(projectsData[0] as Project);
       }
     }, user.uid, profile.role);
     return () => unsubscribe();
@@ -471,63 +466,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       await updateProject(selectedProject.id, { isDeleted: true });
       setShowCancelModal(false);
       setSelectedProject(null);
-    }
-  };
-
-  const getProjectMilestones = (project: Project) => {
-    if (project.milestones && Array.isArray(project.milestones) && project.milestones.length > 0) {
-      return project.milestones;
-    }
-    // Initialize default milestone stages as requested
-    return [
-      { id: 'design-mockups', title: 'Design Mockups', description: 'Visual interface layout and aesthetic validation of the website brand elements.', isCompleted: project.progress >= 25, completedAt: project.progress >= 25 ? new Date().toISOString() : null },
-      { id: 'frontend-dev', title: 'Frontend Development', description: 'Translating design files into pixel-perfect responsive React interfaces using Tailwind.', isCompleted: project.progress >= 50, completedAt: project.progress >= 50 ? new Date().toISOString() : null },
-      { id: 'backend-integration', title: 'Backend Integration', description: 'Integrating database systems, APIs, cloud server utilities, and high-speed services.', isCompleted: project.progress >= 75, completedAt: project.progress >= 75 ? new Date().toISOString() : null },
-      { id: 'final-review', title: 'Final Review', description: 'Rigorous end-to-end user experience testing, validation checklists, and client pre-launch signoff.', isCompleted: project.progress >= 100, completedAt: project.progress >= 100 ? new Date().toISOString() : null }
-    ];
-  };
-
-  const toggleMilestone = async (milestoneId: string) => {
-    if (!selectedProject) return;
-    
-    const currentMilestones = getProjectMilestones(selectedProject);
-    const updatedMilestones = currentMilestones.map(m => {
-      if (m.id === milestoneId) {
-        const completed = !m.isCompleted;
-        return {
-          ...m,
-          isCompleted: completed,
-          completedAt: completed ? new Date().toISOString() : null
-        };
-      }
-      return m;
-    });
-
-    const completedCount = updatedMilestones.filter(m => m.isCompleted).length;
-    const computedProgress = Math.round((completedCount / updatedMilestones.length) * 100);
-
-    // Update project state dynamically based on progress thresholds
-    let statusUpdate: Partial<Project> = {};
-    if (computedProgress === 0) {
-      statusUpdate.status = "Accepted";
-    } else if (computedProgress > 0 && computedProgress < 100) {
-      statusUpdate.status = "Development Started";
-    } else if (computedProgress === 100) {
-      statusUpdate.status = "Completed";
-    }
-
-    const loadId = toast.loading("Updating project status...");
-    try {
-      await updateProject(selectedProject.id, {
-        milestones: updatedMilestones,
-        progress: computedProgress,
-        ...statusUpdate
-      });
-      const targetM = updatedMilestones.find(m => m.id === milestoneId);
-      toast.success(`${targetM?.title || 'Milestone'} is now ${targetM?.isCompleted ? 'Completed ✅' : 'Pending ⏳'}`, { id: loadId });
-    } catch (err) {
-      console.error("Error setting milestone state:", err);
-      toast.error("Failed to update milestones", { id: loadId });
     }
   };
 
@@ -1031,51 +969,23 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                           </div>
                         </div>
 
-                        {/* Project Milestones and Phase Breakdown */}
+                        {/* Phase Details */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                            <div className="bg-white/5 p-12 rounded-[3rem] border border-white/5">
-                              <div className="flex justify-between items-center mb-8">
-                                <h3 className="text-xl font-black uppercase italic tracking-tighter">Project Milestones</h3>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">(Live Sync)</span>
-                              </div>
-                              <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-6 border-b border-white/5 pb-4 leading-normal">
-                                Click checkmarks to toggle milestone completion. Your overall progress bar will calculate and update instantly.
-                              </p>
-                              <div className="space-y-6">
-                                {getProjectMilestones(selectedProject).map((milestone) => (
-                                  <div 
-                                    key={milestone.id} 
-                                    onClick={() => toggleMilestone(milestone.id)}
-                                    className="flex gap-6 items-start p-5 bg-black/40 rounded-3xl border border-white/5 hover:border-[#c7c42a]/30 hover:bg-white/[0.01] cursor-pointer transition-all group"
-                                  >
-                                    <div className="pt-1 select-none">
-                                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 transition-all ${
-                                        milestone.isCompleted 
-                                          ? 'bg-[#c7c42a] border-[#c7c42a] text-black shadow-[0_0_12px_rgba(199,196,42,0.4)]' 
-                                          : 'border-white/20 group-hover:border-[#c7c42a] text-transparent'
-                                      }`}>
-                                        <Check size={14} strokeWidth={3} className={milestone.isCompleted ? 'block' : 'hidden group-hover:block group-hover:text-[#c7c42a]/60'} />
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="flex-1 space-y-1">
-                                      <div className="flex justify-between items-start gap-4">
-                                        <h4 className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                                          milestone.isCompleted ? 'text-white' : 'text-white/40'
-                                        }`}>
-                                          {milestone.title}
-                                        </h4>
-                                        {milestone.isCompleted && milestone.completedAt && (
-                                          <span className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.2em] bg-[#c7c42a]/10 px-2 py-0.5 rounded-full shrink-0">
-                                            Completed
-                                          </span>
-                                        )}
-                                      </div>
-                                      <p className={`text-[10px] leading-relaxed transition-colors ${
-                                        milestone.isCompleted ? 'text-white/50' : 'text-white/20'
-                                      }`}>
-                                        {milestone.description}
-                                      </p>
+                              <h3 className="text-xl font-black uppercase italic tracking-tighter mb-8">Phase Breakdown</h3>
+                              <div className="space-y-8">
+                                {[
+                                  { step: '01', title: 'Consultation', desc: 'Project architecture and scope lockdown.', done: selectedProject.progress >= 20 },
+                                  { step: '02', title: 'UI/UX Design', desc: 'Visual language and interface engineering.', done: selectedProject.progress >= 40 },
+                                  { step: '03', title: 'Development', desc: 'Core logic and feature implementation.', done: selectedProject.progress >= 70 },
+                                  { step: '04', title: 'Quality Assurance', desc: 'Refinement and performance testing.', done: selectedProject.progress >= 90 },
+                                  { step: '05', title: 'Live Deployment', desc: 'Final production roll-out and scaling.', done: selectedProject.progress >= 100 },
+                                ].map((phase, i) => (
+                                  <div key={i} className="flex gap-8 items-start group">
+                                    <div className={`text-2xl font-black italic transition-colors ${phase.done ? 'text-[#c7c42a]' : 'text-white/10'}`}>{phase.step}</div>
+                                    <div className="pt-1">
+                                      <h4 className={`text-sm font-black uppercase italic tracking-widest transition-colors ${phase.done ? 'text-white' : 'text-white/20'}`}>{phase.title}</h4>
+                                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">{phase.desc}</p>
                                     </div>
                                   </div>
                                 ))}
