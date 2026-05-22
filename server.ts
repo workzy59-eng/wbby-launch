@@ -611,21 +611,6 @@ apiRouter.get("/payment-status/:paymentLinkId", async (req, res) => {
   }
 });
 
-// Sitemap and Robots.txt explicit static handlers
-app.get("/sitemap.xml", (req, res) => {
-  const filePath = process.env.NODE_ENV === "production"
-    ? path.join(process.cwd(), "dist/sitemap.xml")
-    : path.join(process.cwd(), "public/sitemap.xml");
-  res.sendFile(filePath);
-});
-
-app.get("/robots.txt", (req, res) => {
-  const filePath = process.env.NODE_ENV === "production"
-    ? path.join(process.cwd(), "dist/robots.txt")
-    : path.join(process.cwd(), "public/robots.txt");
-  res.sendFile(filePath);
-});
-
 app.use("/api", apiRouter);
 
 async function startServer() {

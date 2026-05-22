@@ -21,9 +21,6 @@ const Resort = React.lazy(() => import('./pages/Resort'));
 const Autos = React.lazy(() => import('./pages/Autos'));
 const Cars = React.lazy(() => import('./pages/Cars'));
 const Clothing = React.lazy(() => import('./pages/Clothing'));
-const FoodCourt = React.lazy(() => import('./pages/FoodCourt'));
-const Salon = React.lazy(() => import('./pages/Salon'));
-const Cafe = React.lazy(() => import('./pages/Cafe'));
 const About = React.lazy(() => import('./pages/About'));
 const Contact = React.lazy(() => import('./pages/Contact'));
 const Services = React.lazy(() => import('./pages/Services'));
@@ -226,22 +223,6 @@ export default function App() {
                 <Route 
                   path="/portfolio/gym" 
                   element={<Gym />} 
-                />
-                <Route 
-                  path="/gyms" 
-                  element={<Gym />} 
-                />
-                <Route 
-                  path="/restaurants" 
-                  element={<FoodCourt />} 
-                />
-                <Route 
-                  path="/cafes" 
-                  element={<Cafe />} 
-                />
-                <Route 
-                  path="/salons" 
-                  element={<Salon />} 
                 />
                 <Route 
                   path="/portfolio/resort" 
