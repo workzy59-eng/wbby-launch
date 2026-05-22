@@ -427,10 +427,6 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
   };
 
   const handleFileUpload = async (files: FileList | null) => {
-    if (profile?.role !== 'admin') {
-      toast.error("File upload is restricted to administrators only.");
-      return;
-    }
     if (!files || files.length === 0 || isSending) return;
     
     const fileList = Array.from(files);
@@ -628,7 +624,7 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
       {/* Messages Area */}
       <div 
         ref={scrollRef}
-        onDragOver={(e) => { e.preventDefault(); if (profile?.role === 'admin') setIsHoveringDrop(true); }}
+        onDragOver={(e) => { e.preventDefault(); setIsHoveringDrop(true); }}
         className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8 space-y-4 md:space-y-6 scrollbar-hide bg-[#rgba(255,255,255,0.05)] relative"
         style={{
           backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
@@ -995,26 +991,22 @@ export default function ChatSystem({ projectId, isDirect, recipientUser, profile
           onSubmit={handleSendMessage}
           className="max-w-5xl mx-auto flex items-center gap-2"
         >
-          {profile?.role === 'admin' && (
-            <>
-              <input 
-                ref={fileInputRef}
-                type="file" 
-                className="hidden" 
-                multiple 
-                onChange={(e) => handleFileUpload(e.target.files)}
-              />
-              
-              <button 
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 md:p-3 text-yellow-400 hover:bg-yellow-400/10 rounded-xl transition-all"
-                title="Upload Files"
-              >
-                <Paperclip size={20} className="md:w-6 md:h-6" />
-              </button>
-            </>
-          )}
+          <input 
+            ref={fileInputRef}
+            type="file" 
+            className="hidden" 
+            multiple 
+            onChange={(e) => handleFileUpload(e.target.files)}
+          />
+          
+          <button 
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 md:p-3 text-yellow-400 hover:bg-yellow-400/10 rounded-xl transition-all"
+            title="Upload Files"
+          >
+            <Paperclip size={20} className="md:w-6 md:h-6" />
+          </button>
 
           <div className="flex-1 relative min-w-0">
             <input 
