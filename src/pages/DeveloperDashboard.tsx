@@ -219,6 +219,26 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       // Calculate total hours from attendance
       const total = (data as Attendance[]).reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
       setTotalHours(total);
+
+      // Check for consecutive absences
+      const today = new Date();
+      const oneDay = 24 * 60 * 60 * 1000;
+      let consecutiveAbsences = 0;
+      
+      for (let i = 0; i < 3; i++) {
+        const checkDate = new Date(today.getTime() - (i * oneDay));
+        const record = (data as Attendance[]).find(a => {
+          const d = new Date(a.date);
+          return d.getDate() === checkDate.getDate() && 
+                 d.getMonth() === checkDate.getMonth() && 
+                 d.getFullYear() === checkDate.getFullYear();
+        });
+        if (!record) consecutiveAbsences++;
+      }
+
+      if (consecutiveAbsences >= 3) {
+        setIsSuspended(true);
+      }
     });
 
     getLeaveRequests(user.uid).then(data => {
@@ -1501,7 +1521,10 @@ Description: ${project.description || 'No description provided.'}
                             </div>
                          </div>
 
-
+                         <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-2xl">
+                            <p className="text-[10px] font-black uppercase text-red-500 tracking-[0.2em] mb-2">Safety Lock Status</p>
+                            <p className="text-xs font-bold text-white/60 uppercase leading-relaxed italic">3 Consecutive Absences will trigger automatic profile lockout. Maintain active status code.</p>
+                         </div>
                       </div>
                     </div>
 
@@ -2404,6 +2427,20 @@ Description: ${project.description || 'No description provided.'}
                 <p className="text-xs font-bold text-white/60 text-center uppercase tracking-widest leading-relaxed">
                   Enter financial parameters to unlock the 'Accept Mission' command. Intel must be committed to the database first.
                 </p>
+
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Internal Sales Code</label>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                    <input 
+                      type="text" 
+                      value={salesCode || ''}
+                      onChange={(e) => setSalesCode(e.target.value)}
+                      placeholder="e.g. sales@GB"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                    />
+                  </div>
+                </div>
                 
                 <div className="space-y-2">
                   <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Razorpay Payment Link</label>
@@ -2452,7 +2489,7 @@ Description: ${project.description || 'No description provided.'}
                   {isSubmitting ? 'Syncing...' : isFinancialIntelSaved ? 'INTELLIGENCE SAVED ✓' : 'SAVE FINANCIAL INTEL'}
                 </button>
 
-                {isFinancialIntelSaved && (
+                {isFinancialIntelSaved && salesCode?.trim().toLowerCase() === 'sales@gb' && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}

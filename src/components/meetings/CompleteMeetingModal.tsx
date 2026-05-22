@@ -16,7 +16,7 @@ export const CompleteMeetingModal: React.FC<CompleteMeetingModalProps> = ({
   onClose, 
   onConfirm 
 }) => {
-  const salesCode = 'sales@GB';
+  const [salesCode, setSalesCode] = useState('');
   const [domainPrice, setDomainPrice] = useState<number>(0);
   const [paymentLink, setPaymentLink] = useState('');
   const [project, setProject] = useState<Project | null>(null);
@@ -53,11 +53,25 @@ export const CompleteMeetingModal: React.FC<CompleteMeetingModalProps> = ({
   }, [meeting.projectId, meeting.clientId]);
 
   const handleConfirm = async () => {
-    if (!domainPrice || !paymentLink) {
-      toast.error('Developer must enter domain price and payment link');
+    if (salesCode.trim().toLowerCase() === 'sales@gb') {
+      if (!domainPrice || !paymentLink) {
+        toast.error('Developer must enter domain price and payment link');
+        return;
+      }
+      setShowQRSection(true);
       return;
     }
-    setShowQRSection(true);
+    
+    // If not sales@GB, or if we want to proceed with normal completion
+    setSubmitting(true);
+    try {
+      await onConfirm(salesCode, domainPrice, paymentLink);
+      onClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getQRImage = () => {
@@ -114,42 +128,62 @@ export const CompleteMeetingModal: React.FC<CompleteMeetingModalProps> = ({
         <div className="space-y-6">
           {!showQRSection ? (
             <>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] ml-4">Domain Price (₹)</label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                    <input 
-                      type="number" 
-                      value={domainPrice || ''}
-                      onChange={(e) => setDomainPrice(Number(e.target.value))}
-                      placeholder="e.g. 1500"
-                      className="w-full bg-white/5 border border-[#c7c42a]/30 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] ml-4">Razorpay Payment Link</label>
-                  <div className="relative">
-                    <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                    <input 
-                      type="url" 
-                      value={paymentLink}
-                      onChange={(e) => setPaymentLink(e.target.value)}
-                      placeholder="https://rzp.io/l/..."
-                      className="w-full bg-white/5 border border-[#c7c42a]/30 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
-                    />
-                  </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Sales Code (Internal)</label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                  <input 
+                    type="text" 
+                    value={salesCode}
+                    onChange={(e) => setSalesCode(e.target.value)}
+                    placeholder="Enter sales code..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                  />
                 </div>
               </div>
+
+              {salesCode === 'sales@GB' && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="space-y-6 overflow-hidden"
+                >
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] ml-4">Domain Price (₹)</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                      <input 
+                        type="number" 
+                        value={domainPrice || ''}
+                        onChange={(e) => setDomainPrice(Number(e.target.value))}
+                        placeholder="e.g. 1500"
+                        className="w-full bg-white/5 border border-[#c7c42a]/30 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] ml-4">Razorpay Payment Link</label>
+                    <div className="relative">
+                      <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                      <input 
+                        type="url" 
+                        value={paymentLink}
+                        onChange={(e) => setPaymentLink(e.target.value)}
+                        placeholder="https://rzp.io/l/..."
+                        className="w-full bg-white/5 border border-[#c7c42a]/30 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               <button 
                 onClick={handleConfirm}
                 disabled={submitting}
                 className="w-full py-5 bg-[#c7c42a] text-black rounded-3xl font-black uppercase italic tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(199,196,42,0.3)]"
               >
-                {submitting ? 'Processing...' : 'Show QR & Close'}
+                {submitting ? 'Processing...' : salesCode.trim().toLowerCase() === 'sales@gb' ? 'Show QR & Close' : 'Confirm Close'}
               </button>
             </>
           ) : (

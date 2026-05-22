@@ -28,7 +28,6 @@ import {
   ShieldCheck, 
   AlertCircle, 
   Mail,
-  ExternalLink,
   TrendingUp,
   Loader2,
   ChevronDown,
@@ -114,55 +113,10 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   const [settings, setSettings] = useState<SystemSettings | null>(null);
-  const [currentPaymentLinkId, setCurrentPaymentLinkId] = useState<string | null>(null);
-  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [isCreatingLink, setIsCreatingLink] = useState(false);
 
   useEffect(() => {
     getSystemSettings().then(setSettings);
   }, []);
-
-  // UseEffect to check payment status dynamically
-  useEffect(() => {
-    if (!currentPaymentLinkId || !isWaitingForPayment) return;
-
-    console.log(`Setting up payment status polling for link: ${currentPaymentLinkId}`);
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/payment-status/${currentPaymentLinkId}`);
-        const data = await response.json();
-        if (data.success && data.status === 'paid') {
-          console.log("Polling success: Payment confirmed paid!");
-          clearInterval(interval);
-          setPaymentSuccess(true);
-          
-          // Close tracking window and refresh user data after show state
-          setTimeout(() => {
-            setIsWaitingForPayment(false);
-            setPaymentSuccess(false);
-            setCurrentPaymentLinkId(null);
-            
-            // Re-fetch projects to refresh dashboard status and unlock
-            if (user?.uid) {
-              const unsubscribe = getProjects((pjs) => {
-                setProjects(pjs);
-                if (selectedProject) {
-                  const updatedProj = pjs.find((p: Project) => p.id === selectedProject.id);
-                  if (updatedProj) setSelectedProject(updatedProj);
-                }
-              }, user.uid, profile?.role);
-              unsubscribe();
-            }
-          }, 3500);
-        }
-      } catch (err) {
-        console.error("Error polling payment status:", err);
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [currentPaymentLinkId, isWaitingForPayment, user?.uid, selectedProject]);
 
   useEffect(() => {
     notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
@@ -200,64 +154,56 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
     const plan = (project.plan || 'basic').toLowerCase();
 
-    // Standard pricing rates fallback
-    let numericalAmount = 15000;
-    if (plan.includes('basic') || plan.includes('starter')) {
-      numericalAmount = 7500;
-    } else if (plan.includes('premium') || plan.includes('enterprise') || plan.includes('pro')) {
-      numericalAmount = 30000;
+    // 1. Prefer broad project-specific paymentLink if defined
+    if (project.paymentLink) {
+      window.open(project.paymentLink, '_blank');
+      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
+      toast.success('Opening custom payment link...');
+      return;
     }
 
-    // Try parsing from loaded settings if available
-    try {
-      const activePrice = plan.includes('premium') || plan.includes('pro') || plan.includes('enterprise')
-        ? settings?.pricing?.enterprise || 30000
-        : plan.includes('standard')
-          ? settings?.pricing?.pro || 15000
-          : settings?.pricing?.starter || 7500;
-      numericalAmount = Number(activePrice);
-    } catch (_) {}
+    // 2. Prefer tiered project-specific payment links if defined
+    if (project.paymentLinkPremium && (plan.includes('premium') || plan.includes('pro') || plan.includes('enterprise'))) {
+      window.open(project.paymentLinkPremium, '_blank');
+      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
+      toast.success('Opening Premium payment link...');
+      return;
+    }
 
-    setIsCreatingLink(true);
-    const toastId = toast.loading('Generating secure payment link...');
+    if (project.paymentLinkBasic && (plan.includes('basic') || plan.includes('starter') || plan.includes('standard'))) {
+      window.open(project.paymentLinkBasic, '_blank');
+      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
+      toast.success('Opening payment link...');
+      return;
+    }
 
-    try {
-      const response = await fetch('/api/razorpay/create-payment-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectId: project.id,
-          plan: plan,
-          amount: numericalAmount,
-          customerName: profile?.displayName || user?.displayName || "Customer",
-          customerEmail: profile?.email || user?.email || "customer@example.com",
-          customerPhone: profile?.phone || project?.userPhone || "",
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok && data.success && data.paymentLink) {
-        toast.success('Secure link generated! Opening payment panel...', { id: toastId });
-        
-        // Update local state and trigger overlay Tracking
-        setCurrentPaymentLinkId(data.paymentLinkId);
-        setIsWaitingForPayment(true);
-        setPaymentSuccess(false);
-
-        // Update local project model so callback triggers if reopened
-        project.paymentLink = data.paymentLink;
-
-        // Open checkout window
-        window.open(data.paymentLink, '_blank');
+    // 3. System Settings defaults
+    let paymentUrl = '';
+    
+    if (settings?.paymentLinks) {
+      if (plan.includes('premium') || plan.includes('enterprise') || plan.includes('pro')) {
+        paymentUrl = settings.paymentLinks.premium;
+      } else if (plan.includes('standard')) {
+        paymentUrl = settings.paymentLinks.standard;
       } else {
-        throw new Error(data.error || 'Failed to generate secure Razorpay link');
+        paymentUrl = settings.paymentLinks.basic;
       }
-    } catch (err: any) {
-      console.error("Failed to generate payment link:", err);
-      toast.error(err.message || 'Payment initiation failed. Please try again.', { id: toastId });
-    } finally {
-      setIsCreatingLink(false);
+    } 
+
+    // 4. Final Hardcoded Fallbacks (only if settings failed)
+    if (!paymentUrl) {
+      if (plan.includes('standard')) {
+        paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
+      } else if (plan.includes('pro') || plan.includes('premium')) {
+        paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
+      } else {
+        paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic
+      }
     }
+
+    window.open(paymentUrl, '_blank');
+    if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
+    toast.success('Opening payment link... Please refresh page after payment.');
   };
 
   const stats = useMemo(() => {
@@ -1707,116 +1653,6 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   No, Keep It
                 </button>
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Dynamic Payment Verification overlay */}
-      <AnimatePresence>
-        {isWaitingForPayment && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative max-w-lg w-full bg-[#0a0a0a] rounded-[3.5rem] border border-white/10 p-12 text-center shadow-[0_0_100px_rgba(199,196,42,0.1)] flex flex-col items-center space-y-8"
-            >
-              {!paymentSuccess ? (
-                <>
-                  <div className="relative">
-                    {/* Ring animation */}
-                    <div className="w-24 h-24 rounded-full border-4 border-[#c7c42a]/20 border-t-[#c7c42a] animate-spin" />
-                    <div className="absolute inset-0 flex items-center justify-center text-[#c7c42a]">
-                      <CreditCard size={32} className="animate-pulse" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-4xl font-black uppercase italic tracking-tighter text-white leading-none">
-                      Waiting for Payment
-                    </h3>
-                    <p className="text-white/40 text-sm font-medium italic max-w-sm">
-                      Please complete your payment in the opened tab. We are verifying the transaction securely in real-time...
-                    </p>
-                  </div>
-
-                  <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-left space-y-3">
-                    <div className="flex justify-between text-xs font-mono uppercase text-white/40">
-                      <span>Project ID</span>
-                      <span className="text-white font-semibold">{selectedProject?.id || '—'}</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-mono uppercase text-white/40">
-                      <span>Plan Selected</span>
-                      <span className="text-[#c7c42a] font-bold">{selectedProject?.plan?.toUpperCase() || '—'}</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-mono uppercase text-white/40">
-                      <span>Check Status</span>
-                      <span className="text-white flex items-center gap-1.5 font-bold">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                        </span>
-                        Every 5 Seconds
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 w-full">
-                    {selectedProject?.paymentLink && (
-                      <button
-                        onClick={() => window.open(selectedProject.paymentLink, '_blank')}
-                        className="w-full py-4 bg-white/5 border border-[#c7c42a]/30 hover:bg-[#c7c42a]/10 text-white rounded-2xl font-black text-xs uppercase tracking-widest italic transition-all flex items-center justify-center gap-2"
-                      >
-                        <ExternalLink size={14} /> Reopen Payment Page
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setIsWaitingForPayment(false);
-                        setCurrentPaymentLinkId(null);
-                      }}
-                      className="text-xs uppercase font-black text-white/20 hover:text-white/50 tracking-widest transition-colors font-mono cursor-pointer"
-                    >
-                      Cancel Tracking
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                    className="w-24 h-24 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400"
-                  >
-                    <ShieldCheck size={52} />
-                  </motion.div>
-
-                  <div className="space-y-3">
-                    <h3 className="text-4xl font-black uppercase italic tracking-tighter text-green-400 leading-none">
-                      Payment Successful
-                    </h3>
-                    <p className="text-[#c7c42a] text-xl font-bold uppercase italic tracking-wider">
-                      Plan Activated
-                    </p>
-                    <p className="text-white/40 text-sm font-medium italic max-w-sm pt-2">
-                      Fantastic! Your build request has been initialized. Unlocking your development workspace right now...
-                    </p>
-                  </div>
-
-                  <div className="w-full bg-green-500/5 border border-green-500/10 rounded-2xl p-6 text-left space-y-2">
-                    <div className="flex justify-between text-xs font-mono uppercase text-green-400/60">
-                      <span>Payment Status</span>
-                      <span className="text-green-400 font-bold">PAID</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-mono uppercase text-[#c7c42a]/60">
-                      <span>Build Status</span>
-                      <span className="text-white font-medium">Under Review</span>
-                    </div>
-                  </div>
-                </>
-              )}
             </motion.div>
           </div>
         )}
