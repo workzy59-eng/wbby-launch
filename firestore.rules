@@ -110,6 +110,22 @@ service cloud.firestore {
       allow read, update: if isAuth() && (request.auth.uid in existing().participants || isAdmin() || isWhitelistedDeveloper());
       allow create: if isAuth() && request.auth.uid in incoming().participants;
 
+      match /typing/{uid} {
+        allow read: if isAuth() && (
+          !exists(/databases/$(database)/documents/conversations/$(conversationId)) ||
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
+          isAdmin() ||
+          isWhitelistedDeveloper()
+        );
+
+        allow write: if isAuth() && request.auth.uid == uid && (
+          !exists(/databases/$(database)/documents/conversations/$(conversationId)) ||
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
+          isAdmin() ||
+          isWhitelistedDeveloper()
+        );
+      }
+
       match /messages/{messageId} {
         allow read: if isAuth() && (
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
