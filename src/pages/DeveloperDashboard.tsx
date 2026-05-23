@@ -213,36 +213,63 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     });
     getDeveloperStats(user.uid).then(setDevStats);
     
-    // Fetch detailed attendance for calendar
-    getAttendance(user.uid).then(data => {
-      setAttendance(data as Attendance[]);
+    // Fetch detailed attendance and leave requests for calendar and suspension check
+    Promise.all([
+      getAttendance(user.uid),
+      getLeaveRequests(user.uid)
+    ]).then(([attendanceData, leaveData]) => {
+      setAttendance(attendanceData as Attendance[]);
+      setLeaveRequests(leaveData as LeaveRequest[]);
+      
       // Calculate total hours from attendance
-      const total = (data as Attendance[]).reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
+      const total = (attendanceData as Attendance[]).reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
       setTotalHours(total);
 
-      // Check for consecutive absences
+      // Check for consecutive absences (excluding days with approved/pending holidays)
       const today = new Date();
       const oneDay = 24 * 60 * 60 * 1000;
       let consecutiveAbsences = 0;
       
       for (let i = 0; i < 3; i++) {
         const checkDate = new Date(today.getTime() - (i * oneDay));
-        const record = (data as Attendance[]).find(a => {
+        const record = (attendanceData as Attendance[]).find(a => {
           const d = new Date(a.date);
           return d.getDate() === checkDate.getDate() && 
                  d.getMonth() === checkDate.getMonth() && 
                  d.getFullYear() === checkDate.getFullYear();
         });
-        if (!record) consecutiveAbsences++;
+
+        const hasApprovedLeave = (leaveData as LeaveRequest[]).some(l => {
+          const lDate = typeof l.startDate === 'string' 
+            ? l.startDate 
+            : (l.startDate as any)?.toDate?.()?.toISOString().split('T')[0];
+          
+          const lEnd = typeof l.endDate === 'string'
+            ? l.endDate
+            : (l.endDate as any)?.toDate?.()?.toISOString().split('T')[0] || lDate;
+          
+          if (!lDate) return false;
+          
+          const checkTime = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate()).getTime();
+          const startTime = new Date(lDate).getTime();
+          const endTime = new Date(lEnd).getTime();
+          
+          const isWithin = checkTime >= startTime && checkTime <= endTime;
+          const isValidStatus = l.status === 'approved' || l.status === 'pending';
+          
+          return isWithin && isValidStatus;
+        });
+
+        if (!record && !hasApprovedLeave) {
+          consecutiveAbsences++;
+        }
       }
 
       if (consecutiveAbsences >= 3) {
         setIsSuspended(true);
       }
-    });
-
-    getLeaveRequests(user.uid).then(data => {
-      setLeaveRequests(data as LeaveRequest[]);
+    }).catch(err => {
+      console.error("Error loading dashboard data:", err);
     });
 
     if (profile?.status === 'suspended') {
