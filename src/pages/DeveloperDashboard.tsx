@@ -225,48 +225,79 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
       const total = (attendanceData as Attendance[]).reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
       setTotalHours(total);
 
-      // Check for consecutive absences (excluding days with approved/pending holidays)
+      // Check for consecutive absences (excluding days with approved/pending holidays, and days before registration)
       const today = new Date();
       const oneDay = 24 * 60 * 60 * 1000;
       let consecutiveAbsences = 0;
-      
-      for (let i = 0; i < 3; i++) {
-        const checkDate = new Date(today.getTime() - (i * oneDay));
-        const record = (attendanceData as Attendance[]).find(a => {
-          const d = new Date(a.date);
-          return d.getDate() === checkDate.getDate() && 
-                 d.getMonth() === checkDate.getMonth() && 
-                 d.getFullYear() === checkDate.getFullYear();
-        });
 
-        const hasApprovedLeave = (leaveData as LeaveRequest[]).some(l => {
-          const lDate = typeof l.startDate === 'string' 
-            ? l.startDate 
-            : (l.startDate as any)?.toDate?.()?.toISOString().split('T')[0];
-          
-          const lEnd = typeof l.endDate === 'string'
-            ? l.endDate
-            : (l.endDate as any)?.toDate?.()?.toISOString().split('T')[0] || lDate;
-          
-          if (!lDate) return false;
-          
-          const checkTime = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate()).getTime();
-          const startTime = new Date(lDate).getTime();
-          const endTime = new Date(lEnd).getTime();
-          
-          const isWithin = checkTime >= startTime && checkTime <= endTime;
-          const isValidStatus = l.status === 'approved' || l.status === 'pending';
-          
-          return isWithin && isValidStatus;
-        });
-
-        if (!record && !hasApprovedLeave) {
-          consecutiveAbsences++;
+      const getRegistrationDate = (): Date | null => {
+        if (profile?.createdAt) {
+          if (typeof profile.createdAt === 'string') {
+            return new Date(profile.createdAt);
+          } else if (profile.createdAt && typeof (profile.createdAt as any).toDate === 'function') {
+            return (profile.createdAt as any).toDate();
+          }
         }
-      }
+        if (user?.metadata?.creationTime) {
+          return new Date(user.metadata.creationTime);
+        }
+        return null;
+      };
 
-      if (consecutiveAbsences >= 3) {
-        setIsSuspended(true);
+      const regDate = getRegistrationDate();
+      const isNewUser = (attendanceData as Attendance[]).length === 0 || 
+        (regDate && (today.getTime() - regDate.getTime()) < 3 * 24 * 60 * 60 * 1000);
+
+      if (!isNewUser) {
+        for (let i = 0; i < 3; i++) {
+          const checkDate = new Date(today.getTime() - (i * oneDay));
+          
+          // Don't count days before registration as absences
+          const checkDateTime = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate()).getTime();
+          const regDateTime = regDate 
+            ? new Date(regDate.getFullYear(), regDate.getMonth(), regDate.getDate()).getTime()
+            : 0;
+          
+          if (regDate && checkDateTime < regDateTime) {
+            continue; // Not registered yet on this day, skip counting as absence
+          }
+
+          const record = (attendanceData as Attendance[]).find(a => {
+            const d = new Date(a.date);
+            return d.getDate() === checkDate.getDate() && 
+                   d.getMonth() === checkDate.getMonth() && 
+                   d.getFullYear() === checkDate.getFullYear();
+          });
+
+          const hasApprovedLeave = (leaveData as LeaveRequest[]).some(l => {
+            const lDate = typeof l.startDate === 'string' 
+              ? l.startDate 
+              : (l.startDate as any)?.toDate?.()?.toISOString().split('T')[0];
+            
+            const lEnd = typeof l.endDate === 'string'
+              ? l.endDate
+              : (l.endDate as any)?.toDate?.()?.toISOString().split('T')[0] || lDate;
+            
+            if (!lDate) return false;
+            
+            const checkTime = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate()).getTime();
+            const startTime = new Date(lDate).getTime();
+            const endTime = new Date(lEnd).getTime();
+            
+            const isWithin = checkTime >= startTime && checkTime <= endTime;
+            const isValidStatus = l.status === 'approved' || l.status === 'pending';
+            
+            return isWithin && isValidStatus;
+          });
+
+          if (!record && !hasApprovedLeave) {
+            consecutiveAbsences++;
+          }
+        }
+
+        if (consecutiveAbsences >= 3) {
+          setIsSuspended(true);
+        }
       }
     }).catch(err => {
       console.error("Error loading dashboard data:", err);
