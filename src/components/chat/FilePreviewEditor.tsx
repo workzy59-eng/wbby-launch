@@ -148,30 +148,6 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
         <button onClick={onCancel} className="p-3 text-white/70 hover:text-white transition-all bg-white/5 rounded-full">
           <X size={24} />
         </button>
-        
-        <div className={`flex items-center gap-1 md:gap-4 overflow-x-auto scrollbar-hide px-2 ${!isImage(files[currentIndex]) ? 'opacity-20 pointer-events-none' : ''}`}>
-          {[
-            { icon: RotateCw, label: 'Rotate', action: handleRotate },
-            { icon: Wand2, label: 'Filter', action: handleFilter },
-            { icon: Pencil, label: 'Draw', action: () => toolFeedback('Drawing') },
-            { icon: Type, label: 'Text', action: () => toolFeedback('Text') },
-            { icon: Square, label: 'Shapes', action: () => toolFeedback('Shapes') },
-            { icon: Grid3X3, label: 'Pixelate', action: () => toolFeedback('Pixelation') },
-            { icon: Smile, label: 'Emoji', action: () => toolFeedback('Emoji') },
-            { icon: StickyNote, label: 'Stickers', action: () => toolFeedback('Stickers') },
-            { icon: Monitor, label: 'HD', action: handleHDMode },
-            { icon: Download, label: 'Save', action: handleDownload }
-          ].map((tool, i) => (
-            <button 
-              key={i} 
-              onClick={tool.action}
-              className="p-2 text-white/70 hover:text-white transition-all rounded-full hover:bg-white/10"
-              title={tool.label}
-            >
-              <tool.icon size={20} />
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Main Preview Area */}
@@ -230,12 +206,6 @@ export default function FilePreviewEditor({ files, onCancel, onSend, onAddMore }
               )}
             </button>
           ))}
-          <button 
-            onClick={onAddMore}
-            className="w-14 h-14 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all hover:bg-white/10"
-          >
-            <Plus size={24} />
-          </button>
         </div>
 
         {/* Caption Bar */}

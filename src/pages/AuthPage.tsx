@@ -148,7 +148,7 @@ export default function AuthPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@webbylaunch.com"
+                  placeholder="name@webbylaunch.vercel.app"
                   className="w-full bg-[#050505] border border-white/5 rounded-none py-6 pl-14 pr-6 text-white focus:border-[#c7c42a] focus:ring-0 outline-none transition-all font-mono text-sm"
                   required
                 />

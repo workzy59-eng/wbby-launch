@@ -250,7 +250,7 @@ export const createUserProfile = async (user: FirebaseUser, additionalData: any 
   try {
     let role = 'client';
     const adminEmails = [ADMIN_EMAIL.toLowerCase()];
-    const devEmails = [DEVELOPER_EMAIL.toLowerCase(), 'sain17296174@gmail.com'];
+    const devEmails = [DEVELOPER_EMAIL.toLowerCase(), 'sain17296174@gmail.com', 'singhhritik560@gmail.com'];
     
     if (adminEmails.includes(user.email?.toLowerCase() || '')) {
       role = 'admin';
@@ -1074,7 +1074,7 @@ export const sendMessage = async (projectId: string, messageData: any) => {
       updatedAt: serverTimestamp()
     };
 
-    const docRef = await addDoc(collection(db, 'conversations', projectId, 'messages'), finalData);
+    const docRef = await addDoc(collection(db, 'projects', projectId, 'messages'), finalData);
 
     // Update project metadata
     await updateDoc(doc(db, 'projects', projectId), {

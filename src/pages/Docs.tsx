@@ -121,7 +121,7 @@ const DOCS_CONTENT = {
     sections: [
       {
         subtitle: 'Need Help?',
-        content: 'If you have any questions or need further assistance, please reach out to our support team at support@webbylaunch.com or use the live chat in your dashboard.'
+        content: 'If you have any questions or need further assistance, please reach out to our support team at support@webbylaunch.vercel.app or use the live chat in your dashboard.'
       }
     ]
   }

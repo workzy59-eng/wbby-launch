@@ -58,7 +58,7 @@ export default function FileDropZone({ onUpload, isUploading }: FileDropZoneProp
       <input 
         type="file" 
         id="chat-file-upload" 
-        className="hidden" 
+        className="sr-only" 
         multiple 
         onChange={handleFileInput}
       />

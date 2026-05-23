@@ -256,7 +256,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   }, [user?.uid]);
 
   useEffect(() => {
-    const devEmails = ['sain17296174@gmail.com'];
+    const devEmails = ['sain17296174@gmail.com', 'singhhritik560@gmail.com'];
     const adminEmails = [ADMIN_EMAIL];
     if (user?.email && (devEmails.includes(user.email.toLowerCase()) || adminEmails.includes(user.email.toLowerCase()))) {
       const hasSeen = localStorage.getItem(`dev_welcome_${user.uid}`);
@@ -2290,29 +2290,33 @@ Description: ${project.description || 'No description provided.'}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                        {selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl ? (
-                          <div 
-                            onClick={() => window.open(selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl, '_blank')}
-                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all"
+                          <a 
+                            href={selectedProjectForDrawer.logoUrl || (selectedProjectForDrawer as any).onboardingData?.logoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all text-inherit select-none"
                           >
                              <div className="flex items-center gap-3">
                                <ImageIcon size={16} className="text-black/40" />
-                               <span className="text-[10px] font-bold uppercase">Company Logo</span>
+                               <span className="text-[10px] font-bold uppercase text-black">Company Logo</span>
                              </div>
                              <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
-                          </div>
+                          </a>
                        ) : null}
 
                        {selectedProjectForDrawer.documentsUrl || (selectedProjectForDrawer as any).onboardingData?.documentsUrl ? (
-                          <div 
-                            onClick={() => window.open(selectedProjectForDrawer.documentsUrl || (selectedProjectForDrawer as any).onboardingData?.documentsUrl, '_blank')}
-                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all"
+                          <a 
+                            href={selectedProjectForDrawer.documentsUrl || (selectedProjectForDrawer as any).onboardingData?.documentsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-4 bg-black/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-black/10 transition-all text-inherit select-none"
                           >
                              <div className="flex items-center gap-3">
                                <FileText size={16} className="text-black/40" />
-                               <span className="text-[10px] font-bold uppercase">Business Assets</span>
+                               <span className="text-[10px] font-bold uppercase text-black">Business Assets</span>
                              </div>
                              <Download size={12} className="text-black/20 group-hover:text-black transition-colors" />
-                          </div>
+                          </a>
                        ) : null}
 
                        {!selectedProjectForDrawer.logoUrl && !(selectedProjectForDrawer as any).onboardingData?.logoUrl && 

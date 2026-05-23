@@ -59,7 +59,7 @@ export const downloadIcsFile = (meeting: Meeting, attendees: string[] = []) => {
     'VERSION:2.0',
     'PRODID:-//WebbyLaunch//Meeting Scheduler//EN',
     'BEGIN:VEVENT',
-    `UID:${meeting.id}@webbylaunch.com`,
+    `UID:${meeting.id}@webbylaunch.vercel.app`,
     `DTSTAMP:${formatDate(new Date())}`,
     `DTSTART:${formatDate(startDate)}`,
     `DTEND:${formatDate(endDate)}`,

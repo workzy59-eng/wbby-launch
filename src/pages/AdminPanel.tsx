@@ -3037,7 +3037,7 @@ Description: ${viewingProject.description || 'No description provided.'}
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-4 italic">Email Protocol</label>
                     <input 
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a]/50 transition-all placeholder:text-white/10"
-                      placeholder="dev@webbylaunch.com"
+                      placeholder="dev@webbylaunch.vercel.app"
                       value={inviteForm.email}
                       onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
                     />

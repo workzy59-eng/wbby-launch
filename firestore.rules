@@ -34,7 +34,8 @@ service cloud.firestore {
         isAdmin() ||
         request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
         (request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'sain17296174@gmail.com'
+          request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
+          request.auth.token.email.lower() == 'singhhritik560@gmail.com'
         ))
       );
     }
@@ -142,7 +143,16 @@ service cloud.firestore {
       }
 
       match /typing/{userId} {
-        allow read: if isAuth() && (isAdmin() || isWhitelistedDeveloper() || conversationId.contains(request.auth.uid));
+        allow read: if isAuth() && (
+          isAdmin() || 
+          isWhitelistedDeveloper() || 
+          conversationId.matches('.*' + request.auth.uid + '.*') ||
+          (exists(/databases/$(database)/documents/projects/$(conversationId)) && (
+            get(/databases/$(database)/documents/projects/$(conversationId)).data.userId == request.auth.uid ||
+            get(/databases/$(database)/documents/projects/$(conversationId)).data.developerId == request.auth.uid ||
+            get(/databases/$(database)/documents/projects/$(conversationId)).data.assignedTo == request.auth.uid
+          ))
+        );
         allow write: if isAuth() && (userId == request.auth.uid || isAdmin() || isWhitelistedDeveloper());
       }
     }

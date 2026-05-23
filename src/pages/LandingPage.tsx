@@ -228,7 +228,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ type: "spring", stiffness: 100 }}
             className="inline-block px-6 py-2 bg-[#c7c42a] text-black text-[10px] font-black uppercase tracking-[0.6em] transform -skew-x-12 mb-12 italic shadow-[0_0_40px_rgba(199,196,42,0.4)]"
           >
-            Elite CLOTHING BUSINESS
+            WebbyLaunch Pro Platform
           </motion.div>
 
           <div className="relative mb-12">
@@ -275,7 +275,7 @@ export default function LandingPage({ user, profile }: LandingPageProps) {
             transition={{ delay: 0.8, duration: 1 }}
             className="text-xl md:text-3xl max-w-3xl mx-auto mb-16 font-medium text-white/40 leading-tight italic"
           >
-            Scale your <span className="text-white">CLOTHING BUSINESS</span> with high-performance digital infrastructure. Project-ready in under 52 hours.
+            Scale your <span className="text-white">brand and business</span> with WebbyLaunch high-performance digital infrastructure. Project-ready in under 52 hours.
           </motion.p>
 
           <motion.div 

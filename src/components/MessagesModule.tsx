@@ -203,6 +203,7 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'favorites'>('all');
   
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -238,20 +239,8 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
       // Admin can message everyone, others can message admin
       profiles = await getProfiles();
       
+      // Make client/developer dashboard function like admin in messages section (unrestricted)
       let filteredProfiles = profiles.filter(p => p.uid !== currentUser.uid) as UserProfile[];
-      
-      // Messaging Restriction: 
-      // Admin: Can message everyone
-      // Developer: Can message Admin and Clients
-      // Client: Can ONLY message their assigned Developer (enforced below in conversations)
-      if (profile?.role === 'developer') {
-        filteredProfiles = filteredProfiles.filter(p => p.role === 'admin' || p.role === 'client');
-      } else if (profile?.role === 'client') {
-        // Clients don't see anyone in the search list, they only use the pre-created dev convo
-        filteredProfiles = [];
-      } else if (profile?.role !== 'admin') {
-        filteredProfiles = filteredProfiles.filter(p => p.role === 'admin');
-      }
       
       setAllProfiles(filteredProfiles);
       return filteredProfiles;
@@ -289,61 +278,49 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         // Merge both
         let allEnriched = [...enrichedConvs, ...projectConvs];
 
-        // Filter out admin conversations for clients
-        if (profile?.role === 'client') {
-          allEnriched = allEnriched.filter(conv => {
-            if (conv.isProject) return true; // Project conversations are okay (usually with dev)
-            const recipientProfile = conv.recipientProfile;
-            if (recipientProfile?.role === 'admin') return false;
-            return true;
-          });
-
-          // Ensure they can see the Dev as separate support options if needed
-          const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
-          let devProfile: UserProfile | null = null;
-          
-          if (activeProjWithDev) {
-            const devId = activeProjWithDev.assignedTo || activeProjWithDev.developerId;
-            if (devId) {
-              const p = await getUserProfile(devId);
-              if (p) {
-                devProfile = p as UserProfile;
-                setAssignedDeveloper(devProfile);
-              }
+        // Ensure support and dev conversations are initialized if they do not exist
+        const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
+        let devProfile: UserProfile | null = null;
+        
+        if (activeProjWithDev) {
+          const devId = activeProjWithDev.assignedTo || activeProjWithDev.developerId;
+          if (devId) {
+            const p = await getUserProfile(devId);
+            if (p) {
+              devProfile = p as UserProfile;
+              setAssignedDeveloper(devProfile);
             }
           }
+        }
 
-          const admins = await getAdmins();
-          const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
-          
-          // 1. Developers/Admins see Support, Clients DO NOT as per request
-          if (profile?.role !== 'client' && mainAdmin) {
-            const adminConvExists = allEnriched.some(c => c.participants.includes(mainAdmin.uid));
-            if (!adminConvExists) {
-              allEnriched.push({
-                id: 'new_admin',
-                lastMessage: 'Contact Webby Launch Support',
-                lastMessageAt: null,
-                lastSenderId: '',
-                participants: [currentUser.uid, mainAdmin.uid],
-                recipientProfile: mainAdmin
-              } as any);
-            }
+        const admins = await getAdmins();
+        const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
+        
+        if (mainAdmin) {
+          const adminConvExists = allEnriched.some(c => c.participants.includes(mainAdmin.uid));
+          if (!adminConvExists) {
+            allEnriched.push({
+              id: 'new_admin',
+              lastMessage: 'Contact Webby Launch Support',
+              lastMessageAt: null,
+              lastSenderId: '',
+              participants: [currentUser.uid, mainAdmin.uid],
+              recipientProfile: mainAdmin
+            } as any);
           }
+        }
 
-          // 2. Ensure Developer is visible if assigned and no direct/project conversation already exists
-          if (devProfile) {
-            const devConvExists = allEnriched.some(c => c.participants.includes(devProfile!.uid) || c.id === activeProjWithDev!.id);
-            if (!devConvExists) {
-               allEnriched.push({
-                id: 'new_dev',
-                lastMessage: 'Message your Assigned Developer',
-                lastMessageAt: null,
-                lastSenderId: '',
-                participants: [currentUser.uid, devProfile.uid],
-                recipientProfile: devProfile
-              } as any);
-            }
+        if (devProfile) {
+          const devConvExists = allEnriched.some(c => c.participants.includes(devProfile!.uid) || c.id === activeProjWithDev!.id);
+          if (!devConvExists) {
+             allEnriched.push({
+              id: 'new_dev',
+              lastMessage: 'Message your Assigned Developer',
+              lastMessageAt: null,
+              lastSenderId: '',
+              participants: [currentUser.uid, devProfile.uid],
+              recipientProfile: devProfile
+            } as any);
           }
         }
         
@@ -422,9 +399,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         });
       });
 
-      unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
-        setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
-      });
+      if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin' && activeConversation.id !== 'new_dev') {
+        unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
+          setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
+        });
+      }
     } else {
       const recipientId = activeConversation.participants.find(id => id !== currentUser.uid);
       if (recipientId) {
@@ -446,9 +425,11 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
         });
 
         // Typing status listener
-        unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
-          setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
-        });
+        if (activeConversation.id !== 'new' && activeConversation.id !== 'new_admin' && activeConversation.id !== 'new_dev') {
+          unsubTyping = getTypingStatus(activeConversation.id, (typing) => {
+            setTypingUsers(typing.filter(uid => uid !== currentUser.uid));
+          });
+        }
       }
     }
 
@@ -768,6 +749,10 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     const isImage = m.type === 'image' || isUrlImage || (m.fileType && m.fileType.startsWith('image/'));
 
     if (isImage) {
+      const imgDownloadUrl = effectiveUrl.includes('cloudinary.com') && !effectiveUrl.includes('fl_attachment') 
+        ? `${effectiveUrl.split('/upload/')[0]}/upload/fl_attachment/${effectiveUrl.split('/upload/')[1]}` 
+        : effectiveUrl;
+
       return (
         <div 
           className="relative group/media mb-2 rounded-xl overflow-hidden border border-white/10 cursor-pointer bg-[#2a3942]" 
@@ -778,15 +763,16 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             <Maximize2 size={24} className="text-white drop-shadow-lg" />
           </div>
           <div className="absolute top-2 right-2 opacity-0 group-hover/media:opacity-100 transition-all flex gap-2">
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                downloadFileUrl(effectiveUrl, m.fileName || 'image.jpg');
-              }}
-              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-black transition-all"
+            <a 
+              href={imgDownloadUrl}
+              download={m.fileName || 'image.jpg'}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-black transition-all flex items-center justify-center cursor-pointer"
             >
               <Download size={14} />
-            </button>
+            </a>
           </div>
           <p className="absolute bottom-2 left-2 text-[8px] font-black uppercase text-[#FFFF00] bg-black/60 px-2 py-0.5 rounded-full tracking-widest backdrop-blur-sm opacity-0 group-hover/media:opacity-100 transition-opacity">Visual Intel Attached</p>
         </div>
@@ -796,6 +782,14 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
     if (m.type === 'file' || isUrlFile || (m.fileType && !m.fileType.startsWith('image/') && m.type !== 'voice')) {
       const fileName = m.fileName || (m.text && !m.text.includes('http') ? m.text : (effectiveUrl.split('/').pop()?.split('?')[0])) || 'Intel Document';
       const isProjectFile = fileName.toLowerCase().match(/\.(zip|pdf|rar)$/);
+
+      let downloadUrl = effectiveUrl;
+      if (effectiveUrl.includes('cloudinary.com') && !effectiveUrl.includes('fl_attachment')) {
+        const parts = effectiveUrl.split('/upload/');
+        if (parts.length === 2) {
+          downloadUrl = `${parts[0]}/upload/fl_attachment/${parts[1]}`;
+        }
+      }
 
       return (
         <div className={`p-4 rounded-2xl border-2 mb-2 transition-all group/file bg-black shadow-2xl ${
@@ -813,19 +807,24 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
             </div>
           </div>
           <div className="flex gap-2">
-            <button 
-              onClick={() => downloadFileUrl(effectiveUrl, fileName)}
-              className="flex-1 py-2.5 bg-yellow-400 hover:bg-white text-black rounded-xl font-black uppercase italic text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-yellow-400/20"
+            <a 
+              href={downloadUrl}
+              download={fileName}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2.5 bg-yellow-400 hover:bg-white text-black rounded-xl font-black uppercase italic text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-yellow-400/20 text-center"
             >
               <Download size={12} />
               Retrieve
-            </button>
-            <button 
-              onClick={() => window.open(effectiveUrl, '_blank')}
-              className="px-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all"
+            </a>
+            <a 
+              href={effectiveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all flex items-center justify-center"
             >
               <ExternalLink size={12} />
-            </button>
+            </a>
           </div>
         </div>
       );
@@ -1021,27 +1020,17 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
   const handleMessageAdmin = async () => {
     setIsLoading(true);
     try {
-      // Check if client has an assigned developer
-      if (profile?.role === 'client') {
-        const userProjects = projects.length > 0 ? projects : (await getProjectsAsync(currentUser.uid));
-        const activeProjWithDev = userProjects.find(p => p.assignedTo || p.developerId);
-        if (activeProjWithDev) {
-          const devId = activeProjWithDev.assignedTo || activeProjWithDev.developerId;
-          const devProfile = await getUserProfile(devId!);
-          if (devProfile) {
-            startNewChat(devProfile as UserProfile);
-            return;
-          }
-        }
-      }
-
       const admins = await getAdmins();
       if (admins.length > 0) {
         // Find the main admin by email if possible, else take the first one
         const mainAdmin = admins.find(a => a.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || admins[0];
-        startNewChat(mainAdmin);
+        if (mainAdmin) {
+          startNewChat(mainAdmin);
+        } else {
+          toast.error('No admin found. Please try again later.');
+        }
       } else {
-        alert('No admin found. Please try again later.');
+        toast.error('No admin found. Please try again later.');
       }
     } catch (error) {
       console.error('Error finding admin:', error);
@@ -1568,30 +1557,22 @@ export default function MessagesModule({ currentUser, profile, onClose, fullScre
                 </AnimatePresence>
 
                 <div className="max-w-5xl mx-auto flex items-end gap-5">
-                   <div className="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-[22px] flex items-center justify-center text-white/40 hover:text-white transition-all shadow-xl group">
-                          <Paperclip size={20} className="group-hover:rotate-45 transition-transform" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-56 bg-[#1a1a1a] border-white/5 rounded-3xl p-2 shadow-2xl backdrop-blur-3xl mb-4" align="start">
-                        <button 
-                          onClick={() => document.getElementById('image-upload')?.click()}
-                          className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
-                        >
-                          <ImageIcon size={16} className="text-[#c7c42a]" /> Visual Intel
-                        </button>
-                        <button 
-                          onClick={() => document.getElementById('file-upload')?.click()}
-                          className="w-full flex items-center gap-3 p-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
-                        >
-                          <FileText size={16} className="text-[#c7c42a]" /> Data Document
-                        </button>
-                      </PopoverContent>
-                    </Popover>
-                    <input id="image-upload" type="file" hidden accept="image/*" multiple onChange={(e) => handleFileUpload(e.target.files)} />
-                    <input id="file-upload" type="file" hidden onChange={(e) => handleFileUpload(e.target.files)} />
+                  <div className="flex gap-2">
+                    <button 
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-[22px] flex items-center justify-center text-white/40 hover:text-white transition-all shadow-xl group"
+                      title="Transmit Files / Intel"
+                    >
+                      <Paperclip size={20} className="group-hover:rotate-45 transition-transform" />
+                    </button>
+                    <input 
+                      ref={fileInputRef}
+                      type="file" 
+                      className="hidden" 
+                      multiple 
+                      onChange={(e) => handleFileUpload(e.target.files)} 
+                    />
                   </div>
 
                   <form 

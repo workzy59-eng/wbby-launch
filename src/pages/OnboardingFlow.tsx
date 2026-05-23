@@ -79,7 +79,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
              <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
           </div>
           <div className="flex-1 bg-white rounded-full h-6 flex items-center px-4 text-[10px] text-gray-400 font-mono italic shadow-inner">
-             {data.domain ? `https://${data.domain}` : `https://${data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.webbylaunch.com`}
+             {data.domain ? `https://${data.domain}` : `https://${data.businessName?.toLowerCase().replace(/\s/g, '') || 'yourbusiness'}.webbylaunch.vercel.app`}
           </div>
         </div>
 
@@ -166,7 +166,7 @@ const WebsitePreview = ({ data, device }: { data: any, device: 'desktop' | 'tabl
              <div className="flex gap-10">
                 <div className="flex items-center gap-3">
                   <Mail size={16} style={{ color: data.primaryColor || '#c7c42a' }} />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#111]">{data.businessEmail || 'hello@webbylaunch.com'}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#111]">{data.businessEmail || 'hello@webbylaunch.vercel.app'}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Smartphone size={16} style={{ color: data.primaryColor || '#c7c42a' }} />
@@ -603,7 +603,7 @@ ${formData.developerNote || 'No specific note provided.'}
     
     setIsCheckingDomain(true);
     
-    const restrictedDomains = ['google.com', 'youtube.com', 'facebook.com', 'instagram.com', 'twitter.com', 'apple.com', 'amazon.com', 'microsoft.com', 'webbylaunch.com', 'admin.com', 'test.com'];
+    const restrictedDomains = ['google.com', 'youtube.com', 'facebook.com', 'instagram.com', 'twitter.com', 'apple.com', 'amazon.com', 'microsoft.com', 'webbylaunch.com', 'webbylaunch.vercel.app', 'admin.com', 'test.com'];
     if (restrictedDomains.some(d => formData.domain?.toLowerCase().includes(d))) {
       toast.error("SECURITY ALERT: This domain is restricted or system-reserved.");
       setIsCheckingDomain(false);

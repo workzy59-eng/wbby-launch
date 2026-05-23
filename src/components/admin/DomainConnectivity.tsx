@@ -16,7 +16,7 @@ export const DomainConnectivity: React.FC = () => {
 
   const dnsInstructions: DNSInstruction[] = [
     { type: 'A', host: '@', value: '76.76.21.21' },
-    { type: 'CNAME', host: 'www', value: 'cname.webbylaunch.com' }
+    { type: 'CNAME', host: 'www', value: 'cname.webbylaunch.vercel.app' }
   ];
 
   const handleVerify = async () => {

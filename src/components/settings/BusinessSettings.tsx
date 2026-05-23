@@ -178,7 +178,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all"
-              placeholder="hello@webbylaunch.com"
+              placeholder="hello@webbylaunch.vercel.app"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ export const BusinessSettings: React.FC<BusinessSettingsProps> = ({ profile }) =
               value={formData.website}
               onChange={(e) => setFormData({ ...formData, website: e.target.value })}
               className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-[#c7c42a]/50 transition-all"
-              placeholder="https://webbylaunch.com"
+              placeholder="https://webbylaunch.vercel.app"
             />
           </div>
         </div>

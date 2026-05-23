@@ -16,7 +16,7 @@ const SEO: React.FC<SEOProps> = ({
   description = "WebbyLaunch builds high-performance websites in 52 hours. Specializing in Gyms, Resorts, and Clothing brands with elite UI/UX and integrated payments.", 
   keywords = "website development company in India, affordable web design services India, 52 hour website delivery, premium website solutions, startup website builder India, international web development",
   image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200",
-  url = "https://webbylaunch.com",
+  url = "https://webbylaunch.vercel.app",
   canonical,
   type = 'website'
 }) => {
@@ -27,8 +27,8 @@ const SEO: React.FC<SEOProps> = ({
     "@context": "https://schema.org",
     "@type": type === 'business' ? 'LocalBusiness' : 'Organization',
     "name": "WebbyLaunch",
-    "url": "https://webbylaunch.com",
-    "logo": "https://webbylaunch.com/logo.png",
+    "url": "https://webbylaunch.vercel.app",
+    "logo": "https://webbylaunch.vercel.app/favicon.svg",
     "description": description,
     "address": {
       "@type": "PostalAddress",
