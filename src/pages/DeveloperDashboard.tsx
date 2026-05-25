@@ -314,7 +314,7 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
   }, [user?.uid]);
 
   useEffect(() => {
-    const devEmails = ['sain17296174@gmail.com', 'singhhritik560@gmail.com'];
+    const devEmails = ['sain17296174@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'];
     const adminEmails = [ADMIN_EMAIL];
     if (user?.email && (devEmails.includes(user.email.toLowerCase()) || adminEmails.includes(user.email.toLowerCase()))) {
       const hasSeen = localStorage.getItem(`dev_welcome_${user.uid}`);

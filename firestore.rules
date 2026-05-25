@@ -35,7 +35,8 @@ service cloud.firestore {
         request.auth.uid in ['Pc1bVwdIUHeAdoDyZWKv0VZ9OT73', 'uxoCnPC8Hyg2UNwbmSDnVrfs8PV2'] ||
         (request.auth.token.email != null && (
           request.auth.token.email.lower() == 'sain17296174@gmail.com' ||
-          request.auth.token.email.lower() == 'singhhritik560@gmail.com'
+          request.auth.token.email.lower() == 'singhhritik560@gmail.com' ||
+          request.auth.token.email.lower() == 'shivamt2023@gmail.com'
         ))
       );
     }
