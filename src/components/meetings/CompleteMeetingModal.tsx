@@ -163,14 +163,14 @@ export const CompleteMeetingModal: React.FC<CompleteMeetingModalProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] ml-4">Razorpay Payment Link</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a] ml-4">Payment Link</label>
                     <div className="relative">
                       <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                       <input 
                         type="url" 
                         value={paymentLink}
                         onChange={(e) => setPaymentLink(e.target.value)}
-                        placeholder="https://rzp.io/l/..."
+                        placeholder="https://example.com/pay/..."
                         className="w-full bg-white/5 border border-[#c7c42a]/30 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                       />
                     </div>

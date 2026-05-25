@@ -2505,7 +2505,7 @@ Description: ${project.description || 'No description provided.'}
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Razorpay Payment Link</label>
+                  <label className="text-[8px] font-black text-[#c7c42a] uppercase tracking-[0.3em] ml-4">Stripe/UPI Payment Link</label>
                   <div className="relative">
                     <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                     <input 
@@ -2516,7 +2516,7 @@ Description: ${project.description || 'No description provided.'}
                         setTempPaymentLink(e.target.value);
                         setIsFinancialIntelSaved(false);
                       }}
-                      placeholder="https://rzp.io/l/..."
+                      placeholder="https://example.com/pay/..."
                       className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                     />
                   </div>
@@ -2741,7 +2741,7 @@ Description: ${project.description || 'No description provided.'}
                     type="text"
                     value={editingProject.paymentLink || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, paymentLink: e.target.value })}
-                    placeholder="Razorpay/Stripe/Custom Link"
+                    placeholder="Stripe/UPI/Custom Link"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                   />
                 </div>
@@ -2752,7 +2752,7 @@ Description: ${project.description || 'No description provided.'}
                     type="text"
                     value={editingProject.paymentLinkBasic || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, paymentLinkBasic: e.target.value })}
-                    placeholder="Razorpay/Stripe Link"
+                    placeholder="Stripe/Custom Link"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                   />
                 </div>
@@ -2763,7 +2763,7 @@ Description: ${project.description || 'No description provided.'}
                     type="text"
                     value={editingProject.paymentLinkPremium || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, paymentLinkPremium: e.target.value })}
-                    placeholder="Razorpay/Stripe Link"
+                    placeholder="Stripe/Custom Link"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#c7c42a] transition-all"
                   />
                 </div>

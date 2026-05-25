@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import admin from 'firebase-admin';
 import crypto from "crypto";
-import Razorpay from "razorpay";
 import firebaseConfig from './firebase-applet-config.json';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
@@ -126,11 +125,6 @@ app.use(express.json());
 
 const dbAdmin = admin.firestore();
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret',
-});
-
 // API Routes
 const apiRouter = express.Router();
 
@@ -201,67 +195,6 @@ apiRouter.post("/upload", (req, res, next) => {
   } catch (error: any) {
     console.error("Upload handler error:", error);
     res.status(500).json({ error: error.message || "Upload failed" });
-  }
-});
-
-apiRouter.post("/razorpay/create-order", async (req, res) => {
-  try {
-    const { amount, currency = "INR", receipt } = req.body;
-    if (!amount) return res.status(400).json({ error: "Amount is required" });
-    const order = await razorpay.orders.create({
-      amount: Math.round(amount * 100),
-      currency,
-      receipt: receipt || `receipt_${Date.now()}`,
-    });
-    res.json(order);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-apiRouter.post("/razorpay/save-payment", async (req, res) => {
-  try {
-    const { 
-      projectId, 
-      amount, 
-      userId,
-      developerId 
-    } = req.body;
-
-    if (!projectId || !amount) return res.status(400).json({ error: "Missing fields" });
-
-    const totalAmount = Number(amount);
-    const adminShare = totalAmount * 0.3;
-    const developerShare = totalAmount * 0.7;
-
-    await dbAdmin.collection('payments').add({
-      projectId,
-      userId: userId || "",
-      developerId: developerId || "",
-      amount: totalAmount,
-      adminShare,
-      developerShare,
-      status: 'completed',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    await dbAdmin.collection('projects').doc(projectId).update({
-      paymentStatus: 'Paid',
-      status: 'In Development',
-      paidAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    if (developerId) {
-      await dbAdmin.collection('users').doc(developerId).update({
-        earnings: admin.firestore.FieldValue.increment(developerShare),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-    }
-
-    res.json({ success: true });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
   }
 });
 

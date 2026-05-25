@@ -4,6 +4,7 @@ import { Check, Sparkles, ArrowRight, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PROFESSIONAL_EMAIL } from '../constants';
 import { useRegion } from '../context/RegionContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Pricing() {
   const { pricing: globalPricing, currency, symbol, gateway, paymentLinks, country } = useRegion();
@@ -62,14 +63,12 @@ export default function Pricing() {
 
   const plans = oneTimePlans;
 
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubscribe = (planId: string, stripeLink: string) => {
-    const link = (paymentLinks as any)[planId];
-    if (link && link !== '#') {
-      window.location.href = link;
-    } else if (stripeLink) {
-      window.location.href = stripeLink;
+    if (user) {
+      navigate('/dashboard');
     } else {
       navigate('/auth');
     }

@@ -7,7 +7,7 @@ interface RegionContextType {
   setCountry: (country: Country) => void;
   currency: string;
   symbol: string;
-  gateway: 'Razorpay' | 'Stripe';
+  gateway: 'Stripe';
   pricing: {
     basic: string;
     standard: string;
@@ -24,12 +24,12 @@ const REGION_DATA = {
   'India': {
     currency: '₹',
     symbol: 'INR',
-    gateway: 'Razorpay' as const,
+    gateway: 'Stripe' as const,
     pricing: { basic: '7,500', standard: '15,000', premium: '30,000' },
     paymentLinks: {
-      basic: 'https://rzp.io/rzp/rrnwz9wP',
-      standard: 'https://rzp.io/rzp/CfyMMJ1I',
-      premium: 'https://rzp.io/rzp/H06QGZK'
+      basic: '#',
+      standard: '#',
+      premium: '#'
     }
   },
   'United States': {

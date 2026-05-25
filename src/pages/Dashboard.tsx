@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, FirebaseUser, logOut } from '../firebase';
-import { initiatePayment } from '../services/razorpay';
 import { UserProfile, Project, Meeting, SystemSettings } from '../types';
 import { 
   Bell,
