@@ -610,6 +610,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         key={n.id} 
                         onClick={() => {
                           if (!n.read) markNotificationAsRead(n.id);
+                          if (n.type === 'meeting') {
+                            setActiveTab('meetings');
+                          } else if (n.projectId || n.type?.includes('project')) {
+                            setActiveTab('progress');
+                          }
                           setShowNotifications(false);
                         }}
                         className={`p-6 border-b border-white/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
@@ -1661,143 +1666,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               </div>
                             </div>
 
-                            {/* Website Aesthetics Playground */}
-                            <div className="mt-12 mb-12 p-8 bg-[#0d0d0d] border border-white/5 rounded-[2.5rem] relative overflow-hidden z-10">
-                              <div className="absolute -top-12 -left-12 w-48 h-48 bg-white/5 rounded-full blur-[80px]" />
-                              <div className="relative z-10 space-y-6">
-                                <div>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Sparkles size={14} className="text-[#c7c42a]" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Interactive Creative Hub</span>
-                                  </div>
-                                  <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Brand Direction Moodboard</h3>
-                                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Shape your website's mood. Preferences sync live to our engineering queue.</p>
-                                </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                  {/* Palette selections */}
-                                  <div className="lg:col-span-1 space-y-3">
-                                    {[
-                                      { id: 'synth', name: 'Cyber Synth', primary: '#FFFF00', secondary: '#FF007F', desc: 'Vibrant neon cyberpunk' },
-                                      { id: 'emerald', name: 'Emerald Luxe', primary: '#10B981', secondary: '#059669', desc: 'Sleek luxury boutique' },
-                                      { id: 'arctic', name: 'Nordic Arctic', primary: '#3B82F6', secondary: '#1D4ED8', desc: 'Clean elegant modern tech' },
-                                      { id: 'brutalist', name: 'Stark Brutalist', primary: '#FFFFFF', secondary: '#333333', desc: 'Raw high impact design' }
-                                    ].map((mood) => (
-                                      <button
-                                        key={mood.id}
-                                        onClick={() => setActiveBrandMood(mood.id as any)}
-                                        className={`w-full p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
-                                          activeBrandMood === mood.id 
-                                            ? 'bg-white/10 border-white/30 scale-[1.02] shadow-lg' 
-                                            : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
-                                        }`}
-                                      >
-                                        <div className="flex justify-between items-center w-full">
-                                          <span className="text-xs font-black uppercase tracking-wider text-white">{mood.name}</span>
-                                          <div className="flex gap-1.5">
-                                            <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: mood.primary }} />
-                                            <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: mood.secondary }} />
-                                          </div>
-                                        </div>
-                                        <span className="text-[9px] font-semibold text-white/40 uppercase tracking-widest mt-2">{mood.desc}</span>
-                                      </button>
-                                    ))}
-                                  </div>
-
-                                  {/* Live Render Card */}
-                                  <div className="lg:col-span-2 bg-[#121212] border border-white/5 rounded-3xl p-6 relative flex flex-col justify-between min-h-[220px]">
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.02),transparent)]" />
-                                    
-                                    {/* Mock header */}
-                                    <div className="flex items-center gap-1.5 border-b border-white/5 pb-3">
-                                      <div className="w-1.5 h-1.5 rounded-full bg-red-500/60" />
-                                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/60" />
-                                      <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
-                                      <div className="ml-4 flex-1 h-4 bg-white/5 rounded-md flex items-center px-2">
-                                        <span className="text-[6px] font-mono text-white/20">https://{selectedProject.businessName?.toLowerCase().replace(/\s+/g, '-') || 'brand'}.com</span>
-                                      </div>
-                                    </div>
-
-                                    {/* Live Preview Content */}
-                                    <div className="flex-1 flex flex-col justify-center py-4 px-2 space-y-3 text-center">
-                                      <AnimatePresence mode="wait">
-                                        <motion.div
-                                          key={activeBrandMood}
-                                          initial={{ opacity: 0, y: 5 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          exit={{ opacity: 0, y: -5 }}
-                                          transition={{ duration: 0.2 }}
-                                          className="space-y-3"
-                                        >
-                                          <h4 className={`text-xl md:text-2xl font-black tracking-tight uppercase leading-none ${
-                                            activeBrandMood === 'emerald' ? 'font-serif italic' : 
-                                            activeBrandMood === 'synth' ? 'font-mono' : 'font-sans'
-                                          }`}>
-                                            Elevate <br />
-                                            <span style={{ 
-                                              color: activeBrandMood === 'synth' ? '#FFFF00' : 
-                                                     activeBrandMood === 'emerald' ? '#10B981' : 
-                                                     activeBrandMood === 'arctic' ? '#3B82F6' : '#FFFFFF'
-                                            }}>{selectedProject.businessName}</span>
-                                          </h4>
-                                          <p className="text-[9px] text-white/50 max-w-xs mx-auto italic leading-tight">
-                                            We build premium web structures engineered for scale, aesthetics, and optimal response velocity.
-                                          </p>
-                                          <div className="flex justify-center gap-3">
-                                            <button 
-                                              disabled
-                                              className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-black rounded-lg"
-                                              style={{
-                                                backgroundColor: activeBrandMood === 'synth' ? '#FFFF00' : 
-                                                                 activeBrandMood === 'emerald' ? '#10B981' : 
-                                                                 activeBrandMood === 'arctic' ? '#3B82F6' : '#FFFFFF'
-                                              }}
-                                            >
-                                              Explore Build
-                                            </button>
-                                            <button 
-                                              disabled
-                                              className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-white border border-white/10 rounded-lg"
-                                            >
-                                              Contact Team
-                                            </button>
-                                          </div>
-                                        </motion.div>
-                                      </AnimatePresence>
-                                    </div>
-
-                                    {/* Action Footer */}
-                                    <div className="border-t border-white/5 pt-3 flex justify-between items-center">
-                                      <span className="text-[7px] font-black uppercase tracking-widest text-white/40">Layout Sync Engine Enabled</span>
-                                      <button
-                                        onClick={() => {
-                                          setIsStyleSaving(true);
-                                          setTimeout(() => {
-                                            setIsStyleSaving(false);
-                                            localStorage.setItem('user_aesthetic_choice_' + selectedProject.id, activeBrandMood);
-                                            toast.success('Aesthetic direction locked! Syncing design vectors with our team.');
-                                          }, 1000);
-                                        }}
-                                        disabled={isStyleSaving}
-                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 active:scale-95 text-white border border-white/10 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
-                                      >
-                                        {isStyleSaving ? (
-                                          <>
-                                            <Loader2 size={10} className="animate-spin text-[#c7c42a]" />
-                                            Syncing...
-                                          </>
-                                        ) : (
-                                          <>
-                                            <CheckCircle2 size={10} className="text-[#c7c42a]" />
-                                            Save Direction
-                                          </>
-                                        )}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
 
                             <div className="flex justify-between items-center pt-10 border-t border-white/5 relative z-10">
                               <div className="text-sm">

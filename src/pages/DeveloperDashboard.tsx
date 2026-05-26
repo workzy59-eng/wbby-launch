@@ -979,8 +979,18 @@ Description: ${project.description || 'No description provided.'}
                         notifications.map((n) => (
                           <div 
                             key={n.id} 
-                            onClick={() => !n.read && markNotificationAsRead(n.id)}
-                            className={`p-6 border-b border-[#FFFF00]/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
+                            onClick={async () => {
+                              if (!n.read) await markNotificationAsRead(n.id);
+                              if (n.type === 'meeting') {
+                                setActiveTab('meetings');
+                              } else if (n.type === 'new_project_pool' || n.type === 'project_pool' || n.title?.toLowerCase().includes('pool') || n.title?.toLowerCase().includes('new project available')) {
+                                setActiveTab('pool');
+                              } else if (n.projectId || n.type?.includes('project')) {
+                                setActiveTab('projects');
+                              }
+                              setShowNotifications(false);
+                            }}
+                            className={`p-6 border-b border-white/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
                           >
                             <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest mb-1">{n.title}</p>
                             <p className="text-xs text-[#FFFF00]/60 leading-relaxed font-medium italic">{n.message}</p>

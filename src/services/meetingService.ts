@@ -165,30 +165,28 @@ export const subscribeToMeetings = (
   userId: string,
   callback: (meetings: Meeting[]) => void
 ) => {
-  let q;
-  if (role === 'admin') {
-    q = query(collection(db, COLLECTION_NAME), orderBy('date', 'asc'), orderBy('time', 'asc'));
-  } else if (role === 'developer') {
-    q = query(
-      collection(db, COLLECTION_NAME), 
-      where('developerId', '==', userId),
-      orderBy('date', 'asc'), 
-      orderBy('time', 'asc')
-    );
-  } else {
-    q = query(
-      collection(db, COLLECTION_NAME), 
-      where('clientId', '==', userId),
-      orderBy('date', 'asc'), 
-      orderBy('time', 'asc')
-    );
-  }
+  // Direct client-side filtering gives us absolute flexibility across multiple compound visibility rules.
+  // Query only works on simple indices, so we stream the collection and filter in-memory.
+  const q = query(collection(db, COLLECTION_NAME), orderBy('date', 'asc'), orderBy('time', 'asc'));
 
   return onSnapshot(q, (snapshot) => {
-    const meetings = snapshot.docs.map(doc => ({
+    let meetings = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     })) as Meeting[];
+
+    if (role === 'client') {
+      // Clients only see meetings where they are the participant and it is not an internal developer/admin sync session
+      meetings = meetings.filter(m => m.clientId === userId && m.clientId !== 'SYSTEM');
+    } else if (role === 'developer') {
+      // Developers see meetings they are assigned to
+      meetings = meetings.filter(m => m.developerId === userId);
+    } else if (role === 'admin') {
+      // Admin only sees meetings involving admin (adminId !== 'SYSTEM') OR internal staff syncs (clientId === 'SYSTEM')
+      // This hides pure Client <-> Developer meetings from the admin console
+      meetings = meetings.filter(m => m.adminId !== 'SYSTEM' || m.clientId === 'SYSTEM');
+    }
+
     callback(meetings);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);

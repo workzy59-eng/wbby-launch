@@ -1496,7 +1496,17 @@ Requirements:
                         notifications.map((n) => (
                           <div 
                             key={n.id} 
-                            onClick={() => !n.read && markNotificationAsRead(n.id)}
+                            onClick={async () => {
+                              if (!n.read) await markNotificationAsRead(n.id);
+                              if (n.type === 'meeting') {
+                                setActiveTab('meetings');
+                              } else if (n.projectId || n.type === 'new_project') {
+                                setActiveTab('projects');
+                              } else if (n.type === 'leave_requested') {
+                                setActiveTab('leaves');
+                              }
+                              setShowNotifications(false);
+                            }}
                             className={`p-6 border-b border-white/5 cursor-pointer hover:bg-white/10 transition-colors ${!n.read ? 'bg-[#c7c42a]/5' : ''}`}
                           >
                             <div className="flex justify-between items-start mb-2">

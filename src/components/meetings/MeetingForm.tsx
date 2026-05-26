@@ -121,6 +121,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-[#c7c42a]/50 transition-all appearance-none"
                   >
                     <option value="" className="bg-[#0A0A0A]">Choose a client</option>
+                    <option value="SYSTEM" className="bg-[#0A0A0A]">Admin Staff (Internal Sync)</option>
                     {clients.map(client => (
                       <option key={client.uid} value={client.uid} className="bg-[#0A0A0A]">
                         {client.displayName || client.email}

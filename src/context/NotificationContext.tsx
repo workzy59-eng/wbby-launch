@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthContext';
-import { getNotifications, markNotificationAsRead } from '../services/database';
+import { getNotifications, markNotificationAsRead, getUnreadMessageCount } from '../services/database';
 import { Notification } from '../types';
 import { Bell, MessageSquare, Video, CheckCircle } from 'lucide-react';
 
@@ -17,7 +17,31 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const { user, profile } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
+  const [messagesUnreadCount, setMessagesUnreadCount] = useState<number>(0);
 
+  const prevMessagesCountRef = useRef<number>(0);
+  const prevNotificationsCountRef = useRef<number>(0);
+  const hiddenUnreadCountRef = useRef<number>(0);
+  const isFirstMessagesLoadRef = useRef<boolean>(true);
+  const isFirstNotifsLoadRef = useRef<boolean>(true);
+
+  // Subscribe to voice/text direct message unread counts
+  useEffect(() => {
+    if (!user?.uid) {
+      setMessagesUnreadCount(0);
+      return;
+    }
+
+    const unsub = getUnreadMessageCount(user.uid, (count) => {
+      setMessagesUnreadCount(count);
+    });
+
+    return () => {
+      if (unsub) unsub();
+    };
+  }, [user]);
+
+  // Subscribe to general notifications
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -74,7 +98,59 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => unsub();
   }, [user, lastNotificationId]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const currentUnreadNotifs = notifications.filter(n => !n.read).length;
+
+  // Visibility state listener & tab title updates
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        hiddenUnreadCountRef.current = 0;
+        document.title = "WebbyLaunch";
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.title = "WebbyLaunch";
+    };
+  }, []);
+
+  // Update dynamic hidden counts when unread messages/notifications change
+  useEffect(() => {
+    if (document.hidden) {
+      const diffMessages = isFirstMessagesLoadRef.current ? 0 : (messagesUnreadCount - prevMessagesCountRef.current);
+      const diffNotifications = isFirstNotifsLoadRef.current ? 0 : (currentUnreadNotifs - prevNotificationsCountRef.current);
+
+      if (diffMessages > 0) {
+        hiddenUnreadCountRef.current += diffMessages;
+      }
+      if (diffNotifications > 0) {
+        hiddenUnreadCountRef.current += diffNotifications;
+      }
+
+      if (hiddenUnreadCountRef.current > 0) {
+        document.title = `(${hiddenUnreadCountRef.current}) WebbyLaunch`;
+      } else {
+        document.title = "WebbyLaunch";
+      }
+    } else {
+      hiddenUnreadCountRef.current = 0;
+      document.title = "WebbyLaunch";
+    }
+
+    prevMessagesCountRef.current = messagesUnreadCount;
+    prevNotificationsCountRef.current = currentUnreadNotifs;
+
+    if (messagesUnreadCount !== undefined) {
+      isFirstMessagesLoadRef.current = false;
+    }
+    if (currentUnreadNotifs !== undefined) {
+      isFirstNotifsLoadRef.current = false;
+    }
+  }, [messagesUnreadCount, currentUnreadNotifs]);
+
+  const unreadCount = currentUnreadNotifs;
 
   const markAsRead = async (id: string) => {
     try {

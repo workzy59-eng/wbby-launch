@@ -110,27 +110,29 @@ export const MeetingList: React.FC<MeetingListProps> = ({ user, profile, allClie
         
         // System Notification in Chat
         try {
-          const conversationId = getConversationId(user.uid, data.clientId);
-          const notificationText = `📅 NEW MEETING SCHEDULED: "${data.title}" on ${data.date} at ${data.time}. Link: ${data.meetingLink}`;
-          
-          const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-          await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
-            text: notificationText,
-            senderId: user.uid,
-            createdAt: serverTimestamp(),
-            status: 'sent',
-            seen: false,
-            type: 'text'
-          });
+          if (data.clientId && data.clientId !== 'SYSTEM') {
+            const conversationId = getConversationId(user.uid, data.clientId);
+            const notificationText = `📅 NEW MEETING SCHEDULED: "${data.title}" on ${data.date} at ${data.time}. Link: ${data.meetingLink}`;
+            
+            const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+            await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
+              text: notificationText,
+              senderId: user.uid,
+              createdAt: serverTimestamp(),
+              status: 'sent',
+              seen: false,
+              type: 'text'
+            });
 
-          // Also a general notification for the client
-          await createNotification({
-            userId: data.clientId,
-            type: 'meeting', // Changed from system
-            title: 'New Meeting Scheduled',
-            description: `A meeting "${data.title}" has been scheduled for ${data.date}.`,
-            read: false
-          });
+            // Also a general notification for the client
+            await createNotification({
+              userId: data.clientId,
+              type: 'meeting', // Changed from system
+              title: 'New Meeting Scheduled',
+              description: `A meeting "${data.title}" has been scheduled for ${data.date}.`,
+              read: false
+            });
+          }
 
           // If there's a developer, notify them too
           if (devId && devId !== user.uid) {

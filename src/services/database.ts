@@ -1412,16 +1412,19 @@ export const updateMeeting = async (meetingId: string, updateData: Partial<Meeti
 
 export const getMeetings = (userId: string, role: string, callback: (meetings: Meeting[]) => void) => {
   const path = 'meetings';
-  let q = query(collection(db, 'meetings'), orderBy('date', 'asc'), orderBy('time', 'asc'));
+  const q = query(collection(db, 'meetings'), orderBy('date', 'asc'), orderBy('time', 'asc'));
   
-  if (role === 'client') {
-    q = query(collection(db, 'meetings'), where('clientId', '==', userId), orderBy('date', 'asc'), orderBy('time', 'asc'));
-  } else if (role === 'developer') {
-    q = query(collection(db, 'meetings'), where('developerId', '==', userId), orderBy('date', 'asc'), orderBy('time', 'asc'));
-  }
-
   return onSnapshot(q, (snapshot) => {
-    const meetings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Meeting));
+    let meetings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Meeting));
+    
+    if (role === 'client') {
+      meetings = meetings.filter(m => m.clientId === userId && m.clientId !== 'SYSTEM');
+    } else if (role === 'developer') {
+      meetings = meetings.filter(m => m.developerId === userId);
+    } else if (role === 'admin') {
+      meetings = meetings.filter(m => m.adminId !== 'SYSTEM' || m.clientId === 'SYSTEM');
+    }
+    
     callback(meetings);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, path);
@@ -1432,16 +1435,20 @@ export const getTodayMeetings = async (userId: string, role: string) => {
   const path = 'meetings';
   try {
     const today = new Date().toISOString().split('T')[0];
-    let q = query(collection(db, 'meetings'), where('date', '==', today));
-    
-    if (role === 'client') {
-      q = query(collection(db, 'meetings'), where('date', '==', today), where('clientId', '==', userId));
-    } else if (role === 'developer') {
-      q = query(collection(db, 'meetings'), where('date', '==', today), where('developerId', '==', userId));
-    }
+    const q = query(collection(db, 'meetings'), where('date', '==', today));
     
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Meeting));
+    let meetings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Meeting));
+    
+    if (role === 'client') {
+      meetings = meetings.filter(m => m.clientId === userId && m.clientId !== 'SYSTEM');
+    } else if (role === 'developer') {
+      meetings = meetings.filter(m => m.developerId === userId);
+    } else if (role === 'admin') {
+      meetings = meetings.filter(m => m.adminId !== 'SYSTEM' || m.clientId === 'SYSTEM');
+    }
+    
+    return meetings;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];
