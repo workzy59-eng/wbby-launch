@@ -762,6 +762,15 @@ export const punchIn = async (userId: string) => {
       lastPunchIn: serverTimestamp()
     });
 
+    // Send punch-in notification to Admin
+    await createNotification({
+      role: 'admin',
+      type: 'punch_in',
+      title: 'Developer Punched In',
+      message: `${currentUser.displayName || currentUser.email || 'A developer'} has secured punch in protocol. Status: Active.`,
+      userId: userId
+    }).catch(err => console.error("Admin notification failure:", err));
+
     toast.success("PUNCH IN SECURED. IDENTITY VERIFIED.");
   } catch (error) {
     console.error("Attendance security failure:", error);
@@ -803,6 +812,15 @@ export const punchOut = async (userId: string) => {
       lastPunchOut: serverTimestamp()
     });
 
+    // Send punch-out notification to Admin
+    await createNotification({
+      role: 'admin',
+      type: 'punch_out',
+      title: 'Developer Punched Out',
+      message: `${currentUser.displayName || currentUser.email || 'A developer'} has secured punch out protocol. Status: Online.`,
+      userId: userId
+    }).catch(err => console.error("Admin notification failure:", err));
+
     toast.success("PUNCH OUT SECURED. STATUS UPDATED.");
   } catch (error) {
     console.error("Attendance security failure:", error);
@@ -842,6 +860,26 @@ export const getProject = async (projectId: string) => {
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
     return null;
+  }
+};
+
+export const notifyDevelopersOfNewProject = async (project: any) => {
+  try {
+    const devsQuery = query(collection(db, 'users'), where('role', '==', 'developer'));
+    const snapshot = await getDocs(devsQuery);
+    const devs = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+    
+    for (const dev of devs) {
+      await createNotification({
+        userId: dev.uid,
+        type: 'new_project_pool',
+        title: 'New Project Available',
+        message: `You've got a new project "${project.businessName || 'Project'}" waiting in the developer project pool. Check it out!`,
+        projectId: project.id || ''
+      });
+    }
+  } catch (error) {
+    console.error("Failed to notify developers of new project:", error);
   }
 };
 
@@ -904,6 +942,11 @@ export const createProject = async (form: any) => {
       clientName: form.userName
     });
     
+    // Notify all developers about the new project in pool
+    await notifyDevelopersOfNewProject({ id: projectId, businessName: form.businessName }).catch(err => {
+      console.error("Failed to notify developers of new project:", err);
+    });
+    
     return projectId;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
@@ -931,6 +974,13 @@ export const updateProject = async (projectId: string, updateData: any) => {
           message: `Your project "${oldData.businessName}" is now ${updateData.status}.`,
           projectId: projectId
         });
+
+        // Notify developers if project status is set to Waiting for Review
+        if (updateData.status === 'Waiting for Review') {
+          await notifyDevelopersOfNewProject({ id: projectId, businessName: oldData.businessName }).catch(err => {
+            console.error("Failed to notify developers of project status change:", err);
+          });
+        }
       }
 
       // Notify admin when website URL is submitted

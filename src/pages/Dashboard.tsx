@@ -19,6 +19,8 @@ import {
   Clock, 
   CheckCircle2, 
   Download, 
+  Palette,
+  Sparkles,
   FileText, 
   Image as ImageIcon, 
   PartyPopper, 
@@ -85,6 +87,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
+  const [activeBrandMood, setActiveBrandMood] = useState<'synth' | 'emerald' | 'arctic' | 'brutalist'>('synth');
+  const [isStyleSaving, setIsStyleSaving] = useState(false);
   
   // Whitelisted developers should be on the Developer Dashboard
   useEffect(() => {
@@ -1506,40 +1510,291 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                               </div>
                             </div>
 
-                            {/* Progress Bar */}
-                            <div className="space-y-12 mb-16 relative z-10">
-                              <div className="flex justify-between items-center overflow-x-auto pb-6 gap-6 no-scrollbar">
-                                {statusSteps.map((step, i) => (
-                                  <div key={step} className="flex flex-col items-center min-w-[120px] text-center gap-4">
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                                      i < currentStepIndex 
-                                        ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
-                                        : i === currentStepIndex
-                                          ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#c7c42a] border-[#c7c42a] text-black'
-                                          : 'bg-transparent border-white/20 text-white/20'
-                                    }`}>
-                                      {i < currentStepIndex ? <Check size={24} /> : step === 'Declined' ? <X size={24} /> : <span className="font-black text-lg">{i + 1}</span>}
-                                    </div>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                      i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#c7c42a]' : 'text-white/20'
-                                    }`}>
-                                      {step}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                              
-                              <div className="space-y-6">
-                                <div className="flex justify-between items-end">
-                                  <span className="text-2xl font-black uppercase italic text-[#c7c42a]">Progress: {selectedProject.progress}%</span>
-                                  <span className="text-xs font-black text-white/40 uppercase tracking-widest">Est. Completion: {formatDate(selectedProject.estimatedCompletion)}</span>
+                            {/* Progress Dashboard */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 relative z-10">
+                              <div className="md:col-span-2 space-y-8 bg-white/5 p-8 rounded-[2.5rem] border border-white/5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Flow Timeline</span>
+                                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Est. Delivery: {formatDate(selectedProject.estimatedCompletion)}</span>
                                 </div>
-                                <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
-                                  <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${selectedProject.progress}%` }}
-                                    className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_15px_rgba(199,196,42,0.5)]"
-                                  />
+                                <div className="flex justify-between items-center overflow-x-auto pb-4 gap-4 no-scrollbar">
+                                  {statusSteps.map((step, i) => (
+                                    <div key={step} className="flex flex-col items-center min-w-[100px] text-center gap-3">
+                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                                        i < currentStepIndex 
+                                          ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
+                                          : i === currentStepIndex
+                                            ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#c7c42a] border-[#c7c42a] text-black shadow-[0_0_15px_rgba(199,196,42,0.5)]'
+                                            : 'bg-transparent border-white/10 text-white/20'
+                                      }`}>
+                                        {i < currentStepIndex ? <Check size={18} /> : step === 'Declined' ? <X size={18} /> : <span className="font-black text-sm">{i + 1}</span>}
+                                      </div>
+                                      <span className={`text-[8px] font-black uppercase tracking-widest ${
+                                        i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#c7c42a]' : 'text-white/20'
+                                      }`}>
+                                        {step}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="space-y-4 pt-2">
+                                  <div className="flex justify-between items-end">
+                                    <span className="text-sm font-black uppercase italic text-[#c7c42a]">Milestone Achievement</span>
+                                    <span className="text-xs font-mono font-bold text-white/60">{selectedProject.progress}% Ready</span>
+                                  </div>
+                                  <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                    <motion.div 
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${selectedProject.progress}%` }}
+                                      className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_10px_rgba(199,196,42,0.5)]"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(199,196,42,0.06),transparent)] pointer-events-none" />
+                                <div className="relative w-28 h-28 flex items-center justify-center">
+                                  <svg className="w-full h-full transform -rotate-90">
+                                    <circle
+                                      cx="56"
+                                      cy="56"
+                                      r="44"
+                                      stroke="rgba(255,255,255,0.03)"
+                                      strokeWidth="5"
+                                      fill="transparent"
+                                    />
+                                    <motion.circle
+                                      cx="56"
+                                      cy="56"
+                                      r="44"
+                                      stroke="#c7c42a"
+                                      strokeWidth="5"
+                                      fill="transparent"
+                                      strokeDasharray={276.46}
+                                      initial={{ strokeDashoffset: 276.46 }}
+                                      animate={{ strokeDashoffset: 276.46 * (1 - selectedProject.progress / 100) }}
+                                      transition={{ duration: 1.5, ease: "easeOut" }}
+                                      strokeLinecap="round"
+                                      style={{ filter: "drop-shadow(0px 0px 8px rgba(199, 196, 42, 0.5))" }}
+                                    />
+                                  </svg>
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-2xl font-black italic tracking-tighter text-white">{selectedProject.progress}%</span>
+                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-[#c7c42a] font-mono leading-none">Status</span>
+                                  </div>
+                                </div>
+                                <div className="mt-4 text-center">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-white/40 italic">System Engine</div>
+                                  <div className="text-[10px] font-bold uppercase text-[#c7c42a] tracking-widest mt-0.5 animate-pulse">Operational</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Project Build Velocity Chart */}
+                            <div className="mb-12 p-8 bg-white/5 rounded-[2.5rem] border border-white/5 space-y-6 relative overflow-hidden z-10">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <span className="text-[8px] font-black tracking-[0.3em] uppercase text-[#c7c42a]">Workspace Telemetry</span>
+                                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Project Build Velocity</h3>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-[8px] font-mono font-black text-white/40 uppercase">Phase Activity Spectrum</span>
+                                  <div className="text-xs font-black text-[#c7c42a] uppercase">Active Iterations</div>
+                                </div>
+                              </div>
+
+                              <div className="h-44 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart
+                                    data={[
+                                      { name: 'Concept', score: 15 },
+                                      { name: 'Wireframe', score: 38 },
+                                      { name: 'Front-end', score: selectedProject.progress >= 60 ? 60 : selectedProject.progress },
+                                      { name: 'API Sync', score: selectedProject.progress >= 85 ? 85 : selectedProject.progress },
+                                      { name: 'Production', score: selectedProject.progress }
+                                    ]}
+                                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                                  >
+                                    <defs>
+                                      <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#c7c42a" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#c7c42a" stopOpacity={0}/>
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                                    <XAxis 
+                                      dataKey="name" 
+                                      stroke="rgba(255,255,255,0.3)" 
+                                      fontSize={8} 
+                                      tickLine={false} 
+                                      axisLine={false}
+                                      tick={{ fill: 'rgba(255,255,255,0.5)', fontWeight: '900' }}
+                                    />
+                                    <YAxis 
+                                      stroke="rgba(255,255,255,0.3)" 
+                                      fontSize={8} 
+                                      tickLine={false} 
+                                      axisLine={false}
+                                      tick={{ fill: 'rgba(255,255,255,0.5)' }}
+                                    />
+                                    <Tooltip 
+                                      contentStyle={{ 
+                                        backgroundColor: '#121212', 
+                                        borderColor: 'rgba(255,255,255,0.1)', 
+                                        borderRadius: '1rem',
+                                        fontSize: '10px',
+                                        fontWeight: '900',
+                                        textTransform: 'uppercase'
+                                      }} 
+                                    />
+                                    <Area 
+                                      type="monotone" 
+                                      dataKey="score" 
+                                      stroke="#c7c42a" 
+                                      strokeWidth={3}
+                                      fillOpacity={1} 
+                                      fill="url(#colorScore)" 
+                                    />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+
+                            {/* Website Aesthetics Playground */}
+                            <div className="mt-12 mb-12 p-8 bg-[#0d0d0d] border border-white/5 rounded-[2.5rem] relative overflow-hidden z-10">
+                              <div className="absolute -top-12 -left-12 w-48 h-48 bg-white/5 rounded-full blur-[80px]" />
+                              <div className="relative z-10 space-y-6">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Sparkles size={14} className="text-[#c7c42a]" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Interactive Creative Hub</span>
+                                  </div>
+                                  <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Brand Direction Moodboard</h3>
+                                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Shape your website's mood. Preferences sync live to our engineering queue.</p>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                  {/* Palette selections */}
+                                  <div className="lg:col-span-1 space-y-3">
+                                    {[
+                                      { id: 'synth', name: 'Cyber Synth', primary: '#FFFF00', secondary: '#FF007F', desc: 'Vibrant neon cyberpunk' },
+                                      { id: 'emerald', name: 'Emerald Luxe', primary: '#10B981', secondary: '#059669', desc: 'Sleek luxury boutique' },
+                                      { id: 'arctic', name: 'Nordic Arctic', primary: '#3B82F6', secondary: '#1D4ED8', desc: 'Clean elegant modern tech' },
+                                      { id: 'brutalist', name: 'Stark Brutalist', primary: '#FFFFFF', secondary: '#333333', desc: 'Raw high impact design' }
+                                    ].map((mood) => (
+                                      <button
+                                        key={mood.id}
+                                        onClick={() => setActiveBrandMood(mood.id as any)}
+                                        className={`w-full p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
+                                          activeBrandMood === mood.id 
+                                            ? 'bg-white/10 border-white/30 scale-[1.02] shadow-lg' 
+                                            : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                                        }`}
+                                      >
+                                        <div className="flex justify-between items-center w-full">
+                                          <span className="text-xs font-black uppercase tracking-wider text-white">{mood.name}</span>
+                                          <div className="flex gap-1.5">
+                                            <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: mood.primary }} />
+                                            <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: mood.secondary }} />
+                                          </div>
+                                        </div>
+                                        <span className="text-[9px] font-semibold text-white/40 uppercase tracking-widest mt-2">{mood.desc}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {/* Live Render Card */}
+                                  <div className="lg:col-span-2 bg-[#121212] border border-white/5 rounded-3xl p-6 relative flex flex-col justify-between min-h-[220px]">
+                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.02),transparent)]" />
+                                    
+                                    {/* Mock header */}
+                                    <div className="flex items-center gap-1.5 border-b border-white/5 pb-3">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-red-500/60" />
+                                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/60" />
+                                      <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
+                                      <div className="ml-4 flex-1 h-4 bg-white/5 rounded-md flex items-center px-2">
+                                        <span className="text-[6px] font-mono text-white/20">https://{selectedProject.businessName?.toLowerCase().replace(/\s+/g, '-') || 'brand'}.com</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Live Preview Content */}
+                                    <div className="flex-1 flex flex-col justify-center py-4 px-2 space-y-3 text-center">
+                                      <AnimatePresence mode="wait">
+                                        <motion.div
+                                          key={activeBrandMood}
+                                          initial={{ opacity: 0, y: 5 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          exit={{ opacity: 0, y: -5 }}
+                                          transition={{ duration: 0.2 }}
+                                          className="space-y-3"
+                                        >
+                                          <h4 className={`text-xl md:text-2xl font-black tracking-tight uppercase leading-none ${
+                                            activeBrandMood === 'emerald' ? 'font-serif italic' : 
+                                            activeBrandMood === 'synth' ? 'font-mono' : 'font-sans'
+                                          }`}>
+                                            Elevate <br />
+                                            <span style={{ 
+                                              color: activeBrandMood === 'synth' ? '#FFFF00' : 
+                                                     activeBrandMood === 'emerald' ? '#10B981' : 
+                                                     activeBrandMood === 'arctic' ? '#3B82F6' : '#FFFFFF'
+                                            }}>{selectedProject.businessName}</span>
+                                          </h4>
+                                          <p className="text-[9px] text-white/50 max-w-xs mx-auto italic leading-tight">
+                                            We build premium web structures engineered for scale, aesthetics, and optimal response velocity.
+                                          </p>
+                                          <div className="flex justify-center gap-3">
+                                            <button 
+                                              disabled
+                                              className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-black rounded-lg"
+                                              style={{
+                                                backgroundColor: activeBrandMood === 'synth' ? '#FFFF00' : 
+                                                                 activeBrandMood === 'emerald' ? '#10B981' : 
+                                                                 activeBrandMood === 'arctic' ? '#3B82F6' : '#FFFFFF'
+                                              }}
+                                            >
+                                              Explore Build
+                                            </button>
+                                            <button 
+                                              disabled
+                                              className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-white border border-white/10 rounded-lg"
+                                            >
+                                              Contact Team
+                                            </button>
+                                          </div>
+                                        </motion.div>
+                                      </AnimatePresence>
+                                    </div>
+
+                                    {/* Action Footer */}
+                                    <div className="border-t border-white/5 pt-3 flex justify-between items-center">
+                                      <span className="text-[7px] font-black uppercase tracking-widest text-white/40">Layout Sync Engine Enabled</span>
+                                      <button
+                                        onClick={() => {
+                                          setIsStyleSaving(true);
+                                          setTimeout(() => {
+                                            setIsStyleSaving(false);
+                                            localStorage.setItem('user_aesthetic_choice_' + selectedProject.id, activeBrandMood);
+                                            toast.success('Aesthetic direction locked! Syncing design vectors with our team.');
+                                          }, 1000);
+                                        }}
+                                        disabled={isStyleSaving}
+                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 active:scale-95 text-white border border-white/10 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                                      >
+                                        {isStyleSaving ? (
+                                          <>
+                                            <Loader2 size={10} className="animate-spin text-[#c7c42a]" />
+                                            Syncing...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <CheckCircle2 size={10} className="text-[#c7c42a]" />
+                                            Save Direction
+                                          </>
+                                        )}
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>

@@ -67,10 +67,14 @@ export default function Pricing() {
   const navigate = useNavigate();
 
   const handleSubscribe = (planId: string, stripeLink: string) => {
-    if (user) {
-      navigate('/dashboard');
-    } else {
-      navigate('/auth');
+    const el = document.getElementById('custom-engineering-btn');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      // Enhance focus engagement visually
+      el.classList.add('ring-4', 'ring-[#c7c42a]', 'scale-105');
+      setTimeout(() => {
+        el.classList.remove('ring-4', 'ring-[#c7c42a]', 'scale-105');
+      }, 1500);
     }
   };
 
@@ -190,6 +194,7 @@ export default function Pricing() {
               <p className="text-white/40 font-medium italic">For projects requiring dedicated clusters, AI integrations, or custom ERP logic.</p>
               <a 
                 href={`mailto:${PROFESSIONAL_EMAIL}`}
+                id="custom-engineering-btn"
                 className="inline-flex items-center gap-4 bg-white/5 border border-white/10 px-12 py-5 font-black uppercase tracking-widest italic hover:bg-[#c7c42a] hover:text-black transition-all"
               >
                 Inquire <ArrowRight size={20} />

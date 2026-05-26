@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, collection, onSnapshot, FirebaseUser, logOut, getDocs, addDoc, query, where, updateDoc, doc, serverTimestamp, orderBy, limit } from '../firebase';
-import { UserProfile, Project, ProjectStatus, LeaveRequest } from '../types';
+import { UserProfile, Project, ProjectStatus, LeaveRequest, Attendance } from '../types';
 import { Link } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { DomainSelect } from '../components/DomainSelect';
@@ -60,7 +60,7 @@ import {
   Bar
 } from 'recharts';
 import ChatSystem from '../components/ChatSystem';
-import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications, getNotifications, markNotificationAsRead } from '../services/database';
+import { updateProject, deleteAllProjects, deleteAllUsers, getSystemSettings, updateSystemSettings, getConversationId, getProjects, getConversations, getProjectUnreadNotifications, getNotifications, markNotificationAsRead, getAttendance, getLeaveRequests } from '../services/database';
 import { APP_NAME, HYPHENATED_NAME } from '../constants';
 import { SystemSettings, Attachment, Message as ChatMessage } from '../types';
 import { MeetingList } from '../components/meetings/MeetingList';
@@ -278,6 +278,12 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [appTab, setAppTab] = useState<'developer' | 'sales' | 'invites'>('developer');
   const [developerStats, setDeveloperStats] = useState<Record<string, any>>({});
+  const [selectedDevForCalendar, setSelectedDevForCalendar] = useState<UserProfile | null>(null);
+  const [devCalendarAttendance, setDevCalendarAttendance] = useState<Attendance[]>([]);
+  const [devCalendarLeaves, setDevCalendarLeaves] = useState<LeaveRequest[]>([]);
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState<number>(new Date().getMonth());
+  const [currentCalendarYear, setCurrentCalendarYear] = useState<number>(new Date().getFullYear());
+  const [isLoadingDevCalendar, setIsLoadingDevCalendar] = useState<boolean>(false);
 
   const isUserAdmin = profile?.role === 'admin' || (user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
@@ -431,6 +437,26 @@ export default function AdminPanel({ user, profile }: AdminPanelProps) {
       unsubscribeDevInvites();
     };
   }, [user.uid, isUserAdmin, activeTab, appTab]);
+
+  const handleOpenDevCalendar = async (dev: UserProfile) => {
+    setSelectedDevForCalendar(dev);
+    setIsLoadingDevCalendar(true);
+    setDevCalendarAttendance([]);
+    setDevCalendarLeaves([]);
+    try {
+      const [attendanceData, leaveData] = await Promise.all([
+        getAttendance(dev.uid),
+        getLeaveRequests(dev.uid)
+      ]);
+      setDevCalendarAttendance(attendanceData as Attendance[]);
+      setDevCalendarLeaves(leaveData as LeaveRequest[]);
+    } catch (err) {
+      console.error("Error loading developer calendar:", err);
+      toast.error("Failed to recover developer calendar protocols");
+    } finally {
+      setIsLoadingDevCalendar(false);
+    }
+  };
 
   const handleAccept = async (projectId: string) => {
     try {
@@ -2190,7 +2216,10 @@ Joined: ${c.createdAt ? (typeof (c.createdAt as any).toDate === 'function' ? (c.
 
                       <div className="pt-6 border-t border-white/5 flex gap-2">
                          <button onClick={() => { setSelectedUser(dev); setShowDirectChat(true); }} className="flex-1 py-3 bg-[#c7c42a] text-black rounded-xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Message</button>
-                         <button className="flex-1 py-3 bg-white/5 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/10">Profile</button>
+                         <button onClick={() => handleOpenDevCalendar(dev)} className="flex-1 py-3 bg-white/5 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-1.5">
+                           <Calendar size={12} />
+                           <span>Calendar</span>
+                         </button>
                       </div>
                     </div>
                   );
@@ -3180,6 +3209,199 @@ Description: ${viewingProject.description || 'No description provided.'}
               >
                 Close
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Developer Calendar Modal */}
+      <AnimatePresence>
+        {selectedDevForCalendar && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/85 backdrop-blur-xl" 
+              onClick={() => setSelectedDevForCalendar(null)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-black border border-white/10 shadow-2xl rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col p-8 md:p-12 z-10"
+            >
+              {/* Header */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-8 border-b border-white/5">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black font-black text-2xl italic">
+                    {selectedDevForCalendar.photoURL ? (
+                      <img src={selectedDevForCalendar.photoURL} alt="" className="w-full h-full object-cover rounded-2xl" referrerPolicy="no-referrer" />
+                    ) : (
+                      selectedDevForCalendar.displayName?.[0] || 'D'
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">{selectedDevForCalendar.displayName}</h3>
+                    <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">{selectedDevForCalendar.devRole || 'Developer'} // OPERATIONAL BIO-INTEL</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-full border border-white/10 text-white">
+                    <select 
+                      value={currentCalendarMonth}
+                      onChange={(e) => setCurrentCalendarMonth(parseInt(e.target.value))}
+                      className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:text-[#c7c42a] transition-colors"
+                    >
+                      {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                        <option key={m} value={i} className="bg-black">{m}</option>
+                      ))}
+                    </select>
+                    <select 
+                      value={currentCalendarYear}
+                      onChange={(e) => setCurrentCalendarYear(parseInt(e.target.value))}
+                      className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:text-[#c7c42a] transition-colors"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
+                        <option key={y} value={y} className="bg-black">{y}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedDevForCalendar(null)}
+                    className="p-3 bg-white/5 opacity-40 hover:opacity-100 rounded-full text-white transition-all"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {isLoadingDevCalendar ? (
+                <div className="py-24 text-center">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#c7c42a] mb-4"></div>
+                  <p className="text-sm font-black text-white/40 uppercase tracking-widest italic animate-pulse">Syncing chronological systems...</p>
+                </div>
+              ) : (
+                <div className="space-y-8 pt-8">
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-6 bg-white/5 border border-white/5 rounded-2xl flex flex-col justify-between">
+                      <span className="text-[9px] font-black uppercase text-white/40 tracking-widest">Present (Days logged)</span>
+                      <span className="text-3xl font-black text-green-400 italic mt-2">
+                        {devCalendarAttendance.filter(a => {
+                          const [y, m] = a.date.split('-');
+                          return parseInt(y) === currentCalendarYear && parseInt(m) === (currentCalendarMonth + 1);
+                        }).length} days
+                      </span>
+                    </div>
+                    <div className="p-6 bg-white/5 border border-white/5 rounded-2xl flex flex-col justify-between">
+                      <span className="text-[9px] font-black uppercase text-white/40 tracking-widest font-mono">Active Time logged</span>
+                      <span className="text-3xl font-black text-[#c7c42a] italic mt-2">
+                        {devCalendarAttendance.filter(a => {
+                          const [y, m] = a.date.split('-');
+                          return parseInt(y) === currentCalendarYear && parseInt(m) === (currentCalendarMonth + 1);
+                        }).reduce((acc, a) => acc + (a.totalHours || 0), 0).toFixed(1)} hrs
+                      </span>
+                    </div>
+                    <div className="p-6 bg-white/5 border border-white/5 rounded-2xl flex flex-col justify-between">
+                      <span className="text-[9px] font-black uppercase text-white/40 tracking-widest">Approved Leaves</span>
+                      <span className="text-3xl font-black text-blue-400 italic mt-2">
+                        {devCalendarLeaves.filter(l => {
+                          if (l.status !== 'approved') return false;
+                          const lDateStr = typeof l.startDate === 'string' ? l.startDate : (l.startDate as any)?.toDate?.()?.toISOString().split('T')[0];
+                          if (!lDateStr) return false;
+                          const [y, m] = lDateStr.split('-');
+                          return parseInt(y) === currentCalendarYear && parseInt(m) === (currentCalendarMonth + 1);
+                        }).length} leaves
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Calendar Grid Container */}
+                  <div className="p-8 bg-white/5 rounded-3xl border border-white/5 space-y-6">
+                    <div className="grid grid-cols-7 gap-2 text-center text-[9px] font-black uppercase text-white/20 tracking-widest">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                        <div key={day} className="py-2 italic">{day}</div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-2">
+                      {Array.from({ length: 42 }).map((_, i) => {
+                        const firstDayOfMonth = new Date(currentCalendarYear, currentCalendarMonth, 1).getDay();
+                        const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+                        const daysInMonth = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
+                        
+                        const dayNum = i - adjustedFirstDay + 1;
+                        
+                        if (dayNum <= 0 || dayNum > daysInMonth) {
+                          return <div key={i} className="aspect-square opacity-0" />;
+                        }
+
+                        const today = new Date();
+                        const targetDate = new Date(currentCalendarYear, currentCalendarMonth, dayNum);
+                        const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                        
+                        const attendanceRecord = devCalendarAttendance.find(a => a.date === dateStr);
+                        const leaveRecord = devCalendarLeaves.find(l => {
+                          const lDate = typeof l.startDate === 'string' ? l.startDate : (l.startDate as any)?.toDate?.()?.toISOString().split('T')[0];
+                          return lDate === dateStr && l.status === 'approved';
+                        });
+                        
+                        const isFuture = targetDate > today;
+                        const isLeave = !!leaveRecord;
+                        
+                        let bgClass = 'border-white/5 bg-white/[0.01] hover:bg-white/5';
+                        let textClass = 'text-white/20';
+                        
+                        if (attendanceRecord) {
+                          bgClass = 'border-green-500/20 bg-green-500/5 hover:bg-green-500/10';
+                          textClass = 'text-green-400';
+                        } else if (isLeave) {
+                          bgClass = 'border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10';
+                          textClass = 'text-blue-400';
+                        } else if (isFuture) {
+                          bgClass = 'border-white/5 bg-white/[0.01] opacity-40';
+                          textClass = 'text-white/10';
+                        } else {
+                          bgClass = 'border-red-500/10 bg-red-500/[0.02] hover:bg-red-500/5';
+                          textClass = 'text-red-400/40';
+                        }
+
+                        return (
+                          <div 
+                            key={i} 
+                            className={`aspect-square rounded-2xl border ${bgClass} transition-all flex flex-col items-center justify-center p-2 relative group`}
+                          >
+                            <span className={`text-xs font-black italic ${textClass}`}>{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
+                            
+                            {attendanceRecord && (
+                              <div className="mt-1 text-center">
+                                <div className="w-1 h-1 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)] mx-auto" />
+                                <p className="text-[5px] font-black uppercase text-green-500/60 mt-0.5">{attendanceRecord.totalHours?.toFixed(1)}h Logged</p>
+                              </div>
+                            )}
+
+                            {isLeave && (
+                              <div className="mt-1 text-center">
+                                <div className="w-1 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] mx-auto" />
+                                <p className="text-[5px] font-black uppercase text-blue-500/60 mt-0.5">On Leave</p>
+                              </div>
+                            )}
+
+                            {!attendanceRecord && !isLeave && !isFuture && (
+                              <div className="mt-1 text-center">
+                                <div className="w-1 h-1 rounded-full bg-red-500/40 mx-auto" />
+                                <p className="text-[5px] font-black uppercase text-red-500/40 mt-0.5">Absent</p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
