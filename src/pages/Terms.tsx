@@ -10,7 +10,11 @@ export default function Terms() {
       exit={{ opacity: 0 }}
       className="pt-40 pb-20 px-10"
     >
-      <SEO title="Terms of Service – WebbyLaunch" />
+      <SEO 
+        title="Terms of Service – WebbyLaunch | Webby Launch" 
+        description="Terms of Service page for WebbyLaunch (Webby Launch). Learn about rules, guidelines, and agreements for working with us."
+        keywords="WebbyLaunch, Webby Launch, webbylaunch, terms of service, user agreement"
+      />
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="space-y-6">
           <motion.h1 

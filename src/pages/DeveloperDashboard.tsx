@@ -352,6 +352,67 @@ export default function DeveloperDashboard({ user, profile }: DeveloperDashboard
     return () => clearInterval(interval);
   }, [isPunchedIn, punchInTime]);
 
+  // Automatic midnight auto punch-out rollover check (evryday 12am reset)
+  useEffect(() => {
+    if (!isPunchedIn || !user?.uid) return;
+
+    let autoPunchOutTimeout: NodeJS.Timeout | null = null;
+
+    const setupMidnightAutoPunchOut = () => {
+      const now = new Date();
+      // Next midnight in local client time timezone
+      const nextMidnight = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1,
+        0, 0, 0, 0
+      );
+      const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+
+      console.log(`[Midnight Rollover] Setting up client-side auto punch-out timer in ${msUntilMidnight / 1000}s`);
+
+      autoPunchOutTimeout = setTimeout(async () => {
+        try {
+          console.log("[Midnight Rollover] 12 AM local time reached. Performing auto punch-out reset...");
+          toast.success("🔴 Midnight rollover detected! You have been automatically punched out. Please punch in again for the new working day.");
+          await punchOut(user.uid);
+        } catch (error) {
+          console.error("Auto punch out failed:", error);
+        }
+      }, msUntilMidnight);
+    };
+
+    // If they came online but the punch in date is older than today or local midnight has already crossed, punch them out on mount
+    const checkOutdatedPunchInOnMount = async () => {
+      if (!punchInTime) return;
+      const now = new Date();
+      const punchInDate = punchInTime.toDate ? punchInTime.toDate() : new Date(punchInTime);
+      
+      // If the punch in date is on a different calendar day (local time), trigger auto punch-out immediately
+      const isDifferentDay = 
+        now.getFullYear() !== punchInDate.getFullYear() ||
+        now.getMonth() !== punchInDate.getMonth() ||
+        now.getDate() !== punchInDate.getDate();
+
+      if (isDifferentDay) {
+        console.log("[Midnight Rollover] Punch-in date is from a previous day. Auto punching out on load...");
+        try {
+          toast.success("🔴 Previous shift automatically closed. Please punch in again for today's shift.");
+          await punchOut(user.uid);
+        } catch (err) {
+          console.error("Outdated punch out failed:", err);
+        }
+      }
+    };
+
+    checkOutdatedPunchInOnMount();
+    setupMidnightAutoPunchOut();
+
+    return () => {
+      if (autoPunchOutTimeout) clearTimeout(autoPunchOutTimeout);
+    };
+  }, [isPunchedIn, punchInTime, user?.uid]);
+
   const handleCloseWelcome = () => {
     if (user) {
       localStorage.setItem(`dev_welcome_${user.uid}`, 'true');

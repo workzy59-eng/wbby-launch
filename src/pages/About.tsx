@@ -11,7 +11,11 @@ export default function About() {
       exit={{ opacity: 0 }}
       className="pt-40 pb-20 px-10"
     >
-      <SEO title="About WebbyLaunch – Premium Website solutions" />
+      <SEO 
+        title="About WebbyLaunch | Webby Launch – Premium Website Solutions" 
+        description="Learn more about WebbyLaunch (Webby Launch). We build high-performance, premium websites for Gyms, Resorts, and Clothing brands in under 52 hours."
+        keywords="WebbyLaunch, Webby Launch, webbylaunch, webby launch, about us, fast web design agency, premium web developers"
+      />
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-6 mb-20">
           <motion.h1 

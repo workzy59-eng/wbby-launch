@@ -18,9 +18,9 @@ export default function LocationPage() {
   return (
     <div className="bg-black min-h-screen">
       <SEO 
-        title={`Web Development Services in ${cityName} | Webby Launch`}
-        description={`Looking for professional web development in ${cityName}? Webby Launch builds fast, SEO-friendly, and mobile-responsive websites for startups and small businesses in ${cityName}.`}
-        keywords={`web development ${city}, website designer ${city}, SEO services ${city}, affordable web design ${city}`}
+        title={`Web Development Services in ${cityName} | Webby Launch | WebbyLaunch`}
+        description={`Looking for professional web development in ${cityName}? Webby Launch (WebbyLaunch) builds fast, SEO-friendly, and mobile-responsive websites for startups and small businesses in ${cityName}.`}
+        keywords={`WebbyLaunch, Webby Launch, webbylaunch, webby launch, web development ${city}, website designer ${city}, SEO services ${city}, affordable web design ${city}`}
       />
 
       <section className="relative pt-40 pb-20 px-10 overflow-hidden">

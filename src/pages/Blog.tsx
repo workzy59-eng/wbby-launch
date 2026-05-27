@@ -66,8 +66,9 @@ export default function Blog() {
       className="min-h-screen bg-black text-white selection:bg-[#c7c42a] selection:text-black"
     >
       <SEO 
-        title="Blog | Insights & Guides – WebbyLaunch"
-        description="Expert insights, practical tips, and deep dives into web design, SEO, and business growth. Grow your business online with WebbyLaunch."
+        title="Blog | Insights & Guides – WebbyLaunch | Webby Launch"
+        description="Expert insights, practical tips, and deep dives into web design, SEO, and business growth. Grow your business online with WebbyLaunch (Webby Launch)."
+        keywords="WebbyLaunch, Webby Launch, webbylaunch, webby launch, blog, tech insights, web design tips, saas development"
       />
 
       {/* Hero Section */}

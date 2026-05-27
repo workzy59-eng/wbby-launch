@@ -10,7 +10,11 @@ export default function Privacy() {
       exit={{ opacity: 0 }}
       className="pt-40 pb-20 px-10"
     >
-      <SEO title="Privacy Policy – WebbyLaunch" />
+      <SEO 
+        title="Privacy Policy – WebbyLaunch | Webby Launch" 
+        description="Privacy policy details for WebbyLaunch (Webby Launch). Learn how we protect and manage your personal data safely."
+        keywords="WebbyLaunch, Webby Launch, webbylaunch, privacy policy, data safety"
+      />
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="space-y-6">
           <motion.h1 

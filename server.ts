@@ -35,6 +35,8 @@ const upload = multer({
 });
 
 // Initialize Firebase Admin
+let isFirebaseAdminCertLoaded = false;
+
 if (!admin.apps.length) {
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
   let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -92,6 +94,7 @@ if (!admin.apps.length) {
         storageBucket: firebaseConfig.storageBucket
       });
       console.log("Firebase Admin initialized successfully with cert");
+      isFirebaseAdminCertLoaded = true;
     } catch (initErr: any) {
       console.error("Firebase Admin initialization error (cert):", initErr.message || initErr);
       try {
@@ -122,8 +125,6 @@ const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
-
-const dbAdmin = admin.firestore();
 
 // API Routes
 const apiRouter = express.Router();
@@ -199,6 +200,87 @@ apiRouter.post("/upload", (req, res, next) => {
 });
 
 app.use("/api", apiRouter);
+
+// Automatic Midnight Auto Punch-Out Sweep
+async function runAutoPunchOutCheck() {
+  if (!isFirebaseAdminCertLoaded) {
+    console.log("[Auto Punch Out] Notice: Server-side background auto-punch-out is inactive because Firebase Admin certificate is not loaded. Safe self-healing continues via client-side rollover.");
+    return;
+  }
+
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+    console.log(`[Auto Punch Out Check] Service account sweep checking for records older than ${todayStr}...`);
+    
+    const dbAdmin = admin.firestore();
+    const querySnapshot = await dbAdmin.collection("attendance")
+      .where("punchOut", "==", null)
+      .get();
+    
+    if (querySnapshot.empty) {
+      return;
+    }
+    
+    const batch = dbAdmin.batch();
+    let count = 0;
+    
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const docDate = data.date; // e.g. "2026-05-26"
+      const userId = data.userId;
+      
+      // If the attendance doc date is before today UTC
+      if (docDate && docDate < todayStr) {
+        console.log(`[Auto Punch Out] Resetting outdated punch-in for user ${userId} on date ${docDate}`);
+        
+        const punchInTime = data.punchIn;
+        let punchOutDate = new Date();
+        if (punchInTime) {
+          const punchInMs = punchInTime.toDate ? punchInTime.toDate().getTime() : 
+                            (punchInTime._seconds ? punchInTime._seconds * 1000 : new Date(punchInTime).getTime());
+          // Close shift exactly 5 hours after punch in (the minimum shift time) or default to end of that day
+          punchOutDate = new Date(punchInMs + 5 * 60 * 60 * 1000);
+        }
+        
+        const punchOutTimestamp = admin.firestore.Timestamp.fromDate(punchOutDate);
+        
+        const attRef = dbAdmin.collection("attendance").doc(docSnap.id);
+        batch.update(attRef, {
+          punchOut: punchOutTimestamp,
+          status: "completed",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        if (userId) {
+          const userRef = dbAdmin.collection("users").doc(userId);
+          batch.set(userRef, {
+            isPunchedIn: false,
+            status: "online",
+            lastPunchOut: admin.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+        
+        count++;
+      }
+    });
+    
+    if (count > 0) {
+      await batch.commit();
+      console.log(`[Auto Punch Out] Reset successful. Automatically punched out ${count} outdated developers.`);
+    }
+  } catch (err) {
+    console.error("[Auto Punch Out] Automated sweep failure:", err);
+  }
+}
+
+// Run sweep on server startup and then every 5 minutes
+setTimeout(() => {
+  runAutoPunchOutCheck().catch(err => console.error("Initial auto-punch-out sweep failed:", err));
+}, 10000);
+
+setInterval(() => {
+  runAutoPunchOutCheck().catch(err => console.error("Interval auto-punch-out sweep failed:", err));
+}, 5 * 60 * 1000);
 
 async function startServer() {
   // Vite middleware for development
