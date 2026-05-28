@@ -6,7 +6,6 @@ import { FirebaseUser } from '../firebase';
 import { UserProfile } from '../types';
 import NavHeader from './ui/nav-header';
 import { APP_NAME, PROFESSIONAL_EMAIL } from '../constants';
-import NotificationBell from './NotificationBell';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -63,7 +62,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, profile }) => {
           </div>
 
           <div className="flex items-center gap-6">
-            <NotificationBell />
             {user ? (
               <Link to="/dashboard" className="text-sm font-bold uppercase tracking-widest hover:text-[#c7c42a] transition-all">Dashboard</Link>
             ) : (

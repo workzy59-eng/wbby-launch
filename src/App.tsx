@@ -121,7 +121,7 @@ export default function App() {
                       (profile?.role === 'admin' || 
                        user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                         <Navigate to="/admin" />
-                      ) : (['sain17296174@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
+                      ) : (['sain172961674@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'].includes(user.email?.toLowerCase() || '') || profile?.role === 'developer') ? (
                         <Navigate to="/dashboard" />
                       ) : (
                         <Navigate to="/dashboard" />
@@ -173,7 +173,7 @@ export default function App() {
                          user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? (
                           <AdminPanel user={user} profile={profile} />
                         ) : (profile.role === 'developer' || 
-                             ['sain17296174@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                             ['sain172961674@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : profile.role === 'sales' ? (
                           <SalesDashboard user={user} profile={profile} />
@@ -203,7 +203,7 @@ export default function App() {
                   element={
                     user ? (
                       profile ? (
-                        (profile.role === 'developer' || ['sain17296174@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
+                        (profile.role === 'developer' || ['sain172961674@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'].includes(user.email?.toLowerCase() || '')) ? (
                           <DeveloperDashboard user={user} profile={profile} />
                         ) : (
                           <Navigate to="/dashboard" />

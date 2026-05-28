@@ -291,6 +291,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
     }
   };
   const [paymentOption, setPaymentOption] = useState<'full' | 'understanding'>('full');
+  const [utr, setUtr] = useState('');
 
   useEffect(() => {
     getSystemSettings().then(settings => {
@@ -358,10 +359,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         break;
       case 6: // Preview
         break;
-      case 7: // Choose Plan
-        if (!formData.plan) invalid.push('plan');
-        break;
-      case 8: // Terms and Conditions
+      case 7: // Terms and Conditions
         if (!agreedToTerms) invalid.push('terms');
         break;
     }
@@ -439,7 +437,7 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
         }
 
         const finalBusinessType = formData.businessType === 'Other' ? formData.otherBusinessType : formData.businessType;
-        const sanitizedOnboardingData = { ...formData };
+        const sanitizedOnboardingData = { ...formData, utr };
         
         const projectData: any = {
           userId: currentUser.uid,
@@ -451,7 +449,8 @@ export default function OnboardingFlow({ user, profile }: OnboardingFlowProps) {
           primaryColor: formData.primaryColor || '#c7c42a',
           secondaryColor: formData.secondaryColor || '#000000',
           plan: formData.plan || 'basic',
-          paymentStatus: 'pending',
+          paymentStatus: utr ? 'pending_verification' : 'pending',
+          utr: utr || '',
           isDeleted: false,
           onboardingData: sanitizedOnboardingData,
           status: 'Waiting for Review',
@@ -499,13 +498,6 @@ ${formData.developerNote || 'No specific note provided.'}
         setStep(9); 
         
         setTimeout(() => {
-          if (globalCountry === 'India' && formData.plan) {
-            const link = (paymentLinks as any)[formData.plan];
-            if (link && link !== '#') {
-              window.location.href = link;
-              return;
-            }
-          }
           navigate('/dashboard');
         }, 5000);
       } catch (err: any) {
@@ -1486,116 +1478,8 @@ ${formData.developerNote || 'No specific note provided.'}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
-            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-[#c7c42a] px-3 py-1 rounded flex items-center justify-center shadow-lg shadow-[#c7c42a]/20">
-                    <span className="text-black font-black text-[10px] tracking-tighter uppercase">{HYPHENATED_NAME}</span>
-                  </div>
-                  <div className="text-3xl font-black tracking-tighter text-white uppercase italic leading-none">{APP_NAME}</div>
-                </div>
-                <div className="space-y-2">
-                  <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 7</h2>
-                  <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Choose Plan</h3>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
-                <button 
-                  className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-[#c7c42a] text-black"
-                >
-                  One-Time Payment
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {[
-                { 
-                  id: 'basic', 
-                  name: 'Basic', 
-                  price: `${currency}${globalPricing.basic}/-`, 
-                  features: ['1–3 Pages Website', 'Simple Design', 'Mobile Responsive'] 
-                },
-                { 
-                  id: 'standard', 
-                  name: 'Standard', 
-                  price: `${currency}${globalPricing.standard}/-`, 
-                  features: ['4–7 Pages Website', 'Modern UI/UX', 'Basic SEO'] 
-                },
-                { 
-                  id: 'premium', 
-                  name: 'Premium', 
-                  price: `${currency}${globalPricing.premium}/-`, 
-                  features: ['Full Custom Website', 'Advanced UI/UX', 'SEO Optimization'] 
-                }
-              ].map((plan) => (
-                <button
-                  key={plan.id}
-                  onClick={() => setFormData({ ...formData, plan: plan.id as any })}
-                  className={`p-8 rounded-2xl border-2 transition-all text-left flex flex-col h-full relative overflow-hidden ${
-                    formData.plan === plan.id 
-                      ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
-                      : 'bg-black border-white/10 text-white hover:border-[#c7c42a]/50'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-6">
-                    <div 
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.plan === plan.id ? 'bg-black/10' : 'bg-[#c7c42a]/10 text-[#c7c42a]'}`}
-                    >
-                      <CreditCard size={24} />
-                    </div>
-                    {formData.plan === plan.id && <Check size={20} strokeWidth={4} />}
-                  </div>
-                  <h4 className="text-2xl font-black italic uppercase tracking-tighter mb-2">{plan.name}</h4>
-                  <div className="text-3xl font-black italic tracking-tighter mb-6">{plan.price}</div>
-                  <ul className="space-y-3 flex-1">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${formData.plan === plan.id ? 'text-black/60' : 'text-white/40'}`}>
-                        <div 
-                          className={`w-1.5 h-1.5 rounded-full ${formData.plan === plan.id ? 'bg-black' : 'bg-[#c7c42a]'}`} 
-                        />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              ))}
-            </div>
-
-            <div className="flex gap-6">
-              <button 
-                onClick={handleBack} 
-                className="flex-[0.4] border-2 border-white/10 text-white/40 py-6 rounded-2xl font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
-              >
-                Back
-              </button>
-              <button 
-                onClick={() => {
-                  if (!formData.plan) {
-                    toast.error('Please select a plan to continue');
-                    return;
-                  }
-                  handleNext();
-                }} 
-                className="flex-1 bg-[#c7c42a] text-black py-6 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#c7c42a]/20 uppercase italic tracking-tighter"
-              >
-                Next
-              </button>
-            </div>
-          </motion.div>
-        );
-      case 8:
-        return (
-          <motion.div 
-            key="step8"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
-          >
             <div className="space-y-2">
-              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 8</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 7</h2>
               <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Terms & Submission</h3>
               <p className="text-white/40 font-black uppercase tracking-widest italic leading-relaxed text-[10px]">Review our terms before launching your project.</p>
             </div>
@@ -1677,17 +1561,227 @@ ${formData.developerNote || 'No specific note provided.'}
             <div className="flex gap-6">
               <button onClick={handleBack} className="flex-[0.4] border-2 border-white/10 text-white/60 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter">Back</button>
               <button 
-                onClick={handleSubmit} 
-                disabled={!agreedToTerms || isSubmitting}
+                onClick={handleNext} 
+                disabled={!agreedToTerms}
                 className={`flex-1 py-6 rounded-[2rem] font-black text-2xl transition-all flex items-center justify-center gap-4 shadow-2xl ${
-                  agreedToTerms && !isSubmitting
+                  agreedToTerms
                     ? 'bg-[#c7c42a] text-black hover:scale-[1.02] active:scale-[0.98]' 
                     : 'bg-white/5 text-white/20 cursor-not-allowed'
                 }`}
               >
-                {isSubmitting ? <Loader color="black" /> : (
+                <span>Proceed to Payment</span>
+                <ArrowRight size={24} />
+              </button>
+            </div>
+          </motion.div>
+        );
+      case 8:
+        return (
+          <motion.div 
+            key="step8"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#c7c42a] px-3 py-1 rounded flex items-center justify-center shadow-lg shadow-[#c7c42a]/20">
+                  <span className="text-black font-black text-[10px] tracking-tighter uppercase">{HYPHENATED_NAME}</span>
+                </div>
+                <div className="text-3xl font-black tracking-tighter text-white uppercase italic leading-none">{APP_NAME}</div>
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#c7c42a]">Step 8</h2>
+                <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Secure UPI Payment</h3>
+                <p className="text-white/40 font-black uppercase tracking-widest italic leading-relaxed text-[10px]">
+                  Pay the verified settlement amount directly via deep-linked UPI.
+                </p>
+              </div>
+            </div>
+
+            {/* Pay block matching precise target HTML + CSS layout */}
+            <div className="bg-[#080808] border border-white/5 p-8 md:p-12 rounded-[2.5rem] space-y-8 relative overflow-hidden">
+              <div className="absolute inset-0 bg-radial-at-t from-[#c7c42a]/5 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-white/5 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#c7c42a]/10 flex items-center justify-center text-[#c7c42a] shrink-0">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black uppercase tracking-wider text-white">Verified Peer Authenticator</h4>
+                    <p className="text-xs text-white/40 italic">Merchant: Shivam Tiwari (8726490079@goaxb)</p>
+                  </div>
+                </div>
+                <div className="bg-[#c7c42a]/10 border border-[#c7c42a]/20 px-4 py-2 rounded-full shrink-0">
+                  <span className="text-[10px] font-black uppercase text-[#c7c42a] tracking-widest block font-mono">Status: Secure Ready</span>
+                </div>
+              </div>
+
+              {/* Dynamic plan switch and features pruning panel */}
+              <div className="space-y-6 relative z-10">
+                <h4 className="text-md font-black text-white uppercase italic tracking-tighter">Your Selected Plan: <span className="text-[#c7c42a]">{formData.plan ? formData.plan.toUpperCase() : 'BASIC'}</span></h4>
+                
+                {/* Compact Plan Switch Tabs */}
+                <div className="grid grid-cols-3 gap-2 bg-white/5 p-1 rounded-xl border border-white/5">
+                  {(['basic', 'standard', 'premium'] as const).map((planKey) => {
+                    const mappedPrice = planKey === 'basic' ? '₹1,999' : planKey === 'standard' ? '₹4,999' : '₹9,999';
+                    return (
+                      <button
+                        key={planKey}
+                        onClick={() => setFormData(prev => ({ ...prev, plan: planKey }))}
+                        className={`py-3 px-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all text-center ${
+                          formData.plan === planKey 
+                            ? 'bg-[#c7c42a] text-black shadow-lg shadow-[#c7c42a]/10' 
+                            : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+                        }`}
+                      >
+                        {planKey} ({mappedPrice})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Interactive Selection Pruning List to "allow user remove the selected things" */}
+                {formData.selectedFeatures && formData.selectedFeatures.length > 0 && (
+                  <div className="bg-black/60 p-6 rounded-2xl border border-white/5 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Active Scope Items ({formData.selectedFeatures.length})</span>
+                      <span className="text-[9px] text-[#c7c42a] italic uppercase font-mono">Prune items to decrease project weight</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.selectedFeatures.map((feat) => (
+                        <div key={feat} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 px-3 py-1.5 rounded-full transition-all text-[10px] text-white/80 font-bold uppercase tracking-wide">
+                          <span>{feat}</span>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.selectedFeatures.filter(f => f !== feat);
+                              setFormData(prev => ({ ...prev, selectedFeatures: updated }));
+                              toast.success(`Removed: ${feat}`);
+                            }}
+                            className="text-red-400 hover:text-red-300 font-black cursor-pointer ml-1 w-4 h-4 rounded-full bg-black/40 flex items-center justify-center text-[9px]"
+                            title="Remove element"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Secure deep loading and prompt style exact payment button section */}
+              <div className="pt-4 text-center space-y-4 relative z-10">
+                <p className="text-xs text-white/50 italic font-medium">Click the button below to pay via mobile banking apps:</p>
+                
+                {/* Respective payment button links dynamically generated at once corresponding to user plan selection */}
+                <div style={{display:'flex', gap:'20px', flexWrap:'wrap', justifyContent:'center', marginTop:'20px'}}>
+                  {formData.plan === 'basic' && (
+                    <a href="upi://pay?pa=8726490079@goaxb&pn=Shivam%20Tiwari&am=1999&cu=INR"
+                       className="upi-btn dark">
+                       Pay ₹1,999
+                    </a>
+                  )}
+
+                  {formData.plan === 'standard' && (
+                    <a href="upi://pay?pa=8726490079@goaxb&pn=Shivam%20Tiwari&am=4999&cu=INR"
+                       className="upi-btn blue">
+                       Pay ₹4,999
+                    </a>
+                  )}
+
+                  {formData.plan === 'premium' && (
+                    <a href="upi://pay?pa=8726490079@goaxb&pn=Shivam%20Tiwari&am=9999&cu=INR"
+                       className="upi-btn green">
+                       Pay ₹9,999
+                    </a>
+                  )}
+                </div>
+
+                <style dangerouslySetInnerHTML={{__html: `
+                  .upi-btn{
+                    text-decoration:none !important;
+                    color:white !important;
+                    padding:18px 35px !important;
+                    border-radius:16px !important;
+                    font-size:20px !important;
+                    font-weight:700 !important;
+                    display:inline-block !important;
+                    transition:all .3s ease !important;
+                    box-shadow:0 10px 25px rgba(0,0,0,0.15) !important;
+                  }
+
+                  .upi-btn:hover{
+                    transform:translateY(-4px) scale(1.03) !important;
+                    box-shadow: 0 15px 30px rgba(199,196,42,0.1) !important;
+                  }
+
+                  .dark{
+                    background:#111827 !important;
+                  }
+
+                  .blue{
+                    background:#2563eb !important;
+                  }
+
+                  .green{
+                    background:#059669 !important;
+                  }
+
+                  @media(max-width:768px){
+                    .upi-btn{
+                      width:100% !important;
+                      text-align:center !important;
+                    }
+                  }
+                `}} />
+
+                <p className="text-[10px] text-white/30 italic">
+                  * On mobile devices, this will trigger BHIM, GPay, PhonePe, Paytm, etc. automatically.
+                </p>
+              </div>
+
+              {/* Verification Section */}
+              <div className="border-t border-white/5 pt-8 space-y-4 relative z-10">
+                <h4 className="text-sm font-black text-white uppercase italic tracking-tighter">Enter Payment Reference / UTR to Verify</h4>
+                <p className="text-[10px] text-white/40 uppercase tracking-widest italic">Please copy and enter your 12-digit UPI Transaction / Ref Number from the banking app below:</p>
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={20}
+                    value={utr}
+                    onChange={(e) => setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+                    className="w-full p-6 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#c7c42a] font-mono tracking-widest text-center text-sm uppercase"
+                    placeholder="12-DIGIT TRANSACTION EX. 6128XXXXXXXX"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-6">
+              <button 
+                onClick={handleBack} 
+                className="flex-[0.4] border-2 border-white/10 text-white/60 py-6 rounded-[2rem] font-black text-xl hover:bg-white/5 transition-all uppercase italic tracking-tighter"
+              >
+                Back
+              </button>
+              <button 
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className={`flex-1 py-6 rounded-[2rem] font-black text-2xl transition-all flex items-center justify-center gap-4 shadow-2xl ${
+                  !isSubmitting
+                    ? 'bg-[#c7c42a] text-black hover:scale-[1.02] active:scale-[0.98]' 
+                    : 'bg-white/10 text-white/20 cursor-not-allowed'
+                }`}
+              >
+                {isSubmitting ? (
+                  <Loader color="black" />
+                ) : (
                   <>
-                    <span>Launch Project</span>
+                    <span>Verify & Submit Launch</span>
                     <ArrowRight size={24} />
                   </>
                 )}

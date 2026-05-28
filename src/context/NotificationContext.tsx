@@ -29,14 +29,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Initialize OneSignal Push dynamically
   const initializeOneSignalPush = async () => {
+    if (!user?.uid) return;
     try {
-      await initOneSignal(user?.uid);
+      await initOneSignal(user.uid);
     } catch (err) {
       console.warn("[OneSignal] Context registration warning:", err);
     }
   };
 
   useEffect(() => {
+    if (!user?.uid) return;
     initializeOneSignalPush();
   }, [user?.uid]);
 
