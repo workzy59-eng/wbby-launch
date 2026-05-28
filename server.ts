@@ -8,6 +8,7 @@ import crypto from "crypto";
 import firebaseConfig from './firebase-applet-config.json';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
+import axios from "axios";
 
 dotenv.config();
 
@@ -126,11 +127,122 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
+// Production-grade security headers middleware
+app.use((req, res, next) => {
+  // Prevent mime-type sniffing
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  // Set safety referrer policy
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  
+  // Conditionally restrict frames in production only, allowing development previews inside AI studio iframes
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL) {
+    res.setHeader("X-Frame-Options", "DENY");
+  } else {
+    // Development frame allowance (for AI Studio previews)
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  }
+  next();
+});
+
+// Protect API from foreign origins in production
+const validateOrigin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL) {
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      "https://webbylaunch.com", 
+      "https://www.webbylaunch.com", 
+      "https://webbylaunch.vercel.app"
+    ];
+    if (origin && !allowedOrigins.includes(origin)) {
+      return res.status(403).json({ error: "Access Denied: Forbidden cross-origin API request." });
+    }
+  }
+  next();
+};
+
 // API Routes
 const apiRouter = express.Router();
+apiRouter.use(validateOrigin);
 
 apiRouter.get("/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+// OneSignal Push Notification configuration dynamic endpoint
+apiRouter.get("/notifications/config", (req, res) => {
+  res.json({
+    appId: process.env.ONESIGNAL_APP_ID || "3a2f3bd4-976d-4959-b9d9-4824b22cdd63", // Robust sandbox fallback for local dev
+    restKeyConfigured: !!process.env.ONESIGNAL_REST_API_KEY
+  });
+});
+
+// OneSignal Push Notification dispatch proxy
+apiRouter.post("/notifications/send", async (req, res) => {
+  try {
+    const { title, description, url, category, specificUserId } = req.body;
+    
+    // Fallback to demo credentials if none provided to ensure immediate ease of testing out of the box
+    const appId = process.env.ONESIGNAL_APP_ID || "3a2f3bd4-976d-4959-b9d9-4824b22cdd63";
+    const restKey = process.env.ONESIGNAL_REST_API_KEY;
+    
+    const payload: any = {
+      app_id: appId,
+      headings: { en: title || "New Notification" },
+      contents: { en: description || "Notification description text from WebbyLaunch" },
+      url: url || "https://webbylaunch.vercel.app/dashboard",
+      chrome_web_badge: "https://webbylaunch.vercel.app/favicon.svg",
+      chrome_web_icon: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=192&h=192",
+      data: {
+        category: category || "general",
+        clickUrl: url || "https://webbylaunch.vercel.app/dashboard",
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    if (specificUserId) {
+      payload.include_aliases = {
+        external_id: [specificUserId]
+      };
+      payload.target_channel = "push";
+    } else {
+      payload.included_segments = ["Subscribed Users"];
+    }
+
+    console.log("[OneSignal] Outbound notification request payload:", JSON.stringify(payload));
+
+    if (!restKey) {
+      console.log("[OneSignal] REST key missing, returning simulation details so local flow works instantly.");
+      return res.json({
+        success: true,
+        simulated: true,
+        message: "No ONESIGNAL_REST_API_KEY is defined in .env system. Simulation mode active for sandbox testing.",
+        notificationId: "simulated-" + Math.random().toString(36).substr(2, 9),
+        payload
+      });
+    }
+
+    const response = await axios.post("https://onesignal.com/api/v1/notifications", payload, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": `Basic ${restKey}`
+      }
+    });
+
+    console.log("[OneSignal] Dispatch successful:", response.data);
+    res.json({
+      success: true,
+      simulated: false,
+      notificationId: response.data.id,
+      data: response.data
+    });
+  } catch (err: any) {
+    console.error("[OneSignal] Error dispatching push notification:", err?.response?.data || err.message);
+    res.status(500).json({
+      success: false,
+      error: "Could not send push notification via OneSignal service",
+      details: err?.response?.data || err.message
+    });
+  }
 });
 
 apiRouter.post("/upload", (req, res, next) => {

@@ -13,8 +13,8 @@ interface SEOProps {
 
 const SEO: React.FC<SEOProps> = ({ 
   title = "WebbyLaunch | Webby Launch | Premium Website Solutions and SaaS Development", 
-  description = "WebbyLaunch (Webby Launch) builds high-performance websites in under 52 hours. Specializing in Gyms, Resorts, and Clothing brands with elite UI/UX and integrated payments.", 
-  keywords = "WebbyLaunch, Webby Launch, webbylaunch, webby launch, website development company in India, affordable web design services India, 52 hour website delivery, premium website solutions, startup website builder India, international web development",
+  description = "WebbyLaunch (Webby Launch) builds high-performance websites in under 52 hours. Discover the best affordable web agencies in India and website development and design costs in India.", 
+  keywords = "best affordable web agencies in India, website development and design costs in India, WebbyLaunch, Webby Launch, webbylaunch, webby launch, website development company in India, affordable web design services India, WPWeb Infotech comparison, FODUU review, Webclick Digital cheap web designer, Syspree pricing, premium website solutions, startup website builder India",
   image = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200",
   url = "https://webbylaunch.vercel.app",
   canonical,

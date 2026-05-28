@@ -4,11 +4,13 @@ import { useAuth } from './AuthContext';
 import { getNotifications, markNotificationAsRead, getUnreadMessageCount } from '../services/database';
 import { Notification } from '../types';
 import { Bell, MessageSquare, Video, CheckCircle } from 'lucide-react';
+import { initOneSignal } from '../services/onesignal';
 
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
   markAsRead: (id: string) => Promise<void>;
+  initializeOneSignalPush: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -24,6 +26,19 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const hiddenUnreadCountRef = useRef<number>(0);
   const isFirstMessagesLoadRef = useRef<boolean>(true);
   const isFirstNotifsLoadRef = useRef<boolean>(true);
+
+  // Initialize OneSignal Push dynamically
+  const initializeOneSignalPush = async () => {
+    try {
+      await initOneSignal(user?.uid);
+    } catch (err) {
+      console.warn("[OneSignal] Context registration warning:", err);
+    }
+  };
+
+  useEffect(() => {
+    initializeOneSignalPush();
+  }, [user?.uid]);
 
   // Subscribe to voice/text direct message unread counts
   useEffect(() => {
@@ -161,7 +176,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, initializeOneSignalPush }}>
       {children}
     </NotificationContext.Provider>
   );

@@ -40,6 +40,7 @@ const Docs = React.lazy(() => import('./pages/Docs'));
 const PreviewBuilder = React.lazy(() => import('./pages/PreviewBuilder'));
 const DomainSelection = React.lazy(() => import('./pages/DomainSelection'));
 const BioLogPage = React.lazy(() => import('./pages/BioLogPage'));
+const NotificationsCenter = React.lazy(() => import('./pages/NotificationsCenter'));
 
 import { useAuth } from './context/AuthContext';
 import { useActivityTracker } from './hooks/useActivityTracker';
@@ -144,6 +145,7 @@ export default function App() {
                 <Route path="/privacy-policy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/showcase" element={<ComponentShowcase />} />
+                <Route path="/notifications" element={<NotificationsCenter />} />
                 <Route path="/web-development-:city" element={<LocationPage />} />
                 <Route 
                   path="/onboarding" 
