@@ -1,33 +1,39 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { collection, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db, FirebaseUser, logOut } from '../firebase';
-import { UserProfile, Project, Meeting, SystemSettings } from '../types';
-import { 
+import { useState, useEffect, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db, FirebaseUser, logOut } from "../firebase";
+import { UserProfile, Project, Meeting, SystemSettings } from "../types";
+import {
   Bell,
-  LogOut, 
-  User, 
-  MessageCircle, 
-  X, 
-  LayoutDashboard, 
-  FolderKanban, 
-  Settings, 
-  Check, 
-  ArrowRight, 
-  Layout, 
-  Clock, 
-  CheckCircle2, 
-  Download, 
+  LogOut,
+  User,
+  MessageCircle,
+  X,
+  LayoutDashboard,
+  FolderKanban,
+  Settings,
+  Check,
+  ArrowRight,
+  Layout,
+  Clock,
+  CheckCircle2,
+  Download,
   Palette,
   Sparkles,
-  FileText, 
-  Image as ImageIcon, 
-  PartyPopper, 
-  Video, 
-  CreditCard, 
-  ShieldCheck, 
-  AlertCircle, 
+  FileText,
+  Image as ImageIcon,
+  PartyPopper,
+  Video,
+  CreditCard,
+  ShieldCheck,
+  AlertCircle,
   Mail,
   TrendingUp,
   Loader2,
@@ -45,34 +51,44 @@ import {
   Send,
   CheckCheck,
   RefreshCw,
-  Calendar as CalendarIcon
-} from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell 
-} from 'recharts';
-import ChatSystem from '../components/ChatSystem';
-import MessagesModule from '../components/MessagesModule';
-import { MeetingList } from '../components/meetings/MeetingList';
-import { MeetingReminder } from '../components/meetings/MeetingReminder';
-import { subscribeToMeetings } from '../services/meetingService';
-import { getProjects, updateProject, getProfiles, getDirectMessages, getConversations, getUserProfile, getNotifications, markNotificationAsRead, getSystemSettings } from '../services/database';
-import { formatDate } from '../lib/utils';
-import { toast } from 'react-hot-toast';
-import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from '../constants';
-import InvoiceSystem from '../components/InvoiceSystem';
-import BasicRating from '../components/ui/rating-group';
+  Calendar as CalendarIcon,
+} from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import ChatSystem from "../components/ChatSystem";
+import MessagesModule from "../components/MessagesModule";
+import { MeetingList } from "../components/meetings/MeetingList";
+import { MeetingReminder } from "../components/meetings/MeetingReminder";
+import { subscribeToMeetings } from "../services/meetingService";
+import {
+  getProjects,
+  updateProject,
+  getProfiles,
+  getDirectMessages,
+  getConversations,
+  getUserProfile,
+  getNotifications,
+  markNotificationAsRead,
+  getSystemSettings,
+} from "../services/database";
+import { formatDate } from "../lib/utils";
+import { toast } from "react-hot-toast";
+import { APP_NAME, HYPHENATED_NAME, ADMIN_EMAIL } from "../constants";
+import InvoiceSystem from "../components/InvoiceSystem";
+import BasicRating from "../components/ui/rating-group";
 
-import BottomNav from '../components/BottomNav';
-import { getUnreadMessageCount } from '../services/database';
+import BottomNav from "../components/BottomNav";
+import { getUnreadMessageCount } from "../services/database";
 
 interface DashboardProps {
   user: FirebaseUser;
@@ -83,30 +99,44 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const isSuccess = searchParams.get('success') === 'true';
+  const isSuccess = searchParams.get("success") === "true";
   const [showSuccessMessage, setShowSuccessMessage] = useState(isSuccess);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'progress' | 'messages' | 'settings' | 'meetings' | 'payments'>('dashboard');
-  const [activeBrandMood, setActiveBrandMood] = useState<'synth' | 'emerald' | 'arctic' | 'brutalist'>('synth');
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "progress" | "messages" | "settings" | "meetings" | "payments"
+  >("dashboard");
+  const [activeBrandMood, setActiveBrandMood] = useState<
+    "synth" | "emerald" | "arctic" | "brutalist"
+  >("synth");
   const [isStyleSaving, setIsStyleSaving] = useState(false);
-  
+
   // Whitelisted developers should be on the Developer Dashboard
   useEffect(() => {
-    const devEmails = ['sain172961674@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'];
+    const devEmails = [
+      "sain172961674@gmail.com",
+      "singhhritik560@gmail.com",
+      "shivamt2023@gmail.com",
+    ];
     if (user?.email && devEmails.includes(user.email.toLowerCase())) {
-      navigate('/developer-dashboard', { replace: true });
+      navigate("/developer-dashboard", { replace: true });
     }
   }, [user, navigate]);
 
   const [projects, setProjects] = useState<Project[]>([]);
   const hasProjects = projects.length > 0;
-  const hasAcceptedProject = projects.some(p => 
-    ['accepted', 'development started', 'completed', 'active', 'in-progress'].includes(p.status?.toLowerCase() || '')
+  const hasAcceptedProject = projects.some((p) =>
+    [
+      "accepted",
+      "development started",
+      "completed",
+      "active",
+      "in-progress",
+    ].includes(p.status?.toLowerCase() || ""),
   );
 
   useEffect(() => {
-    if (!hasProjects && activeTab !== 'dashboard') {
-      setActiveTab('dashboard');
+    if (!hasProjects && activeTab !== "dashboard") {
+      setActiveTab("dashboard");
     }
   }, [hasProjects, activeTab]);
 
@@ -122,26 +152,32 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   }, []);
 
   useEffect(() => {
-    notificationSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+    notificationSound.current = new Audio(
+      "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3",
+    );
   }, []);
-  
+
   // Handle Payment Success
   useEffect(() => {
     const handlePaymentSuccess = async () => {
       const searchParams = new URLSearchParams(location.search);
-      const isSuccess = searchParams.get('success') === 'true';
-      const projectId = searchParams.get('client_reference_id') || searchParams.get('projectId');
-      
+      const isSuccess = searchParams.get("success") === "true";
+      const projectId =
+        searchParams.get("client_reference_id") ||
+        searchParams.get("projectId");
+
       if (isSuccess && projectId) {
         try {
-          await updateProject(projectId, { 
-            paymentStatus: 'paid',
-            status: 'Under Review', // Progress from Waiting for Review to Under Review
-            updatedAt: serverTimestamp() 
+          await updateProject(projectId, {
+            paymentStatus: "paid",
+            status: "Under Review", // Progress from Waiting for Review to Under Review
+            updatedAt: serverTimestamp(),
           });
-          toast.success("Payment confirmed! Your project is now being reviewed.");
+          toast.success(
+            "Payment confirmed! Your project is now being reviewed.",
+          );
           // Clean the URL
-          navigate('/dashboard', { replace: true });
+          navigate("/dashboard", { replace: true });
         } catch (err) {
           console.error("Error updating project after payment:", err);
         }
@@ -149,72 +185,95 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     };
     handlePaymentSuccess();
   }, [location.search, navigate]);
-  const handlePayment = async (project: Project, shouldUpdateStatus: boolean = false) => {
+  const handlePayment = async (
+    project: Project,
+    shouldUpdateStatus: boolean = false,
+  ) => {
     if (!user || !profile) {
-      toast.error('Please login to continue');
+      toast.error("Please login to continue");
       return;
     }
 
-    const plan = (project.plan || 'basic').toLowerCase();
+    const plan = (project.plan || "basic").toLowerCase();
 
     // 1. Prefer broad project-specific paymentLink if defined
     if (project.paymentLink) {
-      window.open(project.paymentLink, '_blank');
-      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
-      toast.success('Opening custom payment link...');
+      window.open(project.paymentLink, "_blank");
+      if (shouldUpdateStatus)
+        await updateProject(project.id, { paymentStatus: "verifying" });
+      toast.success("Opening custom payment link...");
       return;
     }
 
     // 2. Prefer tiered project-specific payment links if defined
-    if (project.paymentLinkPremium && (plan.includes('premium') || plan.includes('pro') || plan.includes('enterprise'))) {
-      window.open(project.paymentLinkPremium, '_blank');
-      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
-      toast.success('Opening Premium payment link...');
+    if (
+      project.paymentLinkPremium &&
+      (plan.includes("premium") ||
+        plan.includes("pro") ||
+        plan.includes("enterprise"))
+    ) {
+      window.open(project.paymentLinkPremium, "_blank");
+      if (shouldUpdateStatus)
+        await updateProject(project.id, { paymentStatus: "verifying" });
+      toast.success("Opening Premium payment link...");
       return;
     }
 
-    if (project.paymentLinkBasic && (plan.includes('basic') || plan.includes('starter') || plan.includes('standard'))) {
-      window.open(project.paymentLinkBasic, '_blank');
-      if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
-      toast.success('Opening payment link...');
+    if (
+      project.paymentLinkBasic &&
+      (plan.includes("basic") ||
+        plan.includes("starter") ||
+        plan.includes("standard"))
+    ) {
+      window.open(project.paymentLinkBasic, "_blank");
+      if (shouldUpdateStatus)
+        await updateProject(project.id, { paymentStatus: "verifying" });
+      toast.success("Opening payment link...");
       return;
     }
 
     // 3. System Settings defaults
-    let paymentUrl = '';
-    
+    let paymentUrl = "";
+
     if (settings?.paymentLinks) {
-      if (plan.includes('premium') || plan.includes('enterprise') || plan.includes('pro')) {
+      if (
+        plan.includes("premium") ||
+        plan.includes("enterprise") ||
+        plan.includes("pro")
+      ) {
         paymentUrl = settings.paymentLinks.premium;
-      } else if (plan.includes('standard')) {
+      } else if (plan.includes("standard")) {
         paymentUrl = settings.paymentLinks.standard;
       } else {
         paymentUrl = settings.paymentLinks.basic;
       }
-    } 
+    }
 
     // 4. Final Hardcoded Fallbacks (only if settings failed)
     if (!paymentUrl) {
-      if (plan.includes('standard')) {
-        paymentUrl = 'https://rzp.io/rzp/rDHFQw2';
-      } else if (plan.includes('pro') || plan.includes('premium')) {
-        paymentUrl = 'https://rzp.io/rzp/3H3lO1x';
+      if (plan.includes("standard")) {
+        paymentUrl = "https://rzp.io/rzp/rDHFQw2";
+      } else if (plan.includes("pro") || plan.includes("premium")) {
+        paymentUrl = "https://rzp.io/rzp/3H3lO1x";
       } else {
-        paymentUrl = 'https://rzp.io/rzp/N4YcMZq2'; // Basic
+        paymentUrl = "https://rzp.io/rzp/N4YcMZq2"; // Basic
       }
     }
 
-    window.open(paymentUrl, '_blank');
-    if (shouldUpdateStatus) await updateProject(project.id, { paymentStatus: 'verifying' });
-    toast.success('Opening payment link... Please refresh page after payment.');
+    window.open(paymentUrl, "_blank");
+    if (shouldUpdateStatus)
+      await updateProject(project.id, { paymentStatus: "verifying" });
+    toast.success("Opening payment link... Please refresh page after payment.");
   };
 
   const stats = useMemo(() => {
     const total = projects.length;
-    const active = projects.filter(p => !['Completed', 'Rejected'].includes(p.status)).length;
-    const completed = projects.filter(p => p.status === 'Completed').length;
-    const uptime = total > 0 ? '99.9%' : '0%';
-    
+    const active = projects.filter(
+      (p) => !["Completed", "Rejected"].includes(p.status),
+    ).length;
+    const completed = projects.filter((p) => p.status === "Completed").length;
+    const uptime = total > 0 ? "99.9%" : "0%";
+
     return { total, active, completed, uptime };
   }, [projects]);
 
@@ -237,10 +296,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-  const [assignedDeveloper, setAssignedDeveloper] = useState<UserProfile | null>(null);
+  const [assignedDeveloper, setAssignedDeveloper] =
+    useState<UserProfile | null>(null);
   const [showDeveloperWelcome, setShowDeveloperWelcome] = useState(false);
   const [showAdminWelcome, setShowAdminWelcome] = useState(false);
-  
+
   useEffect(() => {
     if (!user?.uid) return;
     const unsub = getUnreadMessageCount(user.uid, setUnreadCount);
@@ -249,13 +309,21 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     if (!profile || !user.email) return;
-    const devEmails = ['sain172961674@gmail.com', 'singhhritik560@gmail.com', 'shivamt2023@gmail.com'];
+    const devEmails = [
+      "sain172961674@gmail.com",
+      "singhhritik560@gmail.com",
+      "shivamt2023@gmail.com",
+    ];
     const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     const isDeveloper = devEmails.includes(user.email.toLowerCase());
-    
-    const hasSeenDevWelcome = localStorage.getItem(`dev_welcome_seen_${user.uid}`);
-    const hasSeenAdminWelcome = localStorage.getItem(`admin_welcome_seen_${user.uid}`);
-    
+
+    const hasSeenDevWelcome = localStorage.getItem(
+      `dev_welcome_seen_${user.uid}`,
+    );
+    const hasSeenAdminWelcome = localStorage.getItem(
+      `admin_welcome_seen_${user.uid}`,
+    );
+
     if (isDeveloper && !hasSeenDevWelcome) {
       setShowDeveloperWelcome(true);
     } else if (isAdmin && !hasSeenAdminWelcome) {
@@ -266,17 +334,17 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   const handleCloseWelcome = () => {
     setShowDeveloperWelcome(false);
     setShowAdminWelcome(false);
-    if (profile?.role === 'admin') {
-      localStorage.setItem(`admin_welcome_seen_${user.uid}`, 'true');
+    if (profile?.role === "admin") {
+      localStorage.setItem(`admin_welcome_seen_${user.uid}`, "true");
     } else {
-      localStorage.setItem(`dev_welcome_seen_${user.uid}`, 'true');
+      localStorage.setItem(`dev_welcome_seen_${user.uid}`, "true");
     }
   };
 
   useEffect(() => {
     const devId = selectedProject?.developerId || selectedProject?.assignedTo;
     if (devId) {
-      getUserProfile(devId).then(devProfile => {
+      getUserProfile(devId).then((devProfile) => {
         setAssignedDeveloper(devProfile as UserProfile);
       });
     } else {
@@ -286,31 +354,46 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   const normalizeStatus = (status: string) => {
     const s = (status || "").toLowerCase();
-    if (s === 'pending' || s === 'waiting for review') return "Waiting for Review";
-    if (s === 'under review') return "Under Review";
-    if (s === 'accepted' || s === 'assigned') return "Accepted";
-    if (s === 'development started' || s === 'in-progress' || s === 'in_progress') return "Development Started";
-    if (s === 'completed' || s === 'finished') return "Completed";
-    if (s === 'rejected' || s === 'declined') return "Declined";
+    if (s === "pending" || s === "waiting for review")
+      return "Waiting for Review";
+    if (s === "under review") return "Under Review";
+    if (s === "accepted" || s === "assigned") return "Accepted";
+    if (
+      s === "development started" ||
+      s === "in-progress" ||
+      s === "in_progress"
+    )
+      return "Development Started";
+    if (s === "completed" || s === "finished") return "Completed";
+    if (s === "rejected" || s === "declined") return "Declined";
     return status;
   };
 
-  const statusSteps = normalizeStatus(selectedProject?.status || "") === 'Declined'
-    ? ["Waiting for Review", "Under Review", "Declined"]
-    : ["Waiting for Review", "Under Review", "Accepted", "Development Started", "Completed"];
-  
-  const currentStepIndex = selectedProject 
-    ? statusSteps.indexOf(normalizeStatus(selectedProject.status)) 
+  const statusSteps =
+    normalizeStatus(selectedProject?.status || "") === "Declined"
+      ? ["Waiting for Review", "Under Review", "Declined"]
+      : [
+          "Waiting for Review",
+          "Under Review",
+          "Accepted",
+          "Development Started",
+          "Completed",
+        ];
+
+  const currentStepIndex = selectedProject
+    ? statusSteps.indexOf(normalizeStatus(selectedProject.status))
     : -1;
 
   useEffect(() => {
     if (user?.uid) {
       const unsubscribe = getNotifications(user.uid, (data) => {
-        const prevUnread = notifications.filter(n => !n.read).length;
+        const prevUnread = notifications.filter((n) => !n.read).length;
         const newUnread = data.filter((n: any) => !n.read).length;
-        
+
         if (newUnread > prevUnread) {
-          notificationSound.current?.play().catch(e => console.log('Audio play failed:', e));
+          notificationSound.current
+            ?.play()
+            .catch((e) => console.log("Audio play failed:", e));
         }
         setNotifications(data);
       });
@@ -321,20 +404,22 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   useEffect(() => {
     const fetchStatsOrAdmin = async () => {
       try {
-        const { getAdmins, getProfiles } = await import('../services/database');
-        
-        if (profile?.role === 'admin') {
+        const { getAdmins, getProfiles } = await import("../services/database");
+
+        if (profile?.role === "admin") {
           // Instead of fetching all profiles to count them, we'll use a fixed number or just avoid it
           // until we have a proper count aggregate.
           // For now, let's just fetch admins to set the admin profile.
           const admins = await getAdmins();
-          const primaryAdmin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
+          const primaryAdmin =
+            admins.find((a) => a.email === ADMIN_EMAIL) || admins[0];
           setAdminProfile(primaryAdmin);
         } else {
           // Clients need to find an admin to chat with
           const admins = await getAdmins();
           if (admins.length > 0) {
-            const primaryAdmin = admins.find(a => a.email === ADMIN_EMAIL) || admins[0];
+            const primaryAdmin =
+              admins.find((a) => a.email === ADMIN_EMAIL) || admins[0];
             setAdminProfile(primaryAdmin);
           }
         }
@@ -356,7 +441,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   useEffect(() => {
     const unsubConvs = getConversations(user.uid, (convs) => {
       let count = 0;
-      convs.forEach(conv => {
+      convs.forEach((conv) => {
         if (conv.unreadCount && conv.unreadCount[user.uid]) {
           count += conv.unreadCount[user.uid];
         }
@@ -372,7 +457,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   // Derive project unread count from the existing projects state
   useEffect(() => {
     let count = 0;
-    projects.forEach(p => {
+    projects.forEach((p) => {
       if (p.unreadCount && p.unreadCount[user.uid]) {
         count += p.unreadCount[user.uid];
       }
@@ -382,9 +467,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   useEffect(() => {
     if (adminProfile) {
-      const unsubMessages = getDirectMessages(user.uid, adminProfile.uid, (msgs) => {
-        setMessages(msgs);
-      });
+      const unsubMessages = getDirectMessages(
+        user.uid,
+        adminProfile.uid,
+        (msgs) => {
+          setMessages(msgs);
+        },
+      );
       return () => unsubMessages();
     }
   }, [user.uid, adminProfile]);
@@ -392,21 +481,29 @@ export default function Dashboard({ user, profile }: DashboardProps) {
   useEffect(() => {
     if (!profile) return;
     console.log("FETCHING PROJECTS FOR:", user.uid, "ROLE:", profile.role);
-    const unsubscribe = getProjects((projectsData) => {
-      console.log("PROJECTS RECEIVED:", projectsData.length);
-      setProjects(projectsData as Project[]);
-      if (projectsData.length > 0 && !selectedProject) {
-        setSelectedProject(projectsData[0] as Project);
-      }
-    }, user.uid, profile.role);
+    const unsubscribe = getProjects(
+      (projectsData) => {
+        console.log("PROJECTS RECEIVED:", projectsData.length);
+        setProjects(projectsData as Project[]);
+        if (projectsData.length > 0 && !selectedProject) {
+          setSelectedProject(projectsData[0] as Project);
+        }
+      },
+      user.uid,
+      profile.role,
+    );
     return () => unsubscribe();
   }, [user.uid, profile?.role]);
 
   useEffect(() => {
     if (!profile?.role || !user?.uid) return;
-    const unsubscribe = subscribeToMeetings(profile.role as 'admin' | 'client' | 'developer', user.uid, (data) => {
-      setMeetings(data);
-    });
+    const unsubscribe = subscribeToMeetings(
+      profile.role as "admin" | "client" | "developer",
+      user.uid,
+      (data) => {
+        setMeetings(data);
+      },
+    );
     return () => unsubscribe();
   }, [user.uid, profile?.role]);
 
@@ -420,19 +517,19 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
   // Removed old statusSteps and currentStepIndex from here
 
-  const primaryColor = '#FFFF00';
+  const primaryColor = "#FFFF00";
 
   return (
     <div className="min-h-screen bg-black font-sans text-white selection:bg-[#c7c42a] selection:text-black">
       <AnimatePresence>
         {showDeveloperWelcome && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-6"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               className="w-full max-w-2xl relative overflow-hidden"
@@ -440,9 +537,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               {/* Background Glow */}
               <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-20" />
               <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-10" />
-              
+
               <div className="relative bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-12 md:p-20 text-center shadow-2xl">
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
@@ -450,27 +547,29 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 >
                   Developer Access Granted
                 </motion.div>
-                
-                <motion.h2 
+
+                <motion.h2
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                   className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] mb-10"
                 >
-                  Welcome<br />
-                  <span style={{ color: '#c7c42a' }}>Developer 🚀</span>
+                  Welcome
+                  <br />
+                  <span style={{ color: "#c7c42a" }}>Developer 🚀</span>
                 </motion.h2>
-                
-                <motion.p 
+
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                   className="text-white/40 text-sm font-medium leading-relaxed max-w-md mx-auto mb-12"
                 >
-                  You've been authorized with a developer-tier profile. Welcome to the engine room of {APP_NAME}. Everything is ready for you.
+                  You've been authorized with a developer-tier profile. Welcome
+                  to the engine room of {APP_NAME}. Everything is ready for you.
                 </motion.p>
-                
-                <motion.button 
+
+                <motion.button
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
@@ -485,21 +584,21 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         )}
 
         {showAdminWelcome && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-6"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               className="w-full max-w-2xl relative overflow-hidden"
             >
               <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#c7c42a] rounded-full blur-[160px] opacity-20" />
-              
+
               <div className="relative bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-12 md:p-20 text-center shadow-2xl">
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
@@ -507,28 +606,30 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 >
                   Root Access: Admin
                 </motion.div>
-                
-                <motion.h2 
+
+                <motion.h2
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                   className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] mb-10"
                 >
-                  Welcome<br />
-                  <span style={{ color: '#c7c42a' }}>Admin 👑</span>
+                  Welcome
+                  <br />
+                  <span style={{ color: "#c7c42a" }}>Admin 👑</span>
                 </motion.h2>
-                
-                <motion.p 
+
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                   className="text-white/40 text-sm font-medium leading-relaxed max-w-md mx-auto mb-12"
                 >
-                  Supreme control active. You can now manage all projects, developers, and system configurations.
+                  Supreme control active. You can now manage all projects,
+                  developers, and system configurations.
                 </motion.p>
-                
+
                 <div className="flex flex-col md:flex-row gap-4 justify-center">
-                  <motion.button 
+                  <motion.button
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
@@ -537,11 +638,11 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                   >
                     View System
                   </motion.button>
-                  <motion.button 
+                  <motion.button
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
-                    onClick={() => navigate('/admin')}
+                    onClick={() => navigate("/admin")}
                     className="px-12 py-5 bg-white/5 border border-white/10 text-white rounded-full font-black uppercase italic tracking-widest hover:bg-white/10 transition-all"
                   >
                     Admin Panel
@@ -556,46 +657,56 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       <MeetingReminder meetings={meetings} />
       {/* Sidebar Navigation */}
       <aside className="fixed left-0 top-0 bottom-0 w-24 bg-[#0a0a0a] border-r border-white/5 flex flex-col items-center py-8 gap-10 z-40 hidden lg:flex">
-        <button 
+        <button
           onClick={() => {
-            setActiveTab('messages');
+            setActiveTab("messages");
             setShowChat(true);
           }}
           className="w-14 h-14 bg-black rounded-2xl flex flex-col items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all border border-white/10 group overflow-hidden"
         >
           <div className="absolute inset-0 bg-[#c7c42a]/0 group-hover:bg-[#c7c42a]/10 transition-colors" />
-          <span className="text-white font-black text-2xl italic tracking-tighter relative z-10">W</span>
-          <span className="text-[6px] font-black uppercase text-[#c7c42a]/60 leading-none tracking-widest group-hover:text-[#c7c42a] transition-colors relative z-10">Chat</span>
+          <span className="text-white font-black text-2xl italic tracking-tighter relative z-10">
+            W
+          </span>
+          <span className="text-[6px] font-black uppercase text-[#c7c42a]/60 leading-none tracking-widest group-hover:text-[#c7c42a] transition-colors relative z-10">
+            Chat
+          </span>
         </button>
 
         <div className="relative group/notif">
-          <button 
+          <button
             onClick={() => setShowNotifications(!showNotifications)}
             className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all border ${
-              showNotifications ? 'bg-[#FFFF00] text-black border-[#FFFF00]' : 'bg-black text-white/30 border-white/5 hover:text-white hover:border-white/20'
+              showNotifications
+                ? "bg-[#FFFF00] text-black border-[#FFFF00]"
+                : "bg-black text-white/30 border-white/5 hover:text-white hover:border-white/20"
             }`}
           >
             <Bell size={22} />
-            {notifications.filter(n => !n.read).length > 0 && (
+            {notifications.filter((n) => !n.read).length > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FFFF00] text-black text-[9px] font-black rounded-full flex items-center justify-center border-2 border-black animate-pulse">
-                {notifications.filter(n => !n.read).length}
+                {notifications.filter((n) => !n.read).length}
               </span>
             )}
           </button>
 
           <AnimatePresence>
             {showNotifications && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 className="absolute left-full ml-4 top-0 w-80 bg-black border border-[#FFFF00]/20 rounded-3xl shadow-2xl z-[100] overflow-hidden"
               >
                 <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black">
-                  <h3 className="text-sm font-black italic uppercase tracking-widest text-[#FFFF00]">Notifications</h3>
-                  <button 
+                  <h3 className="text-sm font-black italic uppercase tracking-widest text-[#FFFF00]">
+                    Notifications
+                  </h3>
+                  <button
                     onClick={() => {
-                      notifications.forEach(n => !n.read && markNotificationAsRead(n.id));
+                      notifications.forEach(
+                        (n) => !n.read && markNotificationAsRead(n.id),
+                      );
                       setShowNotifications(false);
                     }}
                     className="text-[10px] font-bold uppercase text-[#FFFF00] hover:underline"
@@ -606,27 +717,38 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 <div className="max-h-96 overflow-y-auto custom-scrollbar bg-black">
                   {notifications.length > 0 ? (
                     notifications.map((n) => (
-                      <div 
-                        key={n.id} 
+                      <div
+                        key={n.id}
                         onClick={() => {
                           if (!n.read) markNotificationAsRead(n.id);
-                          if (n.type === 'meeting') {
-                            setActiveTab('meetings');
-                          } else if (n.projectId || n.type?.includes('project')) {
-                            setActiveTab('progress');
+                          if (n.type === "meeting") {
+                            setActiveTab("meetings");
+                          } else if (
+                            n.projectId ||
+                            n.type?.includes("project")
+                          ) {
+                            setActiveTab("progress");
                           }
                           setShowNotifications(false);
                         }}
-                        className={`p-6 border-b border-white/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? 'bg-[#FFFF00]/5' : ''}`}
+                        className={`p-6 border-b border-white/5 cursor-pointer hover:bg-[#FFFF00]/5 transition-colors ${!n.read ? "bg-[#FFFF00]/5" : ""}`}
                       >
-                        <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest mb-1">{n.title}</p>
-                        <p className="text-xs text-[#FFFF00]/60 leading-relaxed font-medium italic">{n.message}</p>
-                        <p className="text-[8px] text-[#FFFF00]/20 uppercase mt-2 font-black tracking-widest">{formatDate(n.createdAt)}</p>
+                        <p className="text-[10px] font-black uppercase text-[#FFFF00] tracking-widest mb-1">
+                          {n.title}
+                        </p>
+                        <p className="text-xs text-[#FFFF00]/60 leading-relaxed font-medium italic">
+                          {n.message}
+                        </p>
+                        <p className="text-[8px] text-[#FFFF00]/20 uppercase mt-2 font-black tracking-widest">
+                          {formatDate(n.createdAt)}
+                        </p>
                       </div>
                     ))
                   ) : (
                     <div className="p-12 text-center">
-                      <p className="text-[10px] font-black uppercase italic tracking-widest text-white/20">System Quiet. No Signal Detected.</p>
+                      <p className="text-[10px] font-black uppercase italic tracking-widest text-white/20">
+                        System Quiet. No Signal Detected.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -636,28 +758,35 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
         <nav className="flex-1 flex flex-col gap-5">
           {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            ...(hasAcceptedProject ? [
-              { id: 'progress', icon: FolderKanban, label: 'Pulse' },
-              { id: 'meetings', icon: Video, label: 'Meetings' },
-              { id: 'messages', icon: MessageCircle, label: 'Chat' },
-              { id: 'payments', icon: CreditCard, label: 'Plans' },
-              { id: 'settings', icon: Settings, label: 'User' },
-            ] : []),
+            { id: "dashboard", icon: LayoutDashboard, label: "Home" },
+            ...(hasAcceptedProject
+              ? [
+                  { id: "progress", icon: FolderKanban, label: "Pulse" },
+                  { id: "meetings", icon: Video, label: "Meetings" },
+                  { id: "messages", icon: MessageCircle, label: "Chat" },
+                  { id: "payments", icon: CreditCard, label: "Plans" },
+                  { id: "settings", icon: Settings, label: "User" },
+                ]
+              : []),
           ].map((tab) => (
-            <button 
+            <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`w-14 h-14 rounded-2xl transition-all duration-300 relative group flex items-center justify-center ${
-                activeTab === tab.id 
-                  ? 'text-black shadow-lg scale-110' 
-                  : 'text-white/20 hover:text-white hover:bg-white/5'
+                activeTab === tab.id
+                  ? "text-black shadow-lg scale-110"
+                  : "text-white/20 hover:text-white hover:bg-white/5"
               }`}
-              style={activeTab === tab.id ? { backgroundColor: primaryColor } : {}}
+              style={
+                activeTab === tab.id ? { backgroundColor: primaryColor } : {}
+              }
               title={tab.label}
             >
-              <tab.icon size={22} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
-              {tab.id === 'messages' && unreadCount > 0 && (
+              <tab.icon
+                size={22}
+                strokeWidth={activeTab === tab.id ? 2.5 : 2}
+              />
+              {tab.id === "messages" && unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg animate-pulse border-2 border-black">
                   {unreadCount}
                 </span>
@@ -668,8 +797,8 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               </div>
             </button>
           ))}
-          {profile?.role === 'admin' && (
-            <Link 
+          {profile?.role === "admin" && (
+            <Link
               to="/admin"
               className="w-14 h-14 rounded-2xl text-white/20 hover:text-[#c7c42a] hover:bg-white/5 transition-all flex items-center justify-center group"
               title="Admin Panel"
@@ -677,14 +806,17 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               <ShieldCheck size={22} />
             </Link>
           )}
-          
+
           <div className="mt-auto pb-4">
-            <button 
-              onClick={() => logOut()} 
+            <button
+              onClick={() => logOut()}
               className="w-14 h-14 rounded-2xl text-white/20 hover:text-red-500 hover:bg-red-500/10 transition-all group flex items-center justify-center"
               title="Logout"
             >
-              <LogOut size={22} className="group-hover:scale-110 transition-transform" />
+              <LogOut
+                size={22}
+                className="group-hover:scale-110 transition-transform"
+              />
             </button>
           </div>
         </nav>
@@ -692,13 +824,13 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
       <AnimatePresence>
         {showSuccessMessage && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -100 }}
             className="fixed top-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6"
           >
-            <div 
+            <div
               className="text-black p-6 rounded-[2rem] shadow-2xl flex items-center gap-6 border border-white/20"
               style={{ backgroundColor: primaryColor }}
             >
@@ -706,10 +838,17 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                 <PartyPopper size={32} className="animate-bounce" />
               </div>
               <div>
-                <h4 className="text-xl font-black uppercase italic tracking-tighter">Payment Successful!</h4>
-                <p className="text-sm font-bold opacity-70">Your project has been submitted and is now waiting for review.</p>
+                <h4 className="text-xl font-black uppercase italic tracking-tighter">
+                  Payment Successful!
+                </h4>
+                <p className="text-sm font-bold opacity-70">
+                  Your project has been submitted and is now waiting for review.
+                </p>
               </div>
-              <button onClick={() => setShowSuccessMessage(false)} className="p-2 hover:bg-black/5 rounded-full transition-all">
+              <button
+                onClick={() => setShowSuccessMessage(false)}
+                className="p-2 hover:bg-black/5 rounded-full transition-all"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -717,81 +856,100 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         )}
       </AnimatePresence>
 
-          <header className="lg:hidden bg-[#0a0a0a] px-6 py-6 border-b border-white/5 sticky top-0 z-40">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                  <span className="text-white font-black text-sm italic">Q</span>
-                </div>
-                <div className="text-xl font-black tracking-tighter uppercase italic">{APP_NAME}</div>
-              </div>
-              <div className="flex items-center gap-4">
-                <button onClick={() => logOut()} className="text-white/50 hover:text-red-400 transition-all">
-                  <LogOut size={24} />
-                </button>
-              </div>
+      <header className="lg:hidden bg-[#0a0a0a] px-6 py-6 border-b border-white/5 sticky top-0 z-40">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-sm italic">Q</span>
             </div>
-          </header>
+            <div className="text-xl font-black tracking-tighter uppercase italic">
+              {APP_NAME}
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => logOut()}
+              className="text-white/50 hover:text-red-400 transition-all"
+            >
+              <LogOut size={24} />
+            </button>
+          </div>
+        </div>
+      </header>
 
-          {/* Mobile Navigation */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
-          {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            ...(hasAcceptedProject ? [
-              { id: 'progress', icon: FolderKanban, label: 'Progress' },
-              { id: 'messages', icon: MessageCircle, label: 'Chat' },
-              { id: 'meetings', icon: Video, label: 'Meets' },
-              { id: 'settings', icon: Settings, label: 'Settings' },
-            ] : []),
-          ].map((tab) => (
-              <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex flex-col items-center gap-1 transition-all relative ${
-                  activeTab === tab.id 
-                    ? 'text-[#c7c42a]' 
-                    : 'text-white/40'
-                }`}
-              >
-                <div className="relative">
-                  <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
-                  {tab.id === 'messages' && unreadCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg">
-                      {unreadCount}
+      {/* Mobile Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 py-3 px-6 flex justify-between items-center z-40">
+        {[
+          { id: "dashboard", icon: LayoutDashboard, label: "Home" },
+          ...(hasAcceptedProject
+            ? [
+                { id: "progress", icon: FolderKanban, label: "Progress" },
+                { id: "messages", icon: MessageCircle, label: "Chat" },
+                { id: "meetings", icon: Video, label: "Meets" },
+                { id: "settings", icon: Settings, label: "Settings" },
+              ]
+            : []),
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex flex-col items-center gap-1 transition-all relative ${
+              activeTab === tab.id ? "text-[#c7c42a]" : "text-white/40"
+            }`}
+          >
+            <div className="relative">
+              <tab.icon
+                size={20}
+                strokeWidth={activeTab === tab.id ? 2.5 : 2}
+              />
+              {tab.id === "messages" && unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-tighter">
+              {tab.label}
+            </span>
+          </button>
+        ))}
+      </nav>
+
+      <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
+        <div
+          className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === "messages" ? "py-6" : "py-12"} space-y-10`}
+        >
+          {hasProjects && activeTab !== "messages" && (
+            <>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-2 mb-4"
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full animate-pulse"
+                      style={{ backgroundColor: primaryColor }}
+                    />
+                    <span
+                      className="text-[10px] font-black uppercase tracking-[0.3em]"
+                      style={{ color: primaryColor }}
+                    >
+                      Live Health Protocols
                     </span>
-                  )}
+                  </motion.div>
+                  <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
+                    Status:
+                    <br />
+                    <span style={{ color: primaryColor }}>Operational</span>
+                  </h1>
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-tighter">{tab.label}</span>
-              </button>
-            ))}
-          </nav>
+                <div className="flex flex-col items-end gap-4"></div>
+              </div>
+            </>
+          )}
 
-          <main className="lg:ml-24 min-h-screen pb-24 lg:pb-0">
-            <div className={`max-w-7xl mx-auto px-6 lg:px-12 ${activeTab === 'messages' ? 'py-6' : 'py-12'} space-y-10`}>
-                {hasProjects && activeTab !== 'messages' && (
-                  <>
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                      <motion.div 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2 mb-4"
-                      >
-                        <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Live Health Protocols</span>
-                      </motion.div>
-                      <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">
-                        Status:<br />
-                        <span style={{ color: primaryColor }}>Operational</span>
-                      </h1>
-                    </div>
-                    <div className="flex flex-col items-end gap-4">
-                    </div>
-                  </div>
-
-                  </>
-                )}
-          
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -801,272 +959,451 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               transition={{ duration: 0.3, ease: "circOut" }}
               className="relative"
             >
-              {hasProjects && !hasAcceptedProject && activeTab === 'dashboard' && (
-                <div className="relative flex flex-col items-center justify-center min-h-[600px] py-20">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#FFFF00]/10 rounded-full animate-[spin_20s_linear_infinite]" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#FFFF00]/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FFFF00]/5 rounded-full blur-[120px]" />
+              {hasProjects &&
+                !hasAcceptedProject &&
+                activeTab === "dashboard" && (
+                  <div className="relative flex flex-col items-center justify-center min-h-[600px] py-20">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#FFFF00]/10 rounded-full animate-[spin_20s_linear_infinite]" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#FFFF00]/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FFFF00]/5 rounded-full blur-[120px]" />
 
-                  <div className="max-w-2xl w-full text-center space-y-10 relative z-10 p-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl flex flex-col items-center justify-center">
-                    <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-[10px] font-black uppercase tracking-[0.4em] rounded-lg">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00] animate-pulse" />
-                      Awaiting Biometric Validation
-                    </div>
-                    
-                    <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
-                      Mission<br/>
-                      <span className="text-[#FFFF00]">Queued.</span>
-                    </h2>
+                    <div className="max-w-2xl w-full text-center space-y-10 relative z-10 p-12 bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl flex flex-col items-center justify-center">
+                      <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#FFFF00]/10 border border-[#FFFF00]/20 text-[#FFFF00] text-[10px] font-black uppercase tracking-[0.4em] rounded-lg">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00] animate-pulse" />
+                        Awaiting Biometric Validation
+                      </div>
 
-                    <div className="space-y-4">
-                      <p className="text-sm font-bold text-[#FFFF00] uppercase tracking-[0.2em] italic">Deploying to Central Command</p>
-                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
-                        Your project protocol is being verified by our elite engineering unit. System features will activate as soon as a developer accepts the mission.
-                      </p>
-                    </div>
+                      <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] text-white">
+                        Mission
+                        <br />
+                        <span className="text-[#FFFF00]">Queued.</span>
+                      </h2>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                      <button 
-                         onClick={() => setActiveTab('progress')}
-                         className="w-full md:w-auto px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
-                      >
-                         Track Current Mission
-                      </button>
-                      <button 
-                         onClick={() => navigate('/onboarding')}
-                         className="w-16 h-16 md:w-20 md:h-20 bg-white/5 border-2 border-white/20 text-white rounded-full flex items-center justify-center hover:bg-[#FFFF00] hover:text-black hover:border-[#FFFF00] transition-all hover:scale-110 group relative"
-                         title="Start New Mission"
-                      >
-                         <Plus size={32} className="group-hover:rotate-90 transition-transform duration-500" />
-                         <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Start New Mission</span>
-                      </button>
+                      <div className="space-y-4">
+                        <p className="text-sm font-bold text-[#FFFF00] uppercase tracking-[0.2em] italic">
+                          Deploying to Central Command
+                        </p>
+                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
+                          Your project protocol is being verified by our elite
+                          engineering unit. System features will activate as
+                          soon as a developer accepts the mission.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                        <button
+                          onClick={() => setActiveTab("progress")}
+                          className="w-full md:w-auto px-12 py-6 bg-[#FFFF00] text-black font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,0,0.3)]"
+                        >
+                          Track Current Mission
+                        </button>
+                        <button
+                          onClick={() => {
+                            localStorage.removeItem("onboarding_step");
+                            localStorage.removeItem("onboarding_data");
+                            navigate("/onboarding");
+                          }}
+                          className="w-16 h-16 md:w-20 md:h-20 bg-white/5 border-2 border-white/20 text-white rounded-full flex items-center justify-center hover:bg-[#FFFF00] hover:text-black hover:border-[#FFFF00] transition-all hover:scale-110 group relative"
+                          title="Start New Mission"
+                        >
+                          <Plus
+                            size={32}
+                            className="group-hover:rotate-90 transition-transform duration-500"
+                          />
+                          <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            Start New Mission
+                          </span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {activeTab === 'messages' ? (
-                <MessagesModule 
+              {activeTab === "messages" ? (
+                <MessagesModule
                   currentUser={user}
                   profile={profile}
-                  onClose={() => setActiveTab('dashboard')}
+                  onClose={() => setActiveTab("dashboard")}
                   fullScreen={false}
                   projects={projects}
-                  initialRecipientId={assignedDeveloper?.uid || adminProfile?.uid}
+                  initialRecipientId={
+                    assignedDeveloper?.uid || adminProfile?.uid
+                  }
                 />
-              ) : activeTab === 'progress' ? (
+              ) : activeTab === "progress" ? (
                 <div className="space-y-12">
-                   <div className="flex flex-col gap-2">
-                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Real-time Tracking</span>
-                     <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Project Progress</h2>
-                   </div>
-                   
-                   {!selectedProject ? (
-                     <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5">
-                        <p className="text-white/40 italic">Select a project to view its progress timeline.</p>
-                     </div>
-                   ) : (
-                     <div className="space-y-10">
-                        {/* Status Steps */}
-                        <div className="bg-[#0a0a0a] rounded-[3rem] p-12 border border-white/5 relative overflow-hidden">
-                           <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>
-                           
-                           {!selectedProject.developerId && (
-                             <div className="mb-12 p-8 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 relative z-10">
-                               <div className="w-20 h-20 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black shadow-lg">
-                                 <Loader2 size={40} className="animate-spin" />
-                               </div>
-                               <div className="text-center md:text-left flex-1">
-                                 <h4 className="text-2xl font-black uppercase italic tracking-tighter text-[#c7c42a] leading-none mb-2">Awaiting Developer Assignment</h4>
-                                 <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-md">Our matching system is selecting the best specialist for your project type. You will be notified as soon as your developer starts work.</p>
-                               </div>
-                               <div className="flex items-center gap-2 px-4 py-2 bg-black/40 rounded-full border border-white/5">
-                                 <div className="w-1.5 h-1.5 bg-[#c7c42a] rounded-full animate-pulse" />
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Priority Queue</span>
-                               </div>
-                             </div>
-                           )}
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">
+                      Real-time Tracking
+                    </span>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">
+                      Project Progress
+                    </h2>
+                  </div>
 
-                           <div className="flex justify-between items-center overflow-x-auto pb-6 gap-6 no-scrollbar relative z-10">
-                            {statusSteps.map((step, i) => (
-                              <div key={step} className="flex flex-col items-center min-w-[120px] text-center gap-4">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                                  i < currentStepIndex 
-                                    ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
+                  {!selectedProject ? (
+                    <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5">
+                      <p className="text-white/40 italic">
+                        Select a project to view its progress timeline.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-10">
+                      {/* Status Steps */}
+                      <div className="bg-[#0a0a0a] rounded-[3rem] p-12 border border-white/5 relative overflow-hidden">
+                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#c7c42a] rounded-full blur-[120px] opacity-10"></div>
+
+                        {!selectedProject.developerId && (
+                          <div className="mb-12 p-8 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 relative z-10">
+                            <div className="w-20 h-20 bg-[#c7c42a] rounded-2xl flex items-center justify-center text-black shadow-lg">
+                              <Loader2 size={40} className="animate-spin" />
+                            </div>
+                            <div className="text-center md:text-left flex-1">
+                              <h4 className="text-2xl font-black uppercase italic tracking-tighter text-[#c7c42a] leading-none mb-2">
+                                Awaiting Developer Assignment
+                              </h4>
+                              <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest max-w-md">
+                                Our matching system is selecting the best
+                                specialist for your project type. You will be
+                                notified as soon as your developer starts work.
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-black/40 rounded-full border border-white/5">
+                              <div className="w-1.5 h-1.5 bg-[#c7c42a] rounded-full animate-pulse" />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
+                                Priority Queue
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-center overflow-x-auto pb-6 gap-6 no-scrollbar relative z-10">
+                          {statusSteps.map((step, i) => (
+                            <div
+                              key={step}
+                              className="flex flex-col items-center min-w-[120px] text-center gap-4"
+                            >
+                              <div
+                                className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
+                                  i < currentStepIndex
+                                    ? "bg-[#c7c42a] border-[#c7c42a] text-black"
                                     : i === currentStepIndex
-                                      ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#c7c42a] border-[#c7c42a] text-black'
-                                      : 'bg-transparent border-white/20 text-white/20'
-                                }`}>
-                                  {i < currentStepIndex ? <Check size={24} /> : step === 'Declined' ? <X size={24} /> : <span className="font-black text-lg">{i + 1}</span>}
+                                      ? step === "Declined"
+                                        ? "bg-red-500 border-red-500 text-white"
+                                        : "bg-[#c7c42a] border-[#c7c42a] text-black"
+                                      : "bg-transparent border-white/20 text-white/20"
+                                }`}
+                              >
+                                {i < currentStepIndex ? (
+                                  <Check size={24} />
+                                ) : step === "Declined" ? (
+                                  <X size={24} />
+                                ) : (
+                                  <span className="font-black text-lg">
+                                    {i + 1}
+                                  </span>
+                                )}
+                              </div>
+                              <span
+                                className={`text-[10px] font-black uppercase tracking-widest ${
+                                  i <= currentStepIndex
+                                    ? step === "Declined"
+                                      ? "text-red-500"
+                                      : "text-[#c7c42a]"
+                                    : "text-white/20"
+                                }`}
+                              >
+                                {step}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="space-y-6 mt-12 relative z-10">
+                          <div className="flex justify-between items-end">
+                            <span className="text-2xl font-black uppercase italic text-[#c7c42a]">
+                              Progress: {selectedProject.progress}%
+                            </span>
+                            <span className="text-xs font-black text-white/40 uppercase tracking-widest">
+                              Est. Completion:{" "}
+                              {formatDate(selectedProject.estimatedCompletion)}
+                            </span>
+                          </div>
+                          <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{
+                                width: `${selectedProject.progress}%`,
+                              }}
+                              className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_15px_rgba(199,196,42,0.5)]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Phase Details */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-white/5 p-12 rounded-[3rem] border border-white/5">
+                          <h3 className="text-xl font-black uppercase italic tracking-tighter mb-8">
+                            Phase Breakdown
+                          </h3>
+                          <div className="space-y-8">
+                            {[
+                              {
+                                step: "01",
+                                title: "Consultation",
+                                desc: "Project architecture and scope lockdown.",
+                                done: selectedProject.progress >= 20,
+                              },
+                              {
+                                step: "02",
+                                title: "UI/UX Design",
+                                desc: "Visual language and interface engineering.",
+                                done: selectedProject.progress >= 40,
+                              },
+                              {
+                                step: "03",
+                                title: "Development",
+                                desc: "Core logic and feature implementation.",
+                                done: selectedProject.progress >= 70,
+                              },
+                              {
+                                step: "04",
+                                title: "Quality Assurance",
+                                desc: "Refinement and performance testing.",
+                                done: selectedProject.progress >= 90,
+                              },
+                              {
+                                step: "05",
+                                title: "Live Deployment",
+                                desc: "Final production roll-out and scaling.",
+                                done: selectedProject.progress >= 100,
+                              },
+                            ].map((phase, i) => (
+                              <div
+                                key={i}
+                                className="flex gap-8 items-start group"
+                              >
+                                <div
+                                  className={`text-2xl font-black italic transition-colors ${phase.done ? "text-[#c7c42a]" : "text-white/10"}`}
+                                >
+                                  {phase.step}
                                 </div>
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                  i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#c7c42a]' : 'text-white/20'
-                                }`}>
-                                  {step}
-                                </span>
+                                <div className="pt-1">
+                                  <h4
+                                    className={`text-sm font-black uppercase italic tracking-widest transition-colors ${phase.done ? "text-white" : "text-white/20"}`}
+                                  >
+                                    {phase.title}
+                                  </h4>
+                                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">
+                                    {phase.desc}
+                                  </p>
+                                </div>
                               </div>
                             ))}
                           </div>
+                        </div>
 
-                          <div className="space-y-6 mt-12 relative z-10">
-                            <div className="flex justify-between items-end">
-                              <span className="text-2xl font-black uppercase italic text-[#c7c42a]">Progress: {selectedProject.progress}%</span>
-                              <span className="text-xs font-black text-white/40 uppercase tracking-widest">Est. Completion: {formatDate(selectedProject.estimatedCompletion)}</span>
-                            </div>
-                            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${selectedProject.progress}%` }}
-                                className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_15px_rgba(199,196,42,0.5)]"
-                              />
+                        <div className="flex flex-col gap-8">
+                          <div className="bg-[#c7c42a] p-12 rounded-[3rem] text-black">
+                            <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none text-black">
+                              Engineering
+                              <br />
+                              Pulse.
+                            </h3>
+                            <p className="text-xs font-bold uppercase tracking-widest opacity-60">
+                              Status updates are pushed directly from our
+                              development environment.
+                            </p>
+                            <div className="mt-8 pt-8 border-t border-black/10">
+                              <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-black animate-pulse"></div>
+                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                                  System Online
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Phase Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                           <div className="bg-white/5 p-12 rounded-[3rem] border border-white/5">
-                              <h3 className="text-xl font-black uppercase italic tracking-tighter mb-8">Phase Breakdown</h3>
-                              <div className="space-y-8">
-                                {[
-                                  { step: '01', title: 'Consultation', desc: 'Project architecture and scope lockdown.', done: selectedProject.progress >= 20 },
-                                  { step: '02', title: 'UI/UX Design', desc: 'Visual language and interface engineering.', done: selectedProject.progress >= 40 },
-                                  { step: '03', title: 'Development', desc: 'Core logic and feature implementation.', done: selectedProject.progress >= 70 },
-                                  { step: '04', title: 'Quality Assurance', desc: 'Refinement and performance testing.', done: selectedProject.progress >= 90 },
-                                  { step: '05', title: 'Live Deployment', desc: 'Final production roll-out and scaling.', done: selectedProject.progress >= 100 },
-                                ].map((phase, i) => (
-                                  <div key={i} className="flex gap-8 items-start group">
-                                    <div className={`text-2xl font-black italic transition-colors ${phase.done ? 'text-[#c7c42a]' : 'text-white/10'}`}>{phase.step}</div>
-                                    <div className="pt-1">
-                                      <h4 className={`text-sm font-black uppercase italic tracking-widest transition-colors ${phase.done ? 'text-white' : 'text-white/20'}`}>{phase.title}</h4>
-                                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">{phase.desc}</p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                           </div>
-
-                           <div className="flex flex-col gap-8">
-                             <div className="bg-[#c7c42a] p-12 rounded-[3rem] text-black">
-                                <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none text-black">Engineering<br />Pulse.</h3>
-                                <p className="text-xs font-bold uppercase tracking-widest opacity-60">Status updates are pushed directly from our development environment.</p>
-                                <div className="mt-8 pt-8 border-t border-black/10">
-                                   <div className="flex items-center gap-3">
-                                      <div className="w-2 h-2 rounded-full bg-black animate-pulse"></div>
-                                      <span className="text-[10px] font-black uppercase tracking-widest leading-none">System Online</span>
-                                   </div>
-                                </div>
-                             </div>
-                             
-                             <div className="bg-white/5 p-12 rounded-[3rem] border border-white/5">
-                                <h4 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-white">Need Adjustments?</h4>
-                                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">Discuss scope changes with your project lead.</p>
-                                <button 
-                                  onClick={() => setActiveTab('messages')}
-                                  className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
-                                >
-                                  Open Project Chat
-                                </button>
-                             </div>
-                           </div>
+                          <div className="bg-white/5 p-12 rounded-[3rem] border border-white/5">
+                            <h4 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-white">
+                              Need Adjustments?
+                            </h4>
+                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">
+                              Discuss scope changes with your project lead.
+                            </p>
+                            <button
+                              onClick={() => setActiveTab("messages")}
+                              className="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                            >
+                              Open Project Chat
+                            </button>
+                          </div>
                         </div>
-                     </div>
-                   )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : activeTab === 'meetings' ? (
+              ) : activeTab === "meetings" ? (
                 <div className="space-y-12">
                   <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Scheduling</span>
-                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Meetings</h2>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">
+                      Scheduling
+                    </span>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">
+                      Your Meetings
+                    </h2>
                   </div>
-                  <MeetingList user={user} profile={profile!} assignedDeveloper={assignedDeveloper} />
+                  <MeetingList
+                    user={user}
+                    profile={profile!}
+                    assignedDeveloper={assignedDeveloper}
+                  />
                 </div>
-              ) : activeTab === 'settings' ? (
+              ) : activeTab === "settings" ? (
                 <div className="space-y-12">
                   <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Preferences</span>
-                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Settings</h2>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">
+                      Preferences
+                    </span>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">
+                      Settings
+                    </h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Profile Quick View */}
                     <div className="md:col-span-1 space-y-8">
-                       <div className="bg-[#0a0a0a] rounded-[3rem] p-10 border border-white/5 text-center">
-                          <div className="relative inline-block mb-6">
-                             <div className="w-32 h-32 rounded-full border-4 border-[#c7c42a]/20 p-2">
-                                <div className="w-full h-full rounded-full bg-[#111] flex items-center justify-center text-5xl font-black text-[#c7c42a] overflow-hidden">
-                                   {profile?.photoURL ? (
-                                     <img src={profile.photoURL} alt="" className="w-full h-full object-cover" />
-                                   ) : (
-                                     profile?.displayName?.[0] || 'U'
-                                   )}
-                                </div>
-                             </div>
-                             <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-[#0a0a0a]"></div>
+                      <div className="bg-[#0a0a0a] rounded-[3rem] p-10 border border-white/5 text-center">
+                        <div className="relative inline-block mb-6">
+                          <div className="w-32 h-32 rounded-full border-4 border-[#c7c42a]/20 p-2">
+                            <div className="w-full h-full rounded-full bg-[#111] flex items-center justify-center text-5xl font-black text-[#c7c42a] overflow-hidden">
+                              {profile?.photoURL ? (
+                                <img
+                                  src={profile.photoURL}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                profile?.displayName?.[0] || "U"
+                              )}
+                            </div>
                           </div>
-                          <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">{profile?.displayName}</h3>
-                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{profile?.role} Account</p>
-                          
-                          <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
-                             <div className="flex justify-between items-center text-xs">
-                                <span className="text-white/20 uppercase font-black">Status</span>
-                                <span className="text-[#c7c42a] uppercase font-black italic">Verified</span>
-                             </div>
-                             <div className="flex justify-between items-center text-xs">
-                                <span className="text-white/20 uppercase font-black">Member Since</span>
-                                <span className="text-white font-black italic">{new Date(profile?.createdAt as any).getFullYear() || '2026'}</span>
-                             </div>
+                          <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-[#0a0a0a]"></div>
+                        </div>
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">
+                          {profile?.displayName}
+                        </h3>
+                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">
+                          {profile?.role} Account
+                        </p>
+
+                        <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-white/20 uppercase font-black">
+                              Status
+                            </span>
+                            <span className="text-[#c7c42a] uppercase font-black italic">
+                              Verified
+                            </span>
                           </div>
-                       </div>
-                       
-                       <button 
-                         onClick={() => navigate('/settings')}
-                         className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic text-sm hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
-                       >
-                         <Settings size={18} /> Manage All Settings
-                       </button>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-white/20 uppercase font-black">
+                              Member Since
+                            </span>
+                            <span className="text-white font-black italic">
+                              {new Date(
+                                profile?.createdAt as any,
+                              ).getFullYear() || "2026"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => navigate("/settings")}
+                        className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic text-sm hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+                      >
+                        <Settings size={18} /> Manage All Settings
+                      </button>
                     </div>
 
                     {/* Quick Settings Panels */}
                     <div className="md:col-span-2 space-y-8">
-                       <div className="bg-white/5 rounded-[3rem] p-12 border border-white/5">
-                          <h4 className="text-xl font-black uppercase italic tracking-tighter mb-8 text-white">Notifications</h4>
-                          <div className="space-y-6">
-                             {[
-                               { label: 'Push Notifications', desc: 'Real-time alerts for project updates.', active: true },
-                               { label: 'Email Reports', desc: 'Weekly project health summaries.', active: true },
-                               { label: 'Chat Sounds', desc: 'Audible alerts for new messages.', active: false },
-                             ].map((item, i) => (
-                               <div key={i} className="flex justify-between items-center p-6 bg-black/20 rounded-2xl border border-white/5">
-                                  <div>
-                                     <div className="text-sm font-black uppercase italic text-white">{item.label}</div>
-                                     <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{item.desc}</div>
-                                  </div>
-                                  <div className={`w-12 h-6 rounded-full p-1 transition-colors ${item.active ? 'bg-[#c7c42a]' : 'bg-white/10'}`}>
-                                     <div className={`w-4 h-4 rounded-full bg-white transition-transform ${item.active ? 'translate-x-6' : ''}`}></div>
-                                  </div>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
+                      <div className="bg-white/5 rounded-[3rem] p-12 border border-white/5">
+                        <h4 className="text-xl font-black uppercase italic tracking-tighter mb-8 text-white">
+                          Notifications
+                        </h4>
+                        <div className="space-y-6">
+                          {[
+                            {
+                              label: "Push Notifications",
+                              desc: "Real-time alerts for project updates.",
+                              active: true,
+                            },
+                            {
+                              label: "Email Reports",
+                              desc: "Weekly project health summaries.",
+                              active: true,
+                            },
+                            {
+                              label: "Chat Sounds",
+                              desc: "Audible alerts for new messages.",
+                              active: false,
+                            },
+                          ].map((item, i) => (
+                            <div
+                              key={i}
+                              className="flex justify-between items-center p-6 bg-black/20 rounded-2xl border border-white/5"
+                            >
+                              <div>
+                                <div className="text-sm font-black uppercase italic text-white">
+                                  {item.label}
+                                </div>
+                                <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
+                                  {item.desc}
+                                </div>
+                              </div>
+                              <div
+                                className={`w-12 h-6 rounded-full p-1 transition-colors ${item.active ? "bg-[#c7c42a]" : "bg-white/10"}`}
+                              >
+                                <div
+                                  className={`w-4 h-4 rounded-full bg-white transition-transform ${item.active ? "translate-x-6" : ""}`}
+                                ></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
 
-                       <div className="bg-[#c7c42a]/5 rounded-[3rem] p-12 border border-[#c7c42a]/10">
-                          <h4 className="text-xl font-black uppercase italic tracking-tighter mb-4 text-[#c7c42a]">Security Status</h4>
-                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">Two-factor authentication is recommended for all client accounts.</p>
-                          <div className="flex items-center gap-4 text-green-400">
-                             <ShieldCheck size={20} />
-                             <span className="text-[10px] font-black uppercase tracking-widest">End-to-End Encrypted Sessions</span>
-                          </div>
-                       </div>
+                      <div className="bg-[#c7c42a]/5 rounded-[3rem] p-12 border border-[#c7c42a]/10">
+                        <h4 className="text-xl font-black uppercase italic tracking-tighter mb-4 text-[#c7c42a]">
+                          Security Status
+                        </h4>
+                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-8">
+                          Two-factor authentication is recommended for all
+                          client accounts.
+                        </p>
+                        <div className="flex items-center gap-4 text-green-400">
+                          <ShieldCheck size={20} />
+                          <span className="text-[10px] font-black uppercase tracking-widest">
+                            End-to-End Encrypted Sessions
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              ) : activeTab === 'payments' ? (
+              ) : activeTab === "payments" ? (
                 <div className="space-y-10">
                   <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                     <div className="space-y-4">
-                      <h2 className="text-xs font-black text-[#c7c42a] uppercase tracking-[0.4em]">Billing Information</h2>
-                      <h3 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">Your Payments</h3>
+                      <h2 className="text-xs font-black text-[#c7c42a] uppercase tracking-[0.4em]">
+                        Billing Information
+                      </h2>
+                      <h3 className="text-6xl font-black tracking-tighter uppercase italic text-white leading-none">
+                        Your Payments
+                      </h3>
                     </div>
                   </div>
 
@@ -1074,12 +1411,14 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                     {/* Active Plan Card */}
                     <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#c7c42a]/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-[#c7c42a]/10 transition-all" />
-                      
+
                       <div className="flex justify-between items-start relative z-10">
                         <div className="space-y-1">
-                          <div className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">Current Plan</div>
+                          <div className="text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
+                            Current Plan
+                          </div>
                           <h4 className="text-3xl font-black uppercase italic tracking-tighter">
-                            {selectedProject?.plan || 'Basic'} (One-Time)
+                            {selectedProject?.plan || "Basic"} (One-Time)
                           </h4>
                         </div>
                         <div className="px-4 py-1.5 bg-[#c7c42a]/10 border border-[#c7c42a]/20 rounded-full text-[10px] font-black uppercase tracking-widest text-[#c7c42a]">
@@ -1093,24 +1432,33 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             Total Cost
                           </span>
                           <span className="text-white font-black italic">
-                            {selectedProject?.plan === 'Standard' ? '₹15,000' : (selectedProject?.plan === 'Premium' || selectedProject?.plan === 'Pro') ? '₹30,000' : '₹7,500'}/-
+                            {selectedProject?.plan === "Standard"
+                              ? "₹15,000"
+                              : selectedProject?.plan === "Premium" ||
+                                  selectedProject?.plan === "Pro"
+                                ? "₹30,000"
+                                : "₹7,500"}
+                            /-
                           </span>
                         </div>
-                        {selectedProject?.domainPrice && selectedProject.domainPrice > 0 && (
-                          <div className="flex justify-between items-center text-sm pt-2 border-t border-white/5">
-                            <span className="text-white/40 font-bold uppercase tracking-widest">
-                              Domain Charges
-                            </span>
-                            <span className="text-[#c7c42a] font-black italic">
-                              ₹{selectedProject.domainPrice.toLocaleString()}
-                            </span>
-                          </div>
-                        )}
+                        {selectedProject?.domainPrice &&
+                          selectedProject.domainPrice > 0 && (
+                            <div className="flex justify-between items-center text-sm pt-2 border-t border-white/5">
+                              <span className="text-white/40 font-bold uppercase tracking-widest">
+                                Domain Charges
+                              </span>
+                              <span className="text-[#c7c42a] font-black italic">
+                                ₹{selectedProject.domainPrice.toLocaleString()}
+                              </span>
+                            </div>
+                          )}
                       </div>
 
                       <div className="pt-4 relative z-10">
-                        <button 
-                          onClick={() => selectedProject && setShowInvoice(true)}
+                        <button
+                          onClick={() =>
+                            selectedProject && setShowInvoice(true)
+                          }
                           disabled={!selectedProject}
                           className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                         >
@@ -1120,73 +1468,100 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       </div>
                     </div>
 
-                             {/* Payment Status Card */}
-                             <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 flex flex-col justify-center text-center">
-                               {selectedProject.paymentStatus === 'paid' ? (
-                                 <>
-                                   <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto">
-                                     <ShieldCheck size={40} />
-                                   </div>
-                                   <div className="space-y-2">
-                                     <h4 className="text-2xl font-black uppercase italic tracking-tighter">Payment Verified</h4>
-                                     <p className="text-white/40 text-xs font-medium italic">Your project is funded and in production.</p>
-                                   </div>
-                                 </>
-                               ) : (
-                                 <>
-                                   <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-500 mx-auto">
-                                     <CreditCard size={40} />
-                                   </div>
-                                   <div className="space-y-2">
-                                     <h4 className="text-2xl font-black uppercase italic tracking-tighter">Payment Pending</h4>
-                                     <p className="text-white/40 text-xs font-medium italic">Complete your payment to start development.</p>
-                                   </div>
-                                   <div className="pt-4 space-y-4">
-                                     {selectedProject.paymentLinkBasic && (
-                                       <button 
-                                         onClick={() => window.open(selectedProject.paymentLinkBasic, '_blank')}
-                                         className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20 flex items-center justify-center gap-3"
-                                       >
-                                         <CreditCard size={20} />
-                                         Pay Basic (₹7,500)
-                                       </button>
-                                     )}
-                                     {selectedProject.paymentLinkPremium && (
-                                       <button 
-                                         onClick={() => window.open(selectedProject.paymentLinkPremium, '_blank')}
-                                         className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-3"
-                                       >
-                                         <ShieldCheck size={20} />
-                                         Pay Premium (₹30,000)
-                                       </button>
-                                     )}
-                                     {selectedProject.domainPrice && selectedProject.domainPrice > 0 && (
-                                       <div className="p-4 rounded-2xl bg-[#c7c42a]/5 border border-[#c7c42a]/20 flex justify-between items-center">
-                                         <span className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Domain Charge (Unpaid)</span>
-                                         <span className="text-lg font-black italic text-[#c7c42a]">₹{selectedProject.domainPrice.toLocaleString()}</span>
-                                       </div>
-                                     )}
-                                     {!selectedProject.paymentLinkBasic && (
-                                       <button 
-                                         onClick={() => handlePayment(selectedProject)}
-                                         className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20"
-                                       >
-                                         Pay Now
-                                       </button>
-                                     )}
-                                     <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-4">
-                                       Note: Please refresh the dashboard after completing the payment to update status.
-                                     </p>
-                                   </div>
-                                 </>
-                               )}
-                             </div>
+                    {/* Payment Status Card */}
+                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8 flex flex-col justify-center text-center">
+                      {selectedProject.paymentStatus === "paid" ? (
+                        <>
+                          <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto">
+                            <ShieldCheck size={40} />
+                          </div>
+                          <div className="space-y-2">
+                            <h4 className="text-2xl font-black uppercase italic tracking-tighter">
+                              Payment Verified
+                            </h4>
+                            <p className="text-white/40 text-xs font-medium italic">
+                              Your project is funded and in production.
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-500 mx-auto">
+                            <CreditCard size={40} />
+                          </div>
+                          <div className="space-y-2">
+                            <h4 className="text-2xl font-black uppercase italic tracking-tighter">
+                              Payment Pending
+                            </h4>
+                            <p className="text-white/40 text-xs font-medium italic">
+                              Complete your payment to start development.
+                            </p>
+                          </div>
+                          <div className="pt-4 space-y-4">
+                            {selectedProject.paymentLinkBasic && (
+                              <button
+                                onClick={() =>
+                                  window.open(
+                                    selectedProject.paymentLinkBasic,
+                                    "_blank",
+                                  )
+                                }
+                                className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20 flex items-center justify-center gap-3"
+                              >
+                                <CreditCard size={20} />
+                                Pay Basic (₹7,500)
+                              </button>
+                            )}
+                            {selectedProject.paymentLinkPremium && (
+                              <button
+                                onClick={() =>
+                                  window.open(
+                                    selectedProject.paymentLinkPremium,
+                                    "_blank",
+                                  )
+                                }
+                                className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-3"
+                              >
+                                <ShieldCheck size={20} />
+                                Pay Premium (₹30,000)
+                              </button>
+                            )}
+                            {selectedProject.domainPrice &&
+                              selectedProject.domainPrice > 0 && (
+                                <div className="p-4 rounded-2xl bg-[#c7c42a]/5 border border-[#c7c42a]/20 flex justify-between items-center">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">
+                                    Domain Charge (Unpaid)
+                                  </span>
+                                  <span className="text-lg font-black italic text-[#c7c42a]">
+                                    ₹
+                                    {selectedProject.domainPrice.toLocaleString()}
+                                  </span>
+                                </div>
+                              )}
+                            {!selectedProject.paymentLinkBasic && (
+                              <button
+                                onClick={() => handlePayment(selectedProject)}
+                                className="w-full py-5 bg-[#c7c42a] text-black rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all shadow-lg shadow-[#c7c42a]/20"
+                              >
+                                Pay Now
+                              </button>
+                            )}
+                            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-4">
+                              Note: Please refresh the dashboard after
+                              completing the payment to update status.
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* Transaction History */}
                   <div className="bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden">
                     <div className="p-8 border-b border-white/5">
-                      <h4 className="text-xs font-black uppercase tracking-widest text-white/40">Transaction History</h4>
+                      <h4 className="text-xs font-black uppercase tracking-widest text-white/40">
+                        Transaction History
+                      </h4>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
@@ -1201,13 +1576,32 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                           {[
-                            { date: 'Apr 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Monthly Subscription`, amount: `₹${selectedProject?.plan === 'Standard' ? '5,999' : (selectedProject?.plan === 'Premium' || selectedProject?.plan === 'Pro') ? '9,999' : '1,499'}`, status: 'Paid' },
-                            { date: 'Mar 15, 2026', desc: `${selectedProject?.plan || 'Basic'} - Setup Fee + 1st Month`, amount: `₹${selectedProject?.plan === 'Standard' ? '8,998' : (selectedProject?.plan === 'Premium' || selectedProject?.plan === 'Pro') ? '14,998' : '2,998'}`, status: 'Paid' },
+                            {
+                              date: "Apr 15, 2026",
+                              desc: `${selectedProject?.plan || "Basic"} - Monthly Subscription`,
+                              amount: `₹${selectedProject?.plan === "Standard" ? "5,999" : selectedProject?.plan === "Premium" || selectedProject?.plan === "Pro" ? "9,999" : "1,499"}`,
+                              status: "Paid",
+                            },
+                            {
+                              date: "Mar 15, 2026",
+                              desc: `${selectedProject?.plan || "Basic"} - Setup Fee + 1st Month`,
+                              amount: `₹${selectedProject?.plan === "Standard" ? "8,998" : selectedProject?.plan === "Premium" || selectedProject?.plan === "Pro" ? "14,998" : "2,998"}`,
+                              status: "Paid",
+                            },
                           ].map((tx, i) => (
-                            <tr key={i} className="group hover:bg-white/5 transition-all">
-                              <td className="px-8 py-6 text-xs font-bold text-white/60">{tx.date}</td>
-                              <td className="px-8 py-6 text-xs font-black uppercase italic tracking-tighter">{tx.desc}</td>
-                              <td className="px-8 py-6 text-xs font-black text-[#c7c42a] italic">{tx.amount}</td>
+                            <tr
+                              key={i}
+                              className="group hover:bg-white/5 transition-all"
+                            >
+                              <td className="px-8 py-6 text-xs font-bold text-white/60">
+                                {tx.date}
+                              </td>
+                              <td className="px-8 py-6 text-xs font-black uppercase italic tracking-tighter">
+                                {tx.desc}
+                              </td>
+                              <td className="px-8 py-6 text-xs font-black text-[#c7c42a] italic">
+                                {tx.amount}
+                              </td>
                               <td className="px-8 py-6">
                                 <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-500/20">
                                   {tx.status}
@@ -1228,12 +1622,12 @@ export default function Dashboard({ user, profile }: DashboardProps) {
               ) : (
                 <div className="space-y-10">
                   {/* Stats Grid removed by user request */}
-                  
+
                   {/* Today's Meetings Highlight */}
-                  {meetings.filter(m => {
+                  {meetings.filter((m) => {
                     const today = new Date().toDateString();
                     const mDate = new Date(m.date).toDateString();
-                    return today === mDate && m.status === 'accepted';
+                    return today === mDate && m.status === "accepted";
                   }).length > 0 && (
                     <div className="bg-[#FFFF00] p-10 rounded-[3rem] text-black relative overflow-hidden group border-2 border-black">
                       <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:scale-110 transition-transform">
@@ -1241,163 +1635,238 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       </div>
                       <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-6">
-                          <div className="px-3 py-1 bg-black text-[#FFFF00] text-[8px] font-black uppercase rounded-full">Happening Today</div>
+                          <div className="px-3 py-1 bg-black text-[#FFFF00] text-[8px] font-black uppercase rounded-full">
+                            Happening Today
+                          </div>
                         </div>
-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-8 leading-none text-black">Upcoming<br />Briefings.</h3>
+                        <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-8 leading-none text-black">
+                          Upcoming
+                          <br />
+                          Briefings.
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {meetings.filter(m => {
-                            const today = new Date().toDateString();
-                            const mDate = new Date(m.date).toDateString();
-                            return today === mDate && m.status === 'accepted';
-                          }).map((meeting, idx) => {
-                            const meetTime = new Date(`${meeting.date}T${meeting.time}`);
-                            const diffMs = meetTime.getTime() - nowTime.getTime();
-                            const diffMin = diffMs / 60000;
-                            const isGlowActive = diffMin <= 10 && diffMin >= -60;
-                            
-                            let countdownText = '';
-                            if (diffMs > 0) {
-                              const totalSecs = Math.floor(diffMs / 1000);
-                              const hours = Math.floor(totalSecs / 3600);
-                              const mins = Math.floor((totalSecs % 3600) / 60);
-                              const secs = totalSecs % 60;
-                              if (hours > 0) {
-                                countdownText = `${hours}H ${mins}M LEFT`;
-                              } else {
-                                countdownText = `${mins}M ${secs}S LEFT`;
-                              }
-                            } else if (diffMin >= -60) {
-                              countdownText = 'SESSION LIVE NOW';
-                            } else {
-                              countdownText = 'CONCLUDED';
-                            }
+                          {meetings
+                            .filter((m) => {
+                              const today = new Date().toDateString();
+                              const mDate = new Date(m.date).toDateString();
+                              return today === mDate && m.status === "accepted";
+                            })
+                            .map((meeting, idx) => {
+                              const meetTime = new Date(
+                                `${meeting.date}T${meeting.time}`,
+                              );
+                              const diffMs =
+                                meetTime.getTime() - nowTime.getTime();
+                              const diffMin = diffMs / 60000;
+                              const isGlowActive =
+                                diffMin <= 10 && diffMin >= -60;
 
-                            return (
-                              <div key={idx} className="bg-black text-white border border-white/10 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                                <div className="mb-6">
-                                  <div className="flex justify-between items-start mb-4">
-                                    <div className="text-xl font-black uppercase italic tracking-tight text-white leading-none">{meeting.title}</div>
-                                    <div className="px-3 py-1 bg-white/10 border border-white/10 rounded-full text-[8px] font-black uppercase font-mono text-[#FFFF00]">
-                                      {meeting.time}
+                              let countdownText = "";
+                              if (diffMs > 0) {
+                                const totalSecs = Math.floor(diffMs / 1000);
+                                const hours = Math.floor(totalSecs / 3600);
+                                const mins = Math.floor(
+                                  (totalSecs % 3600) / 60,
+                                );
+                                const secs = totalSecs % 60;
+                                if (hours > 0) {
+                                  countdownText = `${hours}H ${mins}M LEFT`;
+                                } else {
+                                  countdownText = `${mins}M ${secs}S LEFT`;
+                                }
+                              } else if (diffMin >= -60) {
+                                countdownText = "SESSION LIVE NOW";
+                              } else {
+                                countdownText = "CONCLUDED";
+                              }
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="bg-black text-white border border-white/10 rounded-2xl p-6 shadow-xl flex flex-col justify-between"
+                                >
+                                  <div className="mb-6">
+                                    <div className="flex justify-between items-start mb-4">
+                                      <div className="text-xl font-black uppercase italic tracking-tight text-white leading-none">
+                                        {meeting.title}
+                                      </div>
+                                      <div className="px-3 py-1 bg-white/10 border border-white/10 rounded-full text-[8px] font-black uppercase font-mono text-[#FFFF00]">
+                                        {meeting.time}
+                                      </div>
+                                    </div>
+                                    {meeting.notes && (
+                                      <p className="text-white/60 text-xs mt-2 italic font-medium">
+                                        "{meeting.notes}"
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="space-y-3">
+                                    <button
+                                      onClick={() =>
+                                        meeting.meetingLink &&
+                                        window.open(
+                                          meeting.meetingLink,
+                                          "_blank",
+                                        )
+                                      }
+                                      className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                        isGlowActive
+                                          ? "bg-[#FFFF00] text-black animate-pulse shadow-[0_0_20px_rgba(255,255,0,0.8)] border-2 border-black hover:scale-105"
+                                          : "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.03]"
+                                      }`}
+                                    >
+                                      {isGlowActive
+                                        ? "⚡ JOIN ACTIVE SESSION ⚡"
+                                        : "Join Session"}{" "}
+                                      <ArrowRight size={14} />
+                                    </button>
+
+                                    <div
+                                      className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest text-center rounded-lg border ${
+                                        isGlowActive
+                                          ? "bg-[#FFFF00]/10 border-[#FFFF00] text-[#FFFF00] animate-bounce"
+                                          : "bg-white/5 border-white/10 text-white/40"
+                                      }`}
+                                    >
+                                      {countdownText}
                                     </div>
                                   </div>
-                                  {meeting.notes && (
-                                    <p className="text-white/60 text-xs mt-2 italic font-medium">"{meeting.notes}"</p>
-                                  )}
                                 </div>
-                                <div className="space-y-3">
-                                  <button 
-                                    onClick={() => meeting.meetingLink && window.open(meeting.meetingLink, '_blank')}
-                                    className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                                      isGlowActive
-                                        ? 'bg-[#FFFF00] text-black animate-pulse shadow-[0_0_20px_rgba(255,255,0,0.8)] border-2 border-black hover:scale-105'
-                                        : 'bg-white/10 text-white hover:bg-white/20 hover:scale-[1.03]'
-                                    }`}
-                                  >
-                                    {isGlowActive ? '⚡ JOIN ACTIVE SESSION ⚡' : 'Join Session'} <ArrowRight size={14} />
-                                  </button>
-                                  
-                                  <div className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest text-center rounded-lg border ${
-                                    isGlowActive
-                                      ? 'bg-[#FFFF00]/10 border-[#FFFF00] text-[#FFFF00] animate-bounce'
-                                      : 'bg-white/5 border-white/10 text-white/40'
-                                  }`}>
-                                    {countdownText}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
                         </div>
                       </div>
                     </div>
                   )}
 
-                      {projects.length === 0 ? (
-                        <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
-                          <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">No projects yet</h2>
-                          <p className="text-white/60 mb-10 text-xl">Start your first project to see it here.</p>
-                          <button 
-                            onClick={() => {
-                              localStorage.removeItem('onboarding_step');
-                              localStorage.removeItem('onboarding_data');
-                              navigate('/onboarding');
-                            }}
-                            className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
-                          >
-                            Start Your Project
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                          {/* Bio Log Quick Card */}
-                          <div className="lg:col-span-3">
-                             <motion.div 
-                               initial={{ opacity: 0, y: 20 }}
-                               animate={{ opacity: 1, y: 0 }}
-                               onClick={() => navigate('/bio-log')}
-                               className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-12 cursor-pointer group hover:border-[#c7c42a]/50 transition-all relative overflow-hidden"
-                             >
-                                <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#c7c42a]/5 rounded-full blur-3xl group-hover:bg-[#c7c42a]/10 transition-all"></div>
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                                   <div className="flex items-center gap-6">
-                                      <div className="w-20 h-20 bg-[#c7c42a]/20 rounded-[2rem] flex items-center justify-center text-[#c7c42a] group-hover:scale-110 transition-transform">
-                                         <CalendarIcon size={40} />
-                                      </div>
-                                      <div>
-                                         <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">Daily Bio Log</h3>
-                                         <p className="text-xs font-bold text-white/40 uppercase tracking-[0.2em] mt-1">Track your growth & daily evolution</p>
-                                      </div>
-                                   </div>
-                                   <div className="flex items-center gap-4">
-                                      <div className="text-right hidden md:block">
-                                         <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">Active Evolution</p>
-                                         <p className="text-sm font-bold text-white/60 italic">Personal Journey Mode</p>
-                                      </div>
-                                      <div className="w-14 h-14 bg-[#c7c42a] text-black rounded-2xl flex items-center justify-center group-hover:translate-x-2 transition-transform shadow-lg shadow-[#c7c42a]/20">
-                                         <ArrowRight size={24} />
-                                      </div>
-                                   </div>
-                                </div>
-                             </motion.div>
-                          </div>
-
-                          {/* Project List */}
-                          <div className="lg:col-span-1 space-y-6">
-                            <div className="flex items-center justify-between px-4">
-                              <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">Your Projects</h2>
+                  {projects.length === 0 ? (
+                    <div className="bg-[#0a0a0a] rounded-[3rem] p-16 text-center border border-white/5 shadow-2xl">
+                      <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">
+                        No projects yet
+                      </h2>
+                      <p className="text-white/60 mb-10 text-xl">
+                        Start your first project to see it here.
+                      </p>
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem("onboarding_step");
+                          localStorage.removeItem("onboarding_data");
+                          navigate("/onboarding");
+                        }}
+                        className="inline-block bg-[#c7c42a] text-black px-12 py-5 rounded-full font-black text-xl uppercase italic hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(199,196,42,0.2)]"
+                      >
+                        Start Your Project
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                      {/* Bio Log Quick Card */}
+                      <div className="lg:col-span-3">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          onClick={() => navigate("/bio-log")}
+                          className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-12 cursor-pointer group hover:border-[#c7c42a]/50 transition-all relative overflow-hidden"
+                        >
+                          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#c7c42a]/5 rounded-full blur-3xl group-hover:bg-[#c7c42a]/10 transition-all"></div>
+                          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                            <div className="flex items-center gap-6">
+                              <div className="w-20 h-20 bg-[#c7c42a]/20 rounded-[2rem] flex items-center justify-center text-[#c7c42a] group-hover:scale-110 transition-transform">
+                                <CalendarIcon size={40} />
+                              </div>
+                              <div>
+                                <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">
+                                  Daily Bio Log
+                                </h3>
+                                <p className="text-xs font-bold text-white/40 uppercase tracking-[0.2em] mt-1">
+                                  Track your growth & daily evolution
+                                </p>
+                              </div>
                             </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right hidden md:block">
+                                <p className="text-[10px] font-black text-[#c7c42a] uppercase tracking-widest">
+                                  Active Evolution
+                                </p>
+                                <p className="text-sm font-bold text-white/60 italic">
+                                  Personal Journey Mode
+                                </p>
+                              </div>
+                              <div className="w-14 h-14 bg-[#c7c42a] text-black rounded-2xl flex items-center justify-center group-hover:translate-x-2 transition-transform shadow-lg shadow-[#c7c42a]/20">
+                                <ArrowRight size={24} />
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      {/* Project List */}
+                      <div className="lg:col-span-1 space-y-6">
+                        <div className="flex items-center justify-between px-4">
+                          <h2 className="text-xs font-black text-white/50 uppercase tracking-widest">
+                            Your Projects
+                          </h2>
+                        </div>
                         <div className="space-y-4">
                           {projects.map((p) => (
-                            <div 
+                            <div
                               key={p.id}
                               onClick={() => setSelectedProject(p)}
                               className={`w-full p-8 rounded-[2.5rem] text-left transition-all border duration-300 ${
-                                selectedProject?.id === p.id 
-                                  ? 'text-black shadow-xl scale-[1.02]' 
-                                  : 'bg-black/20 border-white/5 text-white hover:border-white/20'
+                                selectedProject?.id === p.id
+                                  ? "text-black shadow-xl scale-[1.02]"
+                                  : "bg-black/20 border-white/5 text-white hover:border-white/20"
                               }`}
-                              style={selectedProject?.id === p.id ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+                              style={
+                                selectedProject?.id === p.id
+                                  ? {
+                                      backgroundColor: primaryColor,
+                                      borderColor: primaryColor,
+                                    }
+                                  : {}
+                              }
                             >
                               <div className="flex items-center justify-between mb-2">
-                                <h3 className="font-black text-2xl uppercase italic tracking-tighter">{p.businessName}</h3>
-                                <div className={`w-2 h-2 rounded-full ${
-                                  p.status === 'active' ? 'bg-blue-500' :
-                                  p.status === 'completed' ? 'bg-green-500' :
-                                  p.status === 'rejected' ? 'bg-red-500' :
-                                  'bg-#c7c42a'
-                                }`} />
+                                <h3 className="font-black text-2xl uppercase italic tracking-tighter">
+                                  {p.businessName}
+                                </h3>
+                                <div
+                                  className={`w-2 h-2 rounded-full ${
+                                    p.status === "active"
+                                      ? "bg-blue-500"
+                                      : p.status === "completed"
+                                        ? "bg-green-500"
+                                        : p.status === "rejected"
+                                          ? "bg-red-500"
+                                          : "bg-#c7c42a"
+                                  }`}
+                                />
                               </div>
-                              <p className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? 'text-black/70' : 'text-white/50'}`}>{p.businessType}</p>
+                              <p
+                                className={`text-sm mb-4 font-bold ${selectedProject?.id === p.id ? "text-black/70" : "text-white/50"}`}
+                              >
+                                {p.businessType}
+                              </p>
                               <div className="flex items-center justify-between">
-                                <div className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                  selectedProject?.id === p.id ? 'bg-black' : 'bg-white/10 text-white'
-                                }`}
-                                style={selectedProject?.id === p.id ? { color: primaryColor } : {}}
+                                <div
+                                  className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                    selectedProject?.id === p.id
+                                      ? "bg-black"
+                                      : "bg-white/10 text-white"
+                                  }`}
+                                  style={
+                                    selectedProject?.id === p.id
+                                      ? { color: primaryColor }
+                                      : {}
+                                  }
                                 >
                                   {p.status}
                                 </div>
-                                <span className={`text-xs font-black italic ${selectedProject?.id === p.id ? 'text-black' : 'text-white'}`}>{p.progress}%</span>
+                                <span
+                                  className={`text-xs font-black italic ${selectedProject?.id === p.id ? "text-black" : "text-white"}`}
+                                >
+                                  {p.progress}%
+                                </span>
                               </div>
                             </div>
                           ))}
@@ -1407,7 +1876,7 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                       {/* Project Details */}
                       <div className="lg:col-span-2 space-y-8">
                         {selectedProject && (
-                          <motion.div 
+                          <motion.div
                             key={selectedProject.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -1418,77 +1887,174 @@ export default function Dashboard({ user, profile }: DashboardProps) {
 
                             <div className="flex justify-between items-start mb-16 relative z-10">
                               <div>
-                                <h2 className="text-6xl font-black tracking-tighter mb-4 uppercase italic text-[#c7c42a]">Project Status</h2>
-                                <p className="text-2xl text-white/70 font-black uppercase italic tracking-tighter">{selectedProject.businessName}</p>
+                                <h2 className="text-6xl font-black tracking-tighter mb-4 uppercase italic text-[#c7c42a]">
+                                  Project Status
+                                </h2>
+                                <p className="text-2xl text-white/70 font-black uppercase italic tracking-tighter">
+                                  {selectedProject.businessName}
+                                </p>
+
+                                {/* Dynamic Payment Status Badge */}
+                                <div className="mt-4 mb-5">
+                                  {selectedProject.paymentStatus === "paid" ? (
+                                    <div className="inline-flex items-center gap-2.5 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.05)]">
+                                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#10b981]" />
+                                      <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest font-mono">
+                                        Payment Status: SECURE VERIFIED & PAID
+                                      </span>
+                                    </div>
+                                  ) : selectedProject.paymentStatus ===
+                                      "pending_verification" ||
+                                    selectedProject.paymentStatus ===
+                                      "verifying" ? (
+                                    <div className="inline-flex flex-col gap-1.5 bg-yellow-500/10 border border-yellow-500/30 px-4 py-2.5 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.05)]">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_10px_#f59e0b]" />
+                                        <span className="text-[10px] font-black uppercase text-yellow-500 tracking-widest font-mono">
+                                          Payment Status: PENDING
+                                        </span>
+                                      </div>
+                                      {selectedProject.utr && (
+                                        <span className="text-[8px] font-mono font-bold text-white/40 uppercase tracking-wider pl-4.5">
+                                          Reference / UTR: {selectedProject.utr}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="inline-flex items-center gap-2.5 bg-red-500/10 border border-red-500/30 px-4 py-2.5 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.05)]">
+                                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_#ef4444]" />
+                                      <span className="text-[10px] font-black uppercase text-red-500 tracking-widest font-mono">
+                                        Payment Status: ACTION REQUIRED (UNPAID)
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
                                 <div className="mt-2 text-[10px] font-bold text-white/40 uppercase tracking-widest flex flex-wrap gap-x-4 gap-y-1">
                                   <span>{selectedProject.businessType}</span>
-                                  <span>{selectedProject.businessPhone || selectedProject.businessNumber}</span>
-                                  <span>{selectedProject.city}, {selectedProject.state} • {selectedProject.pincode}</span>
+                                  <span>
+                                    {selectedProject.businessPhone ||
+                                      selectedProject.businessNumber}
+                                  </span>
+                                  <span>
+                                    {selectedProject.city},{" "}
+                                    {selectedProject.state} •{" "}
+                                    {selectedProject.pincode}
+                                  </span>
                                 </div>
                                 <div className="mt-6 flex flex-wrap gap-4">
-                                  <button 
+                                  <button
                                     onClick={() => {
-                                      const el = document.getElementById('dev-phase');
-                                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                      const el =
+                                        document.getElementById("dev-phase");
+                                      if (el)
+                                        el.scrollIntoView({
+                                          behavior: "smooth",
+                                        });
                                     }}
                                     className="flex items-center gap-2 bg-[#c7c42a]/10 border border-[#c7c42a]/20 px-6 py-3 rounded-xl text-[#c7c42a] hover:bg-[#c7c42a] hover:text-black transition-all group"
                                   >
-                                    <Clock size={16} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">View Full Process</span>
+                                    <Clock
+                                      size={16}
+                                      className="group-hover:scale-110 transition-transform"
+                                    />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">
+                                      View Full Process
+                                    </span>
                                   </button>
-                                  {selectedProject.paymentStatus === 'paid' && (
+                                  {selectedProject.paymentStatus === "paid" && (
                                     <div className="flex items-center gap-4">
-                                       <BasicRating onRate={(val) => {
-                                         toast.success(`You rated us ${val} stars! Thank you!`);
-                                       }} />
+                                      <BasicRating
+                                        onRate={(val) => {
+                                          toast.success(
+                                            `You rated us ${val} stars! Thank you!`,
+                                          );
+                                        }}
+                                      />
                                     </div>
                                   )}
-                                    {hasAcceptedProject && selectedProject.paymentStatus !== 'paid' && selectedProject.paymentStatus !== 'verifying' && (
-                                      <button 
+                                  {hasAcceptedProject &&
+                                    selectedProject.paymentStatus !== "paid" &&
+                                    selectedProject.paymentStatus !==
+                                      "verifying" && (
+                                      <button
                                         onClick={async () => {
                                           if (selectedProject.paymentLink) {
-                                            window.open(selectedProject.paymentLink, '_blank');
-                                            await updateProject(selectedProject.id, { paymentStatus: 'verifying' });
-                                            toast.success('Please complete payment. We will verify it.');
+                                            window.open(
+                                              selectedProject.paymentLink,
+                                              "_blank",
+                                            );
+                                            await updateProject(
+                                              selectedProject.id,
+                                              { paymentStatus: "verifying" },
+                                            );
+                                            toast.success(
+                                              "Please complete payment. We will verify it.",
+                                            );
                                           } else {
-                                            handlePayment(selectedProject, true);
+                                            handlePayment(
+                                              selectedProject,
+                                              true,
+                                            );
                                           }
                                         }}
                                         className="flex items-center gap-2 bg-[#c7c42a] border border-[#c7c42a] px-8 py-3 rounded-xl text-black hover:scale-105 transition-all group"
                                       >
                                         <CreditCard size={16} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Pay Now</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">
+                                          Pay Now
+                                        </span>
                                       </button>
                                     )}
-                                  {selectedProject.paymentStatus === 'verifying' && (
+                                  {selectedProject.paymentStatus ===
+                                    "verifying" && (
                                     <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-white/40 italic">
-                                      <RefreshCw size={16} className="animate-spin" />
-                                      <span className="text-[10px] font-black uppercase tracking-widest">Payment Verification in progress</span>
+                                      <RefreshCw
+                                        size={16}
+                                        className="animate-spin"
+                                      />
+                                      <span className="text-[10px] font-black uppercase tracking-widest">
+                                        Payment Verification in progress
+                                      </span>
                                     </div>
                                   )}
                                 </div>
                               </div>
-
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16 relative z-10">
                               <div className="space-y-6">
-                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Selected Template</h3>
+                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">
+                                  Selected Template
+                                </h3>
                                 <div className="p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between">
                                   <div>
                                     <div className="text-xl font-black uppercase italic text-[#c7c42a]">
-                                      {selectedProject.templateId === 'food-court' ? 'Food Court' : 
-                                       selectedProject.templateId === 'autos' ? 'Global Autos' : 
-                                       selectedProject.templateId === 'clothing' ? 'Wearism Fashion' : 
-                                       selectedProject.templateId === 'ai-custom' ? 'AI Custom Design' : 'Standard Template'}
+                                      {selectedProject.templateId ===
+                                      "food-court"
+                                        ? "Food Court"
+                                        : selectedProject.templateId === "autos"
+                                          ? "Global Autos"
+                                          : selectedProject.templateId ===
+                                              "clothing"
+                                            ? "Wearism Fashion"
+                                            : selectedProject.templateId ===
+                                                "ai-custom"
+                                              ? "AI Custom Design"
+                                              : "Standard Template"}
                                     </div>
                                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">
-                                      {selectedProject.templateId === 'ai-custom' ? 'Custom Solution' : 'Premium Theme'}
+                                      {selectedProject.templateId ===
+                                      "ai-custom"
+                                        ? "Custom Solution"
+                                        : "Premium Theme"}
                                     </p>
                                   </div>
-                                  {['food-court', 'autos', 'clothing'].includes(selectedProject.templateId) && (
-                                    <Link 
-                                      to={`/portfolio/${selectedProject.templateId === 'food-court' ? 'food-court' : selectedProject.templateId === 'autos' ? 'autos' : 'clothing'}`}
+                                  {["food-court", "autos", "clothing"].includes(
+                                    selectedProject.templateId,
+                                  ) && (
+                                    <Link
+                                      to={`/portfolio/${selectedProject.templateId === "food-court" ? "food-court" : selectedProject.templateId === "autos" ? "autos" : "clothing"}`}
                                       className="bg-white/5 hover:bg-[#c7c42a] hover:text-black p-3 rounded-xl transition-all"
                                     >
                                       <ArrowRight size={20} />
@@ -1497,19 +2063,41 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 </div>
                               </div>
                               <div className="space-y-6">
-                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Project Intel</h3>
+                                <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">
+                                  Project Intel
+                                </h3>
                                 <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-3">
                                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-white/20">Store Type</span>
-                                    <span className="text-[#c7c42a]">{selectedProject.storeType === 'online_store' ? 'Online / Shipping' : 'Local / Walk-in'}</span>
+                                    <span className="text-white/20">
+                                      Store Type
+                                    </span>
+                                    <span className="text-[#c7c42a]">
+                                      {selectedProject.storeType ===
+                                      "online_store"
+                                        ? "Online / Shipping"
+                                        : "Local / Walk-in"}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-white/20">Region</span>
-                                    <span className="text-white/70 italic">{selectedProject.country || 'India'} ({selectedProject.locationState || 'N/A'})</span>
+                                    <span className="text-white/20">
+                                      Region
+                                    </span>
+                                    <span className="text-white/70 italic">
+                                      {selectedProject.country || "India"} (
+                                      {selectedProject.locationState || "N/A"})
+                                    </span>
                                   </div>
                                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-white/20">Identity</span>
-                                    <span className="text-white/70">{selectedProject.businessName?.substring(0, 15)}...</span>
+                                    <span className="text-white/20">
+                                      Identity
+                                    </span>
+                                    <span className="text-white/70">
+                                      {selectedProject.businessName?.substring(
+                                        0,
+                                        15,
+                                      )}
+                                      ...
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1519,24 +2107,52 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 relative z-10">
                               <div className="md:col-span-2 space-y-8 bg-white/5 p-8 rounded-[2.5rem] border border-white/5">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">Flow Timeline</span>
-                                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Est. Delivery: {formatDate(selectedProject.estimatedCompletion)}</span>
+                                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a]">
+                                    Flow Timeline
+                                  </span>
+                                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
+                                    Est. Delivery:{" "}
+                                    {formatDate(
+                                      selectedProject.estimatedCompletion,
+                                    )}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between items-center overflow-x-auto pb-4 gap-4 no-scrollbar">
                                   {statusSteps.map((step, i) => (
-                                    <div key={step} className="flex flex-col items-center min-w-[100px] text-center gap-3">
-                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                                        i < currentStepIndex 
-                                          ? 'bg-[#c7c42a] border-[#c7c42a] text-black' 
-                                          : i === currentStepIndex
-                                            ? step === 'Declined' ? 'bg-red-500 border-red-500 text-white' : 'bg-[#c7c42a] border-[#c7c42a] text-black shadow-[0_0_15px_rgba(199,196,42,0.5)]'
-                                            : 'bg-transparent border-white/10 text-white/20'
-                                      }`}>
-                                        {i < currentStepIndex ? <Check size={18} /> : step === 'Declined' ? <X size={18} /> : <span className="font-black text-sm">{i + 1}</span>}
+                                    <div
+                                      key={step}
+                                      className="flex flex-col items-center min-w-[100px] text-center gap-3"
+                                    >
+                                      <div
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                                          i < currentStepIndex
+                                            ? "bg-[#c7c42a] border-[#c7c42a] text-black"
+                                            : i === currentStepIndex
+                                              ? step === "Declined"
+                                                ? "bg-red-500 border-red-500 text-white"
+                                                : "bg-[#c7c42a] border-[#c7c42a] text-black shadow-[0_0_15px_rgba(199,196,42,0.5)]"
+                                              : "bg-transparent border-white/10 text-white/20"
+                                        }`}
+                                      >
+                                        {i < currentStepIndex ? (
+                                          <Check size={18} />
+                                        ) : step === "Declined" ? (
+                                          <X size={18} />
+                                        ) : (
+                                          <span className="font-black text-sm">
+                                            {i + 1}
+                                          </span>
+                                        )}
                                       </div>
-                                      <span className={`text-[8px] font-black uppercase tracking-widest ${
-                                        i <= currentStepIndex ? step === 'Declined' ? 'text-red-500' : 'text-[#c7c42a]' : 'text-white/20'
-                                      }`}>
+                                      <span
+                                        className={`text-[8px] font-black uppercase tracking-widest ${
+                                          i <= currentStepIndex
+                                            ? step === "Declined"
+                                              ? "text-red-500"
+                                              : "text-[#c7c42a]"
+                                            : "text-white/20"
+                                        }`}
+                                      >
                                         {step}
                                       </span>
                                     </div>
@@ -1544,13 +2160,19 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 </div>
                                 <div className="space-y-4 pt-2">
                                   <div className="flex justify-between items-end">
-                                    <span className="text-sm font-black uppercase italic text-[#c7c42a]">Milestone Achievement</span>
-                                    <span className="text-xs font-mono font-bold text-white/60">{selectedProject.progress}% Ready</span>
+                                    <span className="text-sm font-black uppercase italic text-[#c7c42a]">
+                                      Milestone Achievement
+                                    </span>
+                                    <span className="text-xs font-mono font-bold text-white/60">
+                                      {selectedProject.progress}% Ready
+                                    </span>
                                   </div>
                                   <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <motion.div 
+                                    <motion.div
                                       initial={{ width: 0 }}
-                                      animate={{ width: `${selectedProject.progress}%` }}
+                                      animate={{
+                                        width: `${selectedProject.progress}%`,
+                                      }}
                                       className="h-full bg-[#c7c42a] rounded-full shadow-[0_0_10px_rgba(199,196,42,0.5)]"
                                     />
                                   </div>
@@ -1578,20 +2200,38 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                       fill="transparent"
                                       strokeDasharray={276.46}
                                       initial={{ strokeDashoffset: 276.46 }}
-                                      animate={{ strokeDashoffset: 276.46 * (1 - selectedProject.progress / 100) }}
-                                      transition={{ duration: 1.5, ease: "easeOut" }}
+                                      animate={{
+                                        strokeDashoffset:
+                                          276.46 *
+                                          (1 - selectedProject.progress / 100),
+                                      }}
+                                      transition={{
+                                        duration: 1.5,
+                                        ease: "easeOut",
+                                      }}
                                       strokeLinecap="round"
-                                      style={{ filter: "drop-shadow(0px 0px 8px rgba(199, 196, 42, 0.5))" }}
+                                      style={{
+                                        filter:
+                                          "drop-shadow(0px 0px 8px rgba(199, 196, 42, 0.5))",
+                                      }}
                                     />
                                   </svg>
                                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-2xl font-black italic tracking-tighter text-white">{selectedProject.progress}%</span>
-                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-[#c7c42a] font-mono leading-none">Status</span>
+                                    <span className="text-2xl font-black italic tracking-tighter text-white">
+                                      {selectedProject.progress}%
+                                    </span>
+                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-[#c7c42a] font-mono leading-none">
+                                      Status
+                                    </span>
                                   </div>
                                 </div>
                                 <div className="mt-4 text-center">
-                                  <div className="text-[9px] font-black uppercase tracking-widest text-white/40 italic">System Engine</div>
-                                  <div className="text-[10px] font-bold uppercase text-[#c7c42a] tracking-widest mt-0.5 animate-pulse">Operational</div>
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-white/40 italic">
+                                    System Engine
+                                  </div>
+                                  <div className="text-[10px] font-bold uppercase text-[#c7c42a] tracking-widest mt-0.5 animate-pulse">
+                                    Operational
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -1600,12 +2240,20 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             <div className="mb-12 p-8 bg-white/5 rounded-[2.5rem] border border-white/5 space-y-6 relative overflow-hidden z-10">
                               <div className="flex justify-between items-center">
                                 <div>
-                                  <span className="text-[8px] font-black tracking-[0.3em] uppercase text-[#c7c42a]">Workspace Telemetry</span>
-                                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Project Build Velocity</h3>
+                                  <span className="text-[8px] font-black tracking-[0.3em] uppercase text-[#c7c42a]">
+                                    Workspace Telemetry
+                                  </span>
+                                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">
+                                    Project Build Velocity
+                                  </h3>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-[8px] font-mono font-black text-white/40 uppercase">Phase Activity Spectrum</span>
-                                  <div className="text-xs font-black text-[#c7c42a] uppercase">Active Iterations</div>
+                                  <span className="text-[8px] font-mono font-black text-white/40 uppercase">
+                                    Phase Activity Spectrum
+                                  </span>
+                                  <div className="text-xs font-black text-[#c7c42a] uppercase">
+                                    Active Iterations
+                                  </div>
                                 </div>
                               </div>
 
@@ -1613,68 +2261,108 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                                 <ResponsiveContainer width="100%" height="100%">
                                   <AreaChart
                                     data={[
-                                      { name: 'Concept', score: 15 },
-                                      { name: 'Wireframe', score: 38 },
-                                      { name: 'Front-end', score: selectedProject.progress >= 60 ? 60 : selectedProject.progress },
-                                      { name: 'API Sync', score: selectedProject.progress >= 85 ? 85 : selectedProject.progress },
-                                      { name: 'Production', score: selectedProject.progress }
+                                      { name: "Concept", score: 15 },
+                                      { name: "Wireframe", score: 38 },
+                                      {
+                                        name: "Front-end",
+                                        score:
+                                          selectedProject.progress >= 60
+                                            ? 60
+                                            : selectedProject.progress,
+                                      },
+                                      {
+                                        name: "API Sync",
+                                        score:
+                                          selectedProject.progress >= 85
+                                            ? 85
+                                            : selectedProject.progress,
+                                      },
+                                      {
+                                        name: "Production",
+                                        score: selectedProject.progress,
+                                      },
                                     ]}
-                                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                                    margin={{
+                                      top: 10,
+                                      right: 10,
+                                      left: -20,
+                                      bottom: 0,
+                                    }}
                                   >
                                     <defs>
-                                      <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#c7c42a" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#c7c42a" stopOpacity={0}/>
+                                      <linearGradient
+                                        id="colorScore"
+                                        x1="0"
+                                        y1="0"
+                                        x2="0"
+                                        y2="1"
+                                      >
+                                        <stop
+                                          offset="5%"
+                                          stopColor="#c7c42a"
+                                          stopOpacity={0.3}
+                                        />
+                                        <stop
+                                          offset="95%"
+                                          stopColor="#c7c42a"
+                                          stopOpacity={0}
+                                        />
                                       </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                    <XAxis 
-                                      dataKey="name" 
-                                      stroke="rgba(255,255,255,0.3)" 
-                                      fontSize={8} 
-                                      tickLine={false} 
+                                    <CartesianGrid
+                                      strokeDasharray="3 3"
+                                      stroke="rgba(255,255,255,0.05)"
+                                    />
+                                    <XAxis
+                                      dataKey="name"
+                                      stroke="rgba(255,255,255,0.3)"
+                                      fontSize={8}
+                                      tickLine={false}
                                       axisLine={false}
-                                      tick={{ fill: 'rgba(255,255,255,0.5)', fontWeight: '900' }}
+                                      tick={{
+                                        fill: "rgba(255,255,255,0.5)",
+                                        fontWeight: "900",
+                                      }}
                                     />
-                                    <YAxis 
-                                      stroke="rgba(255,255,255,0.3)" 
-                                      fontSize={8} 
-                                      tickLine={false} 
+                                    <YAxis
+                                      stroke="rgba(255,255,255,0.3)"
+                                      fontSize={8}
+                                      tickLine={false}
                                       axisLine={false}
-                                      tick={{ fill: 'rgba(255,255,255,0.5)' }}
+                                      tick={{ fill: "rgba(255,255,255,0.5)" }}
                                     />
-                                    <Tooltip 
-                                      contentStyle={{ 
-                                        backgroundColor: '#121212', 
-                                        borderColor: 'rgba(255,255,255,0.1)', 
-                                        borderRadius: '1rem',
-                                        fontSize: '10px',
-                                        fontWeight: '900',
-                                        textTransform: 'uppercase'
-                                      }} 
+                                    <Tooltip
+                                      contentStyle={{
+                                        backgroundColor: "#121212",
+                                        borderColor: "rgba(255,255,255,0.1)",
+                                        borderRadius: "1rem",
+                                        fontSize: "10px",
+                                        fontWeight: "900",
+                                        textTransform: "uppercase",
+                                      }}
                                     />
-                                    <Area 
-                                      type="monotone" 
-                                      dataKey="score" 
-                                      stroke="#c7c42a" 
+                                    <Area
+                                      type="monotone"
+                                      dataKey="score"
+                                      stroke="#c7c42a"
                                       strokeWidth={3}
-                                      fillOpacity={1} 
-                                      fill="url(#colorScore)" 
+                                      fillOpacity={1}
+                                      fill="url(#colorScore)"
                                     />
                                   </AreaChart>
                                 </ResponsiveContainer>
                               </div>
                             </div>
 
-
-
                             <div className="flex justify-between items-center pt-10 border-t border-white/5 relative z-10">
                               <div className="text-sm">
-                                {selectedProject.status === 'Rejected' && (
-                                  <p className="text-red-400 font-black uppercase italic">Reason: {selectedProject.rejectionReason}</p>
+                                {selectedProject.status === "Rejected" && (
+                                  <p className="text-red-400 font-black uppercase italic">
+                                    Reason: {selectedProject.rejectionReason}
+                                  </p>
                                 )}
                               </div>
-                              <button 
+                              <button
                                 onClick={() => setShowCancelModal(true)}
                                 className="text-white/30 hover:text-red-400 font-black text-xs uppercase tracking-widest transition-all"
                               >
@@ -1683,49 +2371,137 @@ export default function Dashboard({ user, profile }: DashboardProps) {
                             </div>
                           </motion.div>
                         )}
-                      </div>
 
-                      <div id="dev-phase" className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-                        <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5">
-                          <h3 className="text-xl font-black uppercase italic tracking-tighter mb-6">Development Phase</h3>
-                          <div className="space-y-6">
-                            {[
-                              { step: '01', title: 'Consultation', desc: 'Initial project planning and scope definition.', done: true },
-                              { step: '02', title: 'Design Mockup', desc: 'Visual layout and user experience planning.', done: true },
-                              { step: '03', title: 'Development', desc: 'Core functionality and template integration.', done: false },
-                              { step: '04', title: 'Launch', desc: 'Final testing and production deployment.', done: false },
-                            ].map((phase, i) => (
-                              <div key={i} className="flex gap-6 items-start">
-                                <div className={`text-xl font-black italic ${phase.done ? 'text-[#c7c42a]' : 'text-white/20'}`}>{phase.step}</div>
-                                <div>
-                                  <h4 className={`font-black uppercase italic tracking-tighter ${phase.done ? 'text-white' : 'text-white/40'}`}>{phase.title}</h4>
-                                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{phase.desc}</p>
-                                </div>
+                        <div id="dev-phase" className="space-y-6 mt-10">
+                          {/* Development Phase Card */}
+                          <div className="bg-white/5 p-8 md:p-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-transparent pointer-events-none" />
+
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                              <div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c7c42a] font-mono">
+                                  Workflow Status
+                                </span>
+                                <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white mt-1">
+                                  Live Development Phase
+                                </h3>
                               </div>
-                            ))}
+                              <div className="flex items-center gap-2 bg-[#c7c42a]/10 border border-[#c7c42a]/20 px-3.5 py-1.5 rounded-full shrink-0">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#c7c42a] animate-pulse" />
+                                <span className="text-[9px] font-black uppercase text-[#c7c42a] tracking-widest font-mono">
+                                  Sync: Operational
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                              {[
+                                {
+                                  step: "01",
+                                  title: "Consultation",
+                                  desc: "Initial project planning and scope definition.",
+                                  done: true,
+                                },
+                                {
+                                  step: "02",
+                                  title: "Design Mockup",
+                                  desc: "Visual layout and user experience planning.",
+                                  done: true,
+                                },
+                                {
+                                  step: "03",
+                                  title: "Development",
+                                  desc: "Core functionality and template integration.",
+                                  done: false,
+                                },
+                                {
+                                  step: "04",
+                                  title: "Launch",
+                                  desc: "Final testing and production deployment.",
+                                  done: false,
+                                },
+                              ].map((phase, i) => (
+                                <div
+                                  key={i}
+                                  className={`p-5 rounded-2xl border transition-all duration-300 relative flex flex-col justify-between min-h-[140px] ${
+                                    phase.done
+                                      ? "bg-[#c7c42a]/5 border-[#c7c42a]/20 hover:border-[#c7c42a]/40"
+                                      : "bg-black/40 border-white/5 hover:border-white/10"
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <span
+                                      className={`text-xl font-mono font-black italic ${phase.done ? "text-[#c7c42a]" : "text-white/20"}`}
+                                    >
+                                      {phase.step}
+                                    </span>
+                                    {phase.done && (
+                                      <div className="w-5 h-5 bg-[#c7c42a] rounded-full flex items-center justify-center text-black">
+                                        <Check size={12} strokeWidth={4} />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="space-y-1 mt-6">
+                                    <h4
+                                      className={`text-[11px] sm:text-xs font-black uppercase tracking-wider ${phase.done ? "text-white" : "text-white/40"}`}
+                                    >
+                                      {phase.title}
+                                    </h4>
+                                    <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest leading-normal hidden sm:block">
+                                      {phase.desc}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        
-                        <div className="bg-[#c7c42a] p-10 rounded-[3rem] text-black flex flex-col justify-between shadow-[0_0_40px_rgba(199,196,42,0.1)]">
-                          <div>
-                            <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 leading-none">Need help with<br />your plan?</h3>
-                            <p className="font-bold uppercase tracking-widest text-[10px] opacity-60 mb-8">Our experts are ready to assist you in building the perfect web presence.</p>
+
+                          {/* Support Center Banner */}
+                          <div className="bg-gradient-to-r from-[#c7c42a] to-[#a8a520] p-8 md:p-10 rounded-[2.5rem] text-black shadow-[0_0_50px_rgba(199,196,42,0.15)] relative overflow-hidden group">
+                            <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
+                              <div className="space-y-3 max-w-xl">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-black/50 font-mono">
+                                  Support Hub
+                                </span>
+                                <h3 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter leading-none text-black">
+                                  Need help with your plan?
+                                </h3>
+                                <p className="font-bold uppercase tracking-wider text-[10px] text-black/70 leading-relaxed">
+                                  Our elite engineering squad is standing by to
+                                  help customize your deployment model or scale
+                                  your infrastructure.
+                                </p>
+                              </div>
+                              <div className="shrink-0 w-full md:w-auto">
+                                {adminProfile || assignedDeveloper ? (
+                                  <button
+                                    onClick={() => setActiveTab("messages")}
+                                    className="bg-black text-white w-full md:w-auto py-4 px-8 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-black/30 cursor-pointer"
+                                  >
+                                    <MessageCircle size={16} />
+                                    <span>
+                                      Chat with{" "}
+                                      {assignedDeveloper
+                                        ? "Developer"
+                                        : "Support"}
+                                    </span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() =>
+                                      (window.location.href =
+                                        "mailto:webbylaunch@gmail.com?subject=Project Inquiry&body=Hi WebbyLaunch, I need help with my project.")
+                                    }
+                                    className="bg-black text-white w-full md:w-auto py-4 px-8 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-black/30 cursor-pointer"
+                                  >
+                                    <Mail size={16} />
+                                    <span>Email Us</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          {adminProfile || assignedDeveloper ? (
-                            <button 
-                              onClick={() => setActiveTab('messages')}
-                              className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
-                            >
-                              <MessageCircle size={20} /> Chat with {assignedDeveloper ? 'Webby Launch' : 'Admin'}
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => window.location.href = "mailto:webbylaunch@gmail.com?subject=Project Inquiry&body=Hi WebbyLaunch, I need help with my project."}
-                              className="bg-black text-white w-full py-5 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
-                            >
-                              <Mail size={20} /> Email Us
-                            </button>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -1737,11 +2513,9 @@ export default function Dashboard({ user, profile }: DashboardProps) {
         </div>
       </main>
 
-
-
       <AnimatePresence>
         {showInvoice && selectedProject && (
-          <InvoiceSystem 
+          <InvoiceSystem
             project={selectedProject}
             profile={profile}
             onClose={() => setShowInvoice(false)}
@@ -1753,26 +2527,36 @@ export default function Dashboard({ user, profile }: DashboardProps) {
       <AnimatePresence>
         {showCancelModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
-              onClick={() => setShowCancelModal(false)} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              onClick={() => setShowCancelModal(false)}
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative bg-black rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl border border-[#c7c42a]/10"
             >
-              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">Cancel Project?</h3>
-              <p className="text-white/60 mb-10 text-lg font-bold">Are you sure you want to cancel this project?</p>
+              <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase italic text-[#c7c42a]">
+                Cancel Project?
+              </h3>
+              <p className="text-white/60 mb-10 text-lg font-bold">
+                Are you sure you want to cancel this project?
+              </p>
               <div className="flex flex-col gap-4">
-                <button onClick={handleCancelProject} className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all">
+                <button
+                  onClick={handleCancelProject}
+                  className="w-full bg-red-500 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-red-600 transition-all"
+                >
                   Yes, Cancel
                 </button>
-                <button onClick={() => setShowCancelModal(false)} className="w-full bg-white/5 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-white/10 transition-all">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="w-full bg-white/5 text-white py-5 rounded-full font-black text-xl uppercase italic hover:bg-white/10 transition-all"
+                >
                   No, Keep It
                 </button>
               </div>

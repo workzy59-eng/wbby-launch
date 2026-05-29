@@ -466,8 +466,12 @@ export const checkDomainInUse = async (domain: string) => {
     
     const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
     return !snap1.empty || !snap2.empty;
-  } catch (error) {
-    console.error('Error checking domain:', error);
+  } catch (error: any) {
+    // Silence permission-denied logs as clients cannot list global projects by design
+    const msg = error?.message || '';
+    if (!msg.includes('permission-denied') && !msg.includes('Missing or insufficient permissions')) {
+      console.warn('Error checking domain:', error);
+    }
     return false;
   }
 };

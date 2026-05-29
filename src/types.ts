@@ -255,7 +255,8 @@ export interface Project {
   domain?: string;
   paymentOption?: 'full' | 'advance' | 'understanding';
   plan?: 'basic' | 'standard' | 'premium' | 'starter' | 'business' | 'Basic' | 'Standard' | 'Premium' | 'Pro';
-  paymentStatus?: 'pending' | 'paid' | 'verifying' | 'unpaid';
+  paymentStatus?: 'pending' | 'paid' | 'verifying' | 'unpaid' | 'pending_verification';
+  utr?: string;
   paymentLink?: string;
   nextBillingDate?: string | Timestamp;
   status: ProjectStatus;

@@ -25,7 +25,7 @@ const REGION_DATA = {
     currency: '₹',
     symbol: 'INR',
     gateway: 'Stripe' as const,
-    pricing: { basic: '7,500', standard: '15,000', premium: '30,000' },
+    pricing: { basic: '9,999', standard: '19,999', premium: '39,999' },
     paymentLinks: {
       basic: '#',
       standard: '#',
@@ -36,14 +36,14 @@ const REGION_DATA = {
     currency: '$',
     symbol: 'USD',
     gateway: 'Stripe' as const,
-    pricing: { basic: '209', standard: '520', premium: '729' },
+    pricing: { basic: '129', standard: '249', premium: '499' },
     paymentLinks: { basic: '#', standard: '#', premium: '#' }
   },
   'United Kingdom': {
     currency: '£',
     symbol: 'GBP',
     gateway: 'Stripe' as const,
-    pricing: { basic: '156', standard: '390', premium: '547' },
+    pricing: { basic: '99', standard: '189', premium: '379' },
     paymentLinks: { basic: '#', standard: '#', premium: '#' }
   }
 };
